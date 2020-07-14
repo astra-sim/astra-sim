@@ -29,7 +29,7 @@ Saeed Rashidi, Srinivas Sridharan, Sudarshan Srinivasan, and Tushar Krishna, "AS
 Clone the repository
 Run ./build.sh --> you will be asked what backend to download: gem5 or ns3
 
-## gem5 specific instructions
+#### gem5 specific instructions
 1. Enter gem5 when prompted by build.sh. This will clone the https://github.com/georgia-tech-synergy-lab/gem5_astra repository inside the network folder
 2. Go to network/gem5_astra
 3. Run: "./my_scripts/build_Garnet_standalone.sh" to build the garnet network simulator.
@@ -40,6 +40,11 @@ Run ./build.sh --> you will be asked what backend to download: gem5 or ns3
 NOTE: you can also run "./sampleDLRM_torus.sh runName" for step 5 instead. This will run a toy DLRM model over a physical 3D torus.
 
 NOTE: The on-screen reported delays after the end of simulation are in cycles while the delays inside the csv files are in terms of microSeconds.
+
+
+#### gem5 specific instructions
+In progress ...
+
 
 ### Input Files to ASTRA-sim ###
 
