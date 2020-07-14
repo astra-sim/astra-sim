@@ -42,7 +42,7 @@ NOTE: you can also run "./sampleDLRM_torus.sh runName" for step 5 instead. This 
 NOTE: The on-screen reported delays after the end of simulation are in cycles while the delays inside the csv files are in terms of microSeconds.
 
 
-#### gem5 specific instructions
+#### NS3 specific instructions
 In progress ...
 
 
