@@ -1,10 +1,10 @@
-#ifndef __COMMONAPI_HH__
-#define __COMMONAPI_HH__
+#ifndef __COMMUNICATIONAPI_HH__
+#define __COMMUNICATIONAPI_HH__
 #include <cassert>
 #include <fstream>
 #include <iostream>
 #include <string>
-#include "MemoryCommonAPI.hh"
+#include "MemoryAPI.hh"
 struct sim_comm {
     std::string comm_name;
 };
@@ -31,14 +31,14 @@ public:
     timespec_t timestamp;
 };
 
-class CommonAPI{
+class CommunicationAPI{
 public:
     virtual int sim_comm_size(sim_comm comm, int* size)=0;
     virtual int sim_comm_get_rank(sim_comm comm, int *size)=0;
     virtual int sim_comm_set_rank(sim_comm comm, int rank)=0;
     virtual int sim_finish()=0;
     virtual double sim_time_resolution()=0;
-    virtual int sim_init(MemoryCommonAPI* MEM)=0;
+    virtual int sim_init(MemoryAPI* MEM)=0;
     virtual timespec_t sim_get_time()=0;
     virtual void sim_schedule(timespec_t delta, void (*fun_ptr)(void *fun_arg), void *fun_arg)=0;
     virtual int sim_send(void *buffer, int count, int type, int dst, int tag, sim_request *request, void (*msg_handler)(void *fun_arg), void* fun_arg)=0;
@@ -50,7 +50,7 @@ public:
     bool acquireFreeVC(int vnet){return true;};
     bool remove_packet_from_waiting_list_done(int vnet){return true;};
     bool remove_packet_from_waiting_list(int vnet){return true;};
-    CommonAPI(){enabled= true;};
-    virtual ~CommonAPI() {}; // ADDED BY PALLAVI
+    CommunicationAPI(){enabled= true;};
+    virtual ~CommunicationAPI() {}; // ADDED BY PALLAVI
 };
 #endif

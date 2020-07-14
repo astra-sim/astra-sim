@@ -689,8 +689,8 @@ Sys::~Sys() {
     }
 }
 
-//Sys::Sys(CommonAPI *NI,int id,int num_passes,std::string my_sys,std::string my_workload,int total_stat_rows,int stat_row,std::string path,std::string run_name)
-Sys::Sys(CommonAPI *NI,MemoryCommonAPI *MEM,int id,int num_passes,int local_dim, int vertical_dim,int horizontal_dim,
+//Sys::Sys(CommunicationAPI *NI,int id,int num_passes,std::string my_sys,std::string my_workload,int total_stat_rows,int stat_row,std::string path,std::string run_name)
+Sys::Sys(CommunicationAPI *NI,MemoryAPI *MEM,int id,int num_passes,int local_dim, int vertical_dim,int horizontal_dim,
     int perpendicular_dim,int fourth_dim,int local_queus,int vertical_queues,int horizontal_queues,
     int perpendicular_queues,int fourth_queues,std::string my_sys,
     std::string my_workload,float comm_scale, float compute_scale,float injection_scale,int total_stat_rows,int stat_row,
