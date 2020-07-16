@@ -5,7 +5,7 @@ then
 	echo "You have already downloaded gem5"
 	cd ..
 	exit 1
-elif [ -d "ns3" ]
+elif [ -d "ns3_astra" ]
 then
 	echo "You have already downloaded ns3"
 	cd ..
@@ -22,8 +22,11 @@ then
 	exit 1
 elif [ "$backend" == "ns3" ]
 then
-	git clone 
+	git clone https://github.com/astra-sim/ns3_astra.git
+	cd ns3_astra
+	./init.sh
 	echo "ns3 has been successfully downloaded"
+	cd ..
 	cd ..
 	exit 1
 fi
