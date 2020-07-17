@@ -26,7 +26,6 @@ then
 	echo "ns3 has been successfully downloaded"
 	cd ns3_astra
 	./init.sh
-	rm init.sh
 	cd ..
 	cd ..
 	exit 1
