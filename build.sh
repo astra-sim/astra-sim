@@ -23,9 +23,10 @@ then
 elif [ "$backend" == "ns3" ]
 then
 	git clone https://github.com/astra-sim/ns3_astra.git
+	echo "ns3 has been successfully downloaded"
 	cd ns3_astra
 	./init.sh
-	echo "ns3 has been successfully downloaded"
+	rm init.sh
 	cd ..
 	cd ..
 	exit 1
