@@ -46,7 +46,10 @@ NOTE: The on-screen reported delays after the end of simulation are in cycles wh
 1. Enter ns3 when prompted by build.sh. Note that at this time, this repository is private and ONLY those who have access can clone it.
 2. Go to ns3_astra/ns-3.30/
 3. Run: "./waf configure"
-3. Run some experimnets to build the entire NS3. All results will be dumped inside the "results" directory, a sample experiment is : ***./waf --run "dlrm_workload_rdma --nHosts=128 --workload=microAllReduce  --nPasses=1 --MTUB=1460  --n2nSpeedGbps=100 --localDim=8 --nSwitches=1 --n2nDlyNs=500  --commScale=0.01 --totalStat=1 --statRow=0 --sys=sample_a2a_sys  --runName=run1"***
+3. Run some experimnets to build the entire NS3. All results will be dumped inside the "results" directory, a sample experiment is :
+
+***./waf --run "dlrm_workload_rdma --nHosts=128 --workload=microAllReduce  --nPasses=1 --MTUB=1460  --n2nSpeedGbps=100 --localDim=8 --nSwitches=1 --n2nDlyNs=500  --commScale=0.01 --totalStat=1 --statRow=0 --sys=sample_a2a_sys  --runName=run1"***
+
 6. Now you can run either some other experiments or the available runscripts that run bunch of experiments simultaneously
 
 NOTE: The on-screen reported delays after the end of simulation are in cycles while the delays inside the csv files are in terms of microSeconds.
