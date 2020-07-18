@@ -38,7 +38,7 @@ public:
 
     virtual int sim_comm_size(sim_comm comm, int* size)=0;
     virtual int sim_comm_get_rank(){return rank;};
-    virtual int sim_comm_set_rank(int rank){this->rank=rank;};
+    virtual int sim_comm_set_rank(int rank){this->rank=rank;return this->rank;};
     virtual int sim_finish()=0;
     virtual double sim_time_resolution()=0;
     virtual int sim_init(AstraMemoryAPI* MEM)=0;
