@@ -33,9 +33,12 @@ public:
 
 class AstraNetworkAPI{
 public:
+    bool enabled;
+    int rank;
+
     virtual int sim_comm_size(sim_comm comm, int* size)=0;
-    virtual int sim_comm_get_rank(sim_comm comm, int *size)=0;
-    virtual int sim_comm_set_rank(sim_comm comm, int rank)=0;
+    virtual int sim_comm_get_rank(){return rank;};
+    virtual int sim_comm_set_rank(int rank){this->rank=rank;};
     virtual int sim_finish()=0;
     virtual double sim_time_resolution()=0;
     virtual int sim_init(AstraMemoryAPI* MEM)=0;
@@ -44,13 +47,7 @@ public:
     virtual int sim_send(void *buffer, int count, int type, int dst, int tag, sim_request *request, void (*msg_handler)(void *fun_arg), void* fun_arg)=0;
     virtual int sim_recv(void *buffer, int count, int type, int src, int tag, sim_request *request, void (*msg_handler)(void *fun_arg), void* fun_arg)=0;
 
-    //compatibility reason, do not do anything, should be removed later
-    bool enabled;
-    bool testFreeVC(int vnet){return true;};
-    bool acquireFreeVC(int vnet){return true;};
-    bool remove_packet_from_waiting_list_done(int vnet){return true;};
-    bool remove_packet_from_waiting_list(int vnet){return true;};
-    AstraNetworkAPI(){enabled= true;};
+    AstraNetworkAPI(int rank){this->rank=rank;enabled= true;};
     virtual ~AstraNetworkAPI() {}; // ADDED BY PALLAVI
 };
 #endif
