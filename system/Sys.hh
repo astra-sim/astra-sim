@@ -56,7 +56,7 @@ enum class PacketRouting {Hardware,Software};
 enum class BusType {Both,Shared,Mem};
 enum class StreamState {Created,Transferring,Ready,Executing,Zombie,Dead};
 enum class EventType {CallEvents,PacketReceived,WaitForVnetTurn,General,TX_DMA,RX_DMA,Wight_Grad_Comm_Finished,Input_Grad_Comm_Finished,Fwd_Comm_Finished,Wight_Grad_Comm_Finished_After_Delay,Input_Grad_Comm_Finished_After_Delay,Fwd_Comm_Finished_After_Delay,Workload_Wait,Reduction_Ready,Rec_Finished,Send_Finished,
-    Processing_Finished,Delivered,NPU_to_MA,MA_to_NPU,Read_Port_Free,Write_Port_Free,Apply_Boost,Stream_Transfer_Started,Stream_Ready,Consider_Process,Consider_Retire,Consider_Send_Back,StreamInit,StreamsFinishedIncrease};
+    Processing_Finished,Delivered,NPU_to_MA,MA_to_NPU,Read_Port_Free,Write_Port_Free,Apply_Boost,Stream_Transfer_Started,Stream_Ready,Consider_Process,Consider_Retire,Consider_Send_Back,StreamInit,StreamsFinishedIncrease,CommProcessingFinished};
 
 
 class CallData{
@@ -499,6 +499,7 @@ public:
     PacketBundle(Sys *generator,BaseStream *stream, bool processed, bool send_back, int size,MemBus::Transmition transmition);
     void send_to_MA();
     void send_to_NPU();
+    Tick delay;
     void call(EventType event,CallData *data);
     //~PacketBundle()= default;
 };
@@ -641,6 +642,8 @@ public:
     void post_process_inputs();
     int sim_send(Tick delay,void *buffer, int count, int type, int dst, int tag, sim_request *request, void (*msg_handler)(void *fun_arg), void* fun_arg);
     int sim_recv(Tick delay,void *buffer, int count, int type, int src, int tag, sim_request *request, void (*msg_handler)(void *fun_arg), void* fun_arg);
+    Tick mem_read(uint64_t bytes);
+    Tick mem_write(uint64_t bytes);
     static int get_layer_numbers(std::string workload_input);
     DataSet * generate_all_reduce(int size,bool local, bool vertical, bool horizontal,SchedulingPolicy pref_scheduling,int layer);
     DataSet * generate_all_to_all(int size,bool local, bool vertical, bool horizontal,SchedulingPolicy pref_scheduling,int layer);

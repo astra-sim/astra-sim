@@ -631,6 +631,14 @@ void PacketBundle::send_to_NPU(){
     generator->memBus->send_from_MA_to_NPU(transmition,size,processed,send_back,this);
 }
 void PacketBundle::call(EventType event,CallData *data){
+    if(processed==true){
+        processed=false;
+        generator->mem_read(size);
+        generator->mem_read(size);
+        this->delay=generator->mem_write(size);
+        generator->try_register_event(this,EventType::CommProcessingFinished,NULL,this->delay);
+        return;
+    }
     Tick current=Sys::boostedTick();
     for(auto &packet:locked_packets){
         packet->ready_time=current;
@@ -946,6 +954,22 @@ int Sys::sim_recv(Tick delay, void *buffer, int count, int type, int src, int ta
     try_register_event(new SimRecvCaller(this,buffer,count,type,src,tag,request,msg_handler,fun_arg),EventType::General,NULL,delay);
     return 1;
 
+}
+Tick Sys::mem_read(uint64_t bytes) {
+    if(MEM==NULL){
+        return 10;
+    }
+    uint64_t delay_ns=MEM->mem_read(bytes);
+    Tick delay_cycles=delay_ns/CLOCK_PERIOD;
+    return delay_cycles;
+}
+Tick Sys::mem_write(uint64_t bytes) {
+    if(MEM==NULL){
+        return 10;
+    }
+    uint64_t delay_ns=MEM->mem_write(bytes);
+    Tick delay_cycles=delay_ns/CLOCK_PERIOD;
+    return delay_cycles;
 }
 void Sys::parse_var(std::string var, std::string value) {
     if(id==0){
@@ -2509,7 +2533,7 @@ void DoubleBinaryTreeAllReduce::run(EventType event,CallData *data) {
         snd_req.reqType = UINT8;
         snd_req.vnet=this->stream->current_queue_id;
         snd_req.layerNum=layer_num;
-        stream->owner->sim_send(1,Sys::dummy_data,data_size,UINT8,left_child,stream->stream_num,&snd_req,&Sys::handleEvent,NULL);
+        stream->owner->sim_send(delay,Sys::dummy_data,data_size,UINT8,left_child,stream->stream_num,&snd_req,&Sys::handleEvent,NULL);
         sim_request snd_req2;
         snd_req2.srcRank = stream->owner->id;
         snd_req2.dstRank = left_child;
