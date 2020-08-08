@@ -68,7 +68,6 @@ public:
     int nodeId;
     EventType event;
     BasicEventHandlerData(int nodeId, EventType event);
-    //virtual ~BasicEventHandlerData()= default;
 };
 class RecvPacketEventHadndlerData:public BasicEventHandlerData,public MetaData{
 public:
@@ -78,7 +77,6 @@ public:
     bool message_end;
     Tick ready_time;
     RecvPacketEventHadndlerData(BaseStream *owner,int nodeId, EventType event,int vnet,int stream_num);
-    //~RecvPacketEventHadndlerData()= default;
 };
 class NetworkStat{
 public:
@@ -271,6 +269,34 @@ class Callable{
 public:
     virtual ~Callable() = default;
     virtual void call(EventType type,CallData *data)=0;
+};
+class SimSendCaller:public Callable{
+public:
+    void *buffer;
+    int count;
+    int type;
+    int dst;
+    int tag;
+    sim_request *request;
+    void (*msg_handler)(void *fun_arg);
+    void* fun_arg;
+    void call(EventType type,CallData *data);
+    Sys* generator;
+    SimSendCaller(Sys* generator,void *buffer, int count, int type, int dst, int tag, sim_request *request, void (*msg_handler)(void *fun_arg), void* fun_arg);
+};
+class SimRecvCaller:public Callable{
+public:
+    void *buffer;
+    int count;
+    int type;
+    int src;
+    int tag;
+    sim_request *request;
+    void (*msg_handler)(void *fun_arg);
+    void* fun_arg;
+    void call(EventType type,CallData *data);
+    Sys* generator;
+    SimRecvCaller(Sys* generator,void *buffer, int count, int type, int src, int tag, sim_request *request, void (*msg_handler)(void *fun_arg), void* fun_arg);
 };
 class MyPacket:public Callable
 {
@@ -613,6 +639,8 @@ public:
     void initialize_sys(std::string name);
     void parse_var(std::string var,std::string value);
     void post_process_inputs();
+    int sim_send(Tick delay,void *buffer, int count, int type, int dst, int tag, sim_request *request, void (*msg_handler)(void *fun_arg), void* fun_arg);
+    int sim_recv(Tick delay,void *buffer, int count, int type, int src, int tag, sim_request *request, void (*msg_handler)(void *fun_arg), void* fun_arg)
     static int get_layer_numbers(std::string workload_input);
     DataSet * generate_all_reduce(int size,bool local, bool vertical, bool horizontal,SchedulingPolicy pref_scheduling,int layer);
     DataSet * generate_all_to_all(int size,bool local, bool vertical, bool horizontal,SchedulingPolicy pref_scheduling,int layer);
