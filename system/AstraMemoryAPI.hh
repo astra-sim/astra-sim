@@ -6,6 +6,7 @@
 #include <string>
 #include <cstdint>
 #include "AstraNetworkAPI.hh"
+struct timespec_t;
 class AstraNetworkAPI;
 class AstraMemoryAPI{
     public:
