@@ -959,7 +959,7 @@ Tick Sys::mem_read(uint64_t bytes) {
     if(MEM==NULL){
         return 10;
     }
-    uint64_t delay_ns=MEM->mem_read(bytes);
+    uint64_t delay_ns=MEM->npu_mem_read(bytes);
     Tick delay_cycles=delay_ns/CLOCK_PERIOD;
     return delay_cycles;
 }
@@ -967,7 +967,7 @@ Tick Sys::mem_write(uint64_t bytes) {
     if(MEM==NULL){
         return 10;
     }
-    uint64_t delay_ns=MEM->mem_write(bytes);
+    uint64_t delay_ns=MEM->npu_mem_write(bytes);
     Tick delay_cycles=delay_ns/CLOCK_PERIOD;
     return delay_cycles;
 }
