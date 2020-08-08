@@ -37,7 +37,9 @@ uint64_t SimpleMemory::SimpleMemory::npu_mem_write(uint64_t size){
     return (uint64_t)(offset);
 }
 uint64_t SimpleMemory::nic_mem_read(uint64_t size){
+    std::cout<<"1";
     timespec_t time=NI->sim_get_time();
+    std::cout<<"2";
     double time_ns=time.time_val;
     double delay=access_latency+(size/nic_access_bw_GB);
     double max=last_request_serviced;
