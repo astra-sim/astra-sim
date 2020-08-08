@@ -23,7 +23,8 @@ uint64_t SimpleMemory::npu_mem_read(uint64_t size){
     }
     double offset=(max+delay)-time_ns;
     this->last_request_serviced=max+delay;
-    std::cout<<"access latency: "<<(uint64_t)(offset)<<", total requests: "<<request_count<<std::endl;
+    std::cout<<"node id: "<<NI->sim_comm_get_rank()<<", access latency: "<<(uint64_t)(offset)
+             <<", current delay: "<<delay<<", total requests: "<<request_count<<std::endl;
     return (uint64_t)(offset);
 
 }
@@ -38,7 +39,8 @@ uint64_t SimpleMemory::SimpleMemory::npu_mem_write(uint64_t size){
     }
     double offset=(max+delay)-time_ns;
     this->last_request_serviced=max+delay;
-    std::cout<<"access latency: "<<(uint64_t)(offset)<<", total requests: "<<request_count<<std::endl;
+    std::cout<<"node id: "<<NI->sim_comm_get_rank()<<", access latency: "<<(uint64_t)(offset)
+             <<", current delay: "<<delay<<", total requests: "<<request_count<<std::endl;
     return (uint64_t)(offset);
 }
 uint64_t SimpleMemory::nic_mem_read(uint64_t size){
@@ -52,7 +54,8 @@ uint64_t SimpleMemory::nic_mem_read(uint64_t size){
     }
     double offset=(max+delay)-time_ns;
     this->last_request_serviced=max+delay;
-    std::cout<<"access latency: "<<(uint64_t)(offset)<<", total requests: "<<request_count<<std::endl;
+    std::cout<<"node id: "<<NI->sim_comm_get_rank()<<", access latency: "<<(uint64_t)(offset)
+    <<", current delay: "<<delay<<", total requests: "<<request_count<<std::endl;
     return (uint64_t)(offset);
 }
 uint64_t SimpleMemory::nic_mem_write(uint64_t size){
@@ -66,7 +69,8 @@ uint64_t SimpleMemory::nic_mem_write(uint64_t size){
     }
     double offset=(max+delay)-time_ns;
     this->last_request_serviced=max+delay;
-    std::cout<<"access latency: "<<(uint64_t)(offset)<<", total requests: "<<request_count<<std::endl;
+    std::cout<<"node id: "<<NI->sim_comm_get_rank()<<", access latency: "<<(uint64_t)(offset)
+             <<", current delay: "<<delay<<", total requests: "<<request_count<<std::endl;
     return (uint64_t)(offset);
 }
 uint64_t SimpleMemory::mem_read(uint64_t size){
