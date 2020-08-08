@@ -636,7 +636,7 @@ void PacketBundle::call(EventType event,CallData *data){
         generator->mem_read(size);
         generator->mem_read(size);
         this->delay=generator->mem_write(size);
-        generator->try_register_event(this,EventType::CommProcessingFinished,NULL,this->delay);
+        generator->try_register_event(this,EventType::CommProcessingFinished,data,this->delay);
         return;
     }
     Tick current=Sys::boostedTick();
