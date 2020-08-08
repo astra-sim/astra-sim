@@ -6,7 +6,7 @@
 #include <string>
 #include <cstdint>
 #include "AstraNetworkAPI.hh"
-
+class AstraNetworkAPI;
 class AstraMemoryAPI{
     public:
         virtual  uint64_t mem_read(uint64_t size)=0;
