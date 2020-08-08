@@ -2533,7 +2533,7 @@ void DoubleBinaryTreeAllReduce::run(EventType event,CallData *data) {
         snd_req.reqType = UINT8;
         snd_req.vnet=this->stream->current_queue_id;
         snd_req.layerNum=layer_num;
-        stream->owner->sim_send(delay,Sys::dummy_data,data_size,UINT8,left_child,stream->stream_num,&snd_req,&Sys::handleEvent,NULL);
+        stream->owner->sim_send(1,Sys::dummy_data,data_size,UINT8,left_child,stream->stream_num,&snd_req,&Sys::handleEvent,NULL);
         sim_request snd_req2;
         snd_req2.srcRank = stream->owner->id;
         snd_req2.dstRank = left_child;
