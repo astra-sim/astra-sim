@@ -947,7 +947,7 @@ int Sys::get_priority(SchedulingPolicy pref_scheduling) {
 int Sys::sim_send(Tick delay, void *buffer, int count, int type, int dst, int tag, sim_request *request,
                   void (*msg_handler)(void *fun_arg), void *fun_arg) {
     if(delay==0){
-        generator->NI->sim_send(this->buffer,this->count,this->type,this->dst,this->tag,this->request,this->msg_handler,this->fun_arg);
+        generator->NI->sim_send(buffer,count,type,dst,tag,request,msg_handler,fun_arg);
     }
     else{
         try_register_event(new SimSendCaller(this,buffer,count,type,dst,tag,request,msg_handler,fun_arg),EventType::General,NULL,delay);
@@ -957,7 +957,7 @@ int Sys::sim_send(Tick delay, void *buffer, int count, int type, int dst, int ta
 int Sys::sim_recv(Tick delay, void *buffer, int count, int type, int src, int tag, sim_request *request,
                   void (*msg_handler)(void *fun_arg), void *fun_arg) {
     if(delay==0) {
-        generator->NI->sim_recv(this->buffer,this->count,this->type,this->src,this->tag,this->request,this->msg_handler,this->fun_arg);
+        generator->NI->sim_recv(buffer,count,type,src,tag,request,msg_handler,fun_arg);
     }
     else{
         try_register_event(new SimRecvCaller(this, buffer, count, type, src, tag, request, msg_handler, fun_arg),
