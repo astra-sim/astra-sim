@@ -5,9 +5,10 @@ This is the ASTRA-sim distributed Deep Learning Training simulator.
 
 The full description of the tool and its strength can be found in the paper below:
 
-Saeed Rashidi, Srinivas Sridharan, Sudarshan Srinivasan, and Tushar Krishna, "ASTRA-SIM: Enabling SW/HW Co-Design Exploration for Distributed DL Training Platforms"
+Saeed Rashidi, Srinivas Sridharan, Sudarshan Srinivasan, and Tushar Krishna,
+"ASTRA-SIM: Enabling SW/HW Co-Design Exploration for Distributed DL Training Platforms"
 *In Proc of the IEEE International Symposium on Performance Analysis of Systems and Software (ISPASS), Apr 2020*
-[[pdf]](https://synergy.ece.gatech.edu/wp-content/uploads/sites/332/2020/03/astrasim_ispass2020.pdf).
+[[pdf]](https://synergy.ece.gatech.edu/wp-content/uploads/sites/332/2020/03/astrasim_ispass2020.pdf)[slides - coming soon]
 
 **Bibtex**
 
@@ -22,6 +23,15 @@ Saeed Rashidi, Srinivas Sridharan, Sudarshan Srinivasan, and Tushar Krishna, "AS
       publisher     = {{IEEE}},
       year          = {2020},
     }
+
+
+The paper integrating and using the NS3 backend is here:
+
+Saeed Rashidi, Pallavi Shurpali, Srinivas Sridharan, Naader Hassani, Dheevatsa Mudigere, Krishnakumar Nair, Misha Smelyanski, and Tushar Krishna,
+"Scalable Distributed Training of Recommendation Models:An ASTRA-SIM + NS3 case-study with TCP/IP transport"
+*In Proceedings of the 16th International Symposium on High-Performance Interconnects (HotI), Aug 2020*
+[[pdf]](https://synergy.ece.gatech.edu/wp-content/uploads/sites/332/2020/07/astrasim-ns3_hoti2020.pdf)[slides - coming soon]
+
 
 
 ### Setup Instructions ###
@@ -46,11 +56,11 @@ NOTE: The on-screen reported delays after the end of simulation are in cycles wh
 1. Enter ns3 when prompted by build.sh. Note that at this time, this repository is private and ONLY those who have access can clone it.
 2. Go to ns3_astra/ns-3.30/
 3. Run: "./waf configure"
-3. Run some experimnets to build the entire NS3. All results will be dumped inside the "results" directory, a sample experiment is :
+3. Run some experiments to build the entire NS3. All results will be dumped inside the "results" directory. A sample run command is :
 
-***./waf --run "dlrm_workload_rdma --nHosts=128 --workload=microAllReduce  --nPasses=1 --MTUB=1460  --n2nSpeedGbps=100 --localDim=8 --nSwitches=1 --n2nDlyNs=500  --commScale=0.01 --totalStat=1 --statRow=0 --sys=sample_a2a_sys  --runName=run1"***
+    ***./waf --run "dlrm_workload_rdma --nHosts=128 --workload=microAllReduce  --nPasses=1 --MTUB=1460  --n2nSpeedGbps=100 --localDim=8 --nSwitches=1 --n2nDlyNs=500  --commScale=0.01 --totalStat=1 --statRow=0 --sys=sample_a2a_sys  --runName=run1"***
 
-6. Now you can run either some other experiments or the available runscripts that run bunch of experiments simultaneously
+5. Now you can run either some other experiments or the available runscripts that run bunch of experiments simultaneously
 
 NOTE: The on-screen reported delays after the end of simulation are in cycles while the delays inside the csv files are in terms of microSeconds.
 
