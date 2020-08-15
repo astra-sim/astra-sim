@@ -25,15 +25,6 @@ Saeed Rashidi, Srinivas Sridharan, Sudarshan Srinivasan, and Tushar Krishna,
     }
 
 
-The paper integrating and using the NS3 backend is here:
-
-Saeed Rashidi, Pallavi Shurpali, Srinivas Sridharan, Naader Hassani, Dheevatsa Mudigere, Krishnakumar Nair, Misha Smelyanski, and Tushar Krishna,
-"Scalable Distributed Training of Recommendation Models:An ASTRA-SIM + NS3 case-study with TCP/IP transport"
-*In Proceedings of the 16th International Symposium on High-Performance Interconnects (HotI), Aug 2020*
-[[pdf]](https://synergy.ece.gatech.edu/wp-content/uploads/sites/332/2020/07/astrasim-ns3_hoti2020.pdf)[slides - coming soon]
-
-
-
 ### Setup Instructions ###
 
 Clone the repository
@@ -53,17 +44,7 @@ NOTE: The on-screen reported delays after the end of simulation are in cycles wh
 
 
 #### Instructions for running NS3 as network simulator
-1. Enter ns3 when prompted by build.sh. Note that at this time, this repository is private and ONLY those who have access can clone it.
-2. Go to ns3_astra/ns-3.30/
-3. Run: "./waf configure"
-3. Run some experiments to build the entire NS3. All results will be dumped inside the "results" directory. A sample run command is :
-
-    ***./waf --run "dlrm_workload_rdma --nHosts=128 --workload=microAllReduce  --nPasses=1 --MTUB=1460  --n2nSpeedGbps=100 --localDim=8 --nSwitches=1 --n2nDlyNs=500  --commScale=0.01 --totalStat=1 --statRow=0 --sys=sample_a2a_sys  --runName=run1"***
-
-5. Now you can run either some other experiments or the available runscripts that run bunch of experiments simultaneously
-
-NOTE: The on-screen reported delays after the end of simulation are in cycles while the delays inside the csv files are in terms of microSeconds.
-
+Coming Soon!
 
 ### Input Files to ASTRA-sim ###
 
@@ -71,7 +52,7 @@ NOTE: The on-screen reported delays after the end of simulation are in cycles wh
    * see workload_inputs/README.md
 * System: system/system_inputs/
    * see system_inputs/README.md
-* Network: network/gem5_astra/network_inputs/ or network/ns3_astra/network_inputs/
+* Network: network/gem5_astra/network_inputs/
    * see network_inputs/README.md
 
 ### Contact ###
@@ -80,9 +61,7 @@ Please email Saeed Rashidi (saeed.rashidi@gatech.edu) or Srinivas Sridharan (ssr
 ### Developers and Contributors ###
 **Georgia Tech**
 * Saeed Rashidi
-* William Won
 * Tushar Krishna
 
 **Facebook**
 * Srinivas Sridharan
-* Pallavi Shurpali
