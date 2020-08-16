@@ -1,7 +1,7 @@
 # README #
 
 ### What is this repository for? ###
-This is the ASTRA-sim distributed Deep Learning Training simulator. 
+This is the ASTRA-sim distributed Deep Learning Training simulator, developed in collaboration between Georgia Tech, Facebook and Intel.
 
 The full description of the tool and its strength can be found in the paper below:
 
