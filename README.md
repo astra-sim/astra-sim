@@ -1,4 +1,4 @@
-# README #
+# ASTRA-Sim #
 
 ### What is this repository for? ###
 This is the ASTRA-sim distributed Deep Learning Training simulator, developed in collaboration between Georgia Tech, Facebook and Intel.
@@ -18,7 +18,7 @@ Saeed Rashidi, Srinivas Sridharan, Sudarshan Srinivasan, and Tushar Krishna,
                        Sudarshan Srinivasan and
                        Tushar Krishna},
         title        = {{ASTRA-SIM: Enabling SW/HW Co-Design Exploration for Distributed DL Training Platforms}},
-        booktitle     = {{IEEE} International Symposium on Performance Analysis of Systems 
+        booktitle     = {{IEEE} International Symposium on Performance Analysis of Systems
                         and Software, {ISPASS} 2020, Boston, MA, USA, August 22-26, 2020},
       publisher     = {{IEEE}},
       year          = {2020},
@@ -27,8 +27,16 @@ Saeed Rashidi, Srinivas Sridharan, Sudarshan Srinivasan, and Tushar Krishna,
 
 ### Setup Instructions ###
 
-Clone the repository
-Run ./build.sh --> you will be asked what backend to download: gem5 or ns3
+```bash
+# Clone the repository
+$ git clone https://github.com/astra-sim/astra-sim.git
+
+# Build the repository
+#  - You will be asked what backend to downlaod: gem5 or ns3
+#  - The SCALE-Sim compute model will be cloned to the compute folter
+$ cd astra-sim
+$ ./build.sh
+```
 
 #### Instructions for running Garnet2.0 as network simulator
 1. Enter gem5 when prompted by build.sh. This will clone the https://github.com/georgia-tech-synergy-lab/gem5_astra repository inside the network folder
@@ -50,6 +58,7 @@ Coming Soon!
 
 * Workload: workload/workload_inputs/
    * see workload_inputs/README.md
+   * see workload_generator/README.md
 * System: system/system_inputs/
    * see system_inputs/README.md
 * Network: network/gem5_astra/network_inputs/
