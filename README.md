@@ -35,8 +35,8 @@ Saeed Rashidi, Srinivas Sridharan, Sudarshan Srinivasan, and Tushar Krishna,
 $ git clone https://github.com/astra-sim/astra-sim.git
 
 # Build the repository
-#  - You will be asked what backend to downlaod: gem5 or ns3
-#  - The SCALE-Sim compute model will be cloned to the compute folter
+#  - You will be asked what network backend to download: gem5 or ns3. It will be cloned into the network folder.
+#  - The SCALE-Sim compute model will be cloned to the compute folder
 $ cd astra-sim
 $ ./build.sh
 ```
@@ -79,4 +79,3 @@ Please email Saeed Rashidi (saeed.rashidi@gatech.edu) or Srinivas Sridharan (ssr
 * Apurve Chawde (Georgia Tech)
 * Santosh Kumar Elangoven (Georgia Tech)
 * William Won (Georgia Tech)
-* Tushar Krishna (Georgia Tech)
