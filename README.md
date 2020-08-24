@@ -74,7 +74,9 @@ Please email Saeed Rashidi (saeed.rashidi@gatech.edu) or Srinivas Sridharan (ssr
 * Saeed Rashidi (Georgia Tech)
 * Srinivas Sridharan (Facebook)
 
-### External Contributors ###
+### Additional Contributors ###
 * Jiayi Huang (University of California, Santa Barbara)
 * Apurve Chawde (Georgia Tech)
 * Santosh Kumar Elangoven (Georgia Tech)
+* William Won (Georgia Tech)
+* Tushar Krishna (Georgia Tech)
