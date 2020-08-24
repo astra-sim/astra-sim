@@ -3,6 +3,9 @@
 ### What is this repository for? ###
 This is the ASTRA-sim distributed Deep Learning Training simulator, developed in collaboration between Georgia Tech, Facebook and Intel.
 
+An overview is presented here:
+![alt text](https://github.com/astra-sim/astra-sim/blob/master/docs/images/astrasim_overview_codesign.png)
+
 The full description of the tool and its strength can be found in the paper below:
 
 Saeed Rashidi, Srinivas Sridharan, Sudarshan Srinivasan, and Tushar Krishna,
@@ -65,12 +68,15 @@ Coming Soon!
    * see network_inputs/README.md
 
 ### Contact ###
-Please email Saeed Rashidi (saeed.rashidi@gatech.edu) or Srinivas Sridharan (ssrinivas@fb.com) if you have any questions.
+Please email Saeed Rashidi (saeed.rashidi@gatech.edu) or Srinivas Sridharan (ssrinivas@fb.com) or Tushar Krishna (tushar@ece.gatech.edu) if you have any questions.
 
-### Developers and Contributors ###
-**Georgia Tech**
-* Saeed Rashidi
-* Tushar Krishna
+### Core Developers ###
+* Saeed Rashidi (Georgia Tech)
+* Srinivas Sridharan (Facebook)
 
-**Facebook**
-* Srinivas Sridharan
+### Additional Contributors ###
+* Jiayi Huang (University of California, Santa Barbara)
+* Apurve Chawde (Georgia Tech)
+* Santosh Kumar Elangoven (Georgia Tech)
+* William Won (Georgia Tech)
+* Tushar Krishna (Georgia Tech)
