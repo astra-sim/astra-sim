@@ -54,6 +54,14 @@ def parseCommandLineArguments():
     global SCALESIM_PATH, SCALESIM_CONFIG, OUTPUT_FILE_NAME
     SCALESIM_PATH = os.path.abspath(FLAGS.scalesim_path)
     SCALESIM_CONFIG = os.path.abspath(FLAGS.scalesim_config)
+    if not os.path.exists(SCALESIM_PATH):
+        print('ERROR: SCALE-Sim not exists in {}'.format(SCALESIM_PATH))
+        print('  run "git clone https://github.com/ARM-software/SCALE-Sim.git" to clone SCALE-Sim to the proper place')
+        print('  or run build.sh in astra-sim root directory and find SCALE-Sim under astra-sim/compute/')
+        exit()
+    if not os.path.exists(SCALESIM_CONFIG):
+        print('ERROR: SCALE-Sim config "{}" not found'.format(SCALESIM_CONFIG))
+        exit()
     OUTPUT_FILE_NAME = os.path.abspath(FLAGS.output_file)
     ParallelizationStrategy = FLAGS.parallel
     DatatypeSize = int(FLAGS.datatype_size)
