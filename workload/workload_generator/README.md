@@ -1,4 +1,4 @@
-#### Generate ASTRA-Sim Workload Input File
+### Generate ASTRA-Sim Workload Input File
 
 The `gen_astrasim_workload_input.py` can be run to generate the workload input file for ASTRA-Sim. It takes multiple inputs arguments specified as follows:
 
@@ -20,7 +20,7 @@ The `gen_astrasim_workload_input.py` can be run to generate the workload input f
 An example run:
 
 ```bash
-$ python gen_astrasim_workload_input.py \
+$ python3 gen_astrasim_workload_input.py \
   --datatype_size=2 \
   --mnk=mnk_inputs/test.csv \
   --num_npus=16 \
@@ -32,11 +32,21 @@ $ python gen_astrasim_workload_input.py \
   --scalesim_path=../../compute/SCALE-Sim
 ```
 
-**Note**: Currently, the script only supports GEMM type layers and the same parallelization strategy for all the layers. We plan to add supports for other layer types suchs Embedding and separate parallelization strategies for each layer in the future.
+**Dependent python version and packages:**
+
+- Python3
+- absl-py
+- os
+- subprocess
+- math
+- configparser
+- tqdm
+
+**Note**: Currently, the script only supports GEMM type layers and applies the same parallelization strategy for all the layers. We plan to add supports for other layer types suchs Embedding and separate parallelization strategies for each layer in the future.
 
 
 
-#### MNK Input File Format
+### MNK Input File Format
 
 An example mnk input file is in `mnk_inputs/test.csv`
 
