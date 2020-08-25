@@ -9,8 +9,10 @@ public:
     double npu_access_bw_GB;
     double nic_access_bw_GB;
     double access_latency;
-    uint64_t read_request_count;
-    uint64_t write_request_count;
+    uint64_t nic_read_request_count;
+    uint64_t nic_write_request_count;
+    uint64_t npu_read_request_count;
+    uint64_t npu_write_request_count;
     AstraNetworkAPI *NI;
     SimpleMemory(AstraNetworkAPI *NI,double access_latency,double npu_access_bw_GB,double nic_access_bw_GB);
     void set_network_api(AstraNetworkAPI *astraNetworkApi);
