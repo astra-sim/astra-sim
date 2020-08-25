@@ -56,7 +56,7 @@ enum class PacketRouting {Hardware,Software};
 enum class BusType {Both,Shared,Mem};
 enum class StreamState {Created,Transferring,Ready,Executing,Zombie,Dead};
 enum class EventType {CallEvents,PacketReceived,WaitForVnetTurn,General,TX_DMA,RX_DMA,Wight_Grad_Comm_Finished,Input_Grad_Comm_Finished,Fwd_Comm_Finished,Wight_Grad_Comm_Finished_After_Delay,Input_Grad_Comm_Finished_After_Delay,Fwd_Comm_Finished_After_Delay,Workload_Wait,Reduction_Ready,Rec_Finished,Send_Finished,
-    Processing_Finished,Delivered,NPU_to_MA,MA_to_NPU,Read_Port_Free,Write_Port_Free,Apply_Boost,Stream_Transfer_Started,Stream_Ready,Consider_Process,Consider_Retire,Consider_Send_Back,StreamInit,StreamsFinishedIncrease,CommProcessingFinished};
+    Processing_Finished,Delivered,NPU_to_MA,MA_to_NPU,Read_Port_Free,Write_Port_Free,Apply_Boost,Stream_Transfer_Started,Stream_Ready,Consider_Process,Consider_Retire,Consider_Send_Back,StreamInit,StreamsFinishedIncrease,CommProcessingFinished,NotInitialized};
 
 
 class CallData{
@@ -559,6 +559,7 @@ public:
     int fourth_queues;
     int priority_counter;
     bool boost_mode;
+    bool initialized;
 
     int processing_latency;
     int communication_delay;
@@ -637,9 +638,10 @@ public:
              std::string my_workload,float comm_scale,float compute_scale,float injection_scale,int total_stat_rows,int stat_row, std::string path,std::string run_name);
 
     void iterate();
-    void initialize_sys(std::string name);
-    void parse_var(std::string var,std::string value);
-    void post_process_inputs();
+    bool initialize_sys(std::string name);
+    std::string trim(const std::string& str,const std::string& whitespace);
+    bool parse_var(std::string var,std::string value);
+    bool post_process_inputs();
     int sim_send(Tick delay,void *buffer, int count, int type, int dst, int tag, sim_request *request, void (*msg_handler)(void *fun_arg), void* fun_arg);
     int sim_recv(Tick delay,void *buffer, int count, int type, int src, int tag, sim_request *request, void (*msg_handler)(void *fun_arg), void* fun_arg);
     Tick mem_read(uint64_t bytes);

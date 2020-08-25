@@ -156,6 +156,7 @@ public:
     LoopState current_state;
     bool delay_loaded;
     bool collective_issued;
+    bool initialized;
     int TOTAL_PASS;
     int DLRM_LAST_BOTTOM_LAYER;
     int pass_counter;
@@ -174,7 +175,7 @@ public:
     void iterate_hybrid_parallel_model_data();
     void iterate_model_parallel();
     void iterate_distributed_inference();
-    void initialize_workload(std::string name);
+    bool initialize_workload(std::string name);
     void initialize_stat_files();
     void fire();
     void report();

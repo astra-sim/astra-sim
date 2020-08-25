@@ -714,10 +714,14 @@ Sys::~Sys() {
         delete lt.second;
     }
     logical_topologies.clear();
-    delete scheduler_unit;
-    delete vLevels;
-    delete memBus;
-    delete workload;
+    if(scheduler_unit!=NULL)
+        delete scheduler_unit;
+    if(vLevels!=NULL)
+        delete vLevels;
+    if(memBus!=NULL)
+        delete memBus;
+    if(workload!=NULL)
+        delete workload;
     bool shouldExit=true;
     for(auto &a:all_generators){
         if(a!=NULL){
@@ -737,6 +741,11 @@ Sys::Sys(AstraNetworkAPI *NI,AstraMemoryAPI *MEM,int id,int num_passes,int local
     std::string my_workload,float comm_scale, float compute_scale,float injection_scale,int total_stat_rows,int stat_row,
     std::string path,std::string run_name)
 {
+    scheduler_unit=NULL;
+    vLevels=NULL;
+    memBus=NULL;
+    workload=NULL;
+    this->initialized=false;
 
     start_sim_time=std::chrono::high_resolution_clock::now();
     this->NI=NI;
@@ -770,7 +779,18 @@ Sys::Sys(AstraNetworkAPI *NI,AstraMemoryAPI *MEM,int id,int num_passes,int local
     this->communication_delay=10;
     this->local_reduction_delay=1;
 
-    initialize_sys(my_sys+".txt");
+    if((id+1)>all_generators.size()){
+        all_generators.resize(id+1);
+    }
+    all_generators[id]=this;
+
+    bool result=initialize_sys(my_sys+".txt");
+
+    if(result==false){
+        Tick cycle=1;
+        try_register_event(this,EventType::NotInitialized,NULL,cycle);
+        return;
+    }
 
     if(id==0){
         std::cout<<"loc dim: "<<this->local_dim<<" ,vert dim: "<<this->vertical_dim<<" ,horiz dim: "<<horizontal_dim
@@ -790,10 +810,6 @@ Sys::Sys(AstraNetworkAPI *NI,AstraMemoryAPI *MEM,int id,int num_passes,int local
     int four=fourth_dim<1?1:fourth_dim;
     total_nodes=hor*loc*perp*ver*four;
 
-    if((id+1)>all_generators.size()){
-        all_generators.resize(id+1);
-    }
-    all_generators[id]=this;
 
     int element;
     for (element=0;element<local_queus;element++) {
@@ -919,6 +935,12 @@ Sys::Sys(AstraNetworkAPI *NI,AstraMemoryAPI *MEM,int id,int num_passes,int local
     NI->sim_init(MEM);
     memBus=new MemBus("NPU","MA",this,inp_L,inp_o,inp_g,inp_G,model_shared_bus,communication_delay,true);
     workload=new Workload(run_name,this,my_workload+".txt",num_passes,total_stat_rows,stat_row,path);
+    if(workload->initialized==false){
+        Tick cycle=1;
+        try_register_event(this,EventType::NotInitialized,NULL,cycle);
+        return;
+    }
+    this->initialized=true;
 }
 int Sys::get_layer_numbers(std::string workload_input) {
     return Workload::get_layer_numbers(workload_input);
@@ -982,7 +1004,21 @@ Tick Sys::mem_write(uint64_t bytes) {
     Tick delay_cycles=delay_ns/CLOCK_PERIOD;
     return delay_cycles;
 }
-void Sys::parse_var(std::string var, std::string value) {
+std::string Sys::trim(const std::string& str,
+                 const std::string& whitespace = " \t")
+{
+    const auto strBegin = str.find_first_not_of(whitespace);
+    if (strBegin == std::string::npos)
+        return ""; // no content
+
+    const auto strEnd = str.find_last_not_of(whitespace);
+    const auto strRange = strEnd - strBegin + 1;
+
+    return str.substr(strBegin, strRange);
+}
+bool Sys::parse_var(std::string var, std::string value) {
+    var=trim(var);
+    value=trim(value);
     if(id==0){
         std::cout<<"Var is: "<<var<<" ,val is: "<<value<<std::endl;
     }
@@ -1040,8 +1076,15 @@ void Sys::parse_var(std::string var, std::string value) {
         std::stringstream mval(value);
         mval >>inp_boost_mode;
     }
+    else if(var!=""){
+        if(id==0){
+            std::cout<<"######### Exiting because "<<var<<" is undefined inside system input file #########"<<std::endl;
+        }
+        return false;
+    }
+    return true;
 }
-void Sys::post_process_inputs() {
+bool Sys::post_process_inputs() {
     if(inp_packet_routing=="hardware"){
         alltoall_routing=PacketRouting::Hardware;
     } else{
@@ -1099,15 +1142,21 @@ void Sys::post_process_inputs() {
     else{
         model_shared_bus=false;
     }
-    return;
+    return true;
 }
-void Sys::initialize_sys(std::string name) {
+bool Sys::initialize_sys(std::string name) {
     std::ifstream inFile;
     inFile.open("sys_inputs/" + name);
     if (!inFile) {
-        std::cout << "Unable to open file: " << name << std::endl;
+        if(id==0){
+            std::cout << "Unable to open file: " << name << std::endl;
+            std::cout <<"############ Exiting because unable to open the system input file ############"<<std::endl;
+        }
+        return false;
     } else {
-        std::cout << "success in openning file" << std::endl;
+        if(id==0){
+            std::cout << "success in openning system file" << std::endl;
+        }
     }
     std::string var;
     std::string value;
@@ -1117,11 +1166,15 @@ void Sys::initialize_sys(std::string name) {
         if(inFile.peek()!=EOF){
             inFile >> value;
         }
-        parse_var(var,value);
+        bool result=parse_var(var,value);
+        if(result==false){
+            inFile.close();
+            return result;
+        }
     }
     inFile.close();
     post_process_inputs();
-    return;
+    return true;
 }
 Sys::SchedulerUnit::SchedulerUnit(Sys *sys, std::vector<int> queues,int max_running_streams,int ready_list_threshold,int queue_threshold) {
     this->sys=sys;
@@ -1684,12 +1737,12 @@ void Sys::call_events(){
         event_queue[Sys::boostedTick()].clear();
     }
     event_queue.erase(Sys::boostedTick());
-    if(finished_workloads==1 && event_queue.size()==0){
-        //std::cout<<"delete called for node id: "<<id<<std::endl;
+    if((finished_workloads==1 && event_queue.size()==0) || initialized==false){
         delete this;
     }
 }
 void Sys::exitSimLoop(std::string msg) {
+    std::cout<<msg<<std::endl;
     NI->sim_finish();
     return;
 }

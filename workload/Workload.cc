@@ -717,9 +717,12 @@ Workload::~Workload() {
     for(int i=0;i<SIZE;i++){
         delete layers[i];
     }
-    delete[] layers;
+    if(layers!=NULL){
+        delete[] layers;
+    }
 }
 Workload::Workload(std::string run_name,Sys *generator,std::string name, int TOTAL_PASS,int total_rows,int stat_row, std::string path) {
+    this->initialized=false;
     this->layers = NULL;
     this->SIZE = 0;
     this->counter = 0;
@@ -735,7 +738,10 @@ Workload::Workload(std::string run_name,Sys *generator,std::string name, int TOT
     detailed=NULL;
     this->path=path;
     this->stat_row=stat_row;
-    initialize_workload(name);
+    this->initialized=initialize_workload(name);
+    if(this->initialized== false){
+        return;
+    }
     this->total_rows=total_rows;
     this->run_name=run_name;
     this->registered_for_finished_streams= false;
@@ -1475,11 +1481,13 @@ int Workload::get_layer_numbers(std::string workload_input) {
     inFile.close();
     return layers;
 }
-void Workload::initialize_workload(std::string name) {
+bool Workload::initialize_workload(std::string name) {
     std::ifstream inFile;
     inFile.open("workload_inputs/" + name);
     if (!inFile) {
         std::cout << "Unable to open file: " << name << std::endl;
+        std::cout<<"######### Exiting because unable to open the workload input file #########"<< std::endl;
+        return false;
     } else {
         std::cout << "success in openning file" << std::endl;
     }
@@ -1600,9 +1608,8 @@ void Workload::initialize_workload(std::string name) {
                   << " compute scale: " << generator->compute_scale << " ,comm scale: " << generator->comm_scale
                   << std::endl;
     }
-
     inFile.close();
-    //call(EventType::General, NULL);
+    return true;
 }
 void Workload::fire() {
     call(EventType::General, NULL);
