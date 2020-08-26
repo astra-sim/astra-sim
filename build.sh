@@ -1,5 +1,6 @@
 #! /bin/bash
 
+cd astra-sim
 # Download network backend
 cd network
 if [ -d "gem5_astra" ]
