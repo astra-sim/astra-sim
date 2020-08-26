@@ -38,7 +38,7 @@ class Workload;
 class Sys;
 class Callable;
 class StreamStat;
-#include "Sys.hh"
+#include "astra-sim/system/Sys.hh"
 enum class ParallelismPolicy {MicroBenchmark,Data,Transformer,DLRM,DLRMEnhanced,Model,HybridDataModel,HybridModelData,DistributedInference};
 #define FREQ (1000.0/CLOCK_PERIOD)
 class CSVWriter{

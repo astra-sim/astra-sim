@@ -513,7 +513,7 @@ public:
     //~StreamBaseline()= default;
 };
 
-#include "Workload.hh"
+#include "astra-sim/workload/Workload.hh"
 class QueueLevels;
 class Sys:public Callable
 {
