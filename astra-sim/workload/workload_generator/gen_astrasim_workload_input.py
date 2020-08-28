@@ -27,6 +27,7 @@ DataParallel            = "DATA"
 ModelParallel           = "MODEL"
 HybridDataModelParallel = "HYBRID_DATA_MODEL"
 HybridModelDataParallel = "HYBRID_MODEL_DATA"
+CustomizedParallel      = "CUSTOMIZED"
 AllToAll                = "ALLTOALL"
 AllReduce               = "ALLREDUCE"
 AllGather               = "ALLGATHER"
@@ -44,7 +45,7 @@ flags.DEFINE_string("run_name", "test", "Name of the folder that will have the g
 flags.DEFINE_string("output_file", OUTPUT_FILE_NAME, "Name of the generated ASTRA-Sim input file")
 flags.DEFINE_string("scalesim_path", SCALESIM_PATH, "Path to SCALE-Sim folder")
 flags.DEFINE_string("scalesim_config", SCALESIM_CONFIG, "Path to SCALE-Sim config file")
-flags.DEFINE_string("parallel", DataParallel, "Parallelization strategy: MODEL, DATA, HYBRID_DATA_MODEL, HYBRID_MODEL_DATA")
+flags.DEFINE_string("parallel", DataParallel, "Parallelization strategy: MODEL, DATA, HYBRID_DATA_MODEL, HYBRID_MODEL_DATA, CUSTOMIZED")
 flags.DEFINE_string("datatype_size", str(DatatypeSize), "Size of the data type")
 flags.DEFINE_string("num_npus", str(NumberOfNPUs), "Total number of NPUs")
 flags.DEFINE_string("num_packages", str(NumberOfPackages), "Number of packages")
@@ -180,8 +181,6 @@ class AstraSimOutput:
         self.strategy[HybridDataModelParallel] = HybridDataModelParallelStrategy()
         self.strategy[HybridModelDataParallel] = HybridModelDataParallelStrategy()
 
-        self.activeStrategy = self.strategy[ParallelizationStrategy]
-
         self.output = []
 
     def generate(self):
@@ -192,14 +191,14 @@ class AstraSimOutput:
             line.append(self.layers[i].name) # Layer name
             line.append("-1") # Reserved variable
             line.append(self.scaleSimOutput[ForwardPassCycles][i]) # Forward pass compute time
-            line.append(self.activeStrategy.getCommunicationTypeForFwdPass(i, self.layers[i])) # Forward pass communication type
-            line.append(self.activeStrategy.getCommunicationSizeForFwdPass(i, self.layers[i])) # Forward pass communication size
+            line.append(self.strategy[self.layers[i].parallelism].getCommunicationTypeForFwdPass(i, self.layers[i])) # Forward pass communication type
+            line.append(self.strategy[self.layers[i].parallelism].getCommunicationSizeForFwdPass(i, self.layers[i])) # Forward pass communication size
             line.append(self.scaleSimOutput[InputGradientCycles][i]) # Input gradient compute time
-            line.append(self.activeStrategy.getCommunicationTypeForInpGrad(i, self.layers[i])) # Input gradient communication type
-            line.append(self.activeStrategy.getCommunicationSizeForInpGrad(i, self.layers[i])) # Input gradient communication size
+            line.append(self.strategy[self.layers[i].parallelism].getCommunicationTypeForInpGrad(i, self.layers[i])) # Input gradient communication type
+            line.append(self.strategy[self.layers[i].parallelism].getCommunicationSizeForInpGrad(i, self.layers[i])) # Input gradient communication size
             line.append(self.scaleSimOutput[WeightGradientCycles][i]) # Weight gradient compute time
-            line.append(self.activeStrategy.getCommunicationTypeForWeightGrad(i, self.layers[i])) # Weight gradient communication type
-            line.append(self.activeStrategy.getCommunicationSizeForWeightGrad(i, self.layers[i])) # Weight gradient communication size
+            line.append(self.strategy[self.layers[i].parallelism].getCommunicationTypeForWeightGrad(i, self.layers[i])) # Weight gradient communication type
+            line.append(self.strategy[self.layers[i].parallelism].getCommunicationSizeForWeightGrad(i, self.layers[i])) # Weight gradient communication size
             line.append(100) # Delay for 1KB communication size
 
             line = map(lambda x: str(x), line)
@@ -251,19 +250,19 @@ class TopologyItem:
         file_handle.write("Layer name,ifmap height,ifmap width,filter height,filter width,channels,num filter,strides,\n")
 
 class Layer:
-    def __init__(self, name, m, n, k):
+    def __init__(self, name, m, n, k, prallelism):
         self.name = name
         self.m = int(m) # batch size
         self.n = int(n) # output dimension
         self.k = int(k) # input dimension
-        self.parallelism = ParallelizationStrategy
+        self.parallelism = parallelism
 
     def __init__(self, row):
         self.name = row[0]
         self.m = int(row[1])
         self.n = int(row[2])
         self.k = int(row[3])
-        self.parallelism = ParallelizationStrategy
+        self.parallelism = row[4]
 
     def print(self):
         print (self.name + ", " + self.m + ", " + self.n + ", " + self.k + ", " + self.parallelism)
@@ -303,9 +302,9 @@ def writeGeneratedTopologyToFile(folder_name, file_name, items):
     # Go back to old directory
     os.chdir(current_path)
 
-def runScaleSim(topology_file, parallelism):
+def runScaleSim(topology_file, folder_name):
     current_path = os.getcwd()
-    full_path = os.path.join(os.getcwd(), Outputs, parallelism, FLAGS.run_name, topology_file)
+    full_path = os.path.join(os.getcwd(), Outputs, folder_name, FLAGS.run_name, topology_file)
     os.chdir(SCALESIM_PATH)
     process = subprocess.Popen(["python3", "scale.py", "-arch_config=" + SCALESIM_CONFIG, "-network="+full_path])
     process.wait()
@@ -340,85 +339,84 @@ def getCylesFromScaleSimOutput(folder_name, topology_file):
     os.chdir(current_path)
     return cycles
 
-def getScaleSimOutputInternal(fwd_pass, inp_grad, weight_grad, parallel_mode):
+def getScaleSimOutputInternal(fwd_pass, inp_grad, weight_grad, folder_name):
     fwd_pass_filename = os.path.basename(FLAGS.mnk).rstrip(".csv") + "_fwd_pass.csv"
     inp_grad_filename = os.path.basename(FLAGS.mnk).rstrip(".csv") + "_inp_grad.csv"
     weight_grad_filename = os.path.basename(FLAGS.mnk).rstrip(".csv") + "_weight_grad.csv"
-    writeGeneratedTopologyToFile(parallel_mode, fwd_pass_filename, fwd_pass)
-    writeGeneratedTopologyToFile(parallel_mode, inp_grad_filename, inp_grad)
-    writeGeneratedTopologyToFile(parallel_mode, weight_grad_filename, weight_grad)
+    writeGeneratedTopologyToFile(folder_name, fwd_pass_filename, fwd_pass)
+    writeGeneratedTopologyToFile(folder_name, inp_grad_filename, inp_grad)
+    writeGeneratedTopologyToFile(folder_name, weight_grad_filename, weight_grad)
 
-    runScaleSim(fwd_pass_filename, parallel_mode)
-    runScaleSim(inp_grad_filename, parallel_mode)
-    runScaleSim(weight_grad_filename, parallel_mode)
+    runScaleSim(fwd_pass_filename, folder_name)
+    runScaleSim(inp_grad_filename, folder_name)
+    runScaleSim(weight_grad_filename, folder_name)
 
-    fwd_pass_cycles = getCylesFromScaleSimOutput(parallel_mode, fwd_pass_filename)
-    inp_grad_cycles = getCylesFromScaleSimOutput(parallel_mode, inp_grad_filename)
-    weight_grad_cycles = getCylesFromScaleSimOutput(parallel_mode, weight_grad_filename)
+    fwd_pass_cycles = getCylesFromScaleSimOutput(folder_name, fwd_pass_filename)
+    inp_grad_cycles = getCylesFromScaleSimOutput(folder_name, inp_grad_filename)
+    weight_grad_cycles = getCylesFromScaleSimOutput(folder_name, weight_grad_filename)
 
     return { ForwardPassCycles : fwd_pass_cycles, InputGradientCycles : inp_grad_cycles, WeightGradientCycles : weight_grad_cycles }
 
-def getScaleSimOutputForDataParallelApproach(layers):
-    fwd_pass = []
-    for layer in layers:
-        fwd_pass.append(TopologyItem(layer.name, int(layer.m / NumberOfNPUs), layer.k, FilterHeight, layer.k, NumberOfChannels, layer.n, Strides))
+def getLayerTopologyForDataParallelApproach(layer):
+    fwd_pass_item = TopologyItem(layer.name, int(layer.m / NumberOfNPUs), layer.k, FilterHeight, layer.k, NumberOfChannels, layer.n, Strides)
 
-    inp_grad = []
-    for layer in layers:
-        inp_grad.append(TopologyItem(layer.name, int(layer.m / NumberOfNPUs), layer.n, FilterHeight, layer.n, NumberOfChannels, layer.k, Strides))
+    inp_grad_item = TopologyItem(layer.name, int(layer.m / NumberOfNPUs), layer.n, FilterHeight, layer.n, NumberOfChannels, layer.k, Strides)
 
-    weight_grad = []
-    for layer in layers:
-        weight_grad.append(TopologyItem(layer.name, layer.k, int(layer.m / NumberOfNPUs), FilterHeight, int(layer.m / NumberOfNPUs), NumberOfChannels, layer.n, Strides))
+    weight_grad_item = TopologyItem(layer.name, layer.k, int(layer.m / NumberOfNPUs), FilterHeight, int(layer.m / NumberOfNPUs), NumberOfChannels, layer.n, Strides)
 
-    return getScaleSimOutputInternal(fwd_pass, inp_grad, weight_grad, DataParallel)
+    return fwd_pass_item, inp_grad_item, weight_grad_item
 
-def getScaleSimOutputForModelParallelApproach(layers):
-    fwd_pass = []
-    for layer in layers:
-        fwd_pass.append(TopologyItem(layer.name, layer.m, layer.k, FilterHeight, layer.k, NumberOfChannels, int(layer.n / NumberOfNPUs), Strides))
+def getLayerTopologyForModelParallelApproach(layer):
+    fwd_pass_item = TopologyItem(layer.name, layer.m, layer.k, FilterHeight, layer.k, NumberOfChannels, int(layer.n / NumberOfNPUs), Strides)
 
-    inp_grad = []
-    for layer in layers:
-        inp_grad.append(TopologyItem(layer.name, layer.m, int(layer.n / NumberOfNPUs), FilterHeight, int(layer.n / NumberOfNPUs), NumberOfChannels, layer.k, Strides))
+    inp_grad_item = TopologyItem(layer.name, layer.m, int(layer.n / NumberOfNPUs), FilterHeight, int(layer.n / NumberOfNPUs), NumberOfChannels, layer.k, Strides)
 
-    weight_grad = []
-    for layer in layers:
-        weight_grad.append(TopologyItem(layer.name, layer.k, layer.m, FilterHeight, layer.m, NumberOfChannels, int(layer.n / NumberOfNPUs), Strides))
+    weight_grad_item = TopologyItem(layer.name, layer.k, layer.m, FilterHeight, layer.m, NumberOfChannels, int(layer.n / NumberOfNPUs), Strides)
 
-    return getScaleSimOutputInternal(fwd_pass, inp_grad, weight_grad, ModelParallel)
+    return fwd_pass_item, inp_grad_item, weight_grad_item
 
 # HybridDataModel: data-parallel between packages, model-parallel within package
-def getScaleSimOutputForHybridDataModelParallelApproach(layers):
-    fwd_pass = []
-    for layer in layers:
-        fwd_pass.append(TopologyItem(layer.name, int(layer.m / NumberOfPackages), layer.k, FilterHeight, layer.k, NumberOfChannels, int(layer.n / NumberOfNPUsPerPackage), Strides))
+def getLayerTopologyForHybridDataModelParallelApproach(layer):
+    fwd_pass_item = TopologyItem(layer.name, int(layer.m / NumberOfPackages), layer.k, FilterHeight, layer.k, NumberOfChannels, int(layer.n / NumberOfNPUsPerPackage), Strides)
 
-    inp_grad = []
-    for layer in layers:
-        inp_grad.append(TopologyItem(layer.name, int(layer.m / NumberOfPackages), int(layer.n / (NumberOfNPUsPerPackage)), FilterHeight, int(layer.n / NumberOfNPUsPerPackage), NumberOfChannels, layer.k, Strides))
+    inp_grad_item = TopologyItem(layer.name, int(layer.m / NumberOfPackages), int(layer.n / (NumberOfNPUsPerPackage)), FilterHeight, int(layer.n / NumberOfNPUsPerPackage), NumberOfChannels, layer.k, Strides)
 
-    weight_grad = []
-    for layer in layers:
-        weight_grad.append(TopologyItem(layer.name, layer.k, int(layer.m / NumberOfPackages), FilterHeight, int(layer.m / NumberOfPackages), NumberOfChannels, int(layer.n / NumberOfNPUsPerPackage), Strides))
+    weight_grad_item = TopologyItem(layer.name, layer.k, int(layer.m / NumberOfPackages), FilterHeight, int(layer.m / NumberOfPackages), NumberOfChannels, int(layer.n / NumberOfNPUsPerPackage), Strides)
 
-    return getScaleSimOutputInternal(fwd_pass, inp_grad, weight_grad, HybridDataModelParallel)
+    return fwd_pass_item, inp_grad_item, weight_grad_item
 
 # HybridModelData: model-parallel between packages, data-parallel within package
-def getScaleSimOutputForHybridModelDataParallelApproach(layers):
+def getLayerTopologyForHybridModelDataParallelApproach(layer):
+    fwd_pass_item = TopologyItem(layer.name, int(layer.m / NumberOfNPUsPerPackage), layer.k, FilterHeight, layer.k, NumberOfChannels, int(layer.n / NumberOfPackages), Strides)
+
+    inp_grad_item = TopologyItem(layer.name, int(layer.m / NumberOfNPUsPerPackage), int(layer.n / NumberOfPackages), FilterHeight, int(layer.n / NumberOfPackages), NumberOfChannels, layer.k, Strides)
+
+    weight_grad_item = TopologyItem(layer.name, layer.k, int(layer.m / NumberOfNPUsPerPackage), FilterHeight, int(layer.m / NumberOfNPUsPerPackage), NumberOfChannels, int(layer.n / NumberOfPackages), Strides)
+
+    return fwd_pass_item, inp_grad_item, weight_grad_item
+
+def getTopology(layers):
     fwd_pass = []
-    for layer in layers:
-        fwd_pass.append(TopologyItem(layer.name, int(layer.m / NumberOfNPUsPerPackage), layer.k, FilterHeight, layer.k, NumberOfChannels, int(layer.n / NumberOfPackages), Strides))
-
     inp_grad = []
-    for layer in layers:
-        inp_grad.append(TopologyItem(layer.name, int(layer.m / NumberOfNPUsPerPackage), int(layer.n / NumberOfPackages), FilterHeight, int(layer.n / NumberOfPackages), NumberOfChannels, layer.k, Strides))
-
     weight_grad = []
-    for layer in layers:
-        weight_grad.append(TopologyItem(layer.name, layer.k, int(layer.m / NumberOfNPUsPerPackage), FilterHeight, int(layer.m / NumberOfNPUsPerPackage), NumberOfChannels, int(layer.n / NumberOfPackages), Strides))
 
-    return getScaleSimOutputInternal(fwd_pass, inp_grad, weight_grad, HybridModelDataParallel)
+    for layer in layers:
+        if layer.parallelism == DataParallel:
+            fwd_pass_item, inp_grad_item, weight_grad_item = getLayerTopologyForDataParallelApproach(layer)
+        elif layer.parallelism == ModelParallel:
+            fwd_pass_item, inp_grad_item, weight_grad_item = getLayerTopologyForModelParallelApproach(layer)
+        elif layer.parallelism == HybridDataModelParallel:
+            fwd_pass_item, inp_grad_item, weight_grad_item = getLayerTopologyForHybridDataModelParallelApproach(layer)
+        elif layer.parallelism == HybridModelDataParallel:
+            fwd_pass_item, inp_grad_item, weight_grad_item = getLayerTopologyForHybridModelDataParallelApproach(layer)
+        else:
+            raise RuntimeError("Invalid parallelization strategy {}".format(layer.parallelism))
+
+        fwd_pass.append(fwd_pass_item)
+        inp_grad.append(inp_grad_item)
+        weight_grad.append(weight_grad_item)
+
+    return fwd_pass, inp_grad, weight_grad
 
 def main(argv):
     parseCommandLineArguments()
@@ -435,21 +433,20 @@ def main(argv):
             continue
         line = line.strip('\n').strip(' ')
         cols = line.split(",")
-        assert len(cols) == 4, "There should be 4 columns in the mnk file"
+        if ParallelizationStrategy == "CUSTOMIZED":
+            assert len(cols) == 5, "There should be 5 columns in the mnk file"
+        else:
+            assert len(cols) == 4 or len(cols), "There should be 4 columns in the mnk file"
+            if len(cols) == 4:
+                cols.append(ParallelizationStrategy)
+            else:
+                cols[-1] = ParallelizationStrategy
+        print(cols)
         layers.append(Layer(cols))
 
-    scaleSimOutput = None
+    fwd_pass, inp_grad, weight_grad = getTopology(layers)
 
-    if ParallelizationStrategy == DataParallel:
-        scaleSimOutput = getScaleSimOutputForDataParallelApproach(layers)
-    elif ParallelizationStrategy == ModelParallel:
-        scaleSimOutput = getScaleSimOutputForModelParallelApproach(layers)
-    elif ParallelizationStrategy == HybridDataModelParallel:
-        scaleSimOutput = getScaleSimOutputForHybridDataModelParallelApproach(layers)
-    elif ParallelizationStrategy == HybridModelDataParallel:
-        scaleSimOutput = getScaleSimOutputForHybridModelDataParallelApproach(layers)
-    else:
-        print ("Invalid parallelization strategy")
+    scaleSimOutput =  getScaleSimOutputInternal(fwd_pass, inp_grad, weight_grad, ParallelizationStrategy)
 
     astraSimOutput = AstraSimOutput(layers, scaleSimOutput)
     astraSimOutput.generate()
