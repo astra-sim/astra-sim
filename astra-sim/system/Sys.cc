@@ -739,7 +739,7 @@ Sys::Sys(AstraNetworkAPI *NI,AstraMemoryAPI *MEM,int id,int num_passes,int local
     int perpendicular_dim,int fourth_dim,int local_queus,int vertical_queues,int horizontal_queues,
     int perpendicular_queues,int fourth_queues,std::string my_sys,
     std::string my_workload,float comm_scale, float compute_scale,float injection_scale,int total_stat_rows,int stat_row,
-    std::string path,std::string run_name)
+    std::string path,std::string run_name,bool seprate_log)
 {
     scheduler_unit=NULL;
     vLevels=NULL;
@@ -778,6 +778,7 @@ Sys::Sys(AstraNetworkAPI *NI,AstraMemoryAPI *MEM,int id,int num_passes,int local
     this->processing_latency=10;
     this->communication_delay=10;
     this->local_reduction_delay=1;
+    this->seprate_log=seprate_log;
 
     if((id+1)>all_generators.size()){
         all_generators.resize(id+1);
@@ -934,7 +935,7 @@ Sys::Sys(AstraNetworkAPI *NI,AstraMemoryAPI *MEM,int id,int num_passes,int local
     //NI->sim_init(); CHANGED BY PALLAVI**
     NI->sim_init(MEM);
     memBus=new MemBus("NPU","MA",this,inp_L,inp_o,inp_g,inp_G,model_shared_bus,communication_delay,true);
-    workload=new Workload(run_name,this,my_workload+".txt",num_passes,total_stat_rows,stat_row,path);
+    workload=new Workload(run_name,this,my_workload+".txt",num_passes,total_stat_rows,stat_row,path,this->seprate_log);
     if(workload->initialized==false){
         Tick cycle=1;
         try_register_event(this,EventType::NotInitialized,NULL,cycle);
@@ -1075,6 +1076,17 @@ bool Sys::parse_var(std::string var, std::string value) {
     else if(var=="boost-mode:"){
         std::stringstream mval(value);
         mval >>inp_boost_mode;
+    }
+    else if(var=="seprate-log:"){
+        std::stringstream mval(value);
+        int int_to_bool;
+        mval>>int_to_bool;
+        if(int_to_bool==0){
+            this->seprate_log=false;
+        }
+        else{
+            this->seprate_log=true;
+        }
     }
     else if(var!=""){
         if(id==0){

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include "AstraMemoryAPI.hh"
+#include "AstraSimDataAPI.hh"
 struct sim_comm {
     std::string comm_name;
 };
@@ -46,6 +47,7 @@ public:
     virtual void sim_schedule(timespec_t delta, void (*fun_ptr)(void *fun_arg), void *fun_arg)=0;
     virtual int sim_send(void *buffer, int count, int type, int dst, int tag, sim_request *request, void (*msg_handler)(void *fun_arg), void* fun_arg)=0;
     virtual int sim_recv(void *buffer, int count, int type, int src, int tag, sim_request *request, void (*msg_handler)(void *fun_arg), void* fun_arg)=0;
+    virtual void pass_front_end_report(AstraSimDataAPI astraSimDataAPI){return;};
 
     AstraNetworkAPI(int rank){this->rank=rank;enabled= true;};
     virtual ~AstraNetworkAPI() {}; // ADDED BY PALLAVI

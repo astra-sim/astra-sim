@@ -38,6 +38,7 @@ class Workload;
 class Sys;
 class Callable;
 class StreamStat;
+#include "astra-sim/system/AstraSimDataAPI.hh"
 #include "astra-sim/system/Sys.hh"
 enum class ParallelismPolicy {MicroBenchmark,Data,Transformer,DLRM,DLRMEnhanced,Model,HybridDataModel,HybridModelData,DistributedInference};
 #define FREQ (1000.0/CLOCK_PERIOD)
@@ -133,7 +134,7 @@ public:
     bool is_fwd_pass_comm_finished_blocking();
     bool is_input_grad_comm_finished_blocking();
     bool is_weight_grad_comm_finished_blocking();
-    void report(std::string run_name,int layer_num,int total_rows,int stat_row,CSVWriter *detailed,CSVWriter *EndToEnd,double &total_compute,double &total_exposed);
+    LayerData report(std::string run_name,int layer_num,int total_rows,int stat_row,CSVWriter *detailed,CSVWriter *EndToEnd,double &total_compute,double &total_exposed, bool seprate_log);
     void issue_forward_pass_comm(bool local,bool vertical,bool horizontal,SchedulingPolicy pref_scheduling,
                                  CollectiveBarrier barrier);
     void issue_input_grad_comm(bool local,bool vertical,bool horizontal,SchedulingPolicy pref_scheduling,
@@ -155,6 +156,7 @@ public:
     int index;
     LoopState current_state;
     bool delay_loaded;
+    bool seprate_log;
     bool collective_issued;
     bool initialized;
     int TOTAL_PASS;
@@ -164,7 +166,7 @@ public:
     ParallelismPolicy parallelismPolicy;
     //reports
     Tick waiting_for_comm;
-    Workload(std::string run_name,Sys *generator, std::string name, int TOTAL_PASS,int total_rows,int stat_row,std::string path);
+    Workload(std::string run_name,Sys *generator, std::string name, int TOTAL_PASS,int total_rows,int stat_row,std::string path,bool seprate_log);
     void iterate();
     void call(EventType event, CallData *data);
     void iterate_micro_benchmark();

@@ -422,152 +422,173 @@ bool Layer::is_weight_grad_comm_finished_blocking(){
     this->started_waiting_for_weight_grad.push_back(Sys::boostedTick());
     return false;
 }
-void Layer::report(std::string run_name,int layer_num,int total_rows,int stat_row,CSVWriter *detailed,CSVWriter *EndToEnd,double &total_compute,double &total_exposed){
+LayerData Layer::report(std::string run_name,int layer_num,int total_rows,int stat_row,CSVWriter *detailed,CSVWriter *EndToEnd,
+                        double &total_compute,double &total_exposed, bool seprate_log){
+    LayerData layerData;
     take_stream_stats_average();
-    std::cout<<"*******************"<<std::endl;
-    std::cout<<"Layer id: "<<id<<std::endl;
-    std::cout<<"Total collectives issued for this layer: "<<collective_counter<<std::endl;
-    if(stat_row==0){
-        EndToEnd->write_cell(layer_num*total_rows+1,0,id);
-        detailed->write_cell(layer_num*total_rows+1,0,id);
-    }
-
-    EndToEnd->write_cell(layer_num*total_rows+1+stat_row,1,run_name);
-    detailed->write_cell(layer_num*total_rows+1+stat_row,1,run_name);
-
-
-    std::cout<<"*************************  Workload stats  ************************* "<<id<<std::endl;
-
-    std::cout<<"id: "<<id<<" ,Total cycles spent on fwd pass compute: "<<total_forward_pass_compute<<std::endl;
-    if(stat_row==0 && layer_num==0){
-        EndToEnd->write_cell(0,2,"fwd compute");
-    }
-    EndToEnd->write_cell(layer_num*total_rows+1+stat_row,2,std::to_string(total_forward_pass_compute/FREQ));
     total_compute+=(total_forward_pass_compute/FREQ);
-
-    std::cout<<"id: "<<id<<" ,Total cycles spent on weight grad compute: "<<total_weight_grad_compute<<std::endl;
-    if(stat_row==0 && layer_num==0){
-        EndToEnd->write_cell(0,3,"wg compute");
-    }
-    EndToEnd->write_cell(layer_num*total_rows+1+stat_row,3,std::to_string(total_weight_grad_compute/FREQ));
     total_compute+=(total_weight_grad_compute/FREQ);
-
-    std::cout<<"id: "<<id<<" ,Total cycles spent on input grad compute: "<<total_input_grad_compute<<std::endl;
-    if(stat_row==0 && layer_num==0){
-        EndToEnd->write_cell(0,4,"ig compute");
-    }
-    EndToEnd->write_cell(layer_num*total_rows+1+stat_row,4,std::to_string(total_input_grad_compute/FREQ));
     total_compute+=(total_input_grad_compute/FREQ);
-
-    std::cout<<"id: "<<id<<" ,Total cycles spent idle waiting for fwd finish: "<<total_waiting_for_fwd_comm<<std::endl;
-    if(stat_row==0 && layer_num==0){
-        EndToEnd->write_cell(0,5,"fwd exposed comm");
-    }
-    EndToEnd->write_cell(layer_num*total_rows+1+stat_row,5,std::to_string(total_waiting_for_fwd_comm/FREQ));
     total_exposed+=(total_waiting_for_fwd_comm/FREQ);
-
-    std::cout<<"id: "<<id<<" ,Total cycles spent idle waiting for weight grad finish: "<<total_waiting_for_wg_comm<<std::endl;
-    if(stat_row==0 && layer_num==0){
-        EndToEnd->write_cell(0,6,"wg exposed comm");
-    }
-    EndToEnd->write_cell(layer_num*total_rows+1+stat_row,6,std::to_string(total_waiting_for_wg_comm/FREQ));
     total_exposed+=(total_waiting_for_wg_comm/FREQ);
-
-    std::cout<<"id: "<<id<<" ,Total cycles spent idle waiting for input grad finish: "<<total_waiting_for_ig_comm<<std::endl;
-    if(stat_row==0 && layer_num==0){
-        EndToEnd->write_cell(0,7,"ig exposed comm");
-    }
-    EndToEnd->write_cell(layer_num*total_rows+1+stat_row,7,std::to_string(total_waiting_for_ig_comm/FREQ));
     total_exposed+=(total_waiting_for_ig_comm/FREQ);
-
-    std::cout<<"id: "<<id<<" ,Total cycles spent on fwd pass comm: "<<total_fwd_comm<<std::endl;
-    if(stat_row==0 && layer_num==0){
-        EndToEnd->write_cell(0,8,"fwd total comm");
-    }
-    EndToEnd->write_cell(layer_num*total_rows+1+stat_row,8,std::to_string(total_fwd_comm/FREQ));
-
-    std::cout<<"id: "<<id<<" ,Total cycles spent on weight grad comm: "<<total_weight_grad_comm<<std::endl;
-    if(stat_row==0 && layer_num==0){
-        EndToEnd->write_cell(0,9,"wg total comm");
-    }
-    EndToEnd->write_cell(layer_num*total_rows+1+stat_row,9,std::to_string(total_weight_grad_comm/FREQ));
-
-    std::cout<<"id: "<<id<<" ,Total cycles spent on input grad comm: "<<total_input_grad_comm<<std::endl;
-    if(stat_row==0 && layer_num==0){
-        EndToEnd->write_cell(0,10,"ig total comm");
-    }
-    EndToEnd->write_cell(layer_num*total_rows+1+stat_row,10,std::to_string(total_input_grad_comm/FREQ));
-
-    if(stat_row==0 && layer_num==0){
-        EndToEnd->write_cell(0,11,"workload finished at");
-    }
-    EndToEnd->write_cell(layer_num*total_rows+1+stat_row,11,std::to_string(((double)Sys::boostedTick())/FREQ));
-    if(layer_num==workload->SIZE-1){
-        if(stat_row==0){
-            EndToEnd->write_cell(0,12,"total comp");
-            EndToEnd->write_cell(0,13,"total exposed comm");
-        }
-        EndToEnd->write_cell(1+stat_row,12,std::to_string(total_compute));
-        EndToEnd->write_cell(1+stat_row,13,std::to_string(total_exposed));
-    }
-
-    /*std::cout<<"*************************  Shared bus stats  ************************* "<<id<<std::endl;
-    std::cout<<"id: "<<id<<" ,Average cycles spent on shared bus queue delay for transfer (per message): "<<total_shared_bus_transfer_queue_delay<<std::endl;
-    if(stat_row==0 && layer_num==0){
-        detailed->write_cell(0,2,"shared bus transfer queue delay");
-    }
-    detailed->write_cell(layer_num*total_rows+1+stat_row,2,std::to_string(total_shared_bus_transfer_queue_delay/FREQ));
-
-    std::cout<<"id: "<<id<<" ,Average cycles spent on shared bus delay for transfer (per message): "<<total_shared_bus_transfer_delay<<std::endl;
-    if(stat_row==0 && layer_num==0){
-        detailed->write_cell(0,3,"shared bus transfer delay");
-    }
-    detailed->write_cell(layer_num*total_rows+1+stat_row,3,std::to_string(total_shared_bus_transfer_delay/FREQ));
-
-    std::cout<<"id: "<<id<<" ,Average cycles spent on shared bus queue delay for processing (per message): "<<total_shared_bus_processing_queue_delay<<std::endl;
-    if(stat_row==0 && layer_num==0){
-        detailed->write_cell(0,4,"shared bus processing queue delay");
-    }
-    detailed->write_cell(layer_num*total_rows+1+stat_row,4,std::to_string(total_shared_bus_processing_queue_delay/FREQ));
-
-    std::cout<<"id: "<<id<<" ,Average cycles spent on shared bus delay for processing (per message): "<<total_shared_bus_processing_delay<<std::endl;
-    if(stat_row==0 && layer_num==0){
-        detailed->write_cell(0,5,"shared bus processing delay");
-    }
-    detailed->write_cell(layer_num*total_rows+1+stat_row,5,std::to_string(total_shared_bus_processing_delay/FREQ));
-
-    std::cout<<"*************************  Mem bus stats  ************************* "<<id<<std::endl;
-    std::cout<<"id: "<<id<<" ,Average cycles spent on mem bus queue delay for transfer (per message): "<<total_mem_bus_transfer_queue_delay<<std::endl;
-    if(stat_row==0 && layer_num==0){
-        detailed->write_cell(0,6,"mem bus queue delay");
-    }
-    detailed->write_cell(layer_num*total_rows+1+stat_row,6,std::to_string(total_mem_bus_transfer_queue_delay/FREQ));
-
-    std::cout<<"id: "<<id<<" ,Average cycles spent on mem bus delay for transfer (per message): "<<total_mem_bus_transfer_delay<<std::endl;
-    if(stat_row==0 && layer_num==0){
-        detailed->write_cell(0,7,"mem bus delay");
-    }
-    detailed->write_cell(layer_num*total_rows+1+stat_row,7,std::to_string(total_mem_bus_transfer_delay/FREQ));*/
-
-    std::cout<<"*************************  Queuing stats  ************************* "<<id<<std::endl;
-    int count=2;
+    layerData.layer_name=id;
+    layerData.total_forward_pass_compute=total_forward_pass_compute/FREQ;
+    layerData.total_weight_grad_compute=total_weight_grad_compute/FREQ;
+    layerData.total_input_grad_compute=total_input_grad_compute/FREQ;
+    layerData.total_waiting_for_fwd_comm=total_waiting_for_fwd_comm/FREQ;
+    layerData.total_waiting_for_wg_comm=total_waiting_for_wg_comm/FREQ;
+    layerData.total_waiting_for_ig_comm=total_waiting_for_ig_comm/FREQ;
+    layerData.total_fwd_comm=total_fwd_comm/FREQ;
+    layerData.total_weight_grad_comm=total_weight_grad_comm/FREQ;
+    layerData.total_input_grad_comm=total_input_grad_comm/FREQ;
     int i=0;
     for(auto &qd:queuing_delay){
-        std::cout<<"id: "<<id<<" ,Average cycles spent on queuing for phase "<<i++<<" of algorithm (per chunk): "<<qd<<std::endl;
-        if(stat_row==0 && layer_num==0){
-            detailed->write_cell(0,count,"queuing delay phase "+std::to_string(i-1));
-        }
-        detailed->write_cell(layer_num*total_rows+1+stat_row,count++,std::to_string(qd/FREQ));
+        layerData.avg_queuing_delay.push_back(std::make_pair(i,qd/FREQ));
     }
-    std::cout<<"*************************  Network stats  ************************* "<<id<<std::endl;
     i=1;
     for(auto &ml:net_message_latency){
-        std::cout<<"id: "<<id<<" ,Average cycles spent on network for phase "<<i++<<" of algorithm (per message): "<<ml<<std::endl;
-        if(stat_row==0 && layer_num==0){
-            detailed->write_cell(0,count,"network delay phase "+std::to_string(i-1));
-        }
-        detailed->write_cell(layer_num*total_rows+1+stat_row,count++,std::to_string(ml/FREQ));
+        layerData.avg_network_message_dealy.push_back(std::make_pair(i,ml/FREQ));
     }
+    if(seprate_log){
+        std::cout<<"*******************"<<std::endl;
+        std::cout<<"Layer id: "<<id<<std::endl;
+        std::cout<<"Total collectives issued for this layer: "<<collective_counter<<std::endl;
+        if(stat_row==0){
+            EndToEnd->write_cell(layer_num*total_rows+1,0,id);
+            detailed->write_cell(layer_num*total_rows+1,0,id);
+        }
+        EndToEnd->write_cell(layer_num*total_rows+1+stat_row,1,run_name);
+        detailed->write_cell(layer_num*total_rows+1+stat_row,1,run_name);
+
+        std::cout<<"*************************  Workload stats  ************************* "<<id<<std::endl;
+
+        std::cout<<"id: "<<id<<" ,Total cycles spent on fwd pass compute: "<<total_forward_pass_compute<<std::endl;
+        if(stat_row==0 && layer_num==0){
+            EndToEnd->write_cell(0,2,"fwd compute");
+        }
+        EndToEnd->write_cell(layer_num*total_rows+1+stat_row,2,std::to_string(total_forward_pass_compute/FREQ));
+
+        std::cout<<"id: "<<id<<" ,Total cycles spent on weight grad compute: "<<total_weight_grad_compute<<std::endl;
+        if(stat_row==0 && layer_num==0){
+            EndToEnd->write_cell(0,3,"wg compute");
+        }
+        EndToEnd->write_cell(layer_num*total_rows+1+stat_row,3,std::to_string(total_weight_grad_compute/FREQ));
+
+        std::cout<<"id: "<<id<<" ,Total cycles spent on input grad compute: "<<total_input_grad_compute<<std::endl;
+        if(stat_row==0 && layer_num==0){
+            EndToEnd->write_cell(0,4,"ig compute");
+        }
+        EndToEnd->write_cell(layer_num*total_rows+1+stat_row,4,std::to_string(total_input_grad_compute/FREQ));
+
+        std::cout<<"id: "<<id<<" ,Total cycles spent idle waiting for fwd finish: "<<total_waiting_for_fwd_comm<<std::endl;
+        if(stat_row==0 && layer_num==0){
+            EndToEnd->write_cell(0,5,"fwd exposed comm");
+        }
+        EndToEnd->write_cell(layer_num*total_rows+1+stat_row,5,std::to_string(total_waiting_for_fwd_comm/FREQ));
+
+        std::cout<<"id: "<<id<<" ,Total cycles spent idle waiting for weight grad finish: "<<total_waiting_for_wg_comm<<std::endl;
+        if(stat_row==0 && layer_num==0){
+            EndToEnd->write_cell(0,6,"wg exposed comm");
+        }
+        EndToEnd->write_cell(layer_num*total_rows+1+stat_row,6,std::to_string(total_waiting_for_wg_comm/FREQ));
+
+        std::cout<<"id: "<<id<<" ,Total cycles spent idle waiting for input grad finish: "<<total_waiting_for_ig_comm<<std::endl;
+        if(stat_row==0 && layer_num==0){
+            EndToEnd->write_cell(0,7,"ig exposed comm");
+        }
+        EndToEnd->write_cell(layer_num*total_rows+1+stat_row,7,std::to_string(total_waiting_for_ig_comm/FREQ));
+
+        std::cout<<"id: "<<id<<" ,Total cycles spent on fwd pass comm: "<<total_fwd_comm<<std::endl;
+        if(stat_row==0 && layer_num==0){
+            EndToEnd->write_cell(0,8,"fwd total comm");
+        }
+        EndToEnd->write_cell(layer_num*total_rows+1+stat_row,8,std::to_string(total_fwd_comm/FREQ));
+
+        std::cout<<"id: "<<id<<" ,Total cycles spent on weight grad comm: "<<total_weight_grad_comm<<std::endl;
+        if(stat_row==0 && layer_num==0){
+            EndToEnd->write_cell(0,9,"wg total comm");
+        }
+        EndToEnd->write_cell(layer_num*total_rows+1+stat_row,9,std::to_string(total_weight_grad_comm/FREQ));
+
+        std::cout<<"id: "<<id<<" ,Total cycles spent on input grad comm: "<<total_input_grad_comm<<std::endl;
+        if(stat_row==0 && layer_num==0){
+            EndToEnd->write_cell(0,10,"ig total comm");
+        }
+        EndToEnd->write_cell(layer_num*total_rows+1+stat_row,10,std::to_string(total_input_grad_comm/FREQ));
+
+        if(stat_row==0 && layer_num==0){
+            EndToEnd->write_cell(0,11,"workload finished at");
+        }
+        EndToEnd->write_cell(layer_num*total_rows+1+stat_row,11,std::to_string(((double)Sys::boostedTick())/FREQ));
+        if(layer_num==workload->SIZE-1){
+            if(stat_row==0){
+                EndToEnd->write_cell(0,12,"total comp");
+                EndToEnd->write_cell(0,13,"total exposed comm");
+            }
+            EndToEnd->write_cell(1+stat_row,12,std::to_string(total_compute));
+            EndToEnd->write_cell(1+stat_row,13,std::to_string(total_exposed));
+        }
+
+        /*std::cout<<"*************************  Shared bus stats  ************************* "<<id<<std::endl;
+        std::cout<<"id: "<<id<<" ,Average cycles spent on shared bus queue delay for transfer (per message): "<<total_shared_bus_transfer_queue_delay<<std::endl;
+        if(stat_row==0 && layer_num==0){
+            detailed->write_cell(0,2,"shared bus transfer queue delay");
+        }
+        detailed->write_cell(layer_num*total_rows+1+stat_row,2,std::to_string(total_shared_bus_transfer_queue_delay/FREQ));
+
+        std::cout<<"id: "<<id<<" ,Average cycles spent on shared bus delay for transfer (per message): "<<total_shared_bus_transfer_delay<<std::endl;
+        if(stat_row==0 && layer_num==0){
+            detailed->write_cell(0,3,"shared bus transfer delay");
+        }
+        detailed->write_cell(layer_num*total_rows+1+stat_row,3,std::to_string(total_shared_bus_transfer_delay/FREQ));
+
+        std::cout<<"id: "<<id<<" ,Average cycles spent on shared bus queue delay for processing (per message): "<<total_shared_bus_processing_queue_delay<<std::endl;
+        if(stat_row==0 && layer_num==0){
+            detailed->write_cell(0,4,"shared bus processing queue delay");
+        }
+        detailed->write_cell(layer_num*total_rows+1+stat_row,4,std::to_string(total_shared_bus_processing_queue_delay/FREQ));
+
+        std::cout<<"id: "<<id<<" ,Average cycles spent on shared bus delay for processing (per message): "<<total_shared_bus_processing_delay<<std::endl;
+        if(stat_row==0 && layer_num==0){
+            detailed->write_cell(0,5,"shared bus processing delay");
+        }
+        detailed->write_cell(layer_num*total_rows+1+stat_row,5,std::to_string(total_shared_bus_processing_delay/FREQ));
+
+        std::cout<<"*************************  Mem bus stats  ************************* "<<id<<std::endl;
+        std::cout<<"id: "<<id<<" ,Average cycles spent on mem bus queue delay for transfer (per message): "<<total_mem_bus_transfer_queue_delay<<std::endl;
+        if(stat_row==0 && layer_num==0){
+            detailed->write_cell(0,6,"mem bus queue delay");
+        }
+        detailed->write_cell(layer_num*total_rows+1+stat_row,6,std::to_string(total_mem_bus_transfer_queue_delay/FREQ));
+
+        std::cout<<"id: "<<id<<" ,Average cycles spent on mem bus delay for transfer (per message): "<<total_mem_bus_transfer_delay<<std::endl;
+        if(stat_row==0 && layer_num==0){
+            detailed->write_cell(0,7,"mem bus delay");
+        }
+        detailed->write_cell(layer_num*total_rows+1+stat_row,7,std::to_string(total_mem_bus_transfer_delay/FREQ));*/
+
+        std::cout<<"*************************  Queuing stats  ************************* "<<id<<std::endl;
+        int count=2;
+        int i=0;
+        for(auto &qd:queuing_delay){
+            std::cout<<"id: "<<id<<" ,Average cycles spent on queuing for phase "<<i++<<" of algorithm (per chunk): "<<qd<<std::endl;
+            if(stat_row==0 && layer_num==0){
+                detailed->write_cell(0,count,"queuing delay phase "+std::to_string(i-1));
+            }
+            detailed->write_cell(layer_num*total_rows+1+stat_row,count++,std::to_string(qd/FREQ));
+        }
+        std::cout<<"*************************  Network stats  ************************* "<<id<<std::endl;
+        i=1;
+        for(auto &ml:net_message_latency){
+            std::cout<<"id: "<<id<<" ,Average cycles spent on network for phase "<<i++<<" of algorithm (per message): "<<ml<<std::endl;
+            if(stat_row==0 && layer_num==0){
+                detailed->write_cell(0,count,"network delay phase "+std::to_string(i-1));
+            }
+            detailed->write_cell(layer_num*total_rows+1+stat_row,count++,std::to_string(ml/FREQ));
+        }
+    }
+    return layerData;
 }
 void Layer::issue_forward_pass_comm(bool local,bool vertical,bool horizontal,SchedulingPolicy pref_scheduling,
                              CollectiveBarrier barrier){
@@ -721,7 +742,8 @@ Workload::~Workload() {
         delete[] layers;
     }
 }
-Workload::Workload(std::string run_name,Sys *generator,std::string name, int TOTAL_PASS,int total_rows,int stat_row, std::string path) {
+Workload::Workload(std::string run_name,Sys *generator,std::string name, int TOTAL_PASS,int total_rows,int stat_row,
+                   std::string path,bool seprate_log) {
     this->initialized=false;
     this->layers = NULL;
     this->SIZE = 0;
@@ -738,6 +760,7 @@ Workload::Workload(std::string run_name,Sys *generator,std::string name, int TOT
     detailed=NULL;
     this->path=path;
     this->stat_row=stat_row;
+    this->seprate_log=seprate_log;
     this->initialized=initialize_workload(name);
     if(this->initialized== false){
         return;
@@ -745,7 +768,7 @@ Workload::Workload(std::string run_name,Sys *generator,std::string name, int TOT
     this->total_rows=total_rows;
     this->run_name=run_name;
     this->registered_for_finished_streams= false;
-    if(generator->id==0){
+    if(generator->id==0 && seprate_log){
         std::cout<<"stat path: "<<path<<" ,total rows: "<<total_rows<<" ,stat row: "<<stat_row<<std::endl;
         detailed=new CSVWriter(path,"detailed.csv");
         end_to_end=new CSVWriter(path,"EndToEnd.csv");
@@ -812,12 +835,18 @@ void Workload::call(EventType event, CallData *data) {
 void Workload::report() {
     double total_compute=0;
     double total_exposed=0;
+    AstraSimDataAPI astraSimDataAPI;
+    astraSimDataAPI.run_name=run_name;
+    astraSimDataAPI.workload_finished_time=((double)Sys::boostedTick())/FREQ;
     for (int i = 0; i < SIZE; i++) {
-        layers[i]->report(run_name,i,total_rows,stat_row,detailed,end_to_end,total_compute,total_exposed);
+        astraSimDataAPI.layers_stats.push_back(layers[i]->report(run_name,i,total_rows,stat_row,detailed,end_to_end,total_compute,total_exposed,this->seprate_log));
     }
+    astraSimDataAPI.total_compute=total_compute;
+    astraSimDataAPI.total_exposed_comm=total_exposed;
     std::cout << "*************************" << std::endl;
     std::cout << "all passes finished at time: " << Sys::boostedTick()
               << ", id of first layer: " << layers[0]->id << std::endl;
+    generator->NI->pass_front_end_report(astraSimDataAPI);
     //std::cout << "Total cycles waiting for communication to be finished: " << waiting_for_comm << std::endl;
 }
 void Workload::check_for_sim_end() {
