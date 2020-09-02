@@ -6,6 +6,7 @@
 #include <string>
 #include "AstraMemoryAPI.hh"
 #include "AstraSimDataAPI.hh"
+namespace AstraSim{
 struct sim_comm {
     std::string comm_name;
 };
@@ -52,4 +53,5 @@ public:
     AstraNetworkAPI(int rank){this->rank=rank;enabled= true;};
     virtual ~AstraNetworkAPI() {}; // ADDED BY PALLAVI
 };
+}
 #endif

@@ -20,6 +20,7 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 *******************************************************************************/
 
 #include "Sys.hh"
+namespace AstraSim{
 Tick Sys::offset=0;
 int Sys::total_nodes=0;
 uint8_t *Sys::dummy_data=new uint8_t[2];
@@ -3090,4 +3091,5 @@ void AllToAll::run(EventType event, CallData *data) {
             insert_packet(NULL);
         }
     }
+}
 }

@@ -36,10 +36,10 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 #include <sstream>
 #include "AstraNetworkAPI.hh"
 #include "AstraMemoryAPI.hh"
+
+namespace AstraSim{
 #define CLOCK_PERIOD 1
-#ifndef __BASE_TYPES_HH__
 typedef unsigned long long Tick;
-#endif
 class BaseStream;
 class Stream;
 class Sys;
@@ -512,8 +512,9 @@ public:
     void consume(RecvPacketEventHadndlerData *message);
     //~StreamBaseline()= default;
 };
-
+}
 #include "astra-sim/workload/Workload.hh"
+namespace AstraSim{
 class QueueLevels;
 class Sys:public Callable
 {
@@ -847,5 +848,5 @@ class QueueLevels{
         QueueLevels(int levels, int queues_per_level,int offset);
         QueueLevels(std::vector<int> lv,int offset);
 };
-
+}
 #endif

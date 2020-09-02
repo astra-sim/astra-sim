@@ -2,6 +2,7 @@
 #define __ASTRASIMDATAAPI_HH__
 #include <list>
 #include <iostream>
+namespace AstraSim{
 class LayerData{
     public:
         std::string layer_name;
@@ -26,4 +27,5 @@ class AstraSimDataAPI{
       double total_compute;
       double total_exposed_comm;
 };
+}
 #endif

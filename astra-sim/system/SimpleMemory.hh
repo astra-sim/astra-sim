@@ -2,7 +2,7 @@
 #define __SIMPLEMEMORY_HH__
 #include "AstraMemoryAPI.hh"
 #include "AstraNetworkAPI.hh"
-
+namespace AstraSim{
 class SimpleMemory: public AstraMemoryAPI{
 public:
     double last_request_serviced;
@@ -23,4 +23,5 @@ public:
     uint64_t mem_read(uint64_t size);
     uint64_t mem_write(uint64_t size);
 };
+}
 #endif

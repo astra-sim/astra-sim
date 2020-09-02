@@ -34,12 +34,17 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 #include <unistd.h>
 #include <fcntl.h>
 
+namespace AstraSim{
 class Workload;
 class Sys;
 class Callable;
 class StreamStat;
+}
+
 #include "astra-sim/system/AstraSimDataAPI.hh"
 #include "astra-sim/system/Sys.hh"
+
+namespace AstraSim{
 enum class ParallelismPolicy {MicroBenchmark,Data,Transformer,DLRM,DLRMEnhanced,Model,HybridDataModel,HybridModelData,DistributedInference};
 #define FREQ (1000.0/CLOCK_PERIOD)
 class CSVWriter{
@@ -191,4 +196,5 @@ public:
     int total_rows;
     bool registered_for_finished_streams;
 };
+}
 #endif

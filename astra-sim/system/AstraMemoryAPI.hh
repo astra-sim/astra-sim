@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <cstdint>
+namespace AstraSim{
 class AstraMemoryAPI{
     public:
         virtual  uint64_t mem_read(uint64_t size)=0;
@@ -15,4 +16,5 @@ class AstraMemoryAPI{
         virtual  uint64_t nic_mem_write(uint64_t size)=0;
         virtual ~AstraMemoryAPI()= default;
 };
+}
 #endif

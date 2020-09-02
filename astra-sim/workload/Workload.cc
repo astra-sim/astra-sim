@@ -19,6 +19,7 @@ SOFTWARE.
 Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 *******************************************************************************/
 #include "Workload.hh"
+namespace AstraSim{
 CSVWriter::CSVWriter(std::string path,std::string name) {
     this->path=path;
     this->name=name;
@@ -1642,4 +1643,5 @@ bool Workload::initialize_workload(std::string name) {
 }
 void Workload::fire() {
     call(EventType::General, NULL);
+}
 }

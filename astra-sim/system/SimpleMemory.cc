@@ -1,6 +1,5 @@
 #include "SimpleMemory.hh"
-
-
+namespace AstraSim{
 SimpleMemory::SimpleMemory(AstraNetworkAPI *NI,double access_latency,double npu_access_bw_GB,double nic_access_bw_GB){
         this->last_request_serviced=0;
         this->nic_read_request_count=0;
@@ -95,4 +94,5 @@ uint64_t SimpleMemory::mem_read(uint64_t size){
 }
 uint64_t SimpleMemory::mem_write(uint64_t size){
     return nic_mem_write(size);
+}
 }
