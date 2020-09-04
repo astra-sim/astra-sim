@@ -27,7 +27,7 @@ DataParallel            = "DATA"
 ModelParallel           = "MODEL"
 HybridDataModelParallel = "HYBRID_DATA_MODEL"
 HybridModelDataParallel = "HYBRID_MODEL_DATA"
-CustomizedParallel      = "CUSTOMIZED"
+CustomizedParallel      = "HYBRID_CUSTOMIZED"
 AllToAll                = "ALLTOALL"
 AllReduce               = "ALLREDUCE"
 AllGather               = "ALLGATHER"
@@ -45,7 +45,7 @@ flags.DEFINE_string("run_name", "test", "Name of the folder that will have the g
 flags.DEFINE_string("output_file", OUTPUT_FILE_NAME, "Name of the generated ASTRA-Sim input file")
 flags.DEFINE_string("scalesim_path", SCALESIM_PATH, "Path to SCALE-Sim folder")
 flags.DEFINE_string("scalesim_config", SCALESIM_CONFIG, "Path to SCALE-Sim config file")
-flags.DEFINE_string("parallel", DataParallel, "Parallelization strategy: MODEL, DATA, HYBRID_DATA_MODEL, HYBRID_MODEL_DATA, CUSTOMIZED")
+flags.DEFINE_string("parallel", DataParallel, "Parallelization strategy: MODEL, DATA, HYBRID_DATA_MODEL, HYBRID_MODEL_DATA, HYBRID_CUSTOMIZED")
 flags.DEFINE_string("datatype_size", str(DatatypeSize), "Size of the data type")
 flags.DEFINE_string("num_npus", str(NumberOfNPUs), "Total number of NPUs")
 flags.DEFINE_string("num_packages", str(NumberOfPackages), "Number of packages")
@@ -433,7 +433,7 @@ def main(argv):
             continue
         line = line.strip('\n').strip(' ')
         cols = line.split(",")
-        if ParallelizationStrategy == "CUSTOMIZED":
+        if ParallelizationStrategy == "HYBRID_CUSTOMIZED":
             assert len(cols) == 5, "There should be 5 columns in the mnk file"
         else:
             assert len(cols) == 4 or len(cols), "There should be 4 columns in the mnk file"

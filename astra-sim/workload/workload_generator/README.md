@@ -12,7 +12,7 @@ The `gen_astrasim_workload_input.py` can be run to generate the workload input f
   - *MODEL*: model-parallelism
   - *HYBRID_DATA_MODEL*: data-parallelism between packages and model-parallelism within package
   - *HYBRID_MODEL_DATA*: model-parallelism between packages and data-parallelism within package
-  - *CUSTOMIZED*: customized parallelism for each layer, see [mnk input file format](#customized-parallelisms-for-each-layer)
+  - *HYBRID_CUSTOMIZED*: customized parallelism for each layer, see [mnk input file format](#customized-parallelisms-for-each-layer)
 
 - `run_name`: the folder name that holds the genreated output from SCALE-Sim
 - `scalesim_config`: path to a SCALE-Sim config file
@@ -39,8 +39,8 @@ $ python3 gen_astrasim_workload_input.py \
   --mnk=mnk_inputs/example_customized.csv \
   --num_npus=16 \
   --num_packages=2 \
-  --output_file=../workload_inputs/example_CUSTOMIZED.txt \
-  --parallel=CUSTOMIZED \
+  --output_file=../workload_inputs/example_HYBRID_CUSTOMIZED.txt \
+  --parallel=HYBRID_CUSTOMIZED \
   --run_name=example_customized \
   --scalesim_config=../../compute/SCALE-Sim/configs/google.cfg \
   --scalesim_path=../../compute/SCALE-Sim
@@ -98,7 +98,7 @@ The format of mnk input file is as follows:
 
 ### Customized Parallelisms for Each Layer
 
-An example mnk input file for *CUSTOMIZED* parallelism is `mnk_inputs/example_customized.csv`.
+An example mnk input file for *HYBRID_CUSTOMIZED* parallelism is `mnk_inputs/example_customized.csv`.
 
 **NOTE**: customized mnk input file can also be used for same parallelism for all the layers by setting `--parallel=[DATA|MODEL|HYBRID_DATA_MODEL|HYBRID_MODEL_DATA]` (one of the four options).
 
