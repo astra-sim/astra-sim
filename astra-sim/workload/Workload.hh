@@ -45,7 +45,7 @@ class StreamStat;
 #include "astra-sim/system/Sys.hh"
 
 namespace AstraSim{
-enum class ParallelismPolicy {MicroBenchmark,Data,Transformer,DLRM,DLRMEnhanced,Model,HybridDataModel,HybridModelData,DistributedInference};
+enum class ParallelismPolicy {MicroBenchmark,Data,Transformer,TransformerFwdInBckwd,DLRM,DLRMEnhanced,Model,HybridDataModel,HybridModelData,DistributedInference};
 #define FREQ (1000.0/CLOCK_PERIOD)
 class CSVWriter{
 public:
@@ -85,6 +85,9 @@ public:
     ComType weight_grad_comm_type;
     int weight_grad_comm_size;
     Tick weight_grad_update_time;
+
+    bool needs_fwd_in_bckwd_initiation;
+    bool is_checkpoint;
 
     int lookup_table_size;
     int collective_counter;
@@ -150,7 +153,7 @@ public:
 class Workload:Callable {
 public:
     enum class LoopState {
-        Forward_Pass, Weight_Gradient, Input_Gradient,Wait_For_Sim_Finish
+        Forward_Pass, Weight_Gradient, Input_Gradient,Wait_For_Sim_Finish, Forward_In_BackPass
     };
     ~Workload();
     Layer **layers;
@@ -162,6 +165,7 @@ public:
     LoopState current_state;
     bool delay_loaded;
     bool seprate_log;
+    bool checkpoint_initiated;
     bool collective_issued;
     bool initialized;
     int TOTAL_PASS;
@@ -177,6 +181,7 @@ public:
     void iterate_micro_benchmark();
     void iterate_data_parallel();
     void iterate_hybrid_parallel_Transformer();
+    void iterate_hybrid_parallel_Transformer_fwd_in_bckwd();
     void iterate_hybrid_parallel_DLRM();
     void iterate_hybrid_parallel_data_model();
     void iterate_hybrid_parallel_model_data();

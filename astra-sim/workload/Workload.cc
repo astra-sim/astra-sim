@@ -223,6 +223,8 @@ Layer::Layer(std::string id,int layer_num,Sys *generator,Workload *workload,int 
     this->last_fwd_finished=0;
     this->last_ig_finished=0;
     this->last_wg_finished=0;
+    this->needs_fwd_in_bckwd_initiation=false;
+    this->is_checkpoint=false;
     assert(generator!=NULL);
 }
 //void call(EventType event,CallData *data){
@@ -750,6 +752,7 @@ Workload::Workload(std::string run_name,Sys *generator,std::string name, int TOT
     this->SIZE = 0;
     this->counter = 0;
     this->delay_loaded = false;
+    this->checkpoint_initiated=false;
     this->collective_issued = false;
     this->current_state = LoopState::Forward_Pass;
     this->generator = generator;
@@ -801,6 +804,8 @@ void Workload::iterate() {
         iterate_hybrid_parallel_model_data();
     }else if (parallelismPolicy == ParallelismPolicy::DistributedInference) {
         iterate_distributed_inference();
+    }else if (parallelismPolicy == ParallelismPolicy::TransformerFwdInBckwd) {
+        iterate_hybrid_parallel_Transformer_fwd_in_bckwd();
     }
     else {
         Sys::sys_panic("No known parallelism!");
@@ -828,8 +833,9 @@ void Workload::call(EventType event, CallData *data) {
         iterate_hybrid_parallel_model_data();
     }else if (parallelismPolicy == ParallelismPolicy::DistributedInference) {
         iterate_distributed_inference();
-    }
-    else {
+    }else if (parallelismPolicy == ParallelismPolicy::TransformerFwdInBckwd) {
+        iterate_hybrid_parallel_Transformer_fwd_in_bckwd();
+    }else {
         Sys::sys_panic("No known parallelism!");
     }
 }
@@ -1386,6 +1392,152 @@ void Workload::iterate_hybrid_parallel_Transformer() {
         return;
     }
 }
+void Workload::iterate_hybrid_parallel_Transformer_fwd_in_bckwd() {
+    assert(index >= 0);
+    assert(index < SIZE);
+    check_for_sim_end();
+    if (current_state == LoopState::Forward_Pass) {
+        if (!layers[index]->is_weight_grad_comm_finished_blocking()) {
+            return;
+        }
+        if (delay_loaded == false) {
+            counter = layers[index]->get_fwd_pass_compute();
+            if (generator->id == 0) {
+                //std::cout<<"layer: "<<index<<" delay in cycles: "<<counter<<std::endl;
+            }
+            delay_loaded = true;
+        }
+        if (counter > 0) {
+            if (generator->id == 0) {
+                //std::cout<<"i have been called in cycles: "<<Sys::boostedTick()<<std::endl;
+            }
+            generator->try_register_event(this, EventType::Workload_Wait, NULL, counter);
+            return;
+        }
+        if (!collective_issued) {
+            collective_issued = true;
+            layers[index]->issue_forward_pass_comm(true, false, true, SchedulingPolicy::None,
+                                                   CollectiveBarrier::Blocking);
+            return;
+        }
+        if (generator->id == 0) {
+            //std::cout<<"moving to the fwp layer:"<<index<<" ,at time: "<<Sys::boostedTick()<<std::endl;
+        }
+        index++;
+        delay_loaded = false;
+        collective_issued = false;
+        if (index >= SIZE) {
+            current_state = LoopState::Input_Gradient;
+            index--;
+        }
+        generator->register_event(this, EventType::General, NULL, 1);
+        return;
+    } else if (current_state == LoopState::Weight_Gradient) {
+        if (delay_loaded == false) {
+            counter = layers[index]->get_weight_grad_compute();
+            delay_loaded = true;
+        }
+        if (counter > 0) {
+            generator->try_register_event(this, EventType::Workload_Wait, NULL, counter);
+            return;
+        }
+        if (!collective_issued) {
+            collective_issued = true;
+            layers[index]->issue_weight_grad_comm(false, true, false, SchedulingPolicy::FIFO,
+                                                  CollectiveBarrier::Non_Blocking);
+        }
+        if (!layers[index]->is_input_grad_comm_finished_blocking()) {
+            //layers[index]->increment_waiting_for_ig();
+            //generator->register_event(this, EventType::General, NULL, 1);
+            return;
+        }
+        collective_issued = false;
+        delay_loaded = false;
+        if (index >= 0) {
+            index--;
+        }
+        if (index == -1) {
+            index=0;
+            if (generator->id == 0) {
+                std::cout << "pass: " << pass_counter << " finished at time: " << Sys::boostedTick()
+                          << std::endl;
+            }
+            pass_counter++;
+            current_state = LoopState::Forward_Pass;
+        } else {
+            current_state = LoopState::Input_Gradient;
+        }
+        generator->register_event(this, EventType::General, NULL, 1);
+        return;
+    } else if (current_state == LoopState::Input_Gradient) {
+        if(layers[index]->needs_fwd_in_bckwd_initiation && !checkpoint_initiated){
+            int tmp=index;
+            while(!layers[index--]->is_checkpoint);
+            index++;
+            current_state = LoopState::Forward_In_BackPass;
+            checkpoint_initiated=true;
+            generator->register_event(this, EventType::General, NULL, 1);
+            if (generator->id == 0) {
+                std::cout<<"***** info, initiating fwd_in_bkwd starting from layer:"<<index<<" to layer: "<<tmp<<" ,at time: "<<Sys::boostedTick()<<std::endl;
+            }
+            return;
+        }
+        if (delay_loaded == false) {
+            counter = layers[index]->get_input_grad_compute();
+            delay_loaded = true;
+        }
+        if (counter > 0) {
+            generator->try_register_event(this, EventType::Workload_Wait, NULL, counter);
+            return;
+        }
+        if (!collective_issued && index > 0) {
+            collective_issued = true;
+            layers[index]->issue_input_grad_comm(true, false, true, SchedulingPolicy::LIFO,
+                                                 CollectiveBarrier::Non_Blocking);
+        }
+        checkpoint_initiated=false;
+        collective_issued = false;
+        delay_loaded = false;
+        current_state = LoopState::Weight_Gradient;
+        generator->register_event(this, EventType::General, NULL, 1);
+        return;
+    } else if (current_state == LoopState::Forward_In_BackPass) {
+        if (!layers[index]->is_weight_grad_comm_finished_blocking()) {
+            return;
+        }
+        if (delay_loaded == false) {
+            counter = layers[index]->get_fwd_pass_compute();
+            if (generator->id == 0) {
+                //std::cout<<"layer: "<<index<<" delay in cycles: "<<counter<<std::endl;
+            }
+            delay_loaded = true;
+        }
+        if (counter > 0) {
+            if (generator->id == 0) {
+                //std::cout<<"i have been called in cycles: "<<Sys::boostedTick()<<std::endl;
+            }
+            generator->try_register_event(this, EventType::Workload_Wait, NULL, counter);
+            return;
+        }
+        if (!collective_issued) {
+            collective_issued = true;
+            layers[index]->issue_forward_pass_comm(true, false, true, SchedulingPolicy::None,
+                                                   CollectiveBarrier::Blocking);
+            return;
+        }
+        if (generator->id == 0) {
+            //std::cout<<"moving to the fwp layer:"<<index<<" ,at time: "<<Sys::boostedTick()<<std::endl;
+        }
+        index++;
+        delay_loaded = false;
+        collective_issued = false;
+        if (layers[index]->needs_fwd_in_bckwd_initiation) {
+            current_state = LoopState::Input_Gradient;
+        }
+        generator->register_event(this, EventType::General, NULL, 1);
+        return;
+    }
+}
 void Workload::iterate_hybrid_parallel_DLRM() {
     assert(index >= 0);
     assert(index < SIZE);
@@ -1512,6 +1664,8 @@ int Workload::get_layer_numbers(std::string workload_input) {
     return layers;
 }
 bool Workload::initialize_workload(std::string name) {
+    std::map<int,bool> chekpoints;
+    std::map<int,bool> need_checkpoint_initiation;
     std::ifstream inFile;
     inFile.open("workload_inputs/" + name);
     if (!inFile) {
@@ -1528,6 +1682,30 @@ bool Workload::initialize_workload(std::string name) {
         parallelismPolicy = ParallelismPolicy::Data;
     } else if (type == "HYBRID_TRANSFORMER") {
         parallelismPolicy = ParallelismPolicy::Transformer;
+    } else if (type == "HYBRID_TRANSFORMER_FWD_IN_BCKWD") {
+        parallelismPolicy = ParallelismPolicy::TransformerFwdInBckwd;
+        std::string tmp;
+        int i;
+        inFile >> tmp;
+        inFile >> i;
+        std::cout<<"checkpoints layers are: ";
+        while(i-->0){
+            int layer;
+            inFile >> layer;
+            chekpoints[layer]=true;
+            std::cout<<layer<<", ";
+        }
+        std::cout<<std::endl;
+        std::cout<<"layers initiating fwd_in_bckwd are: ";
+        inFile >> tmp;
+        inFile >> i;
+        while(i-->0){
+            int layer;
+            inFile >> layer;
+            need_checkpoint_initiation[layer]=true;
+            std::cout<<layer<<", ";
+        }
+        std::cout<<std::endl;
     } else if (type == "HYBRID_DLRM" || type == "HYBRID_DLRM_ENHANCED") {
         if(type == "HYBRID_DLRM"){
             parallelismPolicy = ParallelismPolicy::DLRM;
@@ -1551,6 +1729,11 @@ bool Workload::initialize_workload(std::string name) {
     }
     else if (type == "DISTRIBUTED_INFERENCE") {
         parallelismPolicy = ParallelismPolicy::DistributedInference;
+    }
+    else{
+        std::cout<<"######### Exiting because unable to decode the workload parallelization strategy #########"<< std::endl;
+        inFile.close();
+        return false;
     }
     inFile >> lines;
     run_type = type;
@@ -1630,7 +1813,12 @@ bool Workload::initialize_workload(std::string name) {
                              ig_comm_size * generator->comm_scale, wg_compute_time * generator->compute_scale,
                              wg_type,
                              wg_comm_size * generator->comm_scale, wg_update_time);
-
+        if(chekpoints.find(i)!=chekpoints.end()){
+            l->is_checkpoint=true;
+        }
+        if(need_checkpoint_initiation.find(i)!=need_checkpoint_initiation.end()){
+            l->needs_fwd_in_bckwd_initiation=true;
+        }
         layers[i] = l;
     }
     if (generator->id == 0) {
