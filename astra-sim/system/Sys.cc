@@ -1159,7 +1159,12 @@ bool Sys::post_process_inputs() {
 }
 bool Sys::initialize_sys(std::string name) {
     std::ifstream inFile;
-    inFile.open("sys_inputs/" + name);
+    if(name.find('/')!=std::string::npos){
+        inFile.open(name);
+    }
+    else{
+        inFile.open("sys_inputs/" + name);
+    }
     if (!inFile) {
         if(id==0){
             std::cout << "Unable to open file: " << name << std::endl;
