@@ -47,6 +47,8 @@ class FIFOMovement;
 class FIFO;
 class BackwardLink;
 class DataSet;
+class SimSendCaller;
+class SimRecvCaller;
 
 enum class ComType {None,Reduce_Scatter, All_Gatehr, All_Reduce,All_to_All,All_Reduce_All_to_All};
 enum class CollectiveBarrier{Blocking,Non_Blocking};
@@ -55,7 +57,7 @@ enum class InjectionPolicy {Infinite,Aggressive,SemiAggressive,ExtraAggressive,N
 enum class PacketRouting {Hardware,Software};
 enum class BusType {Both,Shared,Mem};
 enum class StreamState {Created,Transferring,Ready,Executing,Zombie,Dead};
-enum class EventType {CallEvents,PacketReceived,WaitForVnetTurn,General,TX_DMA,RX_DMA,Wight_Grad_Comm_Finished,Input_Grad_Comm_Finished,Fwd_Comm_Finished,Wight_Grad_Comm_Finished_After_Delay,Input_Grad_Comm_Finished_After_Delay,Fwd_Comm_Finished_After_Delay,Workload_Wait,Reduction_Ready,Rec_Finished,Send_Finished,
+enum class EventType {RendezvousSend,RendezvousRecv,CallEvents,PacketReceived,WaitForVnetTurn,General,TX_DMA,RX_DMA,Wight_Grad_Comm_Finished,Input_Grad_Comm_Finished,Fwd_Comm_Finished,Wight_Grad_Comm_Finished_After_Delay,Input_Grad_Comm_Finished_After_Delay,Fwd_Comm_Finished_After_Delay,Workload_Wait,Reduction_Ready,Rec_Finished,Send_Finished,
     Processing_Finished,Delivered,NPU_to_MA,MA_to_NPU,Read_Port_Free,Write_Port_Free,Apply_Boost,Stream_Transfer_Started,Stream_Ready,Consider_Process,Consider_Retire,Consider_Send_Back,StreamInit,StreamsFinishedIncrease,CommProcessingFinished,NotInitialized};
 
 
@@ -68,6 +70,18 @@ public:
     int nodeId;
     EventType event;
     BasicEventHandlerData(int nodeId, EventType event);
+};
+class RendezvousSendData:public BasicEventHandlerData,public MetaData{
+    public:
+    SimSendCaller *send;
+    RendezvousSendData(int nodeId,Sys* generator,void *buffer, int count, int type, int dst,
+                       int tag, sim_request request, void (*msg_handler)(void *fun_arg), void* fun_arg);
+};
+class RendezvousRecvData:public BasicEventHandlerData,public MetaData{
+    public:
+    SimRecvCaller *recv;
+    RendezvousRecvData(int nodeId,Sys* generator,void *buffer, int count, int type, int src,
+                       int tag, sim_request request, void (*msg_handler)(void *fun_arg), void* fun_arg);
 };
 class RecvPacketEventHadndlerData:public BasicEventHandlerData,public MetaData{
 public:
@@ -277,12 +291,12 @@ public:
     int type;
     int dst;
     int tag;
-    sim_request *request;
+    sim_request request;
     void (*msg_handler)(void *fun_arg);
     void* fun_arg;
     void call(EventType type,CallData *data);
     Sys* generator;
-    SimSendCaller(Sys* generator,void *buffer, int count, int type, int dst, int tag, sim_request *request, void (*msg_handler)(void *fun_arg), void* fun_arg);
+    SimSendCaller(Sys* generator,void *buffer, int count, int type, int dst, int tag, sim_request request, void (*msg_handler)(void *fun_arg), void* fun_arg);
 };
 class SimRecvCaller:public Callable{
 public:
@@ -291,12 +305,12 @@ public:
     int type;
     int src;
     int tag;
-    sim_request *request;
+    sim_request request;
     void (*msg_handler)(void *fun_arg);
     void* fun_arg;
     void call(EventType type,CallData *data);
     Sys* generator;
-    SimRecvCaller(Sys* generator,void *buffer, int count, int type, int src, int tag, sim_request *request, void (*msg_handler)(void *fun_arg), void* fun_arg);
+    SimRecvCaller(Sys* generator,void *buffer, int count, int type, int src, int tag, sim_request request, void (*msg_handler)(void *fun_arg), void* fun_arg);
 };
 class MyPacket:public Callable
 {
@@ -560,6 +574,7 @@ public:
     int fourth_queues;
     int priority_counter;
     bool boost_mode;
+    bool rendezvous_enabled;
     bool initialized;
 
     int processing_latency;
@@ -638,15 +653,21 @@ public:
              int perpendicular_dim,int fourth_dim,int local_queus,int vertical_queues,int horizontal_queues,
              int perpendicular_queues,int fourth_queues,std::string my_sys,
              std::string my_workload,float comm_scale,float compute_scale,float injection_scale,int total_stat_rows,int stat_row,
-             std::string path,std::string run_name,bool seprate_log);
+             std::string path,std::string run_name,bool seprate_log,bool rendezvous_enabled);
 
     void iterate();
     bool initialize_sys(std::string name);
     std::string trim(const std::string& str,const std::string& whitespace);
     bool parse_var(std::string var,std::string value);
     bool post_process_inputs();
+    int front_end_sim_send(Tick delay,void *buffer, int count, int type, int dst, int tag, sim_request *request, void (*msg_handler)(void *fun_arg), void* fun_arg);
+    int front_end_sim_recv(Tick delay,void *buffer, int count, int type, int src, int tag, sim_request *request, void (*msg_handler)(void *fun_arg), void* fun_arg);
     int sim_send(Tick delay,void *buffer, int count, int type, int dst, int tag, sim_request *request, void (*msg_handler)(void *fun_arg), void* fun_arg);
     int sim_recv(Tick delay,void *buffer, int count, int type, int src, int tag, sim_request *request, void (*msg_handler)(void *fun_arg), void* fun_arg);
+    int rendezvous_sim_send(Tick delay,void *buffer, int count, int type, int dst, int tag, sim_request *request,
+                            void (*msg_handler)(void *fun_arg), void* fun_arg);
+    int rendezvous_sim_recv(Tick delay,void *buffer, int count, int type, int src, int tag, sim_request *request,
+                 void (*msg_handler)(void *fun_arg), void* fun_arg);
     Tick mem_read(uint64_t bytes);
     Tick mem_write(uint64_t bytes);
     static int get_layer_numbers(std::string workload_input);

@@ -32,7 +32,7 @@ std::map<int,int> BaseStream::ready_counter;
 std::map<int,std::list<BaseStream *>> BaseStream::suspended_streams;
 
 SimSendCaller::SimSendCaller(Sys *generator, void *buffer, int count, int type, int dst, int tag,
-                               sim_request *request, void (*msg_handler)(void *fun_arg), void *fun_arg) {
+                               sim_request request, void (*msg_handler)(void *fun_arg), void *fun_arg) {
     this->generator=generator;
     this->buffer=buffer;
     this->count=count;
@@ -45,11 +45,11 @@ SimSendCaller::SimSendCaller(Sys *generator, void *buffer, int count, int type, 
 
 }
 void SimSendCaller::call(EventType type, CallData *data) {
-    generator->NI->sim_send(this->buffer,this->count,this->type,this->dst,this->tag,this->request,this->msg_handler,this->fun_arg);
+    generator->NI->sim_send(this->buffer,this->count,this->type,this->dst,this->tag,&this->request,this->msg_handler,this->fun_arg);
     delete this;
 }
 SimRecvCaller::SimRecvCaller(Sys *generator, void *buffer, int count, int type, int src, int tag,
-                               sim_request *request, void (*msg_handler)(void *fun_arg), void *fun_arg) {
+                               sim_request request, void (*msg_handler)(void *fun_arg), void *fun_arg) {
     this->generator=generator;
     this->buffer=buffer;
     this->count=count;
@@ -61,7 +61,7 @@ SimRecvCaller::SimRecvCaller(Sys *generator, void *buffer, int count, int type, 
     this->fun_arg=fun_arg;
 }
 void SimRecvCaller::call(EventType type, CallData *data) {
-    generator->NI->sim_recv(this->buffer,this->count,this->type,this->src,this->tag,this->request,this->msg_handler,this->fun_arg);
+    generator->NI->sim_recv(this->buffer,this->count,this->type,this->src,this->tag,&this->request,this->msg_handler,this->fun_arg);
     delete this;
 }
 MyPacket::MyPacket(int preferred_vnet,int preferred_src ,int preferred_dest) {
@@ -740,7 +740,7 @@ Sys::Sys(AstraNetworkAPI *NI,AstraMemoryAPI *MEM,int id,int num_passes,int local
     int perpendicular_dim,int fourth_dim,int local_queus,int vertical_queues,int horizontal_queues,
     int perpendicular_queues,int fourth_queues,std::string my_sys,
     std::string my_workload,float comm_scale, float compute_scale,float injection_scale,int total_stat_rows,int stat_row,
-    std::string path,std::string run_name,bool seprate_log)
+    std::string path,std::string run_name,bool seprate_log,bool rendezvous_enabled)
 {
     scheduler_unit=NULL;
     vLevels=NULL;
@@ -780,7 +780,7 @@ Sys::Sys(AstraNetworkAPI *NI,AstraMemoryAPI *MEM,int id,int num_passes,int local
     this->communication_delay=10;
     this->local_reduction_delay=1;
     this->seprate_log=seprate_log;
-
+    this->rendezvous_enabled=rendezvous_enabled;
     if((id+1)>all_generators.size()){
         all_generators.resize(id+1);
     }
@@ -968,14 +968,54 @@ int Sys::get_priority(SchedulingPolicy pref_scheduling) {
         }
     }
 }
+int Sys::rendezvous_sim_send(Tick delay, void *buffer, int count, int type, int dst,
+                             int tag, sim_request *request,
+                             void (*msg_handler)(void *fun_arg), void *fun_arg) {
+    RendezvousSendData *rsd=new RendezvousSendData(id,this,buffer,count,type,dst,
+                       tag,*request,msg_handler,fun_arg);
+    sim_request newReq=*request;
+    uint64_t rendevouz_size=64;
+    newReq.dstRank=request->srcRank;
+    newReq.srcRank=request->dstRank;
+    newReq.reqCount=rendevouz_size;
+    int newTag=tag+500000000;
+    newReq.tag=newTag;
+    sim_recv(delay,buffer,rendevouz_size,type,dst,newTag,&newReq,&Sys::handleEvent,rsd);
+    return 1;
+}
 int Sys::sim_send(Tick delay, void *buffer, int count, int type, int dst, int tag, sim_request *request,
                   void (*msg_handler)(void *fun_arg), void *fun_arg) {
     if(delay==0){
         NI->sim_send(buffer,count,type,dst,tag,request,msg_handler,fun_arg);
     }
     else{
-        try_register_event(new SimSendCaller(this,buffer,count,type,dst,tag,request,msg_handler,fun_arg),EventType::General,NULL,delay);
+        try_register_event(new SimSendCaller(this,buffer,count,type,dst,tag,*request,msg_handler,fun_arg),
+                           EventType::General,NULL,delay);
     }
+    return 1;
+}
+int Sys::front_end_sim_send(Tick delay, void *buffer, int count, int type, int dst, int tag, sim_request *request,
+                            void (*msg_handler)(void *fun_arg), void *fun_arg) {
+    if(rendezvous_enabled){
+        return rendezvous_sim_send(delay,buffer,count,type,dst,tag,request,msg_handler,fun_arg);
+    }
+    else{
+        return sim_send(delay,buffer,count,type,dst,tag,request,msg_handler,fun_arg);
+    }
+}
+int Sys::rendezvous_sim_recv(Tick delay, void *buffer, int count, int type, int src,
+                             int tag, sim_request *request,
+                             void (*msg_handler)(void *fun_arg), void *fun_arg) {
+    RendezvousRecvData *rrd=new RendezvousRecvData(id,this,buffer,count,type,src,
+                                                   tag,*request,msg_handler,fun_arg);
+    sim_request newReq=*request;
+    uint64_t rendevouz_size=64;
+    newReq.dstRank=request->srcRank;
+    newReq.srcRank=request->dstRank;
+    newReq.reqCount=rendevouz_size;
+    int newTag=tag+500000000;
+    newReq.tag=newTag;
+    sim_send(delay,buffer,rendevouz_size,type,src,newTag,&newReq,&Sys::handleEvent,rrd);
     return 1;
 }
 int Sys::sim_recv(Tick delay, void *buffer, int count, int type, int src, int tag, sim_request *request,
@@ -984,11 +1024,19 @@ int Sys::sim_recv(Tick delay, void *buffer, int count, int type, int src, int ta
         NI->sim_recv(buffer,count,type,src,tag,request,msg_handler,fun_arg);
     }
     else{
-        try_register_event(new SimRecvCaller(this, buffer, count, type, src, tag, request, msg_handler, fun_arg),
+        try_register_event(new SimRecvCaller(this, buffer, count, type, src, tag, *request, msg_handler, fun_arg),
                            EventType::General, NULL, delay);
     }
     return 1;
-
+}
+int Sys::front_end_sim_recv(Tick delay, void *buffer, int count, int type, int src, int tag,
+                            sim_request *request, void (*msg_handler)(void *fun_arg), void *fun_arg) {
+    if(rendezvous_enabled){
+        return rendezvous_sim_recv(delay,buffer,count,type,src,tag,request,msg_handler,fun_arg);
+    }
+    else{
+        return sim_recv(delay,buffer,count,type,src,tag,request,msg_handler,fun_arg);
+    }
 }
 Tick Sys::mem_read(uint64_t bytes) {
     if(MEM==NULL){
@@ -2016,6 +2064,18 @@ void Sys::handleEvent(void *arg) {
         all_generators[id]->iterate();
         delete ehd;
     }
+    else if(event==EventType::RendezvousSend){
+        //std::cout<<"rendevouz send handle event triggered at node: "<<id<<" for call events! at time: "<<Sys::boostedTick()<<std::endl;
+        RendezvousSendData *rsd=(RendezvousSendData *)ehd;
+        rsd->send->call(EventType::General,NULL);
+        delete rsd;
+    }
+    else if(event==EventType::RendezvousRecv){
+        //std::cout<<"rendevouz recv triggered at node: "<<id<<" for call events! at time: "<<Sys::boostedTick()<<std::endl;
+        RendezvousRecvData *rrd=(RendezvousRecvData *)ehd;
+        rrd->recv->call(EventType::General,NULL);
+        delete rrd;
+    }
     else if(event==EventType::PacketReceived){
         RecvPacketEventHadndlerData *rcehd=(RecvPacketEventHadndlerData *)ehd;
         //std::cout<<"****************************handle event triggered for received packets! at node: "
@@ -2023,7 +2083,6 @@ void Sys::handleEvent(void *arg) {
         rcehd->owner->consume(rcehd);
         delete rcehd;
     }
-
 }
 timespec_t Sys::generate_time(int cycles) {
     timespec_t tmp=NI->sim_get_time();
@@ -2035,6 +2094,16 @@ timespec_t Sys::generate_time(int cycles) {
 BasicEventHandlerData::BasicEventHandlerData(int nodeId, EventType event) {
     this->nodeId=nodeId;
     this->event=event;
+}
+RendezvousSendData::RendezvousSendData(int nodeId, Sys *generator, void *buffer, int count, int type, int dst,
+                                       int tag, sim_request request, void (*msg_handler)(void *fun_arg), void *fun_arg)
+                                       :BasicEventHandlerData(nodeId,EventType::RendezvousSend) {
+    this->send=new SimSendCaller(generator,buffer,count,type,dst,tag,request,msg_handler,fun_arg);
+}
+RendezvousRecvData::RendezvousRecvData(int nodeId, Sys *generator, void *buffer, int count, int type, int src,
+                                       int tag, sim_request request, void (*msg_handler)(void *fun_arg), void *fun_arg)
+                                       :BasicEventHandlerData(nodeId,EventType::RendezvousRecv){
+    this->recv=new SimRecvCaller(generator,buffer,count,type,src,tag,request,msg_handler,fun_arg);
 }
 RecvPacketEventHadndlerData::RecvPacketEventHadndlerData(BaseStream *owner,int nodeId, EventType event, int vnet, int stream_num)
 :BasicEventHandlerData(nodeId,event) {
@@ -2536,13 +2605,13 @@ void DoubleBinaryTreeAllReduce::run(EventType event,CallData *data) {
         snd_req.vnet=this->stream->current_queue_id;
         snd_req.layerNum=layer_num;
         //std::cout<<"here************"<<std::endl;
-        stream->owner->sim_send(0,Sys::dummy_data,data_size,UINT8,parent,stream->stream_num,&snd_req,&Sys::handleEvent,NULL);
+        stream->owner->front_end_sim_send(0,Sys::dummy_data,data_size,UINT8,parent,stream->stream_num,&snd_req,&Sys::handleEvent,NULL);
         //receiving
         sim_request rcv_req;
         rcv_req.vnet=this->stream->current_queue_id;
         rcv_req.layerNum=layer_num;
         RecvPacketEventHadndlerData *ehd=new RecvPacketEventHadndlerData(stream,stream->owner->id,EventType::PacketReceived,stream->current_queue_id,stream->stream_num);
-        stream->owner->sim_recv(0,Sys::dummy_data,data_size,UINT8,parent,stream->stream_num,&rcv_req,&Sys::handleEvent,ehd);
+        stream->owner->front_end_sim_recv(0,Sys::dummy_data,data_size,UINT8,parent,stream->stream_num,&rcv_req,&Sys::handleEvent,ehd);
         state=State::WaitingDataFromParent;
         return;
     }
@@ -2561,12 +2630,12 @@ void DoubleBinaryTreeAllReduce::run(EventType event,CallData *data) {
         rcv_req.vnet=this->stream->current_queue_id;
         rcv_req.layerNum=layer_num;
         RecvPacketEventHadndlerData *ehd=new RecvPacketEventHadndlerData(stream,stream->owner->id,EventType::PacketReceived,stream->current_queue_id,stream->stream_num);
-        stream->owner->sim_recv(0,Sys::dummy_data,data_size,UINT8,left_child,stream->stream_num,&rcv_req,&Sys::handleEvent,ehd);
+        stream->owner->front_end_sim_recv(0,Sys::dummy_data,data_size,UINT8,left_child,stream->stream_num,&rcv_req,&Sys::handleEvent,ehd);
         sim_request rcv_req2;
         rcv_req2.vnet=this->stream->current_queue_id;
         rcv_req2.layerNum=layer_num;
         RecvPacketEventHadndlerData *ehd2=new RecvPacketEventHadndlerData(stream,stream->owner->id,EventType::PacketReceived,stream->current_queue_id,stream->stream_num);
-        stream->owner->sim_recv(0,Sys::dummy_data,data_size,UINT8,right_child,stream->stream_num,&rcv_req2,&Sys::handleEvent,ehd2);
+        stream->owner->front_end_sim_recv(0,Sys::dummy_data,data_size,UINT8,right_child,stream->stream_num,&rcv_req2,&Sys::handleEvent,ehd2);
         state=State::WaitingForTwoChildData;
         return;
     }
@@ -2593,13 +2662,13 @@ void DoubleBinaryTreeAllReduce::run(EventType event,CallData *data) {
         snd_req.reqType = UINT8;
         snd_req.vnet=this->stream->current_queue_id;
         snd_req.layerNum=layer_num;
-        stream->owner->sim_send(0,Sys::dummy_data,data_size,UINT8,parent,stream->stream_num,&snd_req,&Sys::handleEvent,NULL);
+        stream->owner->front_end_sim_send(0,Sys::dummy_data,data_size,UINT8,parent,stream->stream_num,&snd_req,&Sys::handleEvent,NULL);
         //receiving
         sim_request rcv_req;
         rcv_req.vnet=this->stream->current_queue_id;
         rcv_req.layerNum=layer_num;
         RecvPacketEventHadndlerData *ehd=new RecvPacketEventHadndlerData(stream,stream->owner->id,EventType::PacketReceived,stream->current_queue_id,stream->stream_num);
-        stream->owner->sim_recv(0,Sys::dummy_data,data_size,UINT8,parent,stream->stream_num,&rcv_req,&Sys::handleEvent,ehd);
+        stream->owner->front_end_sim_recv(0,Sys::dummy_data,data_size,UINT8,parent,stream->stream_num,&rcv_req,&Sys::handleEvent,ehd);
         state=State::WaitingDataFromParent;
     }
     else if(state==State::WaitingDataFromParent && type==BinaryTree::Type::Intermediate && event==EventType::PacketReceived){ //int.6
@@ -2615,7 +2684,7 @@ void DoubleBinaryTreeAllReduce::run(EventType event,CallData *data) {
         snd_req.reqType = UINT8;
         snd_req.vnet=this->stream->current_queue_id;
         snd_req.layerNum=layer_num;
-        stream->owner->sim_send(0,Sys::dummy_data,data_size,UINT8,left_child,stream->stream_num,&snd_req,&Sys::handleEvent,NULL);
+        stream->owner->front_end_sim_send(0,Sys::dummy_data,data_size,UINT8,left_child,stream->stream_num,&snd_req,&Sys::handleEvent,NULL);
         sim_request snd_req2;
         snd_req2.srcRank = stream->owner->id;
         snd_req2.dstRank = left_child;
@@ -2623,7 +2692,7 @@ void DoubleBinaryTreeAllReduce::run(EventType event,CallData *data) {
         snd_req2.reqType = UINT8;
         snd_req2.vnet=this->stream->current_queue_id;
         snd_req2.layerNum=layer_num;
-        stream->owner->sim_send(0,Sys::dummy_data,data_size,UINT8,right_child,stream->stream_num,&snd_req2,&Sys::handleEvent,NULL);
+        stream->owner->front_end_sim_send(0,Sys::dummy_data,data_size,UINT8,right_child,stream->stream_num,&snd_req2,&Sys::handleEvent,NULL);
         exit();
         return;
     }
@@ -2634,7 +2703,7 @@ void DoubleBinaryTreeAllReduce::run(EventType event,CallData *data) {
         rcv_req.vnet=this->stream->current_queue_id;
         rcv_req.layerNum=layer_num;
         RecvPacketEventHadndlerData *ehd=new RecvPacketEventHadndlerData(stream,stream->owner->id,EventType::PacketReceived,stream->current_queue_id,stream->stream_num);
-        stream->owner->sim_recv(0,Sys::dummy_data,data_size,UINT8,only_child_id,stream->stream_num,&rcv_req,&Sys::handleEvent,ehd);
+        stream->owner->front_end_sim_recv(0,Sys::dummy_data,data_size,UINT8,only_child_id,stream->stream_num,&rcv_req,&Sys::handleEvent,ehd);
         state=State::WaitingForOneChildData;
     }
     else if(state==State::WaitingForOneChildData && type==BinaryTree::Type::Root){ //root.2
@@ -2652,7 +2721,7 @@ void DoubleBinaryTreeAllReduce::run(EventType event,CallData *data) {
         snd_req.vnet=this->stream->current_queue_id;
         //std::cout<<"here************"<<std::endl;
         snd_req.layerNum=layer_num;
-        stream->owner->sim_send(0,Sys::dummy_data,data_size,UINT8,only_child_id,stream->stream_num,&snd_req,&Sys::handleEvent,NULL);
+        stream->owner->front_end_sim_send(0,Sys::dummy_data,data_size,UINT8,only_child_id,stream->stream_num,&snd_req,&Sys::handleEvent,NULL);
         exit();
         return;
     }
@@ -2984,12 +3053,12 @@ bool Ring::ready(){
     snd_req.reqType = UINT8;
     snd_req.vnet=this->stream->current_queue_id;
     snd_req.layerNum=layer_num;
-    stream->owner->sim_send(0,Sys::dummy_data,msg_size,UINT8,packet.preferred_dest,stream->stream_num,&snd_req,&Sys::handleEvent,NULL);//stream_num+(packet.preferred_dest*50)
+    stream->owner->front_end_sim_send(0,Sys::dummy_data,msg_size,UINT8,packet.preferred_dest,stream->stream_num,&snd_req,&Sys::handleEvent,NULL);//stream_num+(packet.preferred_dest*50)
     sim_request rcv_req;
     rcv_req.vnet=this->stream->current_queue_id;
     rcv_req.layerNum=layer_num;
     RecvPacketEventHadndlerData *ehd=new RecvPacketEventHadndlerData(stream,stream->owner->id,EventType::PacketReceived,packet.preferred_vnet,packet.stream_num);
-    stream->owner->sim_recv(0,Sys::dummy_data,msg_size,UINT8,packet.preferred_src,stream->stream_num,&rcv_req,&Sys::handleEvent,ehd); //stream_num+(owner->id*50)
+    stream->owner->front_end_sim_recv(0,Sys::dummy_data,msg_size,UINT8,packet.preferred_src,stream->stream_num,&rcv_req,&Sys::handleEvent,ehd); //stream_num+(owner->id*50)
     reduce();
     if(true){
         //std::cout<<"I am node: "<<owner->id<<" and I sent: "<<++test2<<" packets so far, finished steps: "<<
