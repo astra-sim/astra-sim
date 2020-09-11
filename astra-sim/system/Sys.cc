@@ -974,7 +974,7 @@ int Sys::rendezvous_sim_send(Tick delay, void *buffer, int count, int type, int 
     RendezvousSendData *rsd=new RendezvousSendData(id,this,buffer,count,type,dst,
                        tag,*request,msg_handler,fun_arg);
     sim_request newReq=*request;
-    uint64_t rendevouz_size=64;
+    uint64_t rendevouz_size=8192;
     newReq.dstRank=request->srcRank;
     newReq.srcRank=request->dstRank;
     newReq.reqCount=rendevouz_size;
@@ -1009,7 +1009,7 @@ int Sys::rendezvous_sim_recv(Tick delay, void *buffer, int count, int type, int 
     RendezvousRecvData *rrd=new RendezvousRecvData(id,this,buffer,count,type,src,
                                                    tag,*request,msg_handler,fun_arg);
     sim_request newReq=*request;
-    uint64_t rendevouz_size=64;
+    uint64_t rendevouz_size=8192;
     newReq.dstRank=request->srcRank;
     newReq.srcRank=request->dstRank;
     newReq.reqCount=rendevouz_size;
@@ -1355,6 +1355,10 @@ DataSet * Sys::generate_all_gather(int size,bool local, bool vertical, bool hori
                                    SchedulingPolicy pref_scheduling,int layer){
     return generate_hierarchical_all_gather(size,local,vertical,horizontal,pref_scheduling,layer);
 
+}
+DataSet * Sys::generate_reduce_scatter(int size,bool local, bool vertical, bool horizontal,
+                                   SchedulingPolicy pref_scheduling,int layer){
+    return generate_hierarchical_reduce_scatter(size,local,vertical,horizontal,pref_scheduling,layer);
 }
 DataSet * Sys::generate_all_to_all(int size,bool local, bool vertical, bool horizontal,
                               SchedulingPolicy pref_scheduling,int layer){
@@ -1774,6 +1778,65 @@ DataSet* Sys::generate_hierarchical_all_gather(int size,bool local_run, bool ver
             if(horizontal_dim>1 && horizontal_run){
                 LogicalTopology* torus=logical_topologies["Torus"]->get_topology();
                 CollectivePhase vn(this,horizontal.first,new Ring(Ring::Type::AllGather,id,layer,(Torus*)torus,tmp,Torus::Dimension::Horizontal,horizontal.second,PacketRouting::Software,InjectionPolicy::Normal,boost_mode));
+                vect.push_back(vn);
+                tmp=vn.final_data_size;
+            }
+            if(id==0){
+                //std::cout<<"tmp after phase 3: "<<tmp<<std::endl;
+            }
+        }
+        if(method=="baseline"){
+            StreamBaseline *newStream=new StreamBaseline(this,dataset,stream_counter++,vect,pri);
+            newStream->current_queue_id=-1;
+            insert_into_ready_list(newStream);
+        }
+    }
+    return dataset;
+}
+DataSet * Sys::generate_hierarchical_reduce_scatter(int size, bool local_run, bool vertical_run, bool horizontal_run, SchedulingPolicy pref_scheduling, int layer) {
+    int chunk_size=determine_chunk_size(size,ComType::All_Gatehr);
+    int streams=ceil(((double)size)/chunk_size);
+    int tmp;
+    DataSet *dataset=new DataSet(streams);
+    streams_injected+=streams;
+    int pri=get_priority(pref_scheduling);
+    for(int i=0;i<streams;i++){
+        tmp=chunk_size;
+
+        std::list<CollectivePhase> vect;
+        std::list<ComType> types;
+
+        std::pair<int,Torus::Direction> local_first;
+        local_first=vLevels->get_next_queue_at_level_first(0);
+        std::pair<int,Torus::Direction> vertical=vLevels->get_next_queue_at_level(1);
+        std::pair<int,Torus::Direction> horizontal=vLevels->get_next_queue_at_level(2);
+
+        if(id==0){
+            //std::cout<<"initial chunk: "<<tmp<<std::endl;
+        }
+        if(method=="baseline"){
+            if(local_dim>1 && local_run){
+                LogicalTopology* torus=logical_topologies["Torus"]->get_topology();
+                CollectivePhase vn(this,local_first.first,new Ring(Ring::Type::ReduceScatter,id,layer,(Torus*)torus,tmp,Torus::Dimension::Local,local_first.second,PacketRouting::Software,InjectionPolicy::Normal,boost_mode));
+                vect.push_back(vn);
+                tmp=vn.final_data_size;
+            }
+            if(id==0){
+                //std::cout<<"tmp after phase 1: "<<tmp<<std::endl;
+            }
+            //comment should be removed
+            if(vertical_dim>1 && vertical_run){
+                LogicalTopology* torus=logical_topologies["Torus"]->get_topology();
+                CollectivePhase vn(this,vertical.first,new Ring(Ring::Type::ReduceScatter,id,layer,(Torus*)torus,tmp,Torus::Dimension::Vertical,vertical.second,PacketRouting::Software,InjectionPolicy::Normal,boost_mode));
+                vect.push_back(vn);
+                tmp=vn.final_data_size;
+            }
+            if(id==0){
+                //std::cout<<"tmp after phase 2: "<<tmp<<std::endl;
+            }
+            if(horizontal_dim>1 && horizontal_run){
+                LogicalTopology* torus=logical_topologies["Torus"]->get_topology();
+                CollectivePhase vn(this,horizontal.first,new Ring(Ring::Type::ReduceScatter,id,layer,(Torus*)torus,tmp,Torus::Dimension::Horizontal,horizontal.second,PacketRouting::Software,InjectionPolicy::Normal,boost_mode));
                 vect.push_back(vn);
                 tmp=vn.final_data_size;
             }
@@ -2604,7 +2667,6 @@ void DoubleBinaryTreeAllReduce::run(EventType event,CallData *data) {
         snd_req.reqType = UINT8;
         snd_req.vnet=this->stream->current_queue_id;
         snd_req.layerNum=layer_num;
-        //std::cout<<"here************"<<std::endl;
         stream->owner->front_end_sim_send(0,Sys::dummy_data,data_size,UINT8,parent,stream->stream_num,&snd_req,&Sys::handleEvent,NULL);
         //receiving
         sim_request rcv_req;

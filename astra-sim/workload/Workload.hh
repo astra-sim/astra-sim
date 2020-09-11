@@ -45,7 +45,7 @@ class StreamStat;
 #include "astra-sim/system/Sys.hh"
 
 namespace AstraSim{
-enum class ParallelismPolicy {MicroBenchmark,Data,Transformer,TransformerFwdInBckwd,DLRM,DLRMEnhanced,Model,HybridDataModel,HybridModelData,DistributedInference};
+enum class ParallelismPolicy {MicroBenchmark,Data,Transformer,TransformerFwdInBckwd,DLRM,DLRMEnhanced,Model,HybridDataModel,HybridModelData,HybridCustomized,DistributedInference,None};
 #define FREQ (1000.0/CLOCK_PERIOD)
 class CSVWriter{
 public:
@@ -88,6 +88,7 @@ public:
 
     bool needs_fwd_in_bckwd_initiation;
     bool is_checkpoint;
+    ParallelismPolicy specific_parallellism;
 
     int lookup_table_size;
     int collective_counter;
@@ -176,7 +177,7 @@ public:
     //reports
     Tick waiting_for_comm;
     Workload(std::string run_name,Sys *generator, std::string name, int TOTAL_PASS,int total_rows,int stat_row,std::string path,bool seprate_log);
-    void iterate();
+    ParallelismPolicy decode_parallelsim(std::string parallelism);
     void call(EventType event, CallData *data);
     void iterate_micro_benchmark();
     void iterate_data_parallel();
@@ -185,6 +186,7 @@ public:
     void iterate_hybrid_parallel_DLRM();
     void iterate_hybrid_parallel_data_model();
     void iterate_hybrid_parallel_model_data();
+    void iterate_hybrid_parallel_customized();
     void iterate_model_parallel();
     void iterate_distributed_inference();
     bool initialize_workload(std::string name);

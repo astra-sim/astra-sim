@@ -674,12 +674,14 @@ public:
     DataSet * generate_all_reduce(int size,bool local, bool vertical, bool horizontal,SchedulingPolicy pref_scheduling,int layer);
     DataSet * generate_all_to_all(int size,bool local, bool vertical, bool horizontal,SchedulingPolicy pref_scheduling,int layer);
     DataSet * generate_all_gather(int size,bool local, bool vertical, bool horizontal,SchedulingPolicy pref_scheduling,int layer);
+    DataSet * generate_reduce_scatter(int size,bool local, bool vertical, bool horizontal,SchedulingPolicy pref_scheduling,int layer);
     DataSet *generate_alltoall_all_to_all(int size,bool local_run, bool horizontal_run,SchedulingPolicy pref_scheduling,int layer);
     DataSet *generate_alltoall_all_reduce(int size,bool local_run, bool horizontal_run,SchedulingPolicy pref_scheduling,int layer);
     DataSet *generate_tree_all_reduce(int size,bool local_run, bool horizontal_run,SchedulingPolicy pref_scheduling,int layer);
     DataSet *generate_hierarchical_all_to_all(int size,bool local_run,bool vertical_run, bool horizontal_run, SchedulingPolicy pref_scheduling,int layer);
     DataSet *generate_hierarchical_all_reduce(int size,bool local_run, bool vertical_run, bool horizontal_run, SchedulingPolicy pref_scheduling,int layer);
     DataSet *generate_hierarchical_all_gather(int size,bool local_run, bool vertical_run, bool horizontal_run, SchedulingPolicy pref_scheduling,int layer);
+    DataSet *generate_hierarchical_reduce_scatter(int size,bool local_run, bool vertical_run, bool horizontal_run, SchedulingPolicy pref_scheduling,int layer);
     void insert_stream(std::list<BaseStream*> *queue,BaseStream *baseStream);
     void proceed_to_next_vnet_baseline(StreamBaseline *stream);
     int determine_chunk_size(int size,ComType type);

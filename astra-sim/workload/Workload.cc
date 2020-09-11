@@ -225,6 +225,7 @@ Layer::Layer(std::string id,int layer_num,Sys *generator,Workload *workload,int 
     this->last_wg_finished=0;
     this->needs_fwd_in_bckwd_initiation=false;
     this->is_checkpoint=false;
+    this->specific_parallellism=ParallelismPolicy::None;
     assert(generator!=NULL);
 }
 //void call(EventType event,CallData *data){
@@ -602,16 +603,25 @@ void Layer::issue_forward_pass_comm(bool local,bool vertical,bool horizontal,Sch
     if(fwd_pass_comm_type==ComType::All_Reduce){
         fp=generator->generate_all_reduce(fwd_pass_comm_size,local,vertical,horizontal,pref_scheduling,layer_num);
         if(generator->id==0) {
-            std::cout<<"info: allreduce forward pass collective issued for layer: "<<id<<std::endl;
+            std::cout<<"info: all-reduce forward pass collective issued for layer: "<<id<<std::endl;
         }
     }
     else if(fwd_pass_comm_type==ComType::All_to_All){
         fp=generator->generate_all_to_all(fwd_pass_comm_size,local,vertical,horizontal,pref_scheduling,layer_num);
+        if(generator->id==0) {
+            std::cout<<"info: all-to-all forward pass collective issued for layer: "<<id<<std::endl;
+        }
     }
     else if(fwd_pass_comm_type==ComType::All_Gatehr){
         fp=generator->generate_all_gather(fwd_pass_comm_size,local,vertical,horizontal,pref_scheduling,layer_num);
         if(generator->id==0) {
-            std::cout<<"info: allgather forward pass collective issued for layer: "<<id<<std::endl;
+            std::cout<<"info: all-gather forward pass collective issued for layer: "<<id<<std::endl;
+        }
+    }
+    else if(fwd_pass_comm_type==ComType::Reduce_Scatter){
+        fp=generator->generate_reduce_scatter(fwd_pass_comm_size,local,vertical,horizontal,pref_scheduling,layer_num);
+        if(generator->id==0) {
+            std::cout<<"info: reduce-scatter forward pass collective issued for layer: "<<id<<std::endl;
         }
     }
     else if(fwd_pass_comm_type==ComType::All_Reduce_All_to_All){
@@ -647,16 +657,25 @@ void Layer::issue_input_grad_comm(bool local,bool vertical,bool horizontal,Sched
     if(input_grad_comm_type==ComType::All_Reduce){
         ig=generator->generate_all_reduce(input_grad_comm_size,local,vertical,horizontal,pref_scheduling,layer_num);
         if(generator->id==0) {
-            std::cout<<"info: allreduce input grad collective issued for layer: "<<id<<std::endl;
+            std::cout<<"info: all-reduce input grad collective issued for layer: "<<id<<std::endl;
         }
     }
     else if(input_grad_comm_type==ComType::All_to_All){
         ig=generator->generate_all_to_all(input_grad_comm_size,local,vertical,horizontal,pref_scheduling,layer_num);
+        if(generator->id==0) {
+            std::cout<<"info: all-to-all input grad collective issued for layer: "<<id<<std::endl;
+        }
     }
     else if(input_grad_comm_type==ComType::All_Gatehr){
         ig=generator->generate_all_gather(input_grad_comm_size,local,vertical,horizontal,pref_scheduling,layer_num);
         if(generator->id==0) {
-            std::cout<<"info: allgather input grad collective issued for layer: "<<id<<std::endl;
+            std::cout<<"info: all-gather input grad collective issued for layer: "<<id<<std::endl;
+        }
+    }
+    else if(input_grad_comm_type==ComType::Reduce_Scatter){
+        ig=generator->generate_reduce_scatter(input_grad_comm_size,local,vertical,horizontal,pref_scheduling,layer_num);
+        if(generator->id==0) {
+            std::cout<<"info: reduce-scatter input grad collective issued for layer: "<<id<<std::endl;
         }
     }
     else if(input_grad_comm_type==ComType::All_Reduce_All_to_All){
@@ -695,16 +714,25 @@ void Layer::issue_weight_grad_comm(bool local,bool vertical,bool horizontal,Sche
     if(weight_grad_comm_type==ComType::All_Reduce){
         wg=generator->generate_all_reduce(weight_grad_comm_size,local,vertical,horizontal,pref_scheduling,layer_num);
         if(generator->id==0) {
-            std::cout<<"info: allreduce weight grad collective issued for layer: "<<id<<" with size: "<<weight_grad_comm_size<<std::endl;
+            std::cout<<"info: allr-educe weight grad collective issued for layer: "<<id<<" with size: "<<weight_grad_comm_size<<std::endl;
         }
     }
     else if(weight_grad_comm_type==ComType::All_to_All){
         wg=generator->generate_all_to_all(weight_grad_comm_size,local,vertical,horizontal,pref_scheduling,layer_num);
+        if(generator->id==0) {
+            std::cout<<"info: all-to-all weight grad collective issued for layer: "<<id<<" with size: "<<weight_grad_comm_size<<std::endl;
+        }
     }
     else if(weight_grad_comm_type==ComType::All_Gatehr){
         wg=generator->generate_all_gather(weight_grad_comm_size,local,vertical,horizontal,pref_scheduling,layer_num);
         if(generator->id==0) {
-            std::cout<<"info: allgather weight grad collective issued for layer: "<<id<<std::endl;
+            std::cout<<"info: all-gather weight grad collective issued for layer: "<<id<<std::endl;
+        }
+    }
+    else if(weight_grad_comm_type==ComType::Reduce_Scatter){
+        wg=generator->generate_reduce_scatter(weight_grad_comm_size,local,vertical,horizontal,pref_scheduling,layer_num);
+        if(generator->id==0) {
+            std::cout<<"info: reduce-scatter weight grad collective issued for layer: "<<id<<std::endl;
         }
     }
     else if(weight_grad_comm_type==ComType::All_Reduce_All_to_All){
@@ -787,31 +815,6 @@ void Workload::initialize_stat_files() {
     detailed->initialize_csv(SIZE*total_rows+20,50);
     end_to_end->initialize_csv(SIZE*total_rows+20,50);
 }
-void Workload::iterate() {
-    if (parallelismPolicy == ParallelismPolicy::Data) {
-        iterate_data_parallel();
-    } else if (parallelismPolicy == ParallelismPolicy::Transformer) {
-        iterate_hybrid_parallel_Transformer();
-    } else if (parallelismPolicy == ParallelismPolicy::DLRM || parallelismPolicy==ParallelismPolicy::DLRMEnhanced) {
-        iterate_hybrid_parallel_DLRM();
-    } else if (parallelismPolicy == ParallelismPolicy::MicroBenchmark) {
-        iterate_micro_benchmark();
-    } else if (parallelismPolicy == ParallelismPolicy::Model) {
-        iterate_model_parallel();
-    } else if (parallelismPolicy == ParallelismPolicy::HybridDataModel) {
-        iterate_hybrid_parallel_data_model();
-    }else if (parallelismPolicy == ParallelismPolicy::HybridModelData) {
-        iterate_hybrid_parallel_model_data();
-    }else if (parallelismPolicy == ParallelismPolicy::DistributedInference) {
-        iterate_distributed_inference();
-    }else if (parallelismPolicy == ParallelismPolicy::TransformerFwdInBckwd) {
-        iterate_hybrid_parallel_Transformer_fwd_in_bckwd();
-    }
-    else {
-        Sys::sys_panic("No known parallelism!");
-    }
-}
-
 void Workload::call(EventType event, CallData *data) {
     if (counter > 0) {
         generator->try_register_event(this, EventType::Workload_Wait, NULL, counter);
@@ -835,7 +838,10 @@ void Workload::call(EventType event, CallData *data) {
         iterate_distributed_inference();
     }else if (parallelismPolicy == ParallelismPolicy::TransformerFwdInBckwd) {
         iterate_hybrid_parallel_Transformer_fwd_in_bckwd();
-    }else {
+    }else if (parallelismPolicy == ParallelismPolicy::HybridCustomized) {
+        iterate_hybrid_parallel_customized();
+    }
+    else {
         Sys::sys_panic("No known parallelism!");
     }
 }
@@ -958,6 +964,140 @@ void Workload::iterate_data_parallel() {
         }
         delay_loaded = false;
         index--;
+        current_state = LoopState::Weight_Gradient;
+        generator->register_event(this, EventType::General, NULL, 1);
+        return;
+    }
+}
+void Workload::iterate_hybrid_parallel_customized() {
+    assert(index >= 0);
+    assert(index < SIZE);
+    check_for_sim_end();
+    if (current_state == LoopState::Forward_Pass) {
+        if (!layers[index]->is_weight_grad_comm_finished_blocking()) {
+            return;
+        }
+        if (delay_loaded == false) {
+            counter = layers[index]->get_fwd_pass_compute();
+            if (generator->id == 0) {
+                //std::cout<<"layer: "<<index<<" delay in cycles: "<<counter<<std::endl;
+            }
+            delay_loaded = true;
+        }
+        if (counter > 0) {
+            if (generator->id == 0) {
+                //std::cout<<"i have been called in cycles: "<<Sys::boostedTick()<<std::endl;
+            }
+            generator->try_register_event(this, EventType::Workload_Wait, NULL, counter);
+            return;
+        }
+        if (!collective_issued) {
+            collective_issued = true;
+            bool first=false;bool second=false;bool third=false;
+            if(layers[index]->specific_parallellism==ParallelismPolicy::Data){
+                first=false;second=false;third=false;
+            }else if(layers[index]->specific_parallellism==ParallelismPolicy::Model){
+                first=true;second=true;third=true;
+            }
+            else if(layers[index]->specific_parallellism==ParallelismPolicy::HybridDataModel){
+                first=true;second=false;third=false;
+            }
+            else if(layers[index]->specific_parallellism==ParallelismPolicy::HybridModelData){
+                first=false;second=true;third=true;
+            }
+            layers[index]->issue_forward_pass_comm(first, second, third, SchedulingPolicy::None,
+                                                   CollectiveBarrier::Blocking);
+            return;
+        }
+        if (generator->id == 0) {
+            //std::cout<<"moving to the fwp layer:"<<index<<" ,at time: "<<Sys::boostedTick()<<std::endl;
+        }
+        index++;
+        delay_loaded = false;
+        collective_issued = false;
+        if (index >= SIZE) {
+            current_state = LoopState::Input_Gradient;
+            index--;
+        }
+        generator->register_event(this, EventType::General, NULL, 1);
+        return;
+    } else if (current_state == LoopState::Weight_Gradient) {
+        if (delay_loaded == false) {
+            counter = layers[index]->get_weight_grad_compute();
+            delay_loaded = true;
+        }
+        if (counter > 0) {
+            generator->try_register_event(this, EventType::Workload_Wait, NULL, counter);
+            return;
+        }
+        if (!collective_issued) {
+            collective_issued = true;
+            bool first=false;bool second=false;bool third=false;
+            if(layers[index]->specific_parallellism==ParallelismPolicy::Data){
+                first=true;second=true;third=true;
+            }else if(layers[index]->specific_parallellism==ParallelismPolicy::Model){
+                first=false;second=false;third=false;
+            }
+            else if(layers[index]->specific_parallellism==ParallelismPolicy::HybridDataModel){
+                first=false;second=true;third=true;
+            }
+            else if(layers[index]->specific_parallellism==ParallelismPolicy::HybridModelData){
+                first=true;second=false;third=false;
+            }
+            layers[index]->issue_weight_grad_comm(first, second, third, SchedulingPolicy::FIFO,
+                                                  CollectiveBarrier::Non_Blocking);
+        }
+        if (!layers[index]->is_input_grad_comm_finished_blocking()) {
+            //layers[index]->increment_waiting_for_ig();
+            //generator->register_event(this, EventType::General, NULL, 1);
+            return;
+        }
+        collective_issued = false;
+        delay_loaded = false;
+        if (index >= 0) {
+            index--;
+        }
+        if (index == -1) {
+            index=0;
+            if (generator->id == 0) {
+                std::cout << "pass: " << pass_counter << " finished at time: " << Sys::boostedTick()
+                          << std::endl;
+            }
+            pass_counter++;
+            current_state = LoopState::Forward_Pass;
+        } else {
+            current_state = LoopState::Input_Gradient;
+        }
+        generator->register_event(this, EventType::General, NULL, 1);
+        return;
+    } else if (current_state == LoopState::Input_Gradient) {
+        if (delay_loaded == false) {
+            counter = layers[index]->get_input_grad_compute();
+            delay_loaded = true;
+        }
+        if (counter > 0) {
+            generator->try_register_event(this, EventType::Workload_Wait, NULL, counter);
+            return;
+        }
+        if (!collective_issued && index > 0) {
+            collective_issued = true;
+            bool first=false;bool second=false;bool third=false;
+            if(layers[index]->specific_parallellism==ParallelismPolicy::Data){
+                first=false;second=false;third=false;
+            }else if(layers[index]->specific_parallellism==ParallelismPolicy::Model){
+                first=true;second=true;third=true;
+            }
+            else if(layers[index]->specific_parallellism==ParallelismPolicy::HybridDataModel){
+                first=true;second=false;third=false;
+            }
+            else if(layers[index]->specific_parallellism==ParallelismPolicy::HybridModelData){
+                first=false;second=true;third=true;
+            }
+            layers[index]->issue_input_grad_comm(first, second, third, SchedulingPolicy::LIFO,
+                                                 CollectiveBarrier::Non_Blocking);
+        }
+        collective_issued = false;
+        delay_loaded = false;
         current_state = LoopState::Weight_Gradient;
         generator->register_event(this, EventType::General, NULL, 1);
         return;
@@ -1663,6 +1803,32 @@ int Workload::get_layer_numbers(std::string workload_input) {
     inFile.close();
     return layers;
 }
+ParallelismPolicy Workload::decode_parallelsim(std::string parallelism) {
+    if(parallelism=="DATA")
+        return ParallelismPolicy::Data;
+    else if(parallelism=="HYBRID_TRANSFORMER")
+        return ParallelismPolicy::Transformer;
+    else if(parallelism=="HYBRID_TRANSFORMER_FWD_IN_BCKWD")
+        return ParallelismPolicy::TransformerFwdInBckwd;
+    else if(parallelism=="HYBRID_DLRM")
+        return ParallelismPolicy::DLRM;
+    else if(parallelism=="HYBRID_DLRM_ENHANCED")
+        return ParallelismPolicy ::DLRMEnhanced;
+    else if(parallelism=="MODEL")
+        return ParallelismPolicy::Model;
+    else if(parallelism=="HYBRID_DATA_MODEL")
+        return ParallelismPolicy::HybridDataModel;
+    else if(parallelism=="HYBRID_MODEL_DATA")
+        return ParallelismPolicy::HybridModelData;
+    else if(parallelism=="HYBRID_CUSTOMIZED")
+        return ParallelismPolicy::HybridCustomized;
+    else if(parallelism=="MICRO")
+        return ParallelismPolicy::MicroBenchmark;
+    else if(parallelism=="DISTRIBUTED_INFERENCE")
+        return ParallelismPolicy::DistributedInference;
+    else
+        return ParallelismPolicy::None;
+}
 bool Workload::initialize_workload(std::string name) {
     std::map<int,bool> chekpoints;
     std::map<int,bool> need_checkpoint_initiation;
@@ -1683,12 +1849,8 @@ bool Workload::initialize_workload(std::string name) {
     std::string type;
     int lines;
     inFile >> type;
-    if (type == "DATA") {
-        parallelismPolicy = ParallelismPolicy::Data;
-    } else if (type == "HYBRID_TRANSFORMER") {
-        parallelismPolicy = ParallelismPolicy::Transformer;
-    } else if (type == "HYBRID_TRANSFORMER_FWD_IN_BCKWD") {
-        parallelismPolicy = ParallelismPolicy::TransformerFwdInBckwd;
+    parallelismPolicy=decode_parallelsim(type);
+    if (parallelismPolicy == ParallelismPolicy::TransformerFwdInBckwd) {
         std::string tmp;
         int i;
         inFile >> tmp;
@@ -1711,31 +1873,13 @@ bool Workload::initialize_workload(std::string name) {
             std::cout<<layer<<", ";
         }
         std::cout<<std::endl;
-    } else if (type == "HYBRID_DLRM" || type == "HYBRID_DLRM_ENHANCED") {
-        if(type == "HYBRID_DLRM"){
-            parallelismPolicy = ParallelismPolicy::DLRM;
-        }
-        else if(type == "HYBRID_DLRM_ENHANCED"){
-            parallelismPolicy=ParallelismPolicy ::DLRMEnhanced;
-        }
+    } else if (parallelismPolicy==ParallelismPolicy::DLRM || parallelismPolicy==ParallelismPolicy::DLRMEnhanced) {
         inFile >> DLRM_LAST_BOTTOM_LAYER;
         if(generator->id==0){
             std::cout<<"****************** info: DLRM workload last bottom layer is: "<<DLRM_LAST_BOTTOM_LAYER<<std::endl;
         }
     }
-    else if (type == "MODEL") {
-        parallelismPolicy = ParallelismPolicy::Model;
-    }else if (type == "HYBRID_DATA_MODEL") {
-        parallelismPolicy = ParallelismPolicy::HybridDataModel;
-    }else if (type == "HYBRID_MODEL_DATA") {
-        parallelismPolicy = ParallelismPolicy::HybridModelData;
-    }else if (type == "MICRO") {
-        parallelismPolicy = ParallelismPolicy::MicroBenchmark;
-    }
-    else if (type == "DISTRIBUTED_INFERENCE") {
-        parallelismPolicy = ParallelismPolicy::DistributedInference;
-    }
-    else{
+    else if(parallelismPolicy==ParallelismPolicy::None){
         std::cout<<"######### Exiting because unable to decode the workload parallelization strategy #########"<< std::endl;
         inFile.close();
         return false;
@@ -1786,6 +1930,8 @@ bool Workload::initialize_workload(std::string name) {
             wg_type = ComType::All_Reduce_All_to_All;
         }else if (wg_comm_type_s == "ALLGATHER") {
             wg_type = ComType::All_Gatehr;
+        }else if (wg_comm_type_s == "REDUCESCATTER") {
+            wg_type = ComType::Reduce_Scatter;
         }
 
         if (ig_comm_type_s == "ALLREDUCE") {
@@ -1796,6 +1942,8 @@ bool Workload::initialize_workload(std::string name) {
             ig_type = ComType::All_Reduce_All_to_All;
         }else if (ig_comm_type_s == "ALLGATHER") {
             ig_type = ComType::All_Gatehr;
+        }else if (ig_comm_type_s == "REDUCESCATTER") {
+            ig_type = ComType::Reduce_Scatter;
         }
 
         if (fp_comm_type_s == "ALLREDUCE") {
@@ -1806,6 +1954,8 @@ bool Workload::initialize_workload(std::string name) {
             fp_type = ComType::All_Reduce_All_to_All;
         }else if (fp_comm_type_s == "ALLGATHER") {
             fp_type = ComType::All_Gatehr;
+        }else if (fp_comm_type_s == "REDUCESCATTER") {
+            fp_type = ComType::Reduce_Scatter;
         }
 
         if (generator->id == 0) {
@@ -1823,6 +1973,11 @@ bool Workload::initialize_workload(std::string name) {
         }
         if(need_checkpoint_initiation.find(i)!=need_checkpoint_initiation.end()){
             l->needs_fwd_in_bckwd_initiation=true;
+        }
+        if(parallelismPolicy==ParallelismPolicy::HybridCustomized){
+            std::string specific_parallelsim;
+            inFile >> specific_parallelsim;
+            l->specific_parallellism=decode_parallelsim(specific_parallelsim);
         }
         layers[i] = l;
     }
