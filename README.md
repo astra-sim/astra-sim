@@ -37,13 +37,13 @@ $ git clone https://github.com/astra-sim/astra-sim.git
 # Build the repository
 #  - You will be asked what network backend to download: gem5 or ns3. It will be cloned into the network folder.
 #  - The SCALE-Sim compute model will be cloned to the compute folder
-$ cd astra-sim
+$ cd astra-sim/astra-sim
 $ ./build.sh
 ```
 
 #### Instructions for running Garnet2.0 as network simulator
 1. Enter gem5 when prompted by build.sh. This will clone the https://github.com/georgia-tech-synergy-lab/gem5_astra repository inside the astra-sim/network folder
-2. Go to astra-sim/network/gem5_astra
+2. Go to network/gem5_astra
 3. Run: "./my_scripts/build_Garnet_standalone.sh" to build the garnet network simulator.
 4. Go to astra_runs/ directory
 5. Run: "./sampleDLRM_a2a.sh runName" where runName is an arbitrary name you choose for this specific run. This will run a toy DLRM model over a physical alltoall topology.
@@ -59,12 +59,12 @@ Coming Soon!
 
 ### Input Files to ASTRA-sim ###
 
-* Workload: astra-sim/workload/workload_inputs/
+* Workload: workload/workload_inputs/
    * see workload_inputs/README.md
    * see workload_generator/README.md
-* System: astra-sim/system/system_inputs/
+* System: system/system_inputs/
    * see system_inputs/README.md
-* Network: astra-sim/network/gem5_astra/network_inputs/
+* Network: network/gem5_astra/network_inputs/
    * see network_inputs/README.md
 
 ### Contact ###
