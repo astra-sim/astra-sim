@@ -31,6 +31,7 @@ CustomizedParallel      = "HYBRID_CUSTOMIZED"
 AllToAll                = "ALLTOALL"
 AllReduce               = "ALLREDUCE"
 AllGather               = "ALLGATHER"
+ReduceScatter           = "REDUCESCATTER"
 NoCommunication         = "NONE"
 Outputs                 = "outputs"
 ParallelizationStrategy = ModelParallel
@@ -86,7 +87,7 @@ class ModelParallelStrategy:
         return AllGather
 
     def getCommunicationTypeForInpGrad(self, i, layer):
-        return AllReduce
+        return ReduceScatter
 
     def getCommunicationTypeForWeightGrad(self, i, layer):
         return NoCommunication
@@ -133,7 +134,7 @@ class HybridDataModelParallelStrategy:
         return AllGather
 
     def getCommunicationTypeForInpGrad(self, i, layer):
-        return AllReduce
+        return ReduceScatter
 
     def getCommunicationTypeForWeightGrad(self, i, layer):
         return AllReduce
@@ -157,7 +158,7 @@ class HybridModelDataParallelStrategy:
         return AllGather
 
     def getCommunicationTypeForInpGrad(self, i, layer):
-        return AllReduce
+        return ReduceScatter
 
     def getCommunicationTypeForWeightGrad(self, i, layer):
         return AllReduce
@@ -200,6 +201,7 @@ class AstraSimOutput:
             line.append(self.strategy[self.layers[i].parallelism].getCommunicationTypeForWeightGrad(i, self.layers[i])) # Weight gradient communication type
             line.append(self.strategy[self.layers[i].parallelism].getCommunicationSizeForWeightGrad(i, self.layers[i])) # Weight gradient communication size
             line.append(100) # Delay for 1KB communication size
+            line.append(self.layers[i].parallelism)
 
             line = map(lambda x: str(x), line)
             line_string = "\t".join(line)
