@@ -52,4 +52,5 @@ public:
         return (stat (name.c_str(), &buffer) == 0);
     }
 };
+}
 #endif
