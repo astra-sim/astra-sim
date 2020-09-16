@@ -39,6 +39,8 @@ class Workload;
 class Sys;
 class Callable;
 class StreamStat;
+class Layer;
+class CSVWriter;
 }
 
 #include "astra-sim/system/AstraSimDataAPI.hh"
