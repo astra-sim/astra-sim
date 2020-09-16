@@ -1833,12 +1833,7 @@ bool Workload::initialize_workload(std::string name) {
     std::map<int,bool> chekpoints;
     std::map<int,bool> need_checkpoint_initiation;
     std::ifstream inFile;
-    if(name.find('/')!=std::string::npos){
-        inFile.open(name);
-    }
-    else{
-        inFile.open("workload_inputs/" + name);
-    }
+    inFile.open(name);
     if (!inFile) {
         std::cout << "Unable to open file: " << name << std::endl;
         std::cout<<"######### Exiting because unable to open the workload input file #########"<< std::endl;
