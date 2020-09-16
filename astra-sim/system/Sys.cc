@@ -26,6 +26,7 @@ int Sys::total_nodes=0;
 uint8_t *Sys::dummy_data=new uint8_t[2];
 std::vector<Sys*> Sys::all_generators;
 int MemMovRequest::id=0;
+int DataSet::id_auto_increment=0;
 
 std::map<int,int> BaseStream::synchronizer;
 std::map<int,int> BaseStream::ready_counter;
