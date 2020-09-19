@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <cstdint>
+#include "AstraNetworkAPI.hh"
 namespace AstraSim{
 class ComputeMetaData{
     public:
@@ -12,10 +13,9 @@ class ComputeMetaData{
 };
 class ComputeAPI{
     public:
-        //These should be the last 2 lines of this function
-        //fun_arg->compute_delay=20;
-        //(*msg_handler)(fun_arg);
-        virtual void compute(uint64_t M, uint64_t K, uint64_t N, void (*msg_handler)(void *fun_arg), ComputeMetaData* fun_arg)=0;
+        int array_height; //scale-sim properties
+        double memBW;
+        virtual timespec_t compute(uint64_t M, uint64_t K, uint64_t N,double MemBWPercentage)=0;
 };
 }
 #endif
