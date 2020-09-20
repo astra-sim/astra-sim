@@ -1,4 +1,4 @@
-add_subdirectory("${PROJECT_SOURCE_DIR}/extern/googletest" "extern/googletest")
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../extern/googletest" "extern/googletest")
 
 file(GLOB astra_test_SRC "*.cc")
 
