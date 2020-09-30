@@ -34,10 +34,12 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 #include <unistd.h>
 #include <fcntl.h>
 #include "astra-sim/system/Sys.hh"
+#include "astra-sim/system/StreamStat.hh"
 #include "Workload.hh"
 #include "CSVWriter.hh"
 
 namespace AstraSim{
+    class DataSet;
 class Layer:public Callable,public StreamStat{
 public:
     std::string id;

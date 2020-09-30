@@ -33,12 +33,12 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include "astra-sim/system/Callable.hh"
 
 namespace AstraSim{
 class Workload;
 class Sys;
 class Callable;
-class StreamStat;
 class Layer;
 class CSVWriter;
 }
