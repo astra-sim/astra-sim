@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
-#include "astra-sim/system/Sys.hh"
+#include "astra-sim/system/Common.hh"
+#include "astra-sim/system/BasicEventHandlerData.hh"
 
 // Make sure initialization does what it should
 TEST(BasicEventHandlerDataTest, Init)

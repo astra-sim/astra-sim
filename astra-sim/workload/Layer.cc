@@ -19,6 +19,8 @@ SOFTWARE.
 Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 *******************************************************************************/
 #include "Layer.hh"
+#include "astra-sim/system/DataSet.hh"
+#include "astra-sim/system/IntData.hh"
 namespace AstraSim{
 Layer::Layer(std::string id,int layer_num,Sys *generator,Workload *workload,int fwd_pass_compute_time,ComType fwd_pass_comm_type,
     int fwd_pass_comm_size,int input_grad_compute_time,ComType input_grad_comm_type,int input_grad_comm_size,
