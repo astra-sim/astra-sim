@@ -4,3 +4,6 @@
 [submodule "extern/network_backend/analytical_astra"]
 	path = extern/network_backend/analytical_astra
 	url = https://github.com/astra-sim/analytical_astra.git
+[submodule "extern/compute/SCALE-Sim"]
+	path = extern/compute/SCALE-Sim
+	url = https://github.com/ARM-software/SCALE-Sim.git
