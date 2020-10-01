@@ -1,6 +1,6 @@
 [submodule "extern/googletest"]
 	path = extern/googletest
 	url = https://github.com/google/googletest.git
-[submodule "astra-sim/network/analytical_astra"]
-	path = astra-sim/network/analytical_astra
+[submodule "extern/network_backend/analytical_astra"]
+	path = extern/network_backend/analytical_astra
 	url = https://github.com/astra-sim/analytical_astra.git
