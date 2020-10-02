@@ -33,7 +33,7 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include "astra-sim/system/Callable.hh"
+#include "src/astra-sim/system/Callable.hh"
 
 namespace AstraSim{
 class Workload;
@@ -43,8 +43,8 @@ class Layer;
 class CSVWriter;
 }
 
-#include "astra-sim/system/AstraSimDataAPI.hh"
-#include "astra-sim/system/Sys.hh"
+#include "src/astra-sim/system/AstraSimDataAPI.hh"
+#include "src/astra-sim/system/Sys.hh"
 
 namespace AstraSim{
 enum class ParallelismPolicy {MicroBenchmark,Data,Transformer,TransformerFwdInBckwd,DLRM,DLRMEnhanced,Model,HybridDataModel,HybridModelData,HybridCustomized,DistributedInference,None};

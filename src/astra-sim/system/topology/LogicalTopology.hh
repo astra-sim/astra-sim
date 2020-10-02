@@ -19,43 +19,20 @@ SOFTWARE.
 Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 *******************************************************************************/
 
-#ifndef __DOUBLEBINARYTREEALLREDUCE_HH__
-#define __DOUBLEBINARYTREEALLREDUCE_HH__
-
-#include <map>
-#include <math.h>
-#include <fstream>
-#include <chrono>
-#include <ctime>
-#include <tuple>
-#include <cstdint>
-#include <list>
-#include <vector>
-#include <algorithm>
-#include <chrono>
-#include <sstream>
-#include <assert.h>
-#include "Common.hh"
-#include "CallData.hh"
-#include "BinaryTree.hh"
-#include "Algorithm.hh"
-
+#ifndef __LOGICALTOPOLOGY_HH__
+#define __LOGICALTOPOLOGY_HH__
+#include "src/astra-sim/system/Common.hh"
 namespace AstraSim{
-    class DoubleBinaryTreeAllReduce:public Algorithm{
+    class BasicLogicalTopology;
+    class LogicalTopology{
     public:
-        enum class State{Begin,WaitingForTwoChildData,WaitingForOneChildData,SendingDataToParent,WaitingDataFromParent,SendingDataToChilds,End};
-        void run(EventType event,CallData *data);
-        //void call(EventType event,CallData *data);
-        //void exit();
-        int parent;
-        int left_child;
-        int reductions;
-        int right_child;
-        //BinaryTree *tree;
-        BinaryTree::Type type;
-        State state;
-        DoubleBinaryTreeAllReduce(int id,int layer_num,BinaryTree *tree,int data_size,bool boost_mode);
-        //void init(BaseStream *stream);
+        enum class Complexity{Basic,Complex};
+        Complexity complexity;
+        virtual LogicalTopology* get_topology();
+        static int get_reminder(int number,int divisible);
+        virtual ~LogicalTopology()= default;
+        virtual int get_num_of_dimensions()=0;
+        virtual BasicLogicalTopology* get_basic_topology_at_dimension(int dimension,ComType type)=0;
     };
 }
 #endif

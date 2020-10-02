@@ -19,8 +19,8 @@ SOFTWARE.
 Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 *******************************************************************************/
 
-#ifndef __NODE_HH__
-#define __NODE_HH__
+#ifndef __TORUS3D_HH__
+#define __TORUS3D_HH__
 
 #include <map>
 #include <math.h>
@@ -35,17 +35,18 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 #include <chrono>
 #include <sstream>
 #include <assert.h>
-#include "Common.hh"
-#include "ComputeNode.hh"
+#include "src/astra-sim/system/Common.hh"
+#include "ComplexLogicalTopology.hh"
+#include "RingTopology.hh"
 
 namespace AstraSim{
-    class Node:public ComputeNode{
+    class Torus3D:public ComplexLogicalTopology{
     public:
-        int id;
-        Node *parent;
-        Node *left_child;
-        Node *right_child;
-        Node(int id,Node *parent,Node *left_child,Node *right_child);
+        RingTopology *local_dimension;
+        RingTopology *vertical_dimension;
+        RingTopology *horizontal_dimension;
+        Torus3D(int id,int total_nodes,int local_dim,int vertical_dim);
+        ~Torus3D();
     };
 }
 #endif

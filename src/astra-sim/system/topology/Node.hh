@@ -19,8 +19,8 @@ SOFTWARE.
 Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 *******************************************************************************/
 
-#ifndef __RINGTOPOLOGY_HH__
-#define __RINGTOPOLOGY_HH__
+#ifndef __NODE_HH__
+#define __NODE_HH__
 
 #include <map>
 #include <math.h>
@@ -35,30 +35,17 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 #include <chrono>
 #include <sstream>
 #include <assert.h>
-#include "Common.hh"
-#include "BasicLogicalTopology.hh"
+#include "src/astra-sim/system/Common.hh"
+#include "ComputeNode.hh"
 
 namespace AstraSim{
-    class RingTopology:public BasicLogicalTopology{
+    class Node:public ComputeNode{
     public:
-        enum class Direction{Clockwise,Anticlockwise};
-        enum class Dimension{Local,Vertical,Horizontal};
-        std::string name;
         int id;
-        int next_node_id;
-        int previous_node_id;
-        int offset;
-        int total_nodes_in_ring;
-        int index_in_ring;
-        Dimension dimension;
-        RingTopology(Dimension dimension,int id,int total_nodes_in_ring,int index_in_ring,int offset);
-        void find_neighbors();
-        virtual int get_receiver_node(int node_id,Direction direction);
-        virtual int get_sender_node(int node_id,Direction direction);
-        int get_nodes_in_ring();
-        bool is_enabled();
-    private:
-        std::map<int,int> id_to_index;
+        Node *parent;
+        Node *left_child;
+        Node *right_child;
+        Node(int id,Node *parent,Node *left_child,Node *right_child);
     };
 }
 #endif

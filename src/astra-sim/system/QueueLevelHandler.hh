@@ -35,7 +35,7 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 #include <chrono>
 #include <sstream>
 #include <assert.h>
-#include "RingTopology.hh"
+#include "src/astra-sim/system/topology/RingTopology.hh"
 
 namespace AstraSim{
     class QueueLevelHandler{
