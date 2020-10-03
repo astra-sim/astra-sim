@@ -1,3 +1,13 @@
-build/
+# macOS
 .DS_Store
 ._*
+
+# CMake
+cmake-build-debug/
+
+# Analytical Model
+build/analytical_astra/build/
+build/analytical_astra/result/
+
+# CLion
+.idea/
