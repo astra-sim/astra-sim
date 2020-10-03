@@ -1,0 +1,27 @@
+{
+  "system-configuration": "sample_a2a_sys",
+  "workload-configuration": "DLRM_HybridParallel",
+  "topology-configuration": {
+    "topology-name": "switch",
+    "host-count": 16,
+    "bandwidth": 25,
+    "link-latency": 500,
+    "nic-latency": 10,
+    "switch-latency": 10,
+    "print-topology-log": false
+  },
+  "run-configuration": {
+    "num-passes": 2,
+    "num-queues-per-dim": 2,
+    "comm-scale": 1,
+    "compute-scale": 1,
+    "injection-scale": 1
+  },
+  "stat-configuration": {
+    "path": "",
+    "run-name": "DLRM_HybridParallel_test",
+    "total-stat-rows": 1,
+    "stat-row": 0
+  },
+  "rendezvous-protocol": false
+}
