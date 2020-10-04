@@ -245,7 +245,7 @@ Sys::Sys(AstraNetworkAPI *NI,AstraMemoryAPI *MEM,int id,int num_passes,int local
         NI->enabled= false;
         std::cout<<"Node "<<id<<" has been totally disabled"<<std::endl;
     }
-    int concurrent_streams=8;
+    int concurrent_streams=1;
     int active_first_phase=64;
     if(injection_policy==InjectionPolicy::SemiAggressive){
         concurrent_streams=16;
