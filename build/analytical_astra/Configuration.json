@@ -2,13 +2,13 @@
   "system-configuration": "sample_a2a_sys",
   "workload-configuration": "DLRM_HybridParallel",
   "topology-configuration": {
-    "topology-name": "switch",
-    "host-count": 16,
-    "bandwidth": 25,
-    "link-latency": 500,
-    "nic-latency": 10,
-    "switch-latency": 10,
-    "print-topology-log": false
+    "topology-name": "Ring_AllToAll_Switch",
+    "dims-count": 3,
+    "nodes-per-dim": [2, 8, 2],
+    "bandwidth": [25, 127, 132],
+    "link-latency": [500, 500, 500],
+    "nic-latency": [0, 0, 10],
+    "router-latency": [0, 0, 10]
   },
   "run-configuration": {
     "num-passes": 2,
