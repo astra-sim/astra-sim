@@ -1,5 +1,5 @@
 #! /bin/bash -v
-cpus=(4 16 64 100 144 256 400 625 900 1600)
+cpus=(128)
 commScale=(1)
 workload=(DLRM_HybridParallel) #Transformer_HybridParallel_Fwd_In_Bckwd
 current_row=-1
@@ -15,11 +15,11 @@ for i in "${!cpus[@]}"; do
         filename="workload-$work-nodes-${cpus[$i]}-commScale-$inj"
         echo "--comm-scale=$inj , --host-count=${cpus[$i]} , --total-stats=$tot_stat_row , --stat-row=$current_row , --path=$mypath/ , --run-name=$filename"
 		./build.sh -r \
-        --system-configuration=sample_torus_sys \
+        --system-configuration=sample_3dim_sys \
         --workload-configuration="$work" \
-        --topology-name=torus \
-        --bandwidth="25" \
-        --link-latency="500" \
+        --topology-name=intel \
+        --bandwidth="250 25 12.5" \
+        --link-latency="500 500 500" \
         --nic-latency=1 \
         --switch-latency=1 \
         --print-topology-log=true \
