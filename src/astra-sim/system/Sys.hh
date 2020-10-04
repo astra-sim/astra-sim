@@ -40,7 +40,7 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 #include "AstraMemoryAPI.hh"
 #include "CollectivePhase.hh"
 #include "Callable.hh"
-#include "astra-sim/workload/Workload.hh"
+#include "src/astra-sim/workload/Workload.hh"
 
 namespace AstraSim{
     class MemBus;

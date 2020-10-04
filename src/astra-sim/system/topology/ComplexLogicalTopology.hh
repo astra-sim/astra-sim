@@ -19,20 +19,32 @@ SOFTWARE.
 Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 *******************************************************************************/
 
-#ifndef __LOGICALTOPOLOGY_HH__
-#define __LOGICALTOPOLOGY_HH__
-#include "Common.hh"
+#ifndef __COMPLEXLOGICALTOPOLOGY_HH__
+#define __COMPLEXLOGICALTOPOLOGY_HH__
+
+#include <map>
+#include <math.h>
+#include <fstream>
+#include <chrono>
+#include <ctime>
+#include <tuple>
+#include <cstdint>
+#include <list>
+#include <vector>
+#include <algorithm>
+#include <chrono>
+#include <sstream>
+#include <assert.h>
+#include "src/astra-sim/system/Common.hh"
+#include "LogicalTopology.hh"
+
 namespace AstraSim{
-    class BasicLogicalTopology;
-    class LogicalTopology{
+    class ComplexLogicalTopology: public LogicalTopology{
     public:
-        enum class Complexity{Basic,Complex};
-        Complexity complexity;
-        virtual LogicalTopology* get_topology();
-        static int get_reminder(int number,int divisible);
-        virtual ~LogicalTopology()= default;
-        virtual int get_num_of_dimensions()=0;
-        virtual BasicLogicalTopology* get_basic_topology_at_dimension(int dimension,ComType type)=0;
+        ComplexLogicalTopology(){this->complexity=LogicalTopology::Complexity::Complex;}
+        virtual ~ComplexLogicalTopology()=default;
+        virtual int get_num_of_dimensions() override{return 1;}
+        virtual BasicLogicalTopology* get_basic_topology_at_dimension(int dimension,ComType type) override{return NULL;};
     };
 }
 #endif

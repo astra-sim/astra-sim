@@ -20,8 +20,8 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 *******************************************************************************/
 
 #include "Ring.hh"
-#include "PacketBundle.hh"
-#include "RecvPacketEventHadndlerData.hh"
+#include "src/astra-sim/system/PacketBundle.hh"
+#include "src/astra-sim/system/RecvPacketEventHadndlerData.hh"
 namespace AstraSim{
     Ring::Ring(ComType type,int id,int layer_num,RingTopology *ring_topology,int data_size,
                RingTopology::Direction direction,PacketRouting routing,

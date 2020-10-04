@@ -19,8 +19,8 @@ SOFTWARE.
 Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 *******************************************************************************/
 
-#ifndef __BASICLOGICALTOPOLOGY_HH__
-#define __BASICLOGICALTOPOLOGY_HH__
+#ifndef __ALLTOALL_HH__
+#define __ALLTOALL_HH__
 
 #include <map>
 #include <math.h>
@@ -35,19 +35,20 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 #include <chrono>
 #include <sstream>
 #include <assert.h>
-#include "Common.hh"
-#include "LogicalTopology.hh"
+#include "src/astra-sim/system/Common.hh"
+#include "Ring.hh"
+#include "src/astra-sim/system/topology/RingTopology.hh"
+#include "src/astra-sim/system/CallData.hh"
 
 namespace AstraSim{
-    class BasicLogicalTopology: public LogicalTopology{
+    class AllToAll:public Ring{
     public:
-        enum class BasicTopology{Ring,BinaryTree};
-        BasicTopology basic_topology;
-        BasicLogicalTopology(BasicTopology basic_topology){this->basic_topology=basic_topology;
-            this->complexity=LogicalTopology::Complexity::Basic;}
-        virtual ~BasicLogicalTopology()=default;
-        int get_num_of_dimensions() override{return 1;};
-        BasicLogicalTopology* get_basic_topology_at_dimension(int dimension,ComType type) override{return this;}
+        AllToAll(ComType type,int id,int layer_num,RingTopology *allToAllTopology,int data_size,
+                 RingTopology::Direction direction,PacketRouting routing,
+                 InjectionPolicy injection_policy,bool boost_mode);
+        void run(EventType event,CallData *data);
+        void process_max_count();
+        int get_non_zero_latency_packets();
     };
 }
 #endif
