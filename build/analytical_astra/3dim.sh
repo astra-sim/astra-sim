@@ -1,7 +1,7 @@
 #! /bin/bash -v
 nodes=(2 4 8 16 32 64 128)
 commScale=(1)
-workload=(DLRM_HybridParallel)
+workload=(medium_DLRM)
 current_row=-1
 tot_stat_row=`expr ${#nodes[@]} \* ${#commScale[@]} \* ${#workload[@]}`
 mypath="result/$1-3dim"

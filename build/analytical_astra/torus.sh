@@ -1,7 +1,7 @@
 #! /bin/bash -v
 cpus=(4 16 36 64 81 100 144 256 400 900 1600)
 commScale=(1)
-workload=(DLRM_HybridParallel) #Transformer_HybridParallel_Fwd_In_Bckwd
+workload=(medium_DLRM) #Transformer_HybridParallel_Fwd_In_Bckwd
 current_row=-1
 tot_stat_row=`expr ${#cpus[@]} \* ${#commScale[@]} \* ${#workload[@]}`
 mypath="result/$1-torus"
