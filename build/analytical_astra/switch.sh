@@ -1,30 +1,30 @@
 #! /bin/bash -v
-cpus=(4 16 36 64 81 100 144 256 400 900 1600)
+cpus=(4 16 36 64 81 100 144 256 400 900 1600 2048)
 commScale=(1)
-workload=(DLRM_HybridParallel) #Transformer_HybridParallel_Fwd_In_Bckwd
+workload=(DLRM_HybridParallel)
 current_row=-1
 tot_stat_row=`expr ${#cpus[@]} \* ${#commScale[@]} \* ${#workload[@]}`
-mypath="result/$1-torus"
+mypath="result/$1-switch"
 rm -rf $mypath
 mkdir $mypath
-mypath="$1-torus"
+mypath="$1-switch"
 for i in "${!cpus[@]}"; do
   for inj in "${commScale[@]}"; do
     for work in "${workload[@]}"; do
         current_row=`expr $current_row + 1`
-        filename="workload-$work-npus-${cpus[$i]}-commScale-$inj"
+        filename="workload-$work-rowsAndcols-${cpus[$i]}-commScale-$inj"
         echo "--comm-scale=$inj , --host-count=${cpus[$i]} , --total-stats=$tot_stat_row , --stat-row=$current_row , --path=$mypath/ , --run-name=$filename"
 		./build.sh -r \
-        --system-configuration sample_torus_sys \
+        --system-configuration sample_a2a_sys \
         --workload-configuration "$work" \
-        --topology-name torus \
+        --topology-name switch \
         --dims-count 1 \
         --nodes-per-dim "${cpus[$i]}" \
         --link-bandwidth 25 \
         --link-latency 500 \
         --nic-latency 0 \
         --router-latency 0 \
-        --hbm-bandwidth 13 \
+        --hbm-bandwidth 370 \
         --hbm-latency 500 \
         --hbm-scale 1 \
         --num-passes 2 \
