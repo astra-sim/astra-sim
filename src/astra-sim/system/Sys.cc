@@ -245,7 +245,7 @@ Sys::Sys(AstraNetworkAPI *NI,AstraMemoryAPI *MEM,int id,int num_passes,int local
         NI->enabled= false;
         std::cout<<"Node "<<id<<" has been totally disabled"<<std::endl;
     }
-    int concurrent_streams=8;
+    int concurrent_streams=1;
     int active_first_phase=64;
     if(injection_policy==InjectionPolicy::SemiAggressive){
         concurrent_streams=16;
@@ -737,7 +737,7 @@ DataSet* Sys::generate_alltoall_all_to_all(int size,bool local_run, bool horizon
         std::list<CollectivePhase> vect;
         std::pair<int,RingTopology::Direction> local_last;
         if(collectiveOptimization==CollectiveOptimization::LocalBWAware){
-            local_last=vLevels->get_next_queue_at_level_first(0);
+            local_last=vLevels->get_next_queue_at_level(0);
         }
         else{
             local_last=vLevels->get_next_queue_at_level(0);
@@ -796,12 +796,12 @@ DataSet* Sys::generate_alltoall_all_reduce(int size,bool local_run, bool horizon
         std::list<CollectivePhase> vect;
         std::pair<int,RingTopology::Direction> local_first;
         if(collectiveOptimization==CollectiveOptimization::Baseline){
-            local_first=vLevels->get_next_queue_at_level_first(0);
+            local_first=vLevels->get_next_queue_at_level(0);
         }
         else{
-            local_first=vLevels->get_next_queue_at_level_first(0);
+            local_first=vLevels->get_next_queue_at_level(0);
         }
-        std::pair<int,RingTopology::Direction> local_last=vLevels->get_next_queue_at_level_last(0);
+        std::pair<int,RingTopology::Direction> local_last=vLevels->get_next_queue_at_level(0);
         std::pair<int,RingTopology::Direction> horizontal=vLevels->get_next_queue_at_level(2);
         if(id==0){
             //std::cout<<"initial chunk: "<<tmp<<std::endl;
@@ -891,7 +891,7 @@ DataSet* Sys::generate_tree_all_reduce(int size,bool local_run,bool horizontal_r
                 }
             }
             else if(collectiveOptimization==CollectiveOptimization::LocalBWAware){
-                local_first=vLevels->get_next_queue_at_level_first(0);
+                local_first=vLevels->get_next_queue_at_level(0);
                 if(collectiveImplementation==CollectiveImplementation::DoubleBinaryTree){
                     CollectivePhase vn(this,local_first.first,new Ring(ComType::Reduce_Scatter,id,layer,((LocalRingGlobalBinaryTree*)bt)->local_dimension,tmp,local_first.second,PacketRouting::Software,InjectionPolicy::Normal,boost_mode));
                     vect.push_back(vn);
@@ -917,7 +917,7 @@ DataSet* Sys::generate_tree_all_reduce(int size,bool local_run,bool horizontal_r
         if(local_dim>1 && local_run){
             std::pair<int,RingTopology::Direction> local_last;
             if(collectiveOptimization==CollectiveOptimization::LocalBWAware){
-                local_last=vLevels->get_next_queue_at_level_last(0);
+                local_last=vLevels->get_next_queue_at_level(0);
                 if(collectiveImplementation==CollectiveImplementation::DoubleBinaryTree){
                     CollectivePhase vn(this,local_last.first,new Ring(ComType::All_Gatehr,id,layer,((LocalRingGlobalBinaryTree*)bt)->local_dimension,tmp,local_last.second,
                                                                       PacketRouting::Software,InjectionPolicy::Normal,boost_mode));
@@ -961,7 +961,7 @@ DataSet* Sys::generate_hierarchical_all_to_all(int size,bool local_run,bool vert
         std::list<ComType> types;
         std::pair<int,RingTopology::Direction> local_last;
         if(collectiveOptimization==CollectiveOptimization::LocalBWAware){
-            local_last=vLevels->get_next_queue_at_level_first(0);
+            local_last=vLevels->get_next_queue_at_level(0);
         }
         else{
             local_last=vLevels->get_next_queue_at_level(0);
@@ -1022,12 +1022,12 @@ DataSet* Sys::generate_hierarchical_all_reduce(int size,bool local_run, bool ver
             std::list<ComType> types;
             std::pair<int,RingTopology::Direction> local_first;
             if(collectiveOptimization==CollectiveOptimization::Baseline){
-                local_first=vLevels->get_next_queue_at_level_first(0);
+                local_first=vLevels->get_next_queue_at_level(0);
             }
             else{
-                local_first=vLevels->get_next_queue_at_level_first(0);
+                local_first=vLevels->get_next_queue_at_level(0);
             }
-            std::pair<int,RingTopology::Direction> local_last=vLevels->get_next_queue_at_level_last(0);
+            std::pair<int,RingTopology::Direction> local_last=vLevels->get_next_queue_at_level(0);
             std::pair<int,RingTopology::Direction> vertical=vLevels->get_next_queue_at_level(1);
             std::pair<int,RingTopology::Direction> horizontal=vLevels->get_next_queue_at_level(2);
 
@@ -1106,7 +1106,7 @@ DataSet* Sys::generate_hierarchical_all_gather(int size,bool local_run, bool ver
         std::list<ComType> types;
 
         std::pair<int,RingTopology::Direction> local_first;
-        local_first=vLevels->get_next_queue_at_level_first(0);
+        local_first=vLevels->get_next_queue_at_level(0);
         std::pair<int,RingTopology::Direction> vertical=vLevels->get_next_queue_at_level(1);
         std::pair<int,RingTopology::Direction> horizontal=vLevels->get_next_queue_at_level(2);
 
@@ -1165,7 +1165,7 @@ DataSet * Sys::generate_hierarchical_reduce_scatter(int size, bool local_run, bo
         std::list<ComType> types;
 
         std::pair<int,RingTopology::Direction> local_first;
-        local_first=vLevels->get_next_queue_at_level_first(0);
+        local_first=vLevels->get_next_queue_at_level(0);
         std::pair<int,RingTopology::Direction> vertical=vLevels->get_next_queue_at_level(1);
         std::pair<int,RingTopology::Direction> horizontal=vLevels->get_next_queue_at_level(2);
 
