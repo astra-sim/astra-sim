@@ -1,5 +1,5 @@
 #! /bin/bash -v
-cpus=(4 16 36 64 81 100 144 256 400 900 1600 2048)
+cpus=(4 16 32 64 128 256 512 1024 2048)
 commScale=(1)
 workload=(medium_DLRM)
 current_row=-1
