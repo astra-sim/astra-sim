@@ -20,7 +20,7 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 *******************************************************************************/
 
 #include "StreamBaseline.hh"
-#include "src/astra-sim/system/collective/Algorithm.hh"
+#include "astra-sim/system/collective/Algorithm.hh"
 namespace AstraSim{
     StreamBaseline::StreamBaseline(Sys *owner,DataSet *dataset,int stream_num,std::list<CollectivePhase> phases_to_go,int priority)
             :BaseStream(stream_num,owner,phases_to_go){

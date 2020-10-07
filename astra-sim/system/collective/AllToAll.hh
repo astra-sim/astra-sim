@@ -35,10 +35,10 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 #include <chrono>
 #include <sstream>
 #include <assert.h>
-#include "src/astra-sim/system/Common.hh"
+#include "astra-sim/system/Common.hh"
 #include "Ring.hh"
-#include "src/astra-sim/system/topology/RingTopology.hh"
-#include "src/astra-sim/system/CallData.hh"
+#include "astra-sim/system/topology/RingTopology.hh"
+#include "astra-sim/system/CallData.hh"
 
 namespace AstraSim{
     class AllToAll:public Ring{

@@ -35,7 +35,7 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 #include <chrono>
 #include <sstream>
 #include <assert.h>
-#include "src/astra-sim/system/Common.hh"
+#include "astra-sim/system/Common.hh"
 #include "BasicLogicalTopology.hh"
 #include "Node.hh"
 

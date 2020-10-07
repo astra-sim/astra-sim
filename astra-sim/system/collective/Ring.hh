@@ -35,11 +35,11 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 #include <chrono>
 #include <sstream>
 #include <assert.h>
-#include "src/astra-sim/system/Common.hh"
+#include "astra-sim/system/Common.hh"
 #include "Algorithm.hh"
-#include "src/astra-sim/system/topology/RingTopology.hh"
-#include "src/astra-sim/system/MemBus.hh"
-#include "src/astra-sim/system/MyPacket.hh"
+#include "astra-sim/system/topology/RingTopology.hh"
+#include "astra-sim/system/MemBus.hh"
+#include "astra-sim/system/MyPacket.hh"
 
 namespace AstraSim{
     class Ring:public Algorithm{

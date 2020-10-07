@@ -20,7 +20,7 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 *******************************************************************************/
 
 #include "CollectivePhase.hh"
-#include "src/astra-sim/system/collective/Algorithm.hh"
+#include "astra-sim/system/collective/Algorithm.hh"
 namespace AstraSim{
     CollectivePhase::CollectivePhase(Sys *generator, int queue_id, Algorithm *algorithm) {
         this->generator=generator;

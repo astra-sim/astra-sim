@@ -1,7 +1,7 @@
 #ifndef __SIMPLEMEMORY_HH__
 #define __SIMPLEMEMORY_HH__
-#include "src/astra-sim/system/AstraMemoryAPI.hh"
-#include "src/astra-sim/system/AstraNetworkAPI.hh"
+#include "astra-sim/system/AstraMemoryAPI.hh"
+#include "astra-sim/system/AstraNetworkAPI.hh"
 namespace AstraSim{
 class SimpleMemory: public AstraMemoryAPI{
 public:

@@ -33,8 +33,8 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include "src/astra-sim/system/Sys.hh"
-#include "src/astra-sim/system/StreamStat.hh"
+#include "astra-sim/system/Sys.hh"
+#include "astra-sim/system/StreamStat.hh"
 #include "Workload.hh"
 #include "CSVWriter.hh"
 

@@ -36,7 +36,7 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 #include <sstream>
 #include <assert.h>
 #include "QueueLevelHandler.hh"
-#include "src/astra-sim/system/topology/RingTopology.hh"
+#include "astra-sim/system/topology/RingTopology.hh"
 
 namespace AstraSim{
     class QueueLevels{
