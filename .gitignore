@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # macOS
 .DS_Store
 ._*
@@ -11,3 +12,7 @@ build/analytical_astra/result/
 
 # CLion
 .idea/
+=======
+build/
+.DS_Store
+>>>>>>> 2e779fbd73fba326de525690ab910ff75dd773ce
