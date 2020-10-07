@@ -41,7 +41,7 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 #include "CollectivePhase.hh"
 #include "DataSet.hh"
 #include "Sys.hh"
-#include "LogicalTopology.hh"
+#include "astra-sim/system/topology/LogicalTopology.hh"
 
 namespace AstraSim{
     class RecvPacketEventHadndlerData;

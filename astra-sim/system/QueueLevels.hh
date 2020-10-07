@@ -19,8 +19,8 @@ SOFTWARE.
 Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 *******************************************************************************/
 
-#ifndef __TORUS3D_HH__
-#define __TORUS3D_HH__
+#ifndef __QUEUELEVELS_HH__
+#define __QUEUELEVELS_HH__
 
 #include <map>
 #include <math.h>
@@ -35,18 +35,18 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 #include <chrono>
 #include <sstream>
 #include <assert.h>
-#include "Common.hh"
-#include "ComplexLogicalTopology.hh"
-#include "RingTopology.hh"
+#include "QueueLevelHandler.hh"
+#include "astra-sim/system/topology/RingTopology.hh"
 
 namespace AstraSim{
-    class Torus3D:public ComplexLogicalTopology{
+    class QueueLevels{
     public:
-        RingTopology *local_dimension;
-        RingTopology *vertical_dimension;
-        RingTopology *horizontal_dimension;
-        Torus3D(int id,int total_nodes,int local_dim,int vertical_dim);
-        ~Torus3D();
+        std::vector<QueueLevelHandler> levels;
+        std::pair<int,RingTopology::Direction> get_next_queue_at_level(int level);
+        std::pair<int,RingTopology::Direction> get_next_queue_at_level_first(int level);
+        std::pair<int,RingTopology::Direction> get_next_queue_at_level_last(int level);
+        QueueLevels(int levels, int queues_per_level,int offset);
+        QueueLevels(std::vector<int> lv,int offset);
     };
 }
 #endif

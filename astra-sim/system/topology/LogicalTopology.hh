@@ -21,7 +21,7 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 
 #ifndef __LOGICALTOPOLOGY_HH__
 #define __LOGICALTOPOLOGY_HH__
-#include "Common.hh"
+#include "astra-sim/system/Common.hh"
 namespace AstraSim{
     class BasicLogicalTopology;
     class LogicalTopology{

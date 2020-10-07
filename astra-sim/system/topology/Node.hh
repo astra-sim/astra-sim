@@ -19,8 +19,8 @@ SOFTWARE.
 Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 *******************************************************************************/
 
-#ifndef __ALLTOALL_HH__
-#define __ALLTOALL_HH__
+#ifndef __NODE_HH__
+#define __NODE_HH__
 
 #include <map>
 #include <math.h>
@@ -35,20 +35,17 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 #include <chrono>
 #include <sstream>
 #include <assert.h>
-#include "Common.hh"
-#include "Ring.hh"
-#include "RingTopology.hh"
-#include "CallData.hh"
+#include "astra-sim/system/Common.hh"
+#include "ComputeNode.hh"
 
 namespace AstraSim{
-    class AllToAll:public Ring{
+    class Node:public ComputeNode{
     public:
-        AllToAll(ComType type,int id,int layer_num,RingTopology *allToAllTopology,int data_size,
-                 RingTopology::Direction direction,PacketRouting routing,
-                 InjectionPolicy injection_policy,bool boost_mode);
-        void run(EventType event,CallData *data);
-        void process_max_count();
-        int get_non_zero_latency_packets();
+        int id;
+        Node *parent;
+        Node *left_child;
+        Node *right_child;
+        Node(int id,Node *parent,Node *left_child,Node *right_child);
     };
 }
 #endif

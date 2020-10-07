@@ -20,8 +20,8 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 *******************************************************************************/
 
 #include "DoubleBinaryTreeAllReduce.hh"
-#include "PacketBundle.hh"
-#include "RecvPacketEventHadndlerData.hh"
+#include "astra-sim/system/PacketBundle.hh"
+#include "astra-sim/system/RecvPacketEventHadndlerData.hh"
 namespace AstraSim{
     DoubleBinaryTreeAllReduce::DoubleBinaryTreeAllReduce(int id,int layer_num,BinaryTree *tree,int data_size,bool boost_mode):Algorithm(layer_num) {
         this->id=id;

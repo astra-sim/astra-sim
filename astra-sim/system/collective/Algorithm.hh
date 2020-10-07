@@ -19,27 +19,47 @@ SOFTWARE.
 Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 *******************************************************************************/
 
-#include "CollectivePhase.hh"
-#include "Algorithm.hh"
+#ifndef __ALGORITHM_HH__
+#define __ALGORITHM_HH__
+
+#include <map>
+#include <math.h>
+#include <fstream>
+#include <chrono>
+#include <ctime>
+#include <tuple>
+#include <cstdint>
+#include <list>
+#include <vector>
+#include <algorithm>
+#include <chrono>
+#include <sstream>
+#include <assert.h>
+#include "astra-sim/system/Common.hh"
+#include "astra-sim/system/Callable.hh"
+#include "astra-sim/system/BaseStream.hh"
+#include "astra-sim/system/CallData.hh"
+#include "astra-sim/system/topology/LogicalTopology.hh"
+
 namespace AstraSim{
-    CollectivePhase::CollectivePhase(Sys *generator, int queue_id, Algorithm *algorithm) {
-        this->generator=generator;
-        this->queue_id=queue_id;
-        this->algorithm=algorithm;
-        this->enabled=true;
-        this->initial_data_size=algorithm->data_size;
-        this->final_data_size=algorithm->final_data_size;
-        this->comm_type=algorithm->comType;
-        this->enabled=algorithm->enabled;
-    }
-    CollectivePhase::CollectivePhase(){
-        queue_id=-1;
-        generator=NULL;
-        algorithm=NULL;
-    }
-    void CollectivePhase::init(BaseStream *stream) {
-        if(algorithm!=NULL){
-            algorithm->init(stream);
-        }
-    }
+    class Algorithm:public Callable{
+    public:
+        enum class Name{Ring,DoubleBinaryTree,AllToAll};
+        Name name;
+        int id;
+        BaseStream *stream;
+        LogicalTopology *logicalTopology;
+        int data_size;
+        int final_data_size;
+        ComType comType;
+        bool enabled;
+        int layer_num;
+        Algorithm(int layer_num);
+        virtual ~Algorithm()= default;
+        virtual void run(EventType event,CallData *data)=0;
+        virtual void exit();
+        virtual void init(BaseStream *stream);
+        virtual void call(EventType event,CallData *data);
+    };
 }
+#endif

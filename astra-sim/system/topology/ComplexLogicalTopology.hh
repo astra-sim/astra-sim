@@ -19,8 +19,8 @@ SOFTWARE.
 Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 *******************************************************************************/
 
-#ifndef __QUEUELEVELS_HH__
-#define __QUEUELEVELS_HH__
+#ifndef __COMPLEXLOGICALTOPOLOGY_HH__
+#define __COMPLEXLOGICALTOPOLOGY_HH__
 
 #include <map>
 #include <math.h>
@@ -35,18 +35,16 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 #include <chrono>
 #include <sstream>
 #include <assert.h>
-#include "QueueLevelHandler.hh"
-#include "RingTopology.hh"
+#include "astra-sim/system/Common.hh"
+#include "LogicalTopology.hh"
 
 namespace AstraSim{
-    class QueueLevels{
+    class ComplexLogicalTopology: public LogicalTopology{
     public:
-        std::vector<QueueLevelHandler> levels;
-        std::pair<int,RingTopology::Direction> get_next_queue_at_level(int level);
-        std::pair<int,RingTopology::Direction> get_next_queue_at_level_first(int level);
-        std::pair<int,RingTopology::Direction> get_next_queue_at_level_last(int level);
-        QueueLevels(int levels, int queues_per_level,int offset);
-        QueueLevels(std::vector<int> lv,int offset);
+        ComplexLogicalTopology(){this->complexity=LogicalTopology::Complexity::Complex;}
+        virtual ~ComplexLogicalTopology()=default;
+        virtual int get_num_of_dimensions() override{return 1;}
+        virtual BasicLogicalTopology* get_basic_topology_at_dimension(int dimension,ComType type) override{return NULL;};
     };
 }
 #endif

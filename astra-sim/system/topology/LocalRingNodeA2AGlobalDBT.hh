@@ -19,8 +19,8 @@ SOFTWARE.
 Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 *******************************************************************************/
 
-#ifndef __ALGORITHM_HH__
-#define __ALGORITHM_HH__
+#ifndef __LOCALRINGNODEA2AGLOBALDBT_HH__
+#define __LOCALRINGNODEA2AGLOBALDBT_HH__
 
 #include <map>
 #include <math.h>
@@ -35,31 +35,16 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 #include <chrono>
 #include <sstream>
 #include <assert.h>
-#include "Common.hh"
-#include "Callable.hh"
-#include "BaseStream.hh"
-#include "CallData.hh"
-#include "LogicalTopology.hh"
+#include "astra-sim/system/Common.hh"
+#include "ComplexLogicalTopology.hh"
+#include "DoubleBinaryTreeTopology.hh"
 
 namespace AstraSim{
-    class Algorithm:public Callable{
+    class LocalRingNodeA2AGlobalDBT:public ComplexLogicalTopology{
     public:
-        enum class Name{Ring,DoubleBinaryTree,AllToAll};
-        Name name;
-        int id;
-        BaseStream *stream;
-        LogicalTopology *logicalTopology;
-        int data_size;
-        int final_data_size;
-        ComType comType;
-        bool enabled;
-        int layer_num;
-        Algorithm(int layer_num);
-        virtual ~Algorithm()= default;
-        virtual void run(EventType event,CallData *data)=0;
-        virtual void exit();
-        virtual void init(BaseStream *stream);
-        virtual void call(EventType event,CallData *data);
+        DoubleBinaryTreeTopology *global_all_reduce_dimension;
+        LocalRingNodeA2AGlobalDBT(int id,int total_tree_nodes,int start,int stride,int local_dim);
+        ~LocalRingNodeA2AGlobalDBT();
     };
 }
 #endif

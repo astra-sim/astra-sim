@@ -19,8 +19,8 @@ SOFTWARE.
 Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 *******************************************************************************/
 
-#ifndef __DOUBLEBINARYTREEALLREDUCE_HH__
-#define __DOUBLEBINARYTREEALLREDUCE_HH__
+#ifndef __DOUBLEBINARYTREETOPOLOGY_HH__
+#define __DOUBLEBINARYTREETOPOLOGY_HH__
 
 #include <map>
 #include <math.h>
@@ -35,27 +35,18 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 #include <chrono>
 #include <sstream>
 #include <assert.h>
-#include "Common.hh"
-#include "CallData.hh"
-#include "BinaryTree.hh"
-#include "Algorithm.hh"
-
+#include "astra-sim/system/Common.hh"
+#include "ComplexLogicalTopology.hh"
+#include "LocalRingGlobalBinaryTree.hh"
 namespace AstraSim{
-    class DoubleBinaryTreeAllReduce:public Algorithm{
+    class DoubleBinaryTreeTopology:public ComplexLogicalTopology{
     public:
-        enum class State{Begin,WaitingForTwoChildData,WaitingForOneChildData,SendingDataToParent,WaitingDataFromParent,SendingDataToChilds,End};
-        void run(EventType event,CallData *data);
-        //void call(EventType event,CallData *data);
-        //void exit();
-        int parent;
-        int left_child;
-        int reductions;
-        int right_child;
-        //BinaryTree *tree;
-        BinaryTree::Type type;
-        State state;
-        DoubleBinaryTreeAllReduce(int id,int layer_num,BinaryTree *tree,int data_size,bool boost_mode);
-        //void init(BaseStream *stream);
+        int counter;
+        LocalRingGlobalBinaryTree *DBMAX;
+        LocalRingGlobalBinaryTree *DBMIN;
+        LogicalTopology *get_topology();
+        ~DoubleBinaryTreeTopology();
+        DoubleBinaryTreeTopology(int id,int total_tree_nodes,int start,int stride,int local_dim);
     };
 }
 #endif

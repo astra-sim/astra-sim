@@ -19,8 +19,8 @@ SOFTWARE.
 Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 *******************************************************************************/
 
-#ifndef __NODE_HH__
-#define __NODE_HH__
+#ifndef __BASICLOGICALTOPOLOGY_HH__
+#define __BASICLOGICALTOPOLOGY_HH__
 
 #include <map>
 #include <math.h>
@@ -35,17 +35,19 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 #include <chrono>
 #include <sstream>
 #include <assert.h>
-#include "Common.hh"
-#include "ComputeNode.hh"
+#include "astra-sim/system/Common.hh"
+#include "LogicalTopology.hh"
 
 namespace AstraSim{
-    class Node:public ComputeNode{
+    class BasicLogicalTopology: public LogicalTopology{
     public:
-        int id;
-        Node *parent;
-        Node *left_child;
-        Node *right_child;
-        Node(int id,Node *parent,Node *left_child,Node *right_child);
+        enum class BasicTopology{Ring,BinaryTree};
+        BasicTopology basic_topology;
+        BasicLogicalTopology(BasicTopology basic_topology){this->basic_topology=basic_topology;
+            this->complexity=LogicalTopology::Complexity::Basic;}
+        virtual ~BasicLogicalTopology()=default;
+        int get_num_of_dimensions() override{return 1;};
+        BasicLogicalTopology* get_basic_topology_at_dimension(int dimension,ComType type) override{return this;}
     };
 }
 #endif

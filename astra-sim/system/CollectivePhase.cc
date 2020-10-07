@@ -19,32 +19,27 @@ SOFTWARE.
 Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 *******************************************************************************/
 
-#ifndef __COMPLEXLOGICALTOPOLOGY_HH__
-#define __COMPLEXLOGICALTOPOLOGY_HH__
-
-#include <map>
-#include <math.h>
-#include <fstream>
-#include <chrono>
-#include <ctime>
-#include <tuple>
-#include <cstdint>
-#include <list>
-#include <vector>
-#include <algorithm>
-#include <chrono>
-#include <sstream>
-#include <assert.h>
-#include "Common.hh"
-#include "LogicalTopology.hh"
-
+#include "CollectivePhase.hh"
+#include "astra-sim/system/collective/Algorithm.hh"
 namespace AstraSim{
-    class ComplexLogicalTopology: public LogicalTopology{
-    public:
-        ComplexLogicalTopology(){this->complexity=LogicalTopology::Complexity::Complex;}
-        virtual ~ComplexLogicalTopology()=default;
-        virtual int get_num_of_dimensions() override{return 1;}
-        virtual BasicLogicalTopology* get_basic_topology_at_dimension(int dimension,ComType type) override{return NULL;};
-    };
+    CollectivePhase::CollectivePhase(Sys *generator, int queue_id, Algorithm *algorithm) {
+        this->generator=generator;
+        this->queue_id=queue_id;
+        this->algorithm=algorithm;
+        this->enabled=true;
+        this->initial_data_size=algorithm->data_size;
+        this->final_data_size=algorithm->final_data_size;
+        this->comm_type=algorithm->comType;
+        this->enabled=algorithm->enabled;
+    }
+    CollectivePhase::CollectivePhase(){
+        queue_id=-1;
+        generator=NULL;
+        algorithm=NULL;
+    }
+    void CollectivePhase::init(BaseStream *stream) {
+        if(algorithm!=NULL){
+            algorithm->init(stream);
+        }
+    }
 }
-#endif
