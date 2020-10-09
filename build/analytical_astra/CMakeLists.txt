@@ -20,4 +20,4 @@ project (AnalyticalAstraSim)
 add_subdirectory("${PROJECT_SOURCE_DIR}/../../" AtraSim)
 
 # Compile AnalyticalBackend binary
-add_subdirectory ("${PROJECT_SOURCE_DIR}/../../extern/network_backend/analytical_astra" AnalyticalAstra)
+add_subdirectory ("${PROJECT_SOURCE_DIR}/../../extern/network_backend/analytical" AnalyticalAstra)
