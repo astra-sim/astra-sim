@@ -1,43 +1,55 @@
 #! /bin/bash -v
-cpus=(4 16 36 64 81 100 144 256 400 900 1600)
+
+workload=medium_DLRM
+
+# Absolue path to this script
+SCRIPT_DIR=$(dirname "$(realpath $0)")
+
+# Absolute paths to useful directories
+BINARY="${SCRIPT_DIR:?}"/build/AnalyticalAstra/bin/AnalyticalAstra
+NETWORK="${SCRIPT_DIR:?}"/../../inputs/network/analytical/sample_torus.json
+SYSTEM="${SCRIPT_DIR:?}"/../../inputs/system/sample_torus_sys
+WORKLOAD="${SCRIPT_DIR:?}"/../../inputs/workload/"$workload"
+STATS="${SCRIPT_DIR:?}"/result/$1-torus
+
+rm -rf "${STATS}"
+mkdir "${STATS}"
+
+npus=(4 16 36 64 81 100 144 256 400 900 1600)
 commScale=(1)
-workload=(medium_DLRM) #Transformer_HybridParallel_Fwd_In_Bckwd
+
 current_row=-1
-tot_stat_row=`expr ${#cpus[@]} \* ${#commScale[@]} \* ${#workload[@]}`
-mypath="result/$1-torus"
-rm -rf $mypath
-mkdir $mypath
-mypath="$1-torus"
-for i in "${!cpus[@]}"; do
+tot_stat_row=`expr ${#npus[@]} \* ${#commScale[@]}`
+
+
+for i in "${!npus[@]}"; do
   for inj in "${commScale[@]}"; do
-    for work in "${workload[@]}"; do
-        current_row=`expr $current_row + 1`
-        filename="workload-$work-npus-${cpus[$i]}-commScale-$inj"
-        echo "--comm-scale=$inj , --host-count=${cpus[$i]} , --total-stats=$tot_stat_row , --stat-row=$current_row , --path=$mypath/ , --run-name=$filename"
-		./build.sh -r \
-        --system-configuration sample_torus_sys \
-        --workload-configuration "$work" \
-        --topology-name torus \
-        --dims-count 1 \
-        --nodes-per-dim "${cpus[$i]}" \
-        --link-bandwidth 25 \
-        --link-latency 500 \
-        --nic-latency 0 \
-        --router-latency 0 \
-        --hbm-bandwidth 13 \
-        --hbm-latency 500 \
-        --hbm-scale 1 \
-        --num-passes 2 \
-        --num-queues-per-dim 1 \
-        --comm-scale $inj \
-        --compute-scale 1 \
-        --injection-scale 1 \
-        --rendezvous-protocol false \
-        --total-stat-rows "$tot_stat_row" \
-        --stat-row "$current_row" \
-        --path "$mypath/" \
-        --run-name $filename>>"result/$mypath/$filename.txt"
-        sleep 1
-    done
+    current_row=`expr $current_row + 1`
+    filename="workload-$workload-npus-${npus[$i]}-commScale-$inj"
+	"${BINARY}" \
+	--network-configuration="${NETWORK}" \
+	--system-configuration="${SYSTEM}" \
+	--workload-configuration="${WORKLOAD}" \
+	--path="${STATS}/" \
+    --topology-name torus \
+    --dims-count 1 \
+    --nodes-per-dim "${npus[$i]}" \
+    --link-bandwidth 25 \
+    --link-latency 500 \
+    --nic-latency 0 \
+    --router-latency 0 \
+    --hbm-bandwidth 13 \
+    --hbm-latency 500 \
+    --hbm-scale 1 \
+    --num-passes 2 \
+    --num-queues-per-dim 1 \
+    --comm-scale $inj \
+    --compute-scale 1 \
+    --injection-scale 1 \
+    --rendezvous-protocol false \
+    --total-stat-rows "$tot_stat_row" \
+    --stat-row "$current_row" \
+    --run-name $filename>>"${STATS}/$filename.txt"
+    sleep 1
   done
 done
