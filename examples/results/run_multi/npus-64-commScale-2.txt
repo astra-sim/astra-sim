@@ -1,0 +1,366 @@
+success in openning system file
+Var is: scheduling-policy: ,val is: LIFO
+Var is: endpoint-delay: ,val is: 10
+Var is: packet-routing: ,val is: software
+Var is: injection-policy: ,val is: normal
+Var is: preferred-dataset-splits: ,val is: 4
+Var is: boost-mode: ,val is: 1
+Var is: collective-implementation: ,val is: hierarchicalRing
+Var is: collective-optimization: ,val is: localBWAware
+Var is:  ,val is: localBWAware
+loc dim: 1 ,vert dim: 8 ,horiz dim: 8 ,perpend dim: 1 ,fourth dim: 1 ,queues: 1, 1, 1
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+ring of node 0, id: 0 dimension: local total nodes in ring: 1 index in ring: 0 offset: 1total nodes in ring: 1
+ring of node 0, id: 0 dimension: local total nodes in ring: 1 index in ring: 0 offset: 1total nodes in ring: 1
+ring of node 0, id: 0 dimension: local total nodes in ring: 1 index in ring: 0 offset: 1total nodes in ring: 1
+ring of node 0, id: 0 dimension: vertical total nodes in ring: 8 index in ring: 0 offset: 8total nodes in ring: 8
+ring of node 0, id: 0 dimension: horizontal total nodes in ring: 8 index in ring: 0 offset: 1total nodes in ring: 8
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 8
+ring of node 0, id: 0 dimension: local total nodes in ring: 1 index in ring: 0 offset: 1total nodes in ring: 1
+ring of node 0, id: 0 dimension: local total nodes in ring: 1 index in ring: 0 offset: 1total nodes in ring: 1
+total nodes: 64
+local dim: 1 , vertical dim: 8 , horizontal dim: 8 , perpendicular dim: 1 , fourth dim: 1
+LogGP model, the local reduction delay is: 1
+LogGP model, the local reduction delay is: 1
+LogGP model, the local reduction delay is: 1
+LogGP model, the local reduction delay is: 1
+Shared bus modeling enabled? false
+LogGP model, the L is:0 ,o is: 0 ,g is: 0 ,G is: 0.0038
+communication delay (in the case of disabled shared bus): 10
+Shared bus modeling enabled? false
+LogGP model, the L is:0 ,o is: 0 ,g is: 0 ,G is: 0
+communication delay (in the case of disabled shared bus): 10
+success in openning file
+id: conv1 , depen: -1 , wg_comp_time: 5
+type: MICRO ,num passes: 2 ,lines: 1 compute scale: 1 ,comm scale: 2
+stat path: /Users/saeedrashidi/Documents/gits/astra-sim/examples/results/run_multi/ ,total rows: 10 ,stat row: 7
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 1 ,stride: 8
+success in openning file
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 2 ,stride: 8
+success in openning file
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 3 ,stride: 8
+success in openning file
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 4 ,stride: 8
+success in openning file
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 5 ,stride: 8
+success in openning file
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 6 ,stride: 8
+success in openning file
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 7 ,stride: 8
+success in openning file
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 8
+success in openning file
+Node 9 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 1 ,stride: 8
+success in openning file
+Node 10 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 2 ,stride: 8
+success in openning file
+Node 11 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 3 ,stride: 8
+success in openning file
+Node 12 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 4 ,stride: 8
+success in openning file
+Node 13 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 5 ,stride: 8
+success in openning file
+Node 14 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 6 ,stride: 8
+success in openning file
+Node 15 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 7 ,stride: 8
+success in openning file
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 8
+success in openning file
+Node 17 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 1 ,stride: 8
+success in openning file
+Node 18 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 2 ,stride: 8
+success in openning file
+Node 19 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 3 ,stride: 8
+success in openning file
+Node 20 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 4 ,stride: 8
+success in openning file
+Node 21 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 5 ,stride: 8
+success in openning file
+Node 22 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 6 ,stride: 8
+success in openning file
+Node 23 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 7 ,stride: 8
+success in openning file
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 8
+success in openning file
+Node 25 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 1 ,stride: 8
+success in openning file
+Node 26 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 2 ,stride: 8
+success in openning file
+Node 27 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 3 ,stride: 8
+success in openning file
+Node 28 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 4 ,stride: 8
+success in openning file
+Node 29 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 5 ,stride: 8
+success in openning file
+Node 30 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 6 ,stride: 8
+success in openning file
+Node 31 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 7 ,stride: 8
+success in openning file
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 8
+success in openning file
+Node 33 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 1 ,stride: 8
+success in openning file
+Node 34 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 2 ,stride: 8
+success in openning file
+Node 35 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 3 ,stride: 8
+success in openning file
+Node 36 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 4 ,stride: 8
+success in openning file
+Node 37 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 5 ,stride: 8
+success in openning file
+Node 38 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 6 ,stride: 8
+success in openning file
+Node 39 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 7 ,stride: 8
+success in openning file
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 8
+success in openning file
+Node 41 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 1 ,stride: 8
+success in openning file
+Node 42 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 2 ,stride: 8
+success in openning file
+Node 43 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 3 ,stride: 8
+success in openning file
+Node 44 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 4 ,stride: 8
+success in openning file
+Node 45 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 5 ,stride: 8
+success in openning file
+Node 46 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 6 ,stride: 8
+success in openning file
+Node 47 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 7 ,stride: 8
+success in openning file
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 8
+success in openning file
+Node 49 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 1 ,stride: 8
+success in openning file
+Node 50 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 2 ,stride: 8
+success in openning file
+Node 51 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 3 ,stride: 8
+success in openning file
+Node 52 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 4 ,stride: 8
+success in openning file
+Node 53 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 5 ,stride: 8
+success in openning file
+Node 54 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 6 ,stride: 8
+success in openning file
+Node 55 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 7 ,stride: 8
+success in openning file
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 8
+success in openning file
+Node 57 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 1 ,stride: 8
+success in openning file
+Node 58 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 2 ,stride: 8
+success in openning file
+Node 59 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 3 ,stride: 8
+success in openning file
+Node 60 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 4 ,stride: 8
+success in openning file
+Node 61 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 5 ,stride: 8
+success in openning file
+Node 62 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 6 ,stride: 8
+success in openning file
+Node 63 has been totally disabled
+Double binary tree created with total nodes: 8 ,start: 0 ,stride: 1
+Double binary tree created with total nodes: 8 ,start: 7 ,stride: 8
+success in openning file
+stream: 0  scheduled after finishd steps: 0 in  node:0 ,remaining: 2 ,at time: 0 ,initial data size: 256 ,available synchronizer: 1
+info ,for node: 0 stream num 0 has been changed to vnet: 1 at time: 0 ,remaining: 1 ,intial size: 256 total injected: 4 ,total finished: 0 ,total running streams: 0 ,pri: 0
+stream: 1  scheduled after finishd steps: 0 in  node:0 ,remaining: 2 ,at time: 0 ,initial data size: 256 ,available synchronizer: 1
+info ,for node: 0 stream num 1 has been changed to vnet: 1 at time: 0 ,remaining: 1 ,intial size: 256 total injected: 4 ,total finished: 0 ,total running streams: 1 ,pri: 0
+stream: 2  scheduled after finishd steps: 0 in  node:0 ,remaining: 2 ,at time: 0 ,initial data size: 256 ,available synchronizer: 1
+info ,for node: 0 stream num 2 has been changed to vnet: 1 at time: 0 ,remaining: 1 ,intial size: 256 total injected: 4 ,total finished: 0 ,total running streams: 2 ,pri: 0
+stream: 3  scheduled after finishd steps: 0 in  node:0 ,remaining: 2 ,at time: 0 ,initial data size: 256 ,available synchronizer: 1
+info ,for node: 0 stream num 3 has been changed to vnet: 1 at time: 0 ,remaining: 1 ,intial size: 256 total injected: 4 ,total finished: 0 ,total running streams: 3 ,pri: 0
+info: allr-educe weight grad collective issued for layer: conv1 with size: 1024
+stream: 4  scheduled after finishd steps: 0 in  node:0 ,remaining: 2 ,at time: 0 ,initial data size: 256 ,available synchronizer: 1
+info ,for node: 0 stream num 4 has been changed to vnet: 1 at time: 0 ,remaining: 1 ,intial size: 256 total injected: 8 ,total finished: 0 ,total running streams: 4 ,pri: 1
+stream: 5  scheduled after finishd steps: 0 in  node:0 ,remaining: 2 ,at time: 0 ,initial data size: 256 ,available synchronizer: 1
+info ,for node: 0 stream num 5 has been changed to vnet: 1 at time: 0 ,remaining: 1 ,intial size: 256 total injected: 8 ,total finished: 0 ,total running streams: 5 ,pri: 1
+stream: 6  scheduled after finishd steps: 0 in  node:0 ,remaining: 2 ,at time: 0 ,initial data size: 256 ,available synchronizer: 1
+info ,for node: 0 stream num 6 has been changed to vnet: 1 at time: 0 ,remaining: 1 ,intial size: 256 total injected: 8 ,total finished: 0 ,total running streams: 6 ,pri: 1
+stream: 7  scheduled after finishd steps: 0 in  node:0 ,remaining: 2 ,at time: 0 ,initial data size: 256 ,available synchronizer: 1
+info ,for node: 0 stream num 7 has been changed to vnet: 1 at time: 0 ,remaining: 1 ,intial size: 256 total injected: 8 ,total finished: 0 ,total running streams: 7 ,pri: 1
+info: allr-educe weight grad collective issued for layer: conv1 with size: 1024
+stream: 0  scheduled after finishd steps: 1 in  node:0 ,remaining: 1 ,at time: 7178 ,initial data size: 256 ,available synchronizer: 0
+stream: 0  scheduled after finishd steps: 1 in  node:0 ,remaining: 1 ,at time: 7178 ,initial data size: 256 ,available synchronizer: 1
+info ,for node: 0 stream num 0 has been changed to vnet: 2 at time: 7178 ,remaining: 0 ,intial size: 256 total injected: 8 ,total finished: 0 ,total running streams: 8 ,pri: 0
+stream: 0  scheduled after finishd steps: 2 in  node:0 ,remaining: 0 ,at time: 14356 ,initial data size: 256 ,available synchronizer: 64
+stream number: 0  finished its execution in time: 14356 total injected: 8 ,total finished: 0 ,total running streams: 8 ,pri: 0
+stream: 7  scheduled after finishd steps: 1 in  node:0 ,remaining: 1 ,at time: 14356 ,initial data size: 256 ,available synchronizer: 0
+stream: 7  scheduled after finishd steps: 1 in  node:0 ,remaining: 1 ,at time: 14356 ,initial data size: 256 ,available synchronizer: 7
+info ,for node: 0 stream num 7 has been changed to vnet: 2 at time: 14356 ,remaining: 0 ,intial size: 256 total injected: 8 ,total finished: 0 ,total running streams: 7 ,pri: 1
+stream: 7  scheduled after finishd steps: 2 in  node:0 ,remaining: 0 ,at time: 21534 ,initial data size: 256 ,available synchronizer: 64
+stream number: 7  finished its execution in time: 21534 total injected: 8 ,total finished: 0 ,total running streams: 7 ,pri: 1
+stream: 6  scheduled after finishd steps: 1 in  node:0 ,remaining: 1 ,at time: 21534 ,initial data size: 256 ,available synchronizer: 0
+stream: 6  scheduled after finishd steps: 1 in  node:0 ,remaining: 1 ,at time: 21534 ,initial data size: 256 ,available synchronizer: 7
+info ,for node: 0 stream num 6 has been changed to vnet: 2 at time: 21534 ,remaining: 0 ,intial size: 256 total injected: 8 ,total finished: 0 ,total running streams: 6 ,pri: 1
+stream: 6  scheduled after finishd steps: 2 in  node:0 ,remaining: 0 ,at time: 28712 ,initial data size: 256 ,available synchronizer: 64
+stream number: 6  finished its execution in time: 28712 total injected: 8 ,total finished: 0 ,total running streams: 6 ,pri: 1
+stream: 5  scheduled after finishd steps: 1 in  node:0 ,remaining: 1 ,at time: 28712 ,initial data size: 256 ,available synchronizer: 0
+stream: 5  scheduled after finishd steps: 1 in  node:0 ,remaining: 1 ,at time: 28712 ,initial data size: 256 ,available synchronizer: 7
+info ,for node: 0 stream num 5 has been changed to vnet: 2 at time: 28712 ,remaining: 0 ,intial size: 256 total injected: 8 ,total finished: 0 ,total running streams: 5 ,pri: 1
+stream: 5  scheduled after finishd steps: 2 in  node:0 ,remaining: 0 ,at time: 35890 ,initial data size: 256 ,available synchronizer: 64
+stream number: 5  finished its execution in time: 35890 total injected: 8 ,total finished: 0 ,total running streams: 5 ,pri: 1
+stream: 4  scheduled after finishd steps: 1 in  node:0 ,remaining: 1 ,at time: 35890 ,initial data size: 256 ,available synchronizer: 0
+stream: 4  scheduled after finishd steps: 1 in  node:0 ,remaining: 1 ,at time: 35890 ,initial data size: 256 ,available synchronizer: 7
+info ,for node: 0 stream num 4 has been changed to vnet: 2 at time: 35890 ,remaining: 0 ,intial size: 256 total injected: 8 ,total finished: 0 ,total running streams: 4 ,pri: 1
+stream: 4  scheduled after finishd steps: 2 in  node:0 ,remaining: 0 ,at time: 43068 ,initial data size: 256 ,available synchronizer: 64
+stream number: 4  finished its execution in time: 43068 total injected: 8 ,total finished: 0 ,total running streams: 4 ,pri: 1
+stream: 3  scheduled after finishd steps: 1 in  node:0 ,remaining: 1 ,at time: 43068 ,initial data size: 256 ,available synchronizer: 0
+stream: 3  scheduled after finishd steps: 1 in  node:0 ,remaining: 1 ,at time: 43068 ,initial data size: 256 ,available synchronizer: 7
+info ,for node: 0 stream num 3 has been changed to vnet: 2 at time: 43068 ,remaining: 0 ,intial size: 256 total injected: 8 ,total finished: 0 ,total running streams: 3 ,pri: 0
+***** info: weight gradient collective for layer: conv1 is finished************
+stream: 3  scheduled after finishd steps: 2 in  node:0 ,remaining: 0 ,at time: 50246 ,initial data size: 256 ,available synchronizer: 64
+stream number: 3  finished its execution in time: 50246 total injected: 8 ,total finished: 4 ,total running streams: 3 ,pri: 0
+stream: 2  scheduled after finishd steps: 1 in  node:0 ,remaining: 1 ,at time: 50246 ,initial data size: 256 ,available synchronizer: 0
+stream: 2  scheduled after finishd steps: 1 in  node:0 ,remaining: 1 ,at time: 50246 ,initial data size: 256 ,available synchronizer: 7
+info ,for node: 0 stream num 2 has been changed to vnet: 2 at time: 50246 ,remaining: 0 ,intial size: 256 total injected: 8 ,total finished: 4 ,total running streams: 2 ,pri: 0
+stream: 2  scheduled after finishd steps: 2 in  node:0 ,remaining: 0 ,at time: 57424 ,initial data size: 256 ,available synchronizer: 64
+stream number: 2  finished its execution in time: 57424 total injected: 8 ,total finished: 4 ,total running streams: 2 ,pri: 0
+stream: 1  scheduled after finishd steps: 1 in  node:0 ,remaining: 1 ,at time: 57424 ,initial data size: 256 ,available synchronizer: 0
+stream: 1  scheduled after finishd steps: 1 in  node:0 ,remaining: 1 ,at time: 57424 ,initial data size: 256 ,available synchronizer: 7
+info ,for node: 0 stream num 1 has been changed to vnet: 2 at time: 57424 ,remaining: 0 ,intial size: 256 total injected: 8 ,total finished: 4 ,total running streams: 1 ,pri: 0
+stream: 1  scheduled after finishd steps: 2 in  node:0 ,remaining: 0 ,at time: 64602 ,initial data size: 256 ,available synchronizer: 64
+stream number: 1  finished its execution in time: 64602 total injected: 8 ,total finished: 4 ,total running streams: 1 ,pri: 0
+***** info: weight gradient collective for layer: conv1 is finished************
+*******************
+Layer id: conv1
+Total collectives issued for this layer: 2
+*************************  Workload stats  ************************* conv1
+id: conv1 ,Total cycles spent on fwd pass compute: 0
+id: conv1 ,Total cycles spent on weight grad compute: 0
+id: conv1 ,Total cycles spent on input grad compute: 0
+id: conv1 ,Total cycles spent idle waiting for fwd finish: 0
+id: conv1 ,Total cycles spent idle waiting for weight grad finish: 0
+id: conv1 ,Total cycles spent idle waiting for input grad finish: 0
+id: conv1 ,Total cycles spent on fwd pass comm: 0
+id: conv1 ,Total cycles spent on weight grad comm: 107670
+id: conv1 ,Total cycles spent on input grad comm: 0
+*************************  Queuing stats  ************************* conv1
+id: conv1 ,Average cycles spent on queuing for phase 0 of algorithm (per chunk): 0
+id: conv1 ,Average cycles spent on queuing for phase 1 of algorithm (per chunk): 25123
+id: conv1 ,Average cycles spent on queuing for phase 2 of algorithm (per chunk): 0
+*************************  Network stats  ************************* conv1
+id: conv1 ,Average cycles spent on network for phase 1 of algorithm (per message): 502
+id: conv1 ,Average cycles spent on network for phase 2 of algorithm (per message): 502
+*************************
+all passes finished at time: 64607, id of first layer: conv1
+*****
+Time to exit: Thu Oct  8 20:34:52 2020
+Collective implementation: hierarchicalRing
+Collective optimization: localBWAware
+Total sim duration: 0:0 hours
+Total streams injected: 8
+Total streams finished: 8
+Percentage of finished streams: 100 %
+*****
+Exiting

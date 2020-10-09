@@ -679,12 +679,6 @@ void Sys::iterate(){
 }
 int Sys::determine_chunk_size(int size,ComType type) {
     int chunk_size=size/preferred_dataset_splits;
-    if(type==ComType::All_to_All){
-        chunk_size=size/8;
-    }
-    /*if(chunk_size<1024){
-        chunk_size=1024;
-    }*/
     return chunk_size;
 
 }
