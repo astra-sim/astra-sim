@@ -9,5 +9,5 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY bin)
 
 add_subdirectory ("${PROJECT_SOURCE_DIR}/../../" AtraSim)
-add_subdirectory ("${PROJECT_SOURCE_DIR}/../../extern/network_backend/analytical_astra" AnalyticalAstra)
+add_subdirectory ("${PROJECT_SOURCE_DIR}/../../extern/network_backend/analytical" AnalyticalAstra)
 
