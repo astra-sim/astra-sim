@@ -1,0 +1,12 @@
+{
+  "topology-name": "torus",
+  "dims-count": 1,
+  "nodes-per-dim": 9,
+  "link-bandwidth": 25,
+  "link-latency": 500,
+  "nic-latency": 0,
+  "router-latency": 0,
+  "hbm-bandwidth": 500,
+  "hbm-latency": 10,
+  "hbm-scale": 1.5
+}
