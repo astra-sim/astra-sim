@@ -1,6 +1,4 @@
 {
-  "system-configuration": "../../../../../inputs/system/sample_torus_sys",
-  "workload-configuration": "../../../../../inputs/system/DLRM_HybridParallel",
   "topology-configuration": {
     "topology-name": "torus",
     "dims-count": 1,
@@ -19,12 +17,6 @@
     "comm-scale": 1,
     "compute-scale": 1,
     "injection-scale": 1
-  },
-  "stat-configuration": {
-    "path": "../../../result/",
-    "run-name": "DLRM_HybridParallel_test",
-    "total-stat-rows": 1,
-    "stat-row": 0
   },
   "rendezvous-protocol": false
 }
