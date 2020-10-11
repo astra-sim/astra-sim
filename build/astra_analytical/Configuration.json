@@ -1,17 +1,17 @@
 {
-  "system-configuration": "sample_3dim_sys",
-  "workload-configuration": "DLRM_HybridParallel",
+  "system-configuration": "../../../../../inputs/system/sample_torus_sys",
+  "workload-configuration": "../../../../../inputs/system/DLRM_HybridParallel",
   "topology-configuration": {
-    "topology-name": "Ring_AllToAll_Switch",
-    "dims-count": 3,
-    "nodes-per-dim": [2, 8, 2],
-    "link-bandwidth": [25, 25, 25],
-    "link-latency": [500, 500, 500],
-    "nic-latency": [0, 0, 10],
-    "router-latency": [0, 0, 10],
-    "hbm-bandwidth": [500, 500, 500],
-    "hbm-latency": [10, 10, 10],
-    "hbm-scale": [1.5, 1.5, 1.5]
+    "topology-name": "torus",
+    "dims-count": 1,
+    "nodes-per-dim": 9,
+    "link-bandwidth": 25,
+    "link-latency": 500,
+    "nic-latency": 0,
+    "router-latency": 0,
+    "hbm-bandwidth": 500,
+    "hbm-latency": 10,
+    "hbm-scale": 1.5
   },
   "run-configuration": {
     "num-passes": 2,
@@ -21,7 +21,7 @@
     "injection-scale": 1
   },
   "stat-configuration": {
-    "path": "",
+    "path": "../../../result/",
     "run-name": "DLRM_HybridParallel_test",
     "total-stat-rows": 1,
     "stat-row": 0

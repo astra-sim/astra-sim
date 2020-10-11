@@ -1,12 +1,12 @@
 #! /bin/bash -v
 
-workload=medium_DLRM
+workload=DLRM_HybridParallel
 
 # Absolue path to this script
 SCRIPT_DIR=$(dirname "$(realpath $0)")
 
 # Absolute paths to useful directories
-BINARY="${SCRIPT_DIR:?}"/build/AnalyticalAstra/bin/AnalyticalAstra
+BINARY="${SCRIPT_DIR:?}"/build/analytical/bin/AnalyticalAstra
 NETWORK="${SCRIPT_DIR:?}"/../../inputs/network/analytical/sample_torus.json
 SYSTEM="${SCRIPT_DIR:?}"/../../inputs/system/sample_a2a_sys
 WORKLOAD="${SCRIPT_DIR:?}"/../../inputs/workload/"$workload"
@@ -15,7 +15,7 @@ STATS="${SCRIPT_DIR:?}"/result/$1-switch
 rm -rf "${STATS}"
 mkdir "${STATS}"
 
-npus=(4 16 32 64 128 256 512 1024 2048)
+npus=(4) # 16 32 64 128 256 512 1024 2048)
 commScale=(1)
 
 current_row=-1
@@ -49,7 +49,7 @@ for i in "${!npus[@]}"; do
     --rendezvous-protocol false \
     --total-stat-rows "$tot_stat_row" \
     --stat-row "$current_row" \
-    --run-name $filename>>"${STATS}/$filename.txt"
+    --run-name $filename  # >>"${STATS}/$filename.txt"
     sleep 1
   done
 done
