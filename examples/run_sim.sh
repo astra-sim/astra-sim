@@ -6,6 +6,8 @@ SCRIPT_DIR=$(dirname "$(realpath $0)")
 # Absolute paths to useful directories
 BINARY=""
 NETWORK=""
+CONFIG=""
+SYNTHETIC=""
 SYSTEM=""
 WORKLOAD=""
 STATS="${SCRIPT_DIR:?}"/results/run_sim
@@ -23,10 +25,12 @@ echo "network: $network"
 echo "system: $system"
 echo "workload: $workload"
 
-if [ "$network" == "gem5" ]
+if [ "$network" == "garnet" ]
 then
-	BINARY=""
-	NETWORK=""    
+	BINARY="${SCRIPT_DIR:?}"/../build/astra_garnet/build/gem5.opt
+	NETWORK="${SCRIPT_DIR:?}"/../inputs/network/garnet/sample_torus
+    SYNTHETIC="--synthetic=training"
+    CONFIG="${SCRIPT_DIR:?}"/../extern/network_backend/garnet/gem5_astra/configs/example/garnet_synth_traffic.py    
 elif [ "$network" == "analytical" ]
 then
     BINARY="${SCRIPT_DIR:?}"/../build/astra_analytical/build/AnalyticalAstra/bin/AnalyticalAstra
@@ -40,7 +44,7 @@ WORKLOAD="${SCRIPT_DIR:?}"/../inputs/workload/$workload
 rm -rf "${STATS}"
 mkdir "${STATS}"
 
-"${BINARY}" \
+"${BINARY}" "${CONFIG}" "$SYNTHETIC" \
 --network-configuration="${NETWORK}" \
 --system-configuration="${SYSTEM}" \
 --workload-configuration="${WORKLOAD}" \
