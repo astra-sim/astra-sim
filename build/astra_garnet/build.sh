@@ -19,6 +19,9 @@ function setup {
 
 function cleanup {
     rm -rf "${BUILD_DIR}"
+    cd "${GEM5_DIR}"
+    rm -rf build
+    cd "${SCRIPT_DIR:?}"
 }
 
 function cleanup_result {
