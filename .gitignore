@@ -9,6 +9,10 @@ cmake-build-debug/
 build/astra_analytical/build/
 build/astra_analytical/result/
 
+# Example results file
+examples/results/
+!examples/results/README.md
+
 # JetBrains
 .idea/
 .DS_Store

@@ -17,7 +17,7 @@ endif()
 project (AstraSim_Analytical)
 
 # Compile AstraSim library
-add_subdirectory("${PROJECT_SOURCE_DIR}/../../" astra-sim)
+add_subdirectory("${PROJECT_SOURCE_DIR}/../../" AstraSim)
 
 # Compile AnalyticalBackend binary
-add_subdirectory ("${PROJECT_SOURCE_DIR}/../../extern/network_backend/analytical" analytical)
+add_subdirectory ("${PROJECT_SOURCE_DIR}/../../extern/network_backend/analytical" AnalyticalAstra)
