@@ -6,8 +6,8 @@
 cmake-build-debug/
 
 # Analytical Model build and result files
-build/analytical/build/
-build/analytical/result/
+build/astra_analytical/build/
+build/astra_analytical/result/
 
 # JetBrains
 .idea/
