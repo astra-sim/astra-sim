@@ -248,11 +248,12 @@ Sys::Sys(
       total_disabled++;
     }
   }
-  std::vector<int> levels{local_queus,
-                          vertical_queues,
-                          horizontal_queues,
-                          perpendicular_queues,
-                          fourth_queues};
+  std::vector<int> levels{
+      local_queus,
+      vertical_queues,
+      horizontal_queues,
+      perpendicular_queues,
+      fourth_queues};
   int total_levels = 0;
   for (auto l : levels) {
     total_levels += l;

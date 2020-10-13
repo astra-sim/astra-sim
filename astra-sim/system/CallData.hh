@@ -5,10 +5,10 @@ LICENSE file in the root directory of this source tree.
 
 #ifndef __CALLDATA_HH__
 #define __CALLDATA_HH__
-namespace AstraSim{
-class CallData{
-    public:
-        ~CallData()= default;
+namespace AstraSim {
+class CallData {
+ public:
+  ~CallData() = default;
 };
-}
+} // namespace AstraSim
 #endif
