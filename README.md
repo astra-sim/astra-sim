@@ -34,28 +34,26 @@ Saeed Rashidi, Srinivas Sridharan, Sudarshan Srinivasan, and Tushar Krishna,
 # Clone the repository
 $ git clone https://github.com/astra-sim/astra-sim.git
 
-# cloning the repository
+# cloning the submodules
 $ cd astra-sim
 $ git submodule init
 $ git submodule update
 ```
 
 #### Instructions for compiling & running Garnet2.0 as the network simulator
-1. Run "./build/astra_garnet/build.sh -c" to compile and integrate astra-sim with gem5 (-l flag will clean the cpmpilation). This will create a binary file where garnet is integrated with astra-sim.
+1. Run "./build/astra_garnet/build.sh -c" to compile and integrate astra-sim with gem5 (-l flag will clean the cpmpilation). This will create a binary file where garnet is integrated with astra-sim. The analytical backend is hosted at https://github.com/georgia_tech_synergy_lab/gem5_astra .
 2. Run an example inside the examples/ directory with garnet as a backend. example: "examples/run_allreduce.sh -n garnet". This command will run a single all-reduce collective on a Torus topology. 
-3. The results of example script runs will be dumped inside "examples/results/" path the detailed and EndToEnd csv files for this run are stored there (times are in microseconds in the 
-
-
+3. The results of example script runs will be dumped inside "examples/results/" path.
 
 #### Instructions for compiling & running analytical backend as the network simulator
-1. Run "./build/astra_analytical/build.sh -c" to compile and integrate astra-sim with gem5 (-l flag will clean the cpmpilation). This will create a binary file where analytical backend is integrated with astra-sim.
+1. Run "./build/astra_analytical/build.sh -c" to compile and integrate astra-sim with gem5 (-l flag will clean the cpmpilation). This will create a binary file where analytical backend is integrated with astra-sim. The analytical backend is hosted at https://github.com/astra-sim/analytical .
 2. Run an example inside the examples/ directory with garnet as a backend. example: "examples/run_allreduce.sh -n analytical". This command will run a single all-reduce collective on a Torus topology. 
-3. The results of example script runs will be dumped inside "examples/results/" path the detailed and EndToEnd csv files for this run are stored there (times are in microseconds in the 
+3. The results of example script runs will be dumped inside "examples/results/" path. 
 
 #### Instructions for compiling & running NS3 as the network simulator
 Coming Soon!
 
-NOTE: The on-screen reported delays (no matter what backend is used) after the end of simulation are in cycles while the delays inside the csv files are in terms of microSeconds.
+NOTE: The on-screen reported delays (no matter what backend is used) after the end of simulation are in cycles while the delays inside the csv files are in terms of microseconds.
 
 #### ASTRA-SIM Binary Command Line Options
 When running the binary file (no matter what backend is used), the following options may be passed to the binary file (see example scripts):
