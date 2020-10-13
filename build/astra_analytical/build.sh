@@ -6,7 +6,7 @@ SCRIPT_DIR=$(dirname "$(realpath $0)")
 # Absolute paths to useful directories
 BUILD_DIR="${SCRIPT_DIR:?}"/build/
 RESULT_DIR="${SCRIPT_DIR:?}"/result/
-BIN_DIR="${BUILD_DIR}"/analytical/bin/
+BIN_DIR="${BUILD_DIR}"/AnalyticalAstra/bin/
 BINARY="./AnalyticalAstra"
 
 # Functions
