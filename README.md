@@ -42,12 +42,12 @@ $ git submodule update
 
 #### Instructions for compiling & running Garnet2.0 as the network simulator
 1. Run "./build/astra_garnet/build.sh -c" to compile and integrate astra-sim with gem5 (-l flag will clean the compilation). This will create a binary file where garnet is integrated with astra-sim. The analytical backend is hosted at https://github.com/georgia_tech_synergy_lab/gem5_astra .
-2. Run an example inside the examples/ directory with garnet as a backend. example: "examples/run_allreduce.sh -n garnet". This command will run a single all-reduce collective on a Torus topology. 
+2. Run an example inside the "examples/" directory with garnet as a backend. Example: "examples/run_allreduce.sh -n garnet". This command will run a single all-reduce collective on a Torus topology. 
 3. The results of example script runs will be dumped inside "examples/results/" path.
 
 #### Instructions for compiling & running analytical backend as the network simulator
 1. Run "./build/astra_analytical/build.sh -c" to compile and integrate astra-sim with gem5 (-l flag will clean the compilation). This will create a binary file where analytical backend is integrated with astra-sim. The analytical backend is hosted at https://github.com/astra-sim/analytical .
-2. Run an example inside the examples/ directory with garnet as a backend. example: "examples/run_allreduce.sh -n analytical". This command will run a single all-reduce collective on a Torus topology. 
+2. Run an example inside the "examples/" directory with garnet as a backend. Example: "examples/run_allreduce.sh -n analytical". This command will run a single all-reduce collective on a Torus topology. 
 3. The results of example script runs will be dumped inside "examples/results/" path. 
 
 #### Instructions for compiling & running NS3 as the network simulator
