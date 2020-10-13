@@ -28,7 +28,7 @@ for i in "${!npus[@]}"; do
     --system-configuration="${SYSTEM}" \
     --workload-configuration="${WORKLOAD}" \
     --path="${STATS}/" \
-    --topology-name torus \
+    --topology-name Torus2D \
     --dims-count 1 \
     --nodes-per-dim "${npus[$i]}" \
     --link-bandwidth 25 \
