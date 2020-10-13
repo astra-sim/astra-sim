@@ -88,10 +88,10 @@ NOTE: The garnet+astra-sim binary also allows all of the network input options b
 * System: inputs/system/
    * see inputs/system/README.md
 * Network: 
-        * inputs/network/garnet (for garnet backend inputs)
-          * see inputs/network/garnet/README.md
-        * inputs/network/analytical (for analytical backend inputs)
-          * see inputs/network/analytical/README.md
+    * inputs/network/garnet (for garnet backend inputs)
+      * see inputs/network/garnet/README.md
+    * inputs/network/analytical (for analytical backend inputs)
+      * see inputs/network/analytical/README.md
     
 
 ### Contact ###
