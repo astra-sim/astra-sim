@@ -6,28 +6,27 @@ LICENSE file in the root directory of this source tree.
 #ifndef __BASICEVENTHANDLERDATA_HH__
 #define __BASICEVENTHANDLERDATA_HH__
 
-#include <map>
+#include <assert.h>
 #include <math.h>
-#include <fstream>
-#include <chrono>
-#include <ctime>
-#include <tuple>
-#include <cstdint>
-#include <list>
-#include <vector>
 #include <algorithm>
 #include <chrono>
+#include <cstdint>
+#include <ctime>
+#include <fstream>
+#include <list>
+#include <map>
 #include <sstream>
-#include <assert.h>
-#include "Common.hh"
+#include <tuple>
+#include <vector>
 #include "CallData.hh"
+#include "Common.hh"
 
-namespace AstraSim{
-    class BasicEventHandlerData:public CallData{
-    public:
-        int nodeId;
-        EventType event;
-        BasicEventHandlerData(int nodeId, EventType event);
-    };
-}
+namespace AstraSim {
+class BasicEventHandlerData : public CallData {
+ public:
+  int nodeId;
+  EventType event;
+  BasicEventHandlerData(int nodeId, EventType event);
+};
+} // namespace AstraSim
 #endif

@@ -5,14 +5,14 @@ LICENSE file in the root directory of this source tree.
 
 #ifndef __INDATA_HH__
 #define __INDATA_HH__
-namespace AstraSim{
-    class IntData:public CallData{
-    public:
-        int data;
-        //~IntData()= default;
-        IntData(int d){
-            data=d;
-        }
-    };
-}
+namespace AstraSim {
+class IntData : public CallData {
+ public:
+  int data;
+  //~IntData()= default;
+  IntData(int d) {
+    data = d;
+  }
+};
+} // namespace AstraSim
 #endif

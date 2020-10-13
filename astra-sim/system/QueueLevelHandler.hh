@@ -6,33 +6,32 @@ LICENSE file in the root directory of this source tree.
 #ifndef __QUEUELEVELHANDLER_HH__
 #define __QUEUELEVELHANDLER_HH__
 
-#include <map>
+#include <assert.h>
 #include <math.h>
-#include <fstream>
-#include <chrono>
-#include <ctime>
-#include <tuple>
-#include <cstdint>
-#include <list>
-#include <vector>
 #include <algorithm>
 #include <chrono>
+#include <cstdint>
+#include <ctime>
+#include <fstream>
+#include <list>
+#include <map>
 #include <sstream>
-#include <assert.h>
+#include <tuple>
+#include <vector>
 #include "astra-sim/system/topology/RingTopology.hh"
 
-namespace AstraSim{
-    class QueueLevelHandler{
-    public:
-        std::vector<int> queues;
-        int allocator;
-        int first_allocator;
-        int last_allocator;
-        int level;
-        QueueLevelHandler(int level,int start,int end);
-        std::pair<int,RingTopology::Direction> get_next_queue_id();
-        std::pair<int,RingTopology::Direction> get_next_queue_id_first();
-        std::pair<int,RingTopology::Direction> get_next_queue_id_last();
-    };
-}
+namespace AstraSim {
+class QueueLevelHandler {
+ public:
+  std::vector<int> queues;
+  int allocator;
+  int first_allocator;
+  int last_allocator;
+  int level;
+  QueueLevelHandler(int level, int start, int end);
+  std::pair<int, RingTopology::Direction> get_next_queue_id();
+  std::pair<int, RingTopology::Direction> get_next_queue_id_first();
+  std::pair<int, RingTopology::Direction> get_next_queue_id_last();
+};
+} // namespace AstraSim
 #endif
