@@ -59,25 +59,26 @@ NOTE: The on-screen reported delays (no matter what backend is used) after the e
 
 #### ASTRA-SIM Command Line Options
 When running the binary file (no matter what backend is used), the following options may be passed to the binary file (see example scripts):
---network-configuration (required): The network input file dir.
 
---system-configuration  (required): The system input file dir.
+**--network-configuration (required):** The network input file dir.
 
---workload-configuration (required): The workload input file dir.
+**--system-configuration  (required):** The system input file dir.
 
---path (required): The path to dump the results.
+**--workload-configuration (required):** The workload input file dir.
 
---run-name  (required): Name of the current run.
+**--path (required):** The path to dump the results.
 
---num-passes  (required): Number of training passes to simulate.
+**--run-name  (required):** Name of the current run.
 
---total-stat-rows (required): TTotal number of runs that want to write to the same csv file (please see run_multi.sh inside the "examples/"" directory). This is useful when multiple runs want to write to the same csv file. This value should be 1 if only 1 run is executed. 
+**--num-passes  (required):** Number of training passes to simulate.
 
---stat-row  (required): The position of the run to write its stats into the csv stat files (please see run_multi.sh inside the "examples/"" directory). This is useful when multiple runs want to write to the same csv file. This value should be 0 if only 1 run is executed.
+**--total-stat-rows (required):** TTotal number of runs that want to write to the same csv file (please see run_multi.sh inside the "examples/"" directory). This is useful when multiple runs want to write to the same csv file. This value should be 1 if only 1 run is executed. 
 
---compute-scale (optional): Scales the all compute times (reported in the workload input file) by this scale. Tge default value is 1.
+**--stat-row  (required):** The position of the run to write its stats into the csv stat files (please see run_multi.sh inside the "examples/"" directory). This is useful when multiple runs want to write to the same csv file. This value should be 0 if only 1 run is executed.
 
---comm-scale  (optional): Scales the all communication sizes (reported in the workload input file) by this scale. Tge default value is 1.
+**--compute-scale (optional):** Scales the all compute times (reported in the workload input file) by this scale. Tge default value is 1.
+
+**--comm-scale  (optional):** Scales the all communication sizes (reported in the workload input file) by this scale. Tge default value is 1.
 
 NOTE: The garnet+astra-sim binary also allows all of the network input options be overridden by the command line options. 
 
