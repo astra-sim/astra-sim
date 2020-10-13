@@ -70,7 +70,7 @@ When running the binary file (no matter what backend is used), the following opt
 
 **--num-passes  (required):** Number of training passes to simulate.
 
-**--total-stat-rows (required):** TTotal number of runs that want to write to the same csv file (please see run_multi.sh inside the "examples/"" directory). This is useful when multiple runs want to write to the same csv file. This value should be 1 if only 1 run is executed. 
+**--total-stat-rows (required):** Total number of runs that want to write to the same csv file (please see run_multi.sh inside the "examples/"" directory). This is useful when multiple runs want to write to the same csv file. This value should be 1 if only 1 run is executed. 
 
 **--stat-row  (required):** The position of the run to write its stats into the csv stat files (please see run_multi.sh inside the "examples/"" directory). This is useful when multiple runs want to write to the same csv file. This value should be 0 if only 1 run is executed.
 
