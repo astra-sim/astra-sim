@@ -1,3 +1,8 @@
+/******************************************************************************
+This source code is licensed under the MIT license found in the
+LICENSE file in the root directory of this source tree.
+*******************************************************************************/
+
 #include "SimpleMemory.hh"
 namespace AstraSim{
 SimpleMemory::SimpleMemory(AstraNetworkAPI *NI,double access_latency,double npu_access_bw_GB,double nic_access_bw_GB){

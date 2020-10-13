@@ -3,6 +3,6 @@ endpoint-delay: 10
 packet-routing: software
 injection-policy: normal
 preferred-dataset-splits: 4
-boost-mode: 1
+boost-mode: 0
 collective-implementation: hierarchicalRing
 collective-optimization: localBWAware

@@ -27,11 +27,11 @@ $ python3 gen_astrasim_workload_input.py \
   --mnk=mnk_inputs/example.csv \
   --num_npus=16 \
   --num_packages=2 \
-  --output_file=../workload_inputs/example_DATA.txt \
+  --output_file=../../inputs/workload/example_DATA.txt \
   --parallel=DATA \
   --run_name=example \
-  --scalesim_config=../../compute/SCALE-Sim/configs/google.cfg \
-  --scalesim_path=../../compute/SCALE-Sim
+  --scalesim_config=../../extern/compute/SCALE-Sim/configs/google.cfg \
+  --scalesim_path=../../extern/compute/SCALE-Sim
 
 # For customized parallelism
 $ python3 gen_astrasim_workload_input.py \
@@ -39,11 +39,11 @@ $ python3 gen_astrasim_workload_input.py \
   --mnk=mnk_inputs/example_customized.csv \
   --num_npus=16 \
   --num_packages=2 \
-  --output_file=../workload_inputs/example_HYBRID_CUSTOMIZED.txt \
+  --output_file=../../inputs/workload/example_HYBRID_CUSTOMIZED.txt \
   --parallel=HYBRID_CUSTOMIZED \
   --run_name=example_customized \
-  --scalesim_config=../../compute/SCALE-Sim/configs/google.cfg \
-  --scalesim_path=../../compute/SCALE-Sim
+  --scalesim_config=../../extern/compute/SCALE-Sim/configs/google.cfg \
+  --scalesim_path=../../extern/compute/SCALE-Sim
 
 # Using the customized mnk file for data-parallel
 # 	- customization is overrided by "--parallel=DATA"
@@ -52,11 +52,11 @@ $ python3 gen_astrasim_workload_input.py \
   --mnk=mnk_inputs/example_customized.csv \
   --num_npus=16 \
   --num_packages=2 \
-  --output_file=../workload_inputs/example_DATA.txt \
+  --output_file=../../inputs/workload/example_DATA.txt \
   --parallel=DATA \
   --run_name=example \
-  --scalesim_config=../../compute/SCALE-Sim/configs/google.cfg \
-  --scalesim_path=../../compute/SCALE-Sim
+  --scalesim_config=../../extern/compute/SCALE-Sim/configs/google.cfg \
+  --scalesim_path=../../extern/compute/SCALE-Sim
 ```
 
 **Dependent python version and packages:**
