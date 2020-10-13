@@ -22,12 +22,21 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 #include "astra-sim/system/DataSet.hh"
 #include "astra-sim/system/IntData.hh"
 namespace AstraSim {
-Layer::Layer(std::string id, int layer_num, Sys *generator, Workload *workload,
-             int fwd_pass_compute_time, ComType fwd_pass_comm_type,
-             int fwd_pass_comm_size, int input_grad_compute_time,
-             ComType input_grad_comm_type, int input_grad_comm_size,
-             int weight_grad_compute_time, ComType weight_grad_comm_type,
-             int weight_grad_comm_size, int weight_grad_update_time) {
+Layer::Layer(
+    std::string id,
+    int layer_num,
+    Sys* generator,
+    Workload* workload,
+    int fwd_pass_compute_time,
+    ComType fwd_pass_comm_type,
+    int fwd_pass_comm_size,
+    int input_grad_compute_time,
+    ComType input_grad_comm_type,
+    int input_grad_comm_size,
+    int weight_grad_compute_time,
+    ComType weight_grad_comm_type,
+    int weight_grad_comm_size,
+    int weight_grad_update_time) {
   this->id = id;
   this->layer_num = layer_num;
   this->generator = generator;
@@ -68,38 +77,42 @@ Layer::Layer(std::string id, int layer_num, Sys *generator, Workload *workload,
   assert(generator != NULL);
 }
 
-void Layer::call(EventType event, CallData *mdata) {
+void Layer::call(EventType event, CallData* mdata) {
   if (event == EventType::Wight_Grad_Comm_Finished) {
     last_wg_finished = Sys::boostedTick();
-    generator->register_event(this,
-                              EventType::Wight_Grad_Comm_Finished_After_Delay,
-                              mdata, weight_grad_update_time);
+    generator->register_event(
+        this,
+        EventType::Wight_Grad_Comm_Finished_After_Delay,
+        mdata,
+        weight_grad_update_time);
     return;
   } else if (event == EventType::Input_Grad_Comm_Finished) {
     last_ig_finished = Sys::boostedTick();
-    generator->register_event(this,
-                              EventType::Input_Grad_Comm_Finished_After_Delay,
-                              mdata, input_grad_update_time);
+    generator->register_event(
+        this,
+        EventType::Input_Grad_Comm_Finished_After_Delay,
+        mdata,
+        input_grad_update_time);
     return;
   } else if (event == EventType::Fwd_Comm_Finished) {
     last_fwd_finished = Sys::boostedTick();
-    generator->register_event(this, EventType::Fwd_Comm_Finished_After_Delay,
-                              mdata, fwd_update_time);
+    generator->register_event(
+        this, EventType::Fwd_Comm_Finished_After_Delay, mdata, fwd_update_time);
     return;
   }
-  int data = ((IntData *)mdata)->data;
-  IntData *intData = ((IntData *)mdata);
+  int data = ((IntData*)mdata)->data;
+  IntData* intData = ((IntData*)mdata);
   if (event == EventType::Wight_Grad_Comm_Finished_After_Delay) {
     if (generator->id == 0) {
       std::cout << "***** info: weight gradient collective for layer: " << id
                 << " is finished************" << std::endl;
     }
     total_weight_grad_comm += weight_grad_datasets[data]->finish_tick -
-                              weight_grad_datasets[data]->creation_tick;
+        weight_grad_datasets[data]->creation_tick;
     if (weight_grad_datasets.size() == 1 &&
         wg_barrier == CollectiveBarrier::Blocking) {
       total_waiting_for_wg_comm += weight_grad_datasets[data]->finish_tick -
-                                   weight_grad_datasets[data]->creation_tick;
+          weight_grad_datasets[data]->creation_tick;
       update_stream_stats(weight_grad_datasets[data]);
       int dataset_streams = weight_grad_datasets[data]->total_streams;
       delete weight_grad_datasets[data];
@@ -110,7 +123,7 @@ void Layer::call(EventType event, CallData *mdata) {
       return;
     } else if (started_waiting_for_weight_grad.size() > 0) {
       total_waiting_for_wg_comm += weight_grad_datasets[data]->finish_tick -
-                                   started_waiting_for_weight_grad.front();
+          started_waiting_for_weight_grad.front();
       started_waiting_for_weight_grad.pop_front();
       update_stream_stats(weight_grad_datasets[data]);
       int dataset_streams = weight_grad_datasets[data]->total_streams;
@@ -134,11 +147,11 @@ void Layer::call(EventType event, CallData *mdata) {
                 << " is finished************" << std::endl;
     }
     total_input_grad_comm += input_grad_datasets[data]->finish_tick -
-                             input_grad_datasets[data]->creation_tick;
+        input_grad_datasets[data]->creation_tick;
     if (input_grad_datasets.size() == 1 &&
         ig_barrier == CollectiveBarrier::Blocking) {
       total_waiting_for_ig_comm += input_grad_datasets[data]->finish_tick -
-                                   input_grad_datasets[data]->creation_tick;
+          input_grad_datasets[data]->creation_tick;
       update_stream_stats(input_grad_datasets[data]);
       int dataset_streams = input_grad_datasets[data]->total_streams;
       delete input_grad_datasets[data];
@@ -149,7 +162,7 @@ void Layer::call(EventType event, CallData *mdata) {
       return;
     } else if (started_waiting_for_input_grad.size() > 0) {
       total_waiting_for_ig_comm += input_grad_datasets[data]->finish_tick -
-                                   started_waiting_for_input_grad.front();
+          started_waiting_for_input_grad.front();
       started_waiting_for_input_grad.pop_front();
       update_stream_stats(input_grad_datasets[data]);
       int dataset_streams = input_grad_datasets[data]->total_streams;
@@ -173,11 +186,11 @@ void Layer::call(EventType event, CallData *mdata) {
                 << " is finished************" << std::endl;
     }
     total_fwd_comm += fwd_pass_datasets[data]->finish_tick -
-                      fwd_pass_datasets[data]->creation_tick;
+        fwd_pass_datasets[data]->creation_tick;
     if (fwd_pass_datasets.size() == 1 &&
         fwd_barrier == CollectiveBarrier::Blocking) {
       total_waiting_for_fwd_comm += fwd_pass_datasets[data]->finish_tick -
-                                    fwd_pass_datasets[data]->creation_tick;
+          fwd_pass_datasets[data]->creation_tick;
       update_stream_stats(fwd_pass_datasets[data]);
       int dataset_streams = fwd_pass_datasets[data]->total_streams;
       delete fwd_pass_datasets[data];
@@ -192,7 +205,7 @@ void Layer::call(EventType event, CallData *mdata) {
         // is finished and callback called************"<<std::endl;
       }
       total_waiting_for_fwd_comm += fwd_pass_datasets[data]->finish_tick -
-                                    started_waiting_for_fwd_pass.front();
+          started_waiting_for_fwd_pass.front();
       started_waiting_for_fwd_pass.pop_front();
       update_stream_stats(fwd_pass_datasets[data]);
       int dataset_streams = fwd_pass_datasets[data]->total_streams;
@@ -225,9 +238,15 @@ Tick Layer::get_weight_grad_compute() {
   total_weight_grad_compute += weight_grad_compute_time;
   return weight_grad_compute_time;
 }
-void Layer::increment_waiting_for_wg() { total_waiting_for_wg_comm++; }
-void Layer::increment_waiting_for_ig() { total_waiting_for_ig_comm++; }
-void Layer::increment_waiting_for_fwd() { total_waiting_for_fwd_comm++; }
+void Layer::increment_waiting_for_wg() {
+  total_waiting_for_wg_comm++;
+}
+void Layer::increment_waiting_for_ig() {
+  total_waiting_for_ig_comm++;
+}
+void Layer::increment_waiting_for_fwd() {
+  total_waiting_for_fwd_comm++;
+}
 bool Layer::is_fwd_pass_comm_finished() {
   if (fwd_pass_datasets.size() ==
       0) { // && Sys::boostedTick()-last_fwd_finished>=fwd_update_time
@@ -271,10 +290,16 @@ bool Layer::is_weight_grad_comm_finished_blocking() {
   this->started_waiting_for_weight_grad.push_back(Sys::boostedTick());
   return false;
 }
-LayerData Layer::report(std::string run_name, int layer_num, int total_rows,
-                        int stat_row, CSVWriter *detailed, CSVWriter *EndToEnd,
-                        double &total_compute, double &total_exposed,
-                        bool seprate_log) {
+LayerData Layer::report(
+    std::string run_name,
+    int layer_num,
+    int total_rows,
+    int stat_row,
+    CSVWriter* detailed,
+    CSVWriter* EndToEnd,
+    double& total_compute,
+    double& total_exposed,
+    bool seprate_log) {
   LayerData layerData;
   take_stream_stats_average();
   total_compute += (total_forward_pass_compute / FREQ);
@@ -294,11 +319,11 @@ LayerData Layer::report(std::string run_name, int layer_num, int total_rows,
   layerData.total_weight_grad_comm = total_weight_grad_comm / FREQ;
   layerData.total_input_grad_comm = total_input_grad_comm / FREQ;
   int i = 0;
-  for (auto &qd : queuing_delay) {
+  for (auto& qd : queuing_delay) {
     layerData.avg_queuing_delay.push_back(std::make_pair(i, qd / FREQ));
   }
   i = 1;
-  for (auto &ml : net_message_latency) {
+  for (auto& ml : net_message_latency) {
     layerData.avg_network_message_dealy.push_back(std::make_pair(i, ml / FREQ));
   }
   if (seprate_log) {
@@ -322,24 +347,30 @@ LayerData Layer::report(std::string run_name, int layer_num, int total_rows,
     if (stat_row == 0 && layer_num == 0) {
       EndToEnd->write_cell(0, 2, "fwd compute");
     }
-    EndToEnd->write_cell(layer_num * total_rows + 1 + stat_row, 2,
-                         std::to_string(total_forward_pass_compute / FREQ));
+    EndToEnd->write_cell(
+        layer_num * total_rows + 1 + stat_row,
+        2,
+        std::to_string(total_forward_pass_compute / FREQ));
 
     std::cout << "id: " << id << " ,Total cycles spent on weight grad compute: "
               << total_weight_grad_compute << std::endl;
     if (stat_row == 0 && layer_num == 0) {
       EndToEnd->write_cell(0, 3, "wg compute");
     }
-    EndToEnd->write_cell(layer_num * total_rows + 1 + stat_row, 3,
-                         std::to_string(total_weight_grad_compute / FREQ));
+    EndToEnd->write_cell(
+        layer_num * total_rows + 1 + stat_row,
+        3,
+        std::to_string(total_weight_grad_compute / FREQ));
 
     std::cout << "id: " << id << " ,Total cycles spent on input grad compute: "
               << total_input_grad_compute << std::endl;
     if (stat_row == 0 && layer_num == 0) {
       EndToEnd->write_cell(0, 4, "ig compute");
     }
-    EndToEnd->write_cell(layer_num * total_rows + 1 + stat_row, 4,
-                         std::to_string(total_input_grad_compute / FREQ));
+    EndToEnd->write_cell(
+        layer_num * total_rows + 1 + stat_row,
+        4,
+        std::to_string(total_input_grad_compute / FREQ));
 
     std::cout << "id: " << id
               << " ,Total cycles spent idle waiting for fwd finish: "
@@ -347,8 +378,10 @@ LayerData Layer::report(std::string run_name, int layer_num, int total_rows,
     if (stat_row == 0 && layer_num == 0) {
       EndToEnd->write_cell(0, 5, "fwd exposed comm");
     }
-    EndToEnd->write_cell(layer_num * total_rows + 1 + stat_row, 5,
-                         std::to_string(total_waiting_for_fwd_comm / FREQ));
+    EndToEnd->write_cell(
+        layer_num * total_rows + 1 + stat_row,
+        5,
+        std::to_string(total_waiting_for_fwd_comm / FREQ));
 
     std::cout << "id: " << id
               << " ,Total cycles spent idle waiting for weight grad finish: "
@@ -356,8 +389,10 @@ LayerData Layer::report(std::string run_name, int layer_num, int total_rows,
     if (stat_row == 0 && layer_num == 0) {
       EndToEnd->write_cell(0, 6, "wg exposed comm");
     }
-    EndToEnd->write_cell(layer_num * total_rows + 1 + stat_row, 6,
-                         std::to_string(total_waiting_for_wg_comm / FREQ));
+    EndToEnd->write_cell(
+        layer_num * total_rows + 1 + stat_row,
+        6,
+        std::to_string(total_waiting_for_wg_comm / FREQ));
 
     std::cout << "id: " << id
               << " ,Total cycles spent idle waiting for input grad finish: "
@@ -365,8 +400,10 @@ LayerData Layer::report(std::string run_name, int layer_num, int total_rows,
     if (stat_row == 0 && layer_num == 0) {
       EndToEnd->write_cell(0, 7, "ig exposed comm");
     }
-    EndToEnd->write_cell(layer_num * total_rows + 1 + stat_row, 7,
-                         std::to_string(total_waiting_for_ig_comm / FREQ));
+    EndToEnd->write_cell(
+        layer_num * total_rows + 1 + stat_row,
+        7,
+        std::to_string(total_waiting_for_ig_comm / FREQ));
 
     std::cout << "id: " << id
               << " ,Total cycles spent on fwd pass comm: " << total_fwd_comm
@@ -374,30 +411,38 @@ LayerData Layer::report(std::string run_name, int layer_num, int total_rows,
     if (stat_row == 0 && layer_num == 0) {
       EndToEnd->write_cell(0, 8, "fwd total comm");
     }
-    EndToEnd->write_cell(layer_num * total_rows + 1 + stat_row, 8,
-                         std::to_string(total_fwd_comm / FREQ));
+    EndToEnd->write_cell(
+        layer_num * total_rows + 1 + stat_row,
+        8,
+        std::to_string(total_fwd_comm / FREQ));
 
     std::cout << "id: " << id << " ,Total cycles spent on weight grad comm: "
               << total_weight_grad_comm << std::endl;
     if (stat_row == 0 && layer_num == 0) {
       EndToEnd->write_cell(0, 9, "wg total comm");
     }
-    EndToEnd->write_cell(layer_num * total_rows + 1 + stat_row, 9,
-                         std::to_string(total_weight_grad_comm / FREQ));
+    EndToEnd->write_cell(
+        layer_num * total_rows + 1 + stat_row,
+        9,
+        std::to_string(total_weight_grad_comm / FREQ));
 
     std::cout << "id: " << id << " ,Total cycles spent on input grad comm: "
               << total_input_grad_comm << std::endl;
     if (stat_row == 0 && layer_num == 0) {
       EndToEnd->write_cell(0, 10, "ig total comm");
     }
-    EndToEnd->write_cell(layer_num * total_rows + 1 + stat_row, 10,
-                         std::to_string(total_input_grad_comm / FREQ));
+    EndToEnd->write_cell(
+        layer_num * total_rows + 1 + stat_row,
+        10,
+        std::to_string(total_input_grad_comm / FREQ));
 
     if (stat_row == 0 && layer_num == 0) {
       EndToEnd->write_cell(0, 11, "workload finished at");
     }
-    EndToEnd->write_cell(layer_num * total_rows + 1 + stat_row, 11,
-                         std::to_string(((double)Sys::boostedTick()) / FREQ));
+    EndToEnd->write_cell(
+        layer_num * total_rows + 1 + stat_row,
+        11,
+        std::to_string(((double)Sys::boostedTick()) / FREQ));
     if (layer_num == workload->SIZE - 1) {
       if (stat_row == 0) {
         EndToEnd->write_cell(0, 12, "total comp");
@@ -456,78 +501,113 @@ LayerData Layer::report(std::string run_name, int layer_num, int total_rows,
               << id << std::endl;
     int count = 2;
     int i = 0;
-    for (auto &qd : queuing_delay) {
+    for (auto& qd : queuing_delay) {
       std::cout << "id: " << id
                 << " ,Average cycles spent on queuing for phase " << i++
                 << " of algorithm (per chunk): " << qd << std::endl;
       if (stat_row == 0 && layer_num == 0) {
-        detailed->write_cell(0, count,
-                             "queuing delay phase " + std::to_string(i - 1));
+        detailed->write_cell(
+            0, count, "queuing delay phase " + std::to_string(i - 1));
       }
-      detailed->write_cell(layer_num * total_rows + 1 + stat_row, count++,
-                           std::to_string(qd / FREQ));
+      detailed->write_cell(
+          layer_num * total_rows + 1 + stat_row,
+          count++,
+          std::to_string(qd / FREQ));
     }
     std::cout << "*************************  Network stats  "
                  "************************* "
               << id << std::endl;
     i = 1;
-    for (auto &ml : net_message_latency) {
+    for (auto& ml : net_message_latency) {
       std::cout << "id: " << id
                 << " ,Average cycles spent on network for phase " << i++
                 << " of algorithm (per message): " << ml << std::endl;
       if (stat_row == 0 && layer_num == 0) {
-        detailed->write_cell(0, count,
-                             "network delay phase " + std::to_string(i - 1));
+        detailed->write_cell(
+            0, count, "network delay phase " + std::to_string(i - 1));
       }
-      detailed->write_cell(layer_num * total_rows + 1 + stat_row, count++,
-                           std::to_string(ml / FREQ));
+      detailed->write_cell(
+          layer_num * total_rows + 1 + stat_row,
+          count++,
+          std::to_string(ml / FREQ));
     }
   }
   return layerData;
 }
-void Layer::issue_forward_pass_comm(bool local, bool vertical, bool horizontal,
-                                    SchedulingPolicy pref_scheduling,
-                                    CollectiveBarrier barrier) {
-  DataSet *fp = NULL;
-  DataSet *fp2 = NULL;
+void Layer::issue_forward_pass_comm(
+    bool local,
+    bool vertical,
+    bool horizontal,
+    SchedulingPolicy pref_scheduling,
+    CollectiveBarrier barrier) {
+  DataSet* fp = NULL;
+  DataSet* fp2 = NULL;
   fwd_barrier = barrier;
   collective_counter++;
   if (fwd_pass_comm_type == ComType::All_Reduce) {
-    fp = generator->generate_all_reduce(fwd_pass_comm_size, local, vertical,
-                                        horizontal, pref_scheduling, layer_num);
+    fp = generator->generate_all_reduce(
+        fwd_pass_comm_size,
+        local,
+        vertical,
+        horizontal,
+        pref_scheduling,
+        layer_num);
     if (generator->id == 0) {
       std::cout << "info: all-reduce forward pass collective issued for layer: "
                 << id << std::endl;
     }
   } else if (fwd_pass_comm_type == ComType::All_to_All) {
-    fp = generator->generate_all_to_all(fwd_pass_comm_size, local, vertical,
-                                        horizontal, pref_scheduling, layer_num);
+    fp = generator->generate_all_to_all(
+        fwd_pass_comm_size,
+        local,
+        vertical,
+        horizontal,
+        pref_scheduling,
+        layer_num);
     if (generator->id == 0) {
       std::cout << "info: all-to-all forward pass collective issued for layer: "
                 << id << std::endl;
     }
   } else if (fwd_pass_comm_type == ComType::All_Gatehr) {
-    fp = generator->generate_all_gather(fwd_pass_comm_size, local, vertical,
-                                        horizontal, pref_scheduling, layer_num);
+    fp = generator->generate_all_gather(
+        fwd_pass_comm_size,
+        local,
+        vertical,
+        horizontal,
+        pref_scheduling,
+        layer_num);
     if (generator->id == 0) {
       std::cout << "info: all-gather forward pass collective issued for layer: "
                 << id << std::endl;
     }
   } else if (fwd_pass_comm_type == ComType::Reduce_Scatter) {
-    fp = generator->generate_reduce_scatter(fwd_pass_comm_size, local, vertical,
-                                            horizontal, pref_scheduling,
-                                            layer_num);
+    fp = generator->generate_reduce_scatter(
+        fwd_pass_comm_size,
+        local,
+        vertical,
+        horizontal,
+        pref_scheduling,
+        layer_num);
     if (generator->id == 0) {
       std::cout
           << "info: reduce-scatter forward pass collective issued for layer: "
           << id << std::endl;
     }
   } else if (fwd_pass_comm_type == ComType::All_Reduce_All_to_All) {
-    fp = generator->generate_all_reduce(fwd_pass_comm_size, local, vertical,
-                                        horizontal, pref_scheduling, layer_num);
-    fp2 =
-        generator->generate_all_to_all(lookup_table_size, local, vertical,
-                                       horizontal, pref_scheduling, layer_num);
+    fp = generator->generate_all_reduce(
+        fwd_pass_comm_size,
+        local,
+        vertical,
+        horizontal,
+        pref_scheduling,
+        layer_num);
+    fp2 = generator->generate_all_to_all(
+        lookup_table_size,
+        local,
+        vertical,
+        horizontal,
+        pref_scheduling,
+        layer_num);
   } else if (fwd_pass_comm_type == ComType::None) {
     collective_counter--;
     if (generator->id == 0) {
@@ -548,49 +628,80 @@ void Layer::issue_forward_pass_comm(bool local, bool vertical, bool horizontal,
     fp2->set_notifier(this, EventType::Fwd_Comm_Finished);
   }
 }
-void Layer::issue_input_grad_comm(bool local, bool vertical, bool horizontal,
-                                  SchedulingPolicy pref_scheduling,
-                                  CollectiveBarrier barrier) {
-  DataSet *ig = NULL;
-  DataSet *ig2 = NULL;
+void Layer::issue_input_grad_comm(
+    bool local,
+    bool vertical,
+    bool horizontal,
+    SchedulingPolicy pref_scheduling,
+    CollectiveBarrier barrier) {
+  DataSet* ig = NULL;
+  DataSet* ig2 = NULL;
   ig_barrier = barrier;
   collective_counter++;
   if (input_grad_comm_type == ComType::All_Reduce) {
-    ig = generator->generate_all_reduce(input_grad_comm_size, local, vertical,
-                                        horizontal, pref_scheduling, layer_num);
+    ig = generator->generate_all_reduce(
+        input_grad_comm_size,
+        local,
+        vertical,
+        horizontal,
+        pref_scheduling,
+        layer_num);
     if (generator->id == 0) {
       std::cout << "info: all-reduce input grad collective issued for layer: "
                 << id << std::endl;
     }
   } else if (input_grad_comm_type == ComType::All_to_All) {
-    ig = generator->generate_all_to_all(input_grad_comm_size, local, vertical,
-                                        horizontal, pref_scheduling, layer_num);
+    ig = generator->generate_all_to_all(
+        input_grad_comm_size,
+        local,
+        vertical,
+        horizontal,
+        pref_scheduling,
+        layer_num);
     if (generator->id == 0) {
       std::cout << "info: all-to-all input grad collective issued for layer: "
                 << id << std::endl;
     }
   } else if (input_grad_comm_type == ComType::All_Gatehr) {
-    ig = generator->generate_all_gather(input_grad_comm_size, local, vertical,
-                                        horizontal, pref_scheduling, layer_num);
+    ig = generator->generate_all_gather(
+        input_grad_comm_size,
+        local,
+        vertical,
+        horizontal,
+        pref_scheduling,
+        layer_num);
     if (generator->id == 0) {
       std::cout << "info: all-gather input grad collective issued for layer: "
                 << id << std::endl;
     }
   } else if (input_grad_comm_type == ComType::Reduce_Scatter) {
-    ig = generator->generate_reduce_scatter(input_grad_comm_size, local,
-                                            vertical, horizontal,
-                                            pref_scheduling, layer_num);
+    ig = generator->generate_reduce_scatter(
+        input_grad_comm_size,
+        local,
+        vertical,
+        horizontal,
+        pref_scheduling,
+        layer_num);
     if (generator->id == 0) {
       std::cout
           << "info: reduce-scatter input grad collective issued for layer: "
           << id << std::endl;
     }
   } else if (input_grad_comm_type == ComType::All_Reduce_All_to_All) {
-    ig = generator->generate_all_reduce(input_grad_comm_size, local, vertical,
-                                        horizontal, pref_scheduling, layer_num);
-    ig2 =
-        generator->generate_all_to_all(lookup_table_size, local, vertical,
-                                       horizontal, pref_scheduling, layer_num);
+    ig = generator->generate_all_reduce(
+        input_grad_comm_size,
+        local,
+        vertical,
+        horizontal,
+        pref_scheduling,
+        layer_num);
+    ig2 = generator->generate_all_to_all(
+        lookup_table_size,
+        local,
+        vertical,
+        horizontal,
+        pref_scheduling,
+        layer_num);
   } else if (input_grad_comm_type == ComType::None) {
     collective_counter--;
     if (generator->id == 0) {
@@ -613,51 +724,82 @@ void Layer::issue_input_grad_comm(bool local, bool vertical, bool horizontal,
     ig2->set_notifier(this, EventType::Input_Grad_Comm_Finished);
   }
 }
-void Layer::issue_weight_grad_comm(bool local, bool vertical, bool horizontal,
-                                   SchedulingPolicy pref_scheduling,
-                                   CollectiveBarrier barrier) {
+void Layer::issue_weight_grad_comm(
+    bool local,
+    bool vertical,
+    bool horizontal,
+    SchedulingPolicy pref_scheduling,
+    CollectiveBarrier barrier) {
   // if(weight_grad_dataset!=NULL)
   // delete weight_grad_dataset;
-  DataSet *wg = NULL;
-  DataSet *wg2 = NULL;
+  DataSet* wg = NULL;
+  DataSet* wg2 = NULL;
   wg_barrier = barrier;
   collective_counter++;
   if (weight_grad_comm_type == ComType::All_Reduce) {
-    wg = generator->generate_all_reduce(weight_grad_comm_size, local, vertical,
-                                        horizontal, pref_scheduling, layer_num);
+    wg = generator->generate_all_reduce(
+        weight_grad_comm_size,
+        local,
+        vertical,
+        horizontal,
+        pref_scheduling,
+        layer_num);
     if (generator->id == 0) {
       std::cout << "info: allr-educe weight grad collective issued for layer: "
                 << id << " with size: " << weight_grad_comm_size << std::endl;
     }
   } else if (weight_grad_comm_type == ComType::All_to_All) {
-    wg = generator->generate_all_to_all(weight_grad_comm_size, local, vertical,
-                                        horizontal, pref_scheduling, layer_num);
+    wg = generator->generate_all_to_all(
+        weight_grad_comm_size,
+        local,
+        vertical,
+        horizontal,
+        pref_scheduling,
+        layer_num);
     if (generator->id == 0) {
       std::cout << "info: all-to-all weight grad collective issued for layer: "
                 << id << " with size: " << weight_grad_comm_size << std::endl;
     }
   } else if (weight_grad_comm_type == ComType::All_Gatehr) {
-    wg = generator->generate_all_gather(weight_grad_comm_size, local, vertical,
-                                        horizontal, pref_scheduling, layer_num);
+    wg = generator->generate_all_gather(
+        weight_grad_comm_size,
+        local,
+        vertical,
+        horizontal,
+        pref_scheduling,
+        layer_num);
     if (generator->id == 0) {
       std::cout << "info: all-gather weight grad collective issued for layer: "
                 << id << std::endl;
     }
   } else if (weight_grad_comm_type == ComType::Reduce_Scatter) {
-    wg = generator->generate_reduce_scatter(weight_grad_comm_size, local,
-                                            vertical, horizontal,
-                                            pref_scheduling, layer_num);
+    wg = generator->generate_reduce_scatter(
+        weight_grad_comm_size,
+        local,
+        vertical,
+        horizontal,
+        pref_scheduling,
+        layer_num);
     if (generator->id == 0) {
       std::cout
           << "info: reduce-scatter weight grad collective issued for layer: "
           << id << std::endl;
     }
   } else if (weight_grad_comm_type == ComType::All_Reduce_All_to_All) {
-    wg = generator->generate_all_reduce(weight_grad_comm_size, local, vertical,
-                                        horizontal, pref_scheduling, layer_num);
-    wg2 =
-        generator->generate_all_to_all(lookup_table_size, local, vertical,
-                                       horizontal, pref_scheduling, layer_num);
+    wg = generator->generate_all_reduce(
+        weight_grad_comm_size,
+        local,
+        vertical,
+        horizontal,
+        pref_scheduling,
+        layer_num);
+    wg2 = generator->generate_all_to_all(
+        lookup_table_size,
+        local,
+        vertical,
+        horizontal,
+        pref_scheduling,
+        layer_num);
   } else if (weight_grad_comm_type == ComType::None) {
     collective_counter--;
     if (generator->id == 0) {

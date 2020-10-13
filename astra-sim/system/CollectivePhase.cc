@@ -22,8 +22,10 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 #include "CollectivePhase.hh"
 #include "astra-sim/system/collective/Algorithm.hh"
 namespace AstraSim {
-CollectivePhase::CollectivePhase(Sys *generator, int queue_id,
-                                 Algorithm *algorithm) {
+CollectivePhase::CollectivePhase(
+    Sys* generator,
+    int queue_id,
+    Algorithm* algorithm) {
   this->generator = generator;
   this->queue_id = queue_id;
   this->algorithm = algorithm;
@@ -38,7 +40,7 @@ CollectivePhase::CollectivePhase() {
   generator = NULL;
   algorithm = NULL;
 }
-void CollectivePhase::init(BaseStream *stream) {
+void CollectivePhase::init(BaseStream* stream) {
   if (algorithm != NULL) {
     algorithm->init(stream);
   }

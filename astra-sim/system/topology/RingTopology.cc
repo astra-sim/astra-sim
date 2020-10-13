@@ -21,8 +21,12 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 
 #include "RingTopology.hh"
 namespace AstraSim {
-RingTopology::RingTopology(Dimension dimension, int id, int total_nodes_in_ring,
-                           int index_in_ring, int offset)
+RingTopology::RingTopology(
+    Dimension dimension,
+    int id,
+    int total_nodes_in_ring,
+    int index_in_ring,
+    int offset)
     : BasicLogicalTopology(BasicLogicalTopology::BasicTopology::Ring) {
   name = "local";
   if (dimension == Dimension::Vertical) {
@@ -141,7 +145,9 @@ int RingTopology::get_sender_node(int node_id, Direction direction) {
     return sender;
   }
 }
-int RingTopology::get_nodes_in_ring() { return total_nodes_in_ring; }
+int RingTopology::get_nodes_in_ring() {
+  return total_nodes_in_ring;
+}
 bool RingTopology::is_enabled() {
   int tmp_index = index_in_ring;
   int tmp_id = id;

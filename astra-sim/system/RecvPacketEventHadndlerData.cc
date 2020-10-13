@@ -22,7 +22,11 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 #include "RecvPacketEventHadndlerData.hh"
 namespace AstraSim {
 RecvPacketEventHadndlerData::RecvPacketEventHadndlerData(
-    BaseStream *owner, int nodeId, EventType event, int vnet, int stream_num)
+    BaseStream* owner,
+    int nodeId,
+    EventType event,
+    int vnet,
+    int stream_num)
     : BasicEventHandlerData(nodeId, event) {
   this->owner = owner;
   this->vnet = vnet;

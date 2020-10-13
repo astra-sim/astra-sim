@@ -21,7 +21,7 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 
 #include "Node.hh"
 namespace AstraSim {
-Node::Node(int id, Node *parent, Node *left_child, Node *right_child) {
+Node::Node(int id, Node* parent, Node* left_child, Node* right_child) {
   this->id = id;
   this->parent = parent;
   this->left_child = left_child;

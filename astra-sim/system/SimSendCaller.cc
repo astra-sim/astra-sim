@@ -22,10 +22,16 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 #include "SimSendCaller.hh"
 #include "Sys.hh"
 namespace AstraSim {
-SimSendCaller::SimSendCaller(Sys *generator, void *buffer, int count, int type,
-                             int dst, int tag, sim_request request,
-                             void (*msg_handler)(void *fun_arg),
-                             void *fun_arg) {
+SimSendCaller::SimSendCaller(
+    Sys* generator,
+    void* buffer,
+    int count,
+    int type,
+    int dst,
+    int tag,
+    sim_request request,
+    void (*msg_handler)(void* fun_arg),
+    void* fun_arg) {
   this->generator = generator;
   this->buffer = buffer;
   this->count = count;
@@ -36,10 +42,16 @@ SimSendCaller::SimSendCaller(Sys *generator, void *buffer, int count, int type,
   this->msg_handler = msg_handler;
   this->fun_arg = fun_arg;
 }
-void SimSendCaller::call(EventType type, CallData *data) {
-  generator->NI->sim_send(this->buffer, this->count, this->type, this->dst,
-                          this->tag, &this->request, this->msg_handler,
-                          this->fun_arg);
+void SimSendCaller::call(EventType type, CallData* data) {
+  generator->NI->sim_send(
+      this->buffer,
+      this->count,
+      this->type,
+      this->dst,
+      this->tag,
+      &this->request,
+      this->msg_handler,
+      this->fun_arg);
   delete this;
 }
 } // namespace AstraSim

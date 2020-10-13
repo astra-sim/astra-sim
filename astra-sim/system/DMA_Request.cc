@@ -29,8 +29,12 @@ DMA_Request::DMA_Request(int id, int slots, int latency, int bytes) {
   this->stream_owner = NULL;
   this->bytes = bytes;
 }
-DMA_Request::DMA_Request(int id, int slots, int latency, int bytes,
-                         Callable *stream_owner) {
+DMA_Request::DMA_Request(
+    int id,
+    int slots,
+    int latency,
+    int bytes,
+    Callable* stream_owner) {
   this->slots = slots;
   this->latency = latency;
   this->id = id;

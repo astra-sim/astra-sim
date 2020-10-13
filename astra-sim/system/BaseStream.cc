@@ -24,10 +24,14 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 namespace AstraSim {
 std::map<int, int> BaseStream::synchronizer;
 std::map<int, int> BaseStream::ready_counter;
-std::map<int, std::list<BaseStream *>> BaseStream::suspended_streams;
-void BaseStream::changeState(StreamState state) { this->state = state; }
-BaseStream::BaseStream(int stream_num, Sys *owner,
-                       std::list<CollectivePhase> phases_to_go) {
+std::map<int, std::list<BaseStream*>> BaseStream::suspended_streams;
+void BaseStream::changeState(StreamState state) {
+  this->state = state;
+}
+BaseStream::BaseStream(
+    int stream_num,
+    Sys* owner,
+    std::list<CollectivePhase> phases_to_go) {
   this->stream_num = stream_num;
   this->owner = owner;
   this->initialized = false;
@@ -39,7 +43,7 @@ BaseStream::BaseStream(int stream_num, Sys *owner,
     synchronizer[stream_num] = 1;
     ready_counter[stream_num] = 0;
   }
-  for (auto &vn : phases_to_go) {
+  for (auto& vn : phases_to_go) {
     if (vn.algorithm != NULL) {
       vn.init(this);
     }
@@ -58,7 +62,9 @@ void BaseStream::declare_ready() {
     ready_counter[stream_num] = 0;
   }
 }
-bool BaseStream::is_ready() { return synchronizer[stream_num] > 0; }
+bool BaseStream::is_ready() {
+  return synchronizer[stream_num] > 0;
+}
 void BaseStream::consume_ready() {
   // std::cout<<"consume ready called!"<<std::endl;
   assert(synchronizer[stream_num] > 0);
@@ -67,7 +73,7 @@ void BaseStream::consume_ready() {
 }
 void BaseStream::suspend_ready() {
   if (suspended_streams.find(stream_num) == suspended_streams.end()) {
-    std::list<BaseStream *> empty;
+    std::list<BaseStream*> empty;
     suspended_streams[stream_num] = empty;
   }
   suspended_streams[stream_num].push_back(this);
@@ -79,8 +85,7 @@ void BaseStream::resume_ready(int st_num) {
   }
   int counter = owner->all_generators.size() - 1;
   for (int i = 0; i < counter; i++) {
-    StreamBaseline *stream =
-        (StreamBaseline *)suspended_streams[st_num].front();
+    StreamBaseline* stream = (StreamBaseline*)suspended_streams[st_num].front();
     suspended_streams[st_num].pop_front();
     owner->all_generators[stream->owner->id]->proceed_to_next_vnet_baseline(
         stream);

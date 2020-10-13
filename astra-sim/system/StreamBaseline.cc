@@ -22,9 +22,12 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 #include "StreamBaseline.hh"
 #include "astra-sim/system/collective/Algorithm.hh"
 namespace AstraSim {
-StreamBaseline::StreamBaseline(Sys *owner, DataSet *dataset, int stream_num,
-                               std::list<CollectivePhase> phases_to_go,
-                               int priority)
+StreamBaseline::StreamBaseline(
+    Sys* owner,
+    DataSet* dataset,
+    int stream_num,
+    std::list<CollectivePhase> phases_to_go,
+    int priority)
     : BaseStream(stream_num, owner, phases_to_go) {
   this->owner = owner;
   this->stream_num = stream_num;
@@ -48,13 +51,13 @@ void StreamBaseline::init() {
   queuing_delay.push_back(Sys::boostedTick() - last_phase_change);
   total_packets_sent = 1;
 }
-void StreamBaseline::call(EventType event, CallData *data) {
+void StreamBaseline::call(EventType event, CallData* data) {
   if (event == EventType::WaitForVnetTurn) {
     owner->proceed_to_next_vnet_baseline(this);
     return;
   } else {
     // std::cout<<"general event called in stream"<<std::endl;
-    SharedBusStat *sharedBusStat = (SharedBusStat *)data;
+    SharedBusStat* sharedBusStat = (SharedBusStat*)data;
     update_bus_stats(BusType::Both, sharedBusStat);
     my_current_phase.algorithm->run(EventType::General, data);
     if (data != NULL) {
@@ -62,7 +65,7 @@ void StreamBaseline::call(EventType event, CallData *data) {
     }
   }
 }
-void StreamBaseline::consume(RecvPacketEventHadndlerData *message) {
+void StreamBaseline::consume(RecvPacketEventHadndlerData* message) {
   if (message->message_end) {
     net_message_latency.back() +=
         Sys::boostedTick() - message->ready_time; // not accurate

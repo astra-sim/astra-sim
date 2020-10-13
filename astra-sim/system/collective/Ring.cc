@@ -23,10 +23,16 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 #include "astra-sim/system/PacketBundle.hh"
 #include "astra-sim/system/RecvPacketEventHadndlerData.hh"
 namespace AstraSim {
-Ring::Ring(ComType type, int id, int layer_num, RingTopology *ring_topology,
-           int data_size, RingTopology::Direction direction,
-           PacketRouting routing, InjectionPolicy injection_policy,
-           bool boost_mode)
+Ring::Ring(
+    ComType type,
+    int id,
+    int layer_num,
+    RingTopology* ring_topology,
+    int data_size,
+    RingTopology::Direction direction,
+    PacketRouting routing,
+    InjectionPolicy injection_policy,
+    bool boost_mode)
     : Algorithm(layer_num) {
   // std::cout<<"Ring checkmark 0"<<std::endl;
   this->comType = type;
@@ -57,32 +63,34 @@ Ring::Ring(ComType type, int id, int layer_num, RingTopology *ring_topology,
     transmition = MemBus::Transmition::Usual;
   }
   switch (type) {
-  case ComType::All_Reduce:
-    stream_count = 2 * (nodes_in_ring - 1);
-    break;
-  case ComType::All_to_All:
-    switch (routing) {
-    case PacketRouting::Software:
-      this->stream_count = ((nodes_in_ring - 1) * nodes_in_ring) / 2;
+    case ComType::All_Reduce:
+      stream_count = 2 * (nodes_in_ring - 1);
       break;
-    case PacketRouting::Hardware:
-      this->stream_count = nodes_in_ring - 1;
-      break;
-    }
-    switch (injection_policy) {
-    case InjectionPolicy::Aggressive:
-      this->parallel_reduce = nodes_in_ring - 1;
-      break;
-    case InjectionPolicy::Normal:
-      this->parallel_reduce = 1 >= nodes_in_ring - 1 ? nodes_in_ring - 1 : 1;
+    case ComType::All_to_All:
+      switch (routing) {
+        case PacketRouting::Software:
+          this->stream_count = ((nodes_in_ring - 1) * nodes_in_ring) / 2;
+          break;
+        case PacketRouting::Hardware:
+          this->stream_count = nodes_in_ring - 1;
+          break;
+      }
+      switch (injection_policy) {
+        case InjectionPolicy::Aggressive:
+          this->parallel_reduce = nodes_in_ring - 1;
+          break;
+        case InjectionPolicy::Normal:
+          this->parallel_reduce =
+              1 >= nodes_in_ring - 1 ? nodes_in_ring - 1 : 1;
+          break;
+        default:
+          this->parallel_reduce =
+              1 >= nodes_in_ring - 1 ? nodes_in_ring - 1 : 1;
+          break;
+      }
       break;
     default:
-      this->parallel_reduce = 1 >= nodes_in_ring - 1 ? nodes_in_ring - 1 : 1;
-      break;
-    }
-    break;
-  default:
-    stream_count = nodes_in_ring - 1;
+      stream_count = nodes_in_ring - 1;
   }
   if (type == ComType::All_to_All || type == ComType::All_Gatehr) {
     max_count = 0;
@@ -92,34 +100,34 @@ Ring::Ring(ComType type, int id, int layer_num, RingTopology *ring_topology,
   remained_packets_per_message = 1;
   remained_packets_per_max_count = 1;
   switch (type) {
-  case ComType::All_Reduce:
-    this->final_data_size = data_size;
-    this->msg_size = data_size / nodes_in_ring;
-    break;
-  case ComType::All_Gatehr:
-    this->final_data_size = data_size * nodes_in_ring;
-    // std::cout<<"heeeey! here! final data size: "<<this->final_data_size<<"
-    // ,nodes in ring: "<<nodes_in_ring<<std::endl;
-    this->msg_size = data_size;
-    break;
-  case ComType::Reduce_Scatter:
-    this->final_data_size = data_size / nodes_in_ring;
-    this->msg_size = data_size / nodes_in_ring;
-    break;
-  case ComType::All_to_All:
-    this->final_data_size = data_size;
-    this->msg_size = data_size / nodes_in_ring;
-    break;
-  default:;
+    case ComType::All_Reduce:
+      this->final_data_size = data_size;
+      this->msg_size = data_size / nodes_in_ring;
+      break;
+    case ComType::All_Gatehr:
+      this->final_data_size = data_size * nodes_in_ring;
+      // std::cout<<"heeeey! here! final data size: "<<this->final_data_size<<"
+      // ,nodes in ring: "<<nodes_in_ring<<std::endl;
+      this->msg_size = data_size;
+      break;
+    case ComType::Reduce_Scatter:
+      this->final_data_size = data_size / nodes_in_ring;
+      this->msg_size = data_size / nodes_in_ring;
+      break;
+    case ComType::All_to_All:
+      this->final_data_size = data_size;
+      this->msg_size = data_size / nodes_in_ring;
+      break;
+    default:;
   }
   // std::cout<<"ring allreduce is configured at node: "<<id<<" ,with sender:
-  // "<<current_sender<<" ,and receiver: "<<current_receiver<<" and enable status
-  // is: "<<this->enabled<<std::endl;
+  // "<<current_sender<<" ,and receiver: "<<current_receiver<<" and enable
+  // status is: "<<this->enabled<<std::endl;
 }
 int Ring::get_non_zero_latency_packets() {
   return (nodes_in_ring - 1) * parallel_reduce * 1;
 }
-void Ring::run(EventType event, CallData *data) {
+void Ring::run(EventType event, CallData* data) {
   if (event == EventType::General) {
     free_packets += 1;
     ready();
@@ -138,12 +146,24 @@ void Ring::release_packets() {
     packet->set_notifier(this);
   }
   if (NPU_to_MA == true) {
-    (new PacketBundle(stream->owner, stream, locked_packets, processed,
-                      send_back, msg_size, transmition))
+    (new PacketBundle(
+         stream->owner,
+         stream,
+         locked_packets,
+         processed,
+         send_back,
+         msg_size,
+         transmition))
         ->send_to_MA();
   } else {
-    (new PacketBundle(stream->owner, stream, locked_packets, processed,
-                      send_back, msg_size, transmition))
+    (new PacketBundle(
+         stream->owner,
+         stream,
+         locked_packets,
+         processed,
+         send_back,
+         msg_size,
+         transmition))
         ->send_to_NPU();
   }
   locked_packets.clear();
@@ -188,9 +208,9 @@ void Ring::process_max_count() {
       if (comType == ComType::All_to_All &&
           routing == PacketRouting::Hardware) { // Should be fixed to include
                                                 // edge cases
-        current_receiver = ((RingTopology *)logicalTopology)
+        current_receiver = ((RingTopology*)logicalTopology)
                                ->get_receiver_node(current_receiver, direction);
-        current_sender = ((RingTopology *)logicalTopology)
+        current_sender = ((RingTopology*)logicalTopology)
                              ->get_sender_node(current_sender, direction);
         if (id == 0 && stream_count > 0) {
           // std::cout<<"the all_to_all stream: "<<stream_num<<" with fi
@@ -217,7 +237,7 @@ bool Ring::iteratable() {
   }
   return true;
 }
-void Ring::insert_packet(Callable *sender) {
+void Ring::insert_packet(Callable* sender) {
   if (!enabled) {
     return;
   }
@@ -229,7 +249,8 @@ void Ring::insert_packet(Callable *sender) {
   }
   if (zero_latency_packets > 0) {
     packets.push_back(MyPacket(
-        stream->current_queue_id, current_sender,
+        stream->current_queue_id,
+        current_sender,
         current_receiver)); // vnet Must be changed for alltoall topology
     packets.back().sender = sender;
     locked_packets.push_back(&packets.back());
@@ -241,7 +262,8 @@ void Ring::insert_packet(Callable *sender) {
     return;
   } else if (non_zero_latency_packets > 0) {
     packets.push_back(MyPacket(
-        stream->current_queue_id, current_sender,
+        stream->current_queue_id,
+        current_sender,
         current_receiver)); // vnet Must be changed for alltoall topology
     packets.back().sender = sender;
     locked_packets.push_back(&packets.back());
@@ -285,19 +307,34 @@ bool Ring::ready() {
   snd_req.vnet = this->stream->current_queue_id;
   snd_req.layerNum = layer_num;
   stream->owner->front_end_sim_send(
-      0, Sys::dummy_data, msg_size, UINT8, packet.preferred_dest,
-      stream->stream_num, &snd_req, &Sys::handleEvent,
+      0,
+      Sys::dummy_data,
+      msg_size,
+      UINT8,
+      packet.preferred_dest,
+      stream->stream_num,
+      &snd_req,
+      &Sys::handleEvent,
       NULL); // stream_num+(packet.preferred_dest*50)
   sim_request rcv_req;
   rcv_req.vnet = this->stream->current_queue_id;
   rcv_req.layerNum = layer_num;
-  RecvPacketEventHadndlerData *ehd = new RecvPacketEventHadndlerData(
-      stream, stream->owner->id, EventType::PacketReceived,
-      packet.preferred_vnet, packet.stream_num);
-  stream->owner->front_end_sim_recv(0, Sys::dummy_data, msg_size, UINT8,
-                                    packet.preferred_src, stream->stream_num,
-                                    &rcv_req, &Sys::handleEvent,
-                                    ehd); // stream_num+(owner->id*50)
+  RecvPacketEventHadndlerData* ehd = new RecvPacketEventHadndlerData(
+      stream,
+      stream->owner->id,
+      EventType::PacketReceived,
+      packet.preferred_vnet,
+      packet.stream_num);
+  stream->owner->front_end_sim_recv(
+      0,
+      Sys::dummy_data,
+      msg_size,
+      UINT8,
+      packet.preferred_src,
+      stream->stream_num,
+      &rcv_req,
+      &Sys::handleEvent,
+      ehd); // stream_num+(owner->id*50)
   reduce();
   if (true) {
     // std::cout<<"I am node: "<<owner->id<<" and I sent: "<<++test2<<" packets
@@ -305,7 +342,7 @@ bool Ring::ready() {
     // "<<stream_num<<" ,total received: "<<test
     //<<" at time: "<<Sys::boostedTick()<<" vnet is:
     //"<<my_current_phase.queue_id<<" ,remained: "<<stream_count<<" ,current
-    //dest is: "<<packet.preferred_dest
+    // dest is: "<<packet.preferred_dest
     //<<" ,waiting for packet from: "<<packet.preferred_src<<std::endl;
   }
   return true;
@@ -319,7 +356,7 @@ void Ring::exit() {
     locked_packets.clear();
   }
   stream->declare_ready();
-  stream->owner->proceed_to_next_vnet_baseline((StreamBaseline *)stream);
+  stream->owner->proceed_to_next_vnet_baseline((StreamBaseline*)stream);
   // delete this;
   return;
 }

@@ -33,10 +33,10 @@ DataSet::DataSet(int total_streams) {
   this->creation_tick = Sys::boostedTick();
   this->notifier = NULL;
 }
-void DataSet::set_notifier(Callable *layer, EventType event) {
-  notifier = new std::pair<Callable *, EventType>(layer, event);
+void DataSet::set_notifier(Callable* layer, EventType event) {
+  notifier = new std::pair<Callable*, EventType>(layer, event);
 }
-void DataSet::notify_stream_finished(StreamStat *data) {
+void DataSet::notify_stream_finished(StreamStat* data) {
   finished_streams++;
   if (data != NULL) {
     update_stream_stats(data);
@@ -47,15 +47,17 @@ void DataSet::notify_stream_finished(StreamStat *data) {
     finish_tick = Sys::boostedTick();
     if (notifier != NULL) {
       take_stream_stats_average();
-      Callable *c = notifier->first;
+      Callable* c = notifier->first;
       EventType ev = notifier->second;
       delete notifier;
       c->call(ev, new IntData(my_id));
     }
   }
 }
-void DataSet::call(EventType event, CallData *data) {
-  notify_stream_finished(((StreamStat *)data));
+void DataSet::call(EventType event, CallData* data) {
+  notify_stream_finished(((StreamStat*)data));
 }
-bool DataSet::is_finished() { return finished; }
+bool DataSet::is_finished() {
+  return finished;
+}
 } // namespace AstraSim

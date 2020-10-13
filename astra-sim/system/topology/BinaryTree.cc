@@ -26,8 +26,12 @@ BinaryTree::~BinaryTree() {
     delete n.second;
   }
 }
-BinaryTree::BinaryTree(int id, TreeType tree_type, int total_tree_nodes,
-                       int start, int stride)
+BinaryTree::BinaryTree(
+    int id,
+    TreeType tree_type,
+    int total_tree_nodes,
+    int start,
+    int stride)
     : BasicLogicalTopology(BasicLogicalTopology::BasicTopology::BinaryTree) {
   this->total_tree_nodes = total_tree_nodes;
   this->start = start;
@@ -51,15 +55,15 @@ BinaryTree::BinaryTree(int id, TreeType tree_type, int total_tree_nodes,
   // print(tree);
   // std::cout<<"##############################################"<<std::endl;
 }
-Node *BinaryTree::initialize_tree(int depth, Node *parent) {
-  Node *tmp = new Node(-1, parent, NULL, NULL);
+Node* BinaryTree::initialize_tree(int depth, Node* parent) {
+  Node* tmp = new Node(-1, parent, NULL, NULL);
   if (depth > 1) {
     tmp->left_child = initialize_tree(depth - 1, tmp);
     tmp->right_child = initialize_tree(depth - 1, tmp);
   }
   return tmp;
 }
-void BinaryTree::build_tree(Node *node) {
+void BinaryTree::build_tree(Node* node) {
   if (node->left_child != NULL) {
     build_tree(node->left_child);
   }
@@ -72,28 +76,28 @@ void BinaryTree::build_tree(Node *node) {
   return;
 }
 int BinaryTree::get_parent_id(int id) {
-  Node *parent = this->node_list[id]->parent;
+  Node* parent = this->node_list[id]->parent;
   if (parent != NULL) {
     return parent->id;
   }
   return -1;
 }
 int BinaryTree::get_right_child_id(int id) {
-  Node *child = this->node_list[id]->right_child;
+  Node* child = this->node_list[id]->right_child;
   if (child != NULL) {
     return child->id;
   }
   return -1;
 }
 int BinaryTree::get_left_child_id(int id) {
-  Node *child = this->node_list[id]->left_child;
+  Node* child = this->node_list[id]->left_child;
   if (child != NULL) {
     return child->id;
   }
   return -1;
 }
 BinaryTree::Type BinaryTree::get_node_type(int id) {
-  Node *node = this->node_list[id];
+  Node* node = this->node_list[id];
   if (node->parent == NULL) {
     return Type::Root;
   } else if (node->left_child == NULL && node->right_child == NULL) {
@@ -102,7 +106,7 @@ BinaryTree::Type BinaryTree::get_node_type(int id) {
     return Type::Intermediate;
   }
 }
-void BinaryTree::print(Node *node) {
+void BinaryTree::print(Node* node) {
   std::cout << "I am node: " << node->id;
   if (node->left_child != NULL) {
     std::cout << " and my left child is: " << node->left_child->id;

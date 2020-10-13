@@ -22,10 +22,16 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 #include "SimRecvCaller.hh"
 #include "Sys.hh"
 namespace AstraSim {
-SimRecvCaller::SimRecvCaller(Sys *generator, void *buffer, int count, int type,
-                             int src, int tag, sim_request request,
-                             void (*msg_handler)(void *fun_arg),
-                             void *fun_arg) {
+SimRecvCaller::SimRecvCaller(
+    Sys* generator,
+    void* buffer,
+    int count,
+    int type,
+    int src,
+    int tag,
+    sim_request request,
+    void (*msg_handler)(void* fun_arg),
+    void* fun_arg) {
   this->generator = generator;
   this->buffer = buffer;
   this->count = count;
@@ -36,10 +42,16 @@ SimRecvCaller::SimRecvCaller(Sys *generator, void *buffer, int count, int type,
   this->msg_handler = msg_handler;
   this->fun_arg = fun_arg;
 }
-void SimRecvCaller::call(EventType type, CallData *data) {
-  generator->NI->sim_recv(this->buffer, this->count, this->type, this->src,
-                          this->tag, &this->request, this->msg_handler,
-                          this->fun_arg);
+void SimRecvCaller::call(EventType type, CallData* data) {
+  generator->NI->sim_recv(
+      this->buffer,
+      this->count,
+      this->type,
+      this->src,
+      this->tag,
+      &this->request,
+      this->msg_handler,
+      this->fun_arg);
   delete this;
 }
 } // namespace AstraSim

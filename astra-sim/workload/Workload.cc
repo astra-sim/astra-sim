@@ -37,9 +37,15 @@ Workload::~Workload() {
     delete[] layers;
   }
 }
-Workload::Workload(std::string run_name, Sys *generator, std::string name,
-                   int TOTAL_PASS, int total_rows, int stat_row,
-                   std::string path, bool seprate_log) {
+Workload::Workload(
+    std::string run_name,
+    Sys* generator,
+    std::string name,
+    int TOTAL_PASS,
+    int total_rows,
+    int stat_row,
+    std::string path,
+    bool seprate_log) {
   this->initialized = false;
   this->layers = NULL;
   this->SIZE = 0;
@@ -81,18 +87,19 @@ void Workload::initialize_stat_files() {
   detailed->initialize_csv(SIZE * total_rows + 20, 50);
   end_to_end->initialize_csv(SIZE * total_rows + 20, 50);
 }
-void Workload::call(EventType event, CallData *data) {
+void Workload::call(EventType event, CallData* data) {
   if (counter > 0) {
-    generator->try_register_event(this, EventType::Workload_Wait, NULL,
-                                  counter);
+    generator->try_register_event(
+        this, EventType::Workload_Wait, NULL, counter);
     return;
   }
   if (parallelismPolicy == ParallelismPolicy::Data) {
     iterate_data_parallel();
   } else if (parallelismPolicy == ParallelismPolicy::Transformer) {
     iterate_hybrid_parallel_Transformer();
-  } else if (parallelismPolicy == ParallelismPolicy::DLRM ||
-             parallelismPolicy == ParallelismPolicy::DLRMEnhanced) {
+  } else if (
+      parallelismPolicy == ParallelismPolicy::DLRM ||
+      parallelismPolicy == ParallelismPolicy::DLRMEnhanced) {
     iterate_hybrid_parallel_DLRM();
   } else if (parallelismPolicy == ParallelismPolicy::MicroBenchmark) {
     iterate_micro_benchmark();
@@ -120,8 +127,15 @@ void Workload::report() {
   astraSimDataAPI.workload_finished_time = ((double)Sys::boostedTick()) / FREQ;
   for (int i = 0; i < SIZE; i++) {
     astraSimDataAPI.layers_stats.push_back(layers[i]->report(
-        run_name, i, total_rows, stat_row, detailed, end_to_end, total_compute,
-        total_exposed, this->seprate_log));
+        run_name,
+        i,
+        total_rows,
+        stat_row,
+        detailed,
+        end_to_end,
+        total_compute,
+        total_exposed,
+        this->seprate_log));
   }
   astraSimDataAPI.total_compute = total_compute;
   astraSimDataAPI.total_exposed_comm = total_exposed;
@@ -159,9 +173,12 @@ void Workload::iterate_micro_benchmark() {
   assert(index < SIZE);
   if (current_state != LoopState::Wait_For_Sim_Finish) {
     for (pass_counter = 0; pass_counter < TOTAL_PASS; pass_counter++) {
-      layers[index]->issue_weight_grad_comm(true, true, true,
-                                            SchedulingPolicy::None,
-                                            CollectiveBarrier::Non_Blocking);
+      layers[index]->issue_weight_grad_comm(
+          true,
+          true,
+          true,
+          SchedulingPolicy::None,
+          CollectiveBarrier::Non_Blocking);
     }
   }
   check_for_sim_end();
@@ -190,8 +207,8 @@ void Workload::iterate_data_parallel() {
         // std::cout<<"i have been called in cycles:
         // "<<Sys::boostedTick()<<std::endl;
       }
-      generator->try_register_event(this, EventType::Workload_Wait, NULL,
-                                    counter);
+      generator->try_register_event(
+          this, EventType::Workload_Wait, NULL, counter);
       return;
     }
     if (generator->id == 0) {
@@ -212,14 +229,17 @@ void Workload::iterate_data_parallel() {
       delay_loaded = true;
     }
     if (counter > 0) {
-      generator->try_register_event(this, EventType::Workload_Wait, NULL,
-                                    counter);
+      generator->try_register_event(
+          this, EventType::Workload_Wait, NULL, counter);
       return;
     }
     delay_loaded = false;
-    layers[index]->issue_weight_grad_comm(true, true, true,
-                                          SchedulingPolicy::None,
-                                          CollectiveBarrier::Non_Blocking);
+    layers[index]->issue_weight_grad_comm(
+        true,
+        true,
+        true,
+        SchedulingPolicy::None,
+        CollectiveBarrier::Non_Blocking);
     if (index == 0) {
       if (generator->id == 0) {
         std::cout << "pass: " << pass_counter
@@ -238,8 +258,8 @@ void Workload::iterate_data_parallel() {
       delay_loaded = true;
     }
     if (counter > 0) {
-      generator->try_register_event(this, EventType::Workload_Wait, NULL,
-                                    counter);
+      generator->try_register_event(
+          this, EventType::Workload_Wait, NULL, counter);
       return;
     }
     delay_loaded = false;
@@ -270,8 +290,8 @@ void Workload::iterate_hybrid_parallel_customized() {
         // std::cout<<"i have been called in cycles:
         // "<<Sys::boostedTick()<<std::endl;
       }
-      generator->try_register_event(this, EventType::Workload_Wait, NULL,
-                                    counter);
+      generator->try_register_event(
+          this, EventType::Workload_Wait, NULL, counter);
       return;
     }
     if (!collective_issued) {
@@ -283,25 +303,30 @@ void Workload::iterate_hybrid_parallel_customized() {
         first = false;
         second = false;
         third = false;
-      } else if (layers[index]->specific_parallellism ==
-                 ParallelismPolicy::Model) {
+      } else if (
+          layers[index]->specific_parallellism == ParallelismPolicy::Model) {
         first = true;
         second = true;
         third = true;
-      } else if (layers[index]->specific_parallellism ==
-                 ParallelismPolicy::HybridDataModel) {
+      } else if (
+          layers[index]->specific_parallellism ==
+          ParallelismPolicy::HybridDataModel) {
         first = true;
         second = false;
         third = false;
-      } else if (layers[index]->specific_parallellism ==
-                 ParallelismPolicy::HybridModelData) {
+      } else if (
+          layers[index]->specific_parallellism ==
+          ParallelismPolicy::HybridModelData) {
         first = false;
         second = true;
         third = true;
       }
-      layers[index]->issue_forward_pass_comm(first, second, third,
-                                             SchedulingPolicy::None,
-                                             CollectiveBarrier::Blocking);
+      layers[index]->issue_forward_pass_comm(
+          first,
+          second,
+          third,
+          SchedulingPolicy::None,
+          CollectiveBarrier::Blocking);
       return;
     }
     if (generator->id == 0) {
@@ -323,8 +348,8 @@ void Workload::iterate_hybrid_parallel_customized() {
       delay_loaded = true;
     }
     if (counter > 0) {
-      generator->try_register_event(this, EventType::Workload_Wait, NULL,
-                                    counter);
+      generator->try_register_event(
+          this, EventType::Workload_Wait, NULL, counter);
       return;
     }
     if (!collective_issued) {
@@ -336,25 +361,30 @@ void Workload::iterate_hybrid_parallel_customized() {
         first = true;
         second = true;
         third = true;
-      } else if (layers[index]->specific_parallellism ==
-                 ParallelismPolicy::Model) {
+      } else if (
+          layers[index]->specific_parallellism == ParallelismPolicy::Model) {
         first = false;
         second = false;
         third = false;
-      } else if (layers[index]->specific_parallellism ==
-                 ParallelismPolicy::HybridDataModel) {
+      } else if (
+          layers[index]->specific_parallellism ==
+          ParallelismPolicy::HybridDataModel) {
         first = false;
         second = true;
         third = true;
-      } else if (layers[index]->specific_parallellism ==
-                 ParallelismPolicy::HybridModelData) {
+      } else if (
+          layers[index]->specific_parallellism ==
+          ParallelismPolicy::HybridModelData) {
         first = true;
         second = false;
         third = false;
       }
-      layers[index]->issue_weight_grad_comm(first, second, third,
-                                            SchedulingPolicy::FIFO,
-                                            CollectiveBarrier::Non_Blocking);
+      layers[index]->issue_weight_grad_comm(
+          first,
+          second,
+          third,
+          SchedulingPolicy::FIFO,
+          CollectiveBarrier::Non_Blocking);
     }
     if (!layers[index]->is_input_grad_comm_finished_blocking()) {
       // layers[index]->increment_waiting_for_ig();
@@ -385,8 +415,8 @@ void Workload::iterate_hybrid_parallel_customized() {
       delay_loaded = true;
     }
     if (counter > 0) {
-      generator->try_register_event(this, EventType::Workload_Wait, NULL,
-                                    counter);
+      generator->try_register_event(
+          this, EventType::Workload_Wait, NULL, counter);
       return;
     }
     if (!collective_issued && index > 0) {
@@ -398,25 +428,30 @@ void Workload::iterate_hybrid_parallel_customized() {
         first = false;
         second = false;
         third = false;
-      } else if (layers[index]->specific_parallellism ==
-                 ParallelismPolicy::Model) {
+      } else if (
+          layers[index]->specific_parallellism == ParallelismPolicy::Model) {
         first = true;
         second = true;
         third = true;
-      } else if (layers[index]->specific_parallellism ==
-                 ParallelismPolicy::HybridDataModel) {
+      } else if (
+          layers[index]->specific_parallellism ==
+          ParallelismPolicy::HybridDataModel) {
         first = true;
         second = false;
         third = false;
-      } else if (layers[index]->specific_parallellism ==
-                 ParallelismPolicy::HybridModelData) {
+      } else if (
+          layers[index]->specific_parallellism ==
+          ParallelismPolicy::HybridModelData) {
         first = false;
         second = true;
         third = true;
       }
-      layers[index]->issue_input_grad_comm(first, second, third,
-                                           SchedulingPolicy::LIFO,
-                                           CollectiveBarrier::Non_Blocking);
+      layers[index]->issue_input_grad_comm(
+          first,
+          second,
+          third,
+          SchedulingPolicy::LIFO,
+          CollectiveBarrier::Non_Blocking);
     }
     collective_issued = false;
     delay_loaded = false;
@@ -446,15 +481,18 @@ void Workload::iterate_hybrid_parallel_data_model() {
         // std::cout<<"i have been called in cycles:
         // "<<Sys::boostedTick()<<std::endl;
       }
-      generator->try_register_event(this, EventType::Workload_Wait, NULL,
-                                    counter);
+      generator->try_register_event(
+          this, EventType::Workload_Wait, NULL, counter);
       return;
     }
     if (!collective_issued) {
       collective_issued = true;
-      layers[index]->issue_forward_pass_comm(true, false, false,
-                                             SchedulingPolicy::None,
-                                             CollectiveBarrier::Blocking);
+      layers[index]->issue_forward_pass_comm(
+          true,
+          false,
+          false,
+          SchedulingPolicy::None,
+          CollectiveBarrier::Blocking);
       return;
     }
     if (generator->id == 0) {
@@ -476,15 +514,18 @@ void Workload::iterate_hybrid_parallel_data_model() {
       delay_loaded = true;
     }
     if (counter > 0) {
-      generator->try_register_event(this, EventType::Workload_Wait, NULL,
-                                    counter);
+      generator->try_register_event(
+          this, EventType::Workload_Wait, NULL, counter);
       return;
     }
     if (!collective_issued) {
       collective_issued = true;
-      layers[index]->issue_weight_grad_comm(false, true, true,
-                                            SchedulingPolicy::FIFO,
-                                            CollectiveBarrier::Non_Blocking);
+      layers[index]->issue_weight_grad_comm(
+          false,
+          true,
+          true,
+          SchedulingPolicy::FIFO,
+          CollectiveBarrier::Non_Blocking);
     }
     if (!layers[index]->is_input_grad_comm_finished_blocking()) {
       // layers[index]->increment_waiting_for_ig();
@@ -515,15 +556,18 @@ void Workload::iterate_hybrid_parallel_data_model() {
       delay_loaded = true;
     }
     if (counter > 0) {
-      generator->try_register_event(this, EventType::Workload_Wait, NULL,
-                                    counter);
+      generator->try_register_event(
+          this, EventType::Workload_Wait, NULL, counter);
       return;
     }
     if (!collective_issued && index > 0) {
       collective_issued = true;
-      layers[index]->issue_input_grad_comm(true, false, false,
-                                           SchedulingPolicy::LIFO,
-                                           CollectiveBarrier::Non_Blocking);
+      layers[index]->issue_input_grad_comm(
+          true,
+          false,
+          false,
+          SchedulingPolicy::LIFO,
+          CollectiveBarrier::Non_Blocking);
     }
     collective_issued = false;
     delay_loaded = false;
@@ -553,15 +597,18 @@ void Workload::iterate_hybrid_parallel_model_data() {
         // std::cout<<"i have been called in cycles:
         // "<<Sys::boostedTick()<<std::endl;
       }
-      generator->try_register_event(this, EventType::Workload_Wait, NULL,
-                                    counter);
+      generator->try_register_event(
+          this, EventType::Workload_Wait, NULL, counter);
       return;
     }
     if (!collective_issued) {
       collective_issued = true;
-      layers[index]->issue_forward_pass_comm(false, true, true,
-                                             SchedulingPolicy::None,
-                                             CollectiveBarrier::Blocking);
+      layers[index]->issue_forward_pass_comm(
+          false,
+          true,
+          true,
+          SchedulingPolicy::None,
+          CollectiveBarrier::Blocking);
       return;
     }
     if (generator->id == 0) {
@@ -583,15 +630,18 @@ void Workload::iterate_hybrid_parallel_model_data() {
       delay_loaded = true;
     }
     if (counter > 0) {
-      generator->try_register_event(this, EventType::Workload_Wait, NULL,
-                                    counter);
+      generator->try_register_event(
+          this, EventType::Workload_Wait, NULL, counter);
       return;
     }
     if (!collective_issued) {
       collective_issued = true;
-      layers[index]->issue_weight_grad_comm(true, false, false,
-                                            SchedulingPolicy::FIFO,
-                                            CollectiveBarrier::Non_Blocking);
+      layers[index]->issue_weight_grad_comm(
+          true,
+          false,
+          false,
+          SchedulingPolicy::FIFO,
+          CollectiveBarrier::Non_Blocking);
     }
     if (!layers[index]->is_input_grad_comm_finished_blocking()) {
       // layers[index]->increment_waiting_for_ig();
@@ -622,15 +672,18 @@ void Workload::iterate_hybrid_parallel_model_data() {
       delay_loaded = true;
     }
     if (counter > 0) {
-      generator->try_register_event(this, EventType::Workload_Wait, NULL,
-                                    counter);
+      generator->try_register_event(
+          this, EventType::Workload_Wait, NULL, counter);
       return;
     }
     if (!collective_issued && index > 0) {
       collective_issued = true;
-      layers[index]->issue_input_grad_comm(false, true, true,
-                                           SchedulingPolicy::LIFO,
-                                           CollectiveBarrier::Non_Blocking);
+      layers[index]->issue_input_grad_comm(
+          false,
+          true,
+          true,
+          SchedulingPolicy::LIFO,
+          CollectiveBarrier::Non_Blocking);
     }
     collective_issued = false;
     delay_loaded = false;
@@ -660,15 +713,18 @@ void Workload::iterate_distributed_inference() {
         // std::cout<<"i have been called in cycles:
         // "<<Sys::boostedTick()<<std::endl;
       }
-      generator->try_register_event(this, EventType::Workload_Wait, NULL,
-                                    counter);
+      generator->try_register_event(
+          this, EventType::Workload_Wait, NULL, counter);
       return;
     }
     if (!collective_issued) {
       collective_issued = true;
-      layers[index]->issue_forward_pass_comm(true, true, true,
-                                             SchedulingPolicy::None,
-                                             CollectiveBarrier::Blocking);
+      layers[index]->issue_forward_pass_comm(
+          true,
+          true,
+          true,
+          SchedulingPolicy::None,
+          CollectiveBarrier::Blocking);
       return;
     }
     if (generator->id == 0) {
@@ -707,15 +763,18 @@ void Workload::iterate_model_parallel() {
         // std::cout<<"i have been called in cycles:
         // "<<Sys::boostedTick()<<std::endl;
       }
-      generator->try_register_event(this, EventType::Workload_Wait, NULL,
-                                    counter);
+      generator->try_register_event(
+          this, EventType::Workload_Wait, NULL, counter);
       return;
     }
     if (!collective_issued) {
       collective_issued = true;
-      layers[index]->issue_forward_pass_comm(true, true, true,
-                                             SchedulingPolicy::None,
-                                             CollectiveBarrier::Blocking);
+      layers[index]->issue_forward_pass_comm(
+          true,
+          true,
+          true,
+          SchedulingPolicy::None,
+          CollectiveBarrier::Blocking);
       return;
     }
     if (generator->id == 0) {
@@ -737,8 +796,8 @@ void Workload::iterate_model_parallel() {
       delay_loaded = true;
     }
     if (counter > 0) {
-      generator->try_register_event(this, EventType::Workload_Wait, NULL,
-                                    counter);
+      generator->try_register_event(
+          this, EventType::Workload_Wait, NULL, counter);
       return;
     }
     if (!layers[index]->is_input_grad_comm_finished_blocking()) {
@@ -770,15 +829,18 @@ void Workload::iterate_model_parallel() {
       delay_loaded = true;
     }
     if (counter > 0) {
-      generator->try_register_event(this, EventType::Workload_Wait, NULL,
-                                    counter);
+      generator->try_register_event(
+          this, EventType::Workload_Wait, NULL, counter);
       return;
     }
     if (!collective_issued && index > 0) {
       collective_issued = true;
-      layers[index]->issue_input_grad_comm(true, true, true,
-                                           SchedulingPolicy::LIFO,
-                                           CollectiveBarrier::Non_Blocking);
+      layers[index]->issue_input_grad_comm(
+          true,
+          true,
+          true,
+          SchedulingPolicy::LIFO,
+          CollectiveBarrier::Non_Blocking);
     }
     collective_issued = false;
     delay_loaded = false;
@@ -808,15 +870,18 @@ void Workload::iterate_hybrid_parallel_Transformer() {
         // std::cout<<"i have been called in cycles:
         // "<<Sys::boostedTick()<<std::endl;
       }
-      generator->try_register_event(this, EventType::Workload_Wait, NULL,
-                                    counter);
+      generator->try_register_event(
+          this, EventType::Workload_Wait, NULL, counter);
       return;
     }
     if (!collective_issued) {
       collective_issued = true;
-      layers[index]->issue_forward_pass_comm(true, false, true,
-                                             SchedulingPolicy::None,
-                                             CollectiveBarrier::Blocking);
+      layers[index]->issue_forward_pass_comm(
+          true,
+          false,
+          true,
+          SchedulingPolicy::None,
+          CollectiveBarrier::Blocking);
       return;
     }
     if (generator->id == 0) {
@@ -838,15 +903,18 @@ void Workload::iterate_hybrid_parallel_Transformer() {
       delay_loaded = true;
     }
     if (counter > 0) {
-      generator->try_register_event(this, EventType::Workload_Wait, NULL,
-                                    counter);
+      generator->try_register_event(
+          this, EventType::Workload_Wait, NULL, counter);
       return;
     }
     if (!collective_issued) {
       collective_issued = true;
-      layers[index]->issue_weight_grad_comm(false, true, false,
-                                            SchedulingPolicy::FIFO,
-                                            CollectiveBarrier::Non_Blocking);
+      layers[index]->issue_weight_grad_comm(
+          false,
+          true,
+          false,
+          SchedulingPolicy::FIFO,
+          CollectiveBarrier::Non_Blocking);
     }
     if (!layers[index]->is_input_grad_comm_finished_blocking()) {
       // layers[index]->increment_waiting_for_ig();
@@ -877,15 +945,18 @@ void Workload::iterate_hybrid_parallel_Transformer() {
       delay_loaded = true;
     }
     if (counter > 0) {
-      generator->try_register_event(this, EventType::Workload_Wait, NULL,
-                                    counter);
+      generator->try_register_event(
+          this, EventType::Workload_Wait, NULL, counter);
       return;
     }
     if (!collective_issued && index > 0) {
       collective_issued = true;
-      layers[index]->issue_input_grad_comm(true, false, true,
-                                           SchedulingPolicy::LIFO,
-                                           CollectiveBarrier::Non_Blocking);
+      layers[index]->issue_input_grad_comm(
+          true,
+          false,
+          true,
+          SchedulingPolicy::LIFO,
+          CollectiveBarrier::Non_Blocking);
     }
     collective_issued = false;
     delay_loaded = false;
@@ -915,15 +986,18 @@ void Workload::iterate_hybrid_parallel_Transformer_fwd_in_bckwd() {
         // std::cout<<"i have been called in cycles:
         // "<<Sys::boostedTick()<<std::endl;
       }
-      generator->try_register_event(this, EventType::Workload_Wait, NULL,
-                                    counter);
+      generator->try_register_event(
+          this, EventType::Workload_Wait, NULL, counter);
       return;
     }
     if (!collective_issued) {
       collective_issued = true;
-      layers[index]->issue_forward_pass_comm(true, false, true,
-                                             SchedulingPolicy::None,
-                                             CollectiveBarrier::Blocking);
+      layers[index]->issue_forward_pass_comm(
+          true,
+          false,
+          true,
+          SchedulingPolicy::None,
+          CollectiveBarrier::Blocking);
       return;
     }
     if (generator->id == 0) {
@@ -945,15 +1019,18 @@ void Workload::iterate_hybrid_parallel_Transformer_fwd_in_bckwd() {
       delay_loaded = true;
     }
     if (counter > 0) {
-      generator->try_register_event(this, EventType::Workload_Wait, NULL,
-                                    counter);
+      generator->try_register_event(
+          this, EventType::Workload_Wait, NULL, counter);
       return;
     }
     if (!collective_issued) {
       collective_issued = true;
-      layers[index]->issue_weight_grad_comm(false, true, false,
-                                            SchedulingPolicy::FIFO,
-                                            CollectiveBarrier::Non_Blocking);
+      layers[index]->issue_weight_grad_comm(
+          false,
+          true,
+          false,
+          SchedulingPolicy::FIFO,
+          CollectiveBarrier::Non_Blocking);
     }
     if (!layers[index]->is_input_grad_comm_finished_blocking()) {
       // layers[index]->increment_waiting_for_ig();
@@ -999,15 +1076,18 @@ void Workload::iterate_hybrid_parallel_Transformer_fwd_in_bckwd() {
       delay_loaded = true;
     }
     if (counter > 0) {
-      generator->try_register_event(this, EventType::Workload_Wait, NULL,
-                                    counter);
+      generator->try_register_event(
+          this, EventType::Workload_Wait, NULL, counter);
       return;
     }
     if (!collective_issued && index > 0) {
       collective_issued = true;
-      layers[index]->issue_input_grad_comm(true, false, true,
-                                           SchedulingPolicy::LIFO,
-                                           CollectiveBarrier::Non_Blocking);
+      layers[index]->issue_input_grad_comm(
+          true,
+          false,
+          true,
+          SchedulingPolicy::LIFO,
+          CollectiveBarrier::Non_Blocking);
     }
     checkpoint_initiated = false;
     collective_issued = false;
@@ -1032,15 +1112,18 @@ void Workload::iterate_hybrid_parallel_Transformer_fwd_in_bckwd() {
         // std::cout<<"i have been called in cycles:
         // "<<Sys::boostedTick()<<std::endl;
       }
-      generator->try_register_event(this, EventType::Workload_Wait, NULL,
-                                    counter);
+      generator->try_register_event(
+          this, EventType::Workload_Wait, NULL, counter);
       return;
     }
     if (!collective_issued) {
       collective_issued = true;
-      layers[index]->issue_forward_pass_comm(true, false, true,
-                                             SchedulingPolicy::None,
-                                             CollectiveBarrier::Blocking);
+      layers[index]->issue_forward_pass_comm(
+          true,
+          false,
+          true,
+          SchedulingPolicy::None,
+          CollectiveBarrier::Blocking);
       return;
     }
     if (generator->id == 0) {
@@ -1086,16 +1169,19 @@ void Workload::iterate_hybrid_parallel_DLRM() {
         // std::cout<<"i have been called in cycles:
         // "<<Sys::boostedTick()<<std::endl;
       }
-      generator->try_register_event(this, EventType::Workload_Wait, NULL,
-                                    counter);
+      generator->try_register_event(
+          this, EventType::Workload_Wait, NULL, counter);
       return;
     }
     if (!collective_issued &&
         layers[index]->fwd_pass_comm_type == ComType::All_to_All) {
       collective_issued = true;
-      layers[index]->issue_forward_pass_comm(true, true, true,
-                                             SchedulingPolicy::HIGHEST,
-                                             CollectiveBarrier::Non_Blocking);
+      layers[index]->issue_forward_pass_comm(
+          true,
+          true,
+          true,
+          SchedulingPolicy::HIGHEST,
+          CollectiveBarrier::Non_Blocking);
 
     } else if (index == DLRM_LAST_BOTTOM_LAYER) {
       if (!layers[0]->is_fwd_pass_comm_finished_blocking()) {
@@ -1127,15 +1213,18 @@ void Workload::iterate_hybrid_parallel_DLRM() {
       delay_loaded = true;
     }
     if (counter > 0) {
-      generator->try_register_event(this, EventType::Workload_Wait, NULL,
-                                    counter);
+      generator->try_register_event(
+          this, EventType::Workload_Wait, NULL, counter);
       return;
     }
     if (!collective_issued) {
       collective_issued = true;
-      layers[index]->issue_weight_grad_comm(true, true, true,
-                                            SchedulingPolicy::None,
-                                            CollectiveBarrier::Non_Blocking);
+      layers[index]->issue_weight_grad_comm(
+          true,
+          true,
+          true,
+          SchedulingPolicy::None,
+          CollectiveBarrier::Non_Blocking);
     }
     if (parallelismPolicy == ParallelismPolicy::DLRM &&
         !layers[index]->is_input_grad_comm_finished_blocking()) {
@@ -1162,14 +1251,17 @@ void Workload::iterate_hybrid_parallel_DLRM() {
       delay_loaded = true;
     }
     if (counter > 0) {
-      generator->try_register_event(this, EventType::Workload_Wait, NULL,
-                                    counter);
+      generator->try_register_event(
+          this, EventType::Workload_Wait, NULL, counter);
       return;
     }
     if (index == DLRM_LAST_BOTTOM_LAYER + 1) {
-      layers[0]->issue_input_grad_comm(true, true, true,
-                                       SchedulingPolicy::HIGHEST,
-                                       CollectiveBarrier::Non_Blocking);
+      layers[0]->issue_input_grad_comm(
+          true,
+          true,
+          true,
+          SchedulingPolicy::HIGHEST,
+          CollectiveBarrier::Non_Blocking);
     }
     index--;
     if (generator->id == 0) {
@@ -1264,8 +1356,9 @@ bool Workload::initialize_workload(std::string name) {
       std::cout << layer << ", ";
     }
     std::cout << std::endl;
-  } else if (parallelismPolicy == ParallelismPolicy::DLRM ||
-             parallelismPolicy == ParallelismPolicy::DLRMEnhanced) {
+  } else if (
+      parallelismPolicy == ParallelismPolicy::DLRM ||
+      parallelismPolicy == ParallelismPolicy::DLRMEnhanced) {
     inFile >> DLRM_LAST_BOTTOM_LAYER;
     if (generator->id == 0) {
       std::cout
@@ -1282,7 +1375,7 @@ bool Workload::initialize_workload(std::string name) {
   inFile >> lines;
   run_type = type;
   SIZE = lines;
-  layers = new Layer *[SIZE];
+  layers = new Layer*[SIZE];
   for (int i = 0; i < lines; i++) {
     std::string id;
     inFile >> id;
@@ -1357,13 +1450,21 @@ bool Workload::initialize_workload(std::string name) {
       std::cout << "id: " << id << " , depen: " << depen
                 << " , wg_comp_time: " << wg_compute_time << std::endl;
     }
-    Layer *l = new Layer(id, i, generator, this,
-                         fp_compute_time * generator->compute_scale, fp_type,
-                         fp_comm_size * generator->comm_scale,
-                         ig_compute_time * generator->compute_scale, ig_type,
-                         ig_comm_size * generator->comm_scale,
-                         wg_compute_time * generator->compute_scale, wg_type,
-                         wg_comm_size * generator->comm_scale, wg_update_time);
+    Layer* l = new Layer(
+        id,
+        i,
+        generator,
+        this,
+        fp_compute_time * generator->compute_scale,
+        fp_type,
+        fp_comm_size * generator->comm_scale,
+        ig_compute_time * generator->compute_scale,
+        ig_type,
+        ig_comm_size * generator->comm_scale,
+        wg_compute_time * generator->compute_scale,
+        wg_type,
+        wg_comm_size * generator->comm_scale,
+        wg_update_time);
     if (chekpoints.find(i) != chekpoints.end()) {
       l->is_checkpoint = true;
     }
@@ -1387,5 +1488,7 @@ bool Workload::initialize_workload(std::string name) {
   inFile.close();
   return true;
 }
-void Workload::fire() { call(EventType::General, NULL); }
+void Workload::fire() {
+  call(EventType::General, NULL);
+}
 } // namespace AstraSim

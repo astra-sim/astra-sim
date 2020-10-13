@@ -23,10 +23,12 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 #include "astra-sim/system/PacketBundle.hh"
 #include "astra-sim/system/RecvPacketEventHadndlerData.hh"
 namespace AstraSim {
-DoubleBinaryTreeAllReduce::DoubleBinaryTreeAllReduce(int id, int layer_num,
-                                                     BinaryTree *tree,
-                                                     int data_size,
-                                                     bool boost_mode)
+DoubleBinaryTreeAllReduce::DoubleBinaryTreeAllReduce(
+    int id,
+    int layer_num,
+    BinaryTree* tree,
+    int data_size,
+    bool boost_mode)
     : Algorithm(layer_num) {
   this->id = id;
   this->logicalTopology = tree;
@@ -56,15 +58,21 @@ DoubleBinaryTreeAllReduce::DoubleBinaryTreeAllReduce(int id, int layer_num,
   // std::cout<<" ,and the enabled status: "<<this->enabled;
   // std::cout<<std::endl;
 }
-void DoubleBinaryTreeAllReduce::run(EventType event, CallData *data) {
+void DoubleBinaryTreeAllReduce::run(EventType event, CallData* data) {
   if (state == State::Begin && type == BinaryTree::Type::Leaf) { // leaf.1
-    (new PacketBundle(stream->owner, stream, false, false, data_size,
-                      MemBus::Transmition::Usual))
+    (new PacketBundle(
+         stream->owner,
+         stream,
+         false,
+         false,
+         data_size,
+         MemBus::Transmition::Usual))
         ->send_to_MA();
     state = State::SendingDataToParent;
     return;
-  } else if (state == State::SendingDataToParent &&
-             type == BinaryTree::Type::Leaf) { // leaf.3
+  } else if (
+      state == State::SendingDataToParent &&
+      type == BinaryTree::Type::Leaf) { // leaf.3
     // sending
     sim_request snd_req;
     snd_req.srcRank = stream->owner->id;
@@ -73,25 +81,48 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData *data) {
     snd_req.reqType = UINT8;
     snd_req.vnet = this->stream->current_queue_id;
     snd_req.layerNum = layer_num;
-    stream->owner->front_end_sim_send(0, Sys::dummy_data, data_size, UINT8,
-                                      parent, stream->stream_num, &snd_req,
-                                      &Sys::handleEvent, NULL);
+    stream->owner->front_end_sim_send(
+        0,
+        Sys::dummy_data,
+        data_size,
+        UINT8,
+        parent,
+        stream->stream_num,
+        &snd_req,
+        &Sys::handleEvent,
+        NULL);
     // receiving
     sim_request rcv_req;
     rcv_req.vnet = this->stream->current_queue_id;
     rcv_req.layerNum = layer_num;
-    RecvPacketEventHadndlerData *ehd = new RecvPacketEventHadndlerData(
-        stream, stream->owner->id, EventType::PacketReceived,
-        stream->current_queue_id, stream->stream_num);
-    stream->owner->front_end_sim_recv(0, Sys::dummy_data, data_size, UINT8,
-                                      parent, stream->stream_num, &rcv_req,
-                                      &Sys::handleEvent, ehd);
+    RecvPacketEventHadndlerData* ehd = new RecvPacketEventHadndlerData(
+        stream,
+        stream->owner->id,
+        EventType::PacketReceived,
+        stream->current_queue_id,
+        stream->stream_num);
+    stream->owner->front_end_sim_recv(
+        0,
+        Sys::dummy_data,
+        data_size,
+        UINT8,
+        parent,
+        stream->stream_num,
+        &rcv_req,
+        &Sys::handleEvent,
+        ehd);
     state = State::WaitingDataFromParent;
     return;
-  } else if (state == State::WaitingDataFromParent &&
-             type == BinaryTree::Type::Leaf) { // leaf.4
-    (new PacketBundle(stream->owner, stream, false, false, data_size,
-                      MemBus::Transmition::Usual))
+  } else if (
+      state == State::WaitingDataFromParent &&
+      type == BinaryTree::Type::Leaf) { // leaf.4
+    (new PacketBundle(
+         stream->owner,
+         stream,
+         false,
+         false,
+         data_size,
+         MemBus::Transmition::Usual))
         ->send_to_NPU();
     state = State::End;
     return;
@@ -100,50 +131,85 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData *data) {
     return;
   }
 
-  else if (state == State::Begin &&
-           type == BinaryTree::Type::Intermediate) { // int.1
+  else if (
+      state == State::Begin &&
+      type == BinaryTree::Type::Intermediate) { // int.1
     sim_request rcv_req;
     rcv_req.vnet = this->stream->current_queue_id;
     rcv_req.layerNum = layer_num;
-    RecvPacketEventHadndlerData *ehd = new RecvPacketEventHadndlerData(
-        stream, stream->owner->id, EventType::PacketReceived,
-        stream->current_queue_id, stream->stream_num);
-    stream->owner->front_end_sim_recv(0, Sys::dummy_data, data_size, UINT8,
-                                      left_child, stream->stream_num, &rcv_req,
-                                      &Sys::handleEvent, ehd);
+    RecvPacketEventHadndlerData* ehd = new RecvPacketEventHadndlerData(
+        stream,
+        stream->owner->id,
+        EventType::PacketReceived,
+        stream->current_queue_id,
+        stream->stream_num);
+    stream->owner->front_end_sim_recv(
+        0,
+        Sys::dummy_data,
+        data_size,
+        UINT8,
+        left_child,
+        stream->stream_num,
+        &rcv_req,
+        &Sys::handleEvent,
+        ehd);
     sim_request rcv_req2;
     rcv_req2.vnet = this->stream->current_queue_id;
     rcv_req2.layerNum = layer_num;
-    RecvPacketEventHadndlerData *ehd2 = new RecvPacketEventHadndlerData(
-        stream, stream->owner->id, EventType::PacketReceived,
-        stream->current_queue_id, stream->stream_num);
-    stream->owner->front_end_sim_recv(0, Sys::dummy_data, data_size, UINT8,
-                                      right_child, stream->stream_num,
-                                      &rcv_req2, &Sys::handleEvent, ehd2);
+    RecvPacketEventHadndlerData* ehd2 = new RecvPacketEventHadndlerData(
+        stream,
+        stream->owner->id,
+        EventType::PacketReceived,
+        stream->current_queue_id,
+        stream->stream_num);
+    stream->owner->front_end_sim_recv(
+        0,
+        Sys::dummy_data,
+        data_size,
+        UINT8,
+        right_child,
+        stream->stream_num,
+        &rcv_req2,
+        &Sys::handleEvent,
+        ehd2);
     state = State::WaitingForTwoChildData;
     return;
-  } else if (state == State::WaitingForTwoChildData &&
-             type == BinaryTree::Type::Intermediate &&
-             event == EventType::PacketReceived) { // int.2
-    (new PacketBundle(stream->owner, stream, true, false, data_size,
-                      MemBus::Transmition::Usual))
+  } else if (
+      state == State::WaitingForTwoChildData &&
+      type == BinaryTree::Type::Intermediate &&
+      event == EventType::PacketReceived) { // int.2
+    (new PacketBundle(
+         stream->owner,
+         stream,
+         true,
+         false,
+         data_size,
+         MemBus::Transmition::Usual))
         ->send_to_NPU();
     state = State::WaitingForOneChildData;
     return;
-  } else if (state == State::WaitingForOneChildData &&
-             type == BinaryTree::Type::Intermediate &&
-             event == EventType::PacketReceived) { // int.3
-    (new PacketBundle(stream->owner, stream, true, true, data_size,
-                      MemBus::Transmition::Usual))
+  } else if (
+      state == State::WaitingForOneChildData &&
+      type == BinaryTree::Type::Intermediate &&
+      event == EventType::PacketReceived) { // int.3
+    (new PacketBundle(
+         stream->owner,
+         stream,
+         true,
+         true,
+         data_size,
+         MemBus::Transmition::Usual))
         ->send_to_NPU();
     state = State::SendingDataToParent;
     return;
-  } else if (reductions < 1 && type == BinaryTree::Type::Intermediate &&
-             event == EventType::General) { // int.4
+  } else if (
+      reductions < 1 && type == BinaryTree::Type::Intermediate &&
+      event == EventType::General) { // int.4
     reductions++;
     return;
-  } else if (state == State::SendingDataToParent &&
-             type == BinaryTree::Type::Intermediate) { // int.5
+  } else if (
+      state == State::SendingDataToParent &&
+      type == BinaryTree::Type::Intermediate) { // int.5
     // sending
     sim_request snd_req;
     snd_req.srcRank = stream->owner->id;
@@ -152,30 +218,54 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData *data) {
     snd_req.reqType = UINT8;
     snd_req.vnet = this->stream->current_queue_id;
     snd_req.layerNum = layer_num;
-    stream->owner->front_end_sim_send(0, Sys::dummy_data, data_size, UINT8,
-                                      parent, stream->stream_num, &snd_req,
-                                      &Sys::handleEvent, NULL);
+    stream->owner->front_end_sim_send(
+        0,
+        Sys::dummy_data,
+        data_size,
+        UINT8,
+        parent,
+        stream->stream_num,
+        &snd_req,
+        &Sys::handleEvent,
+        NULL);
     // receiving
     sim_request rcv_req;
     rcv_req.vnet = this->stream->current_queue_id;
     rcv_req.layerNum = layer_num;
-    RecvPacketEventHadndlerData *ehd = new RecvPacketEventHadndlerData(
-        stream, stream->owner->id, EventType::PacketReceived,
-        stream->current_queue_id, stream->stream_num);
-    stream->owner->front_end_sim_recv(0, Sys::dummy_data, data_size, UINT8,
-                                      parent, stream->stream_num, &rcv_req,
-                                      &Sys::handleEvent, ehd);
+    RecvPacketEventHadndlerData* ehd = new RecvPacketEventHadndlerData(
+        stream,
+        stream->owner->id,
+        EventType::PacketReceived,
+        stream->current_queue_id,
+        stream->stream_num);
+    stream->owner->front_end_sim_recv(
+        0,
+        Sys::dummy_data,
+        data_size,
+        UINT8,
+        parent,
+        stream->stream_num,
+        &rcv_req,
+        &Sys::handleEvent,
+        ehd);
     state = State::WaitingDataFromParent;
-  } else if (state == State::WaitingDataFromParent &&
-             type == BinaryTree::Type::Intermediate &&
-             event == EventType::PacketReceived) { // int.6
-    (new PacketBundle(stream->owner, stream, true, true, data_size,
-                      MemBus::Transmition::Usual))
+  } else if (
+      state == State::WaitingDataFromParent &&
+      type == BinaryTree::Type::Intermediate &&
+      event == EventType::PacketReceived) { // int.6
+    (new PacketBundle(
+         stream->owner,
+         stream,
+         true,
+         true,
+         data_size,
+         MemBus::Transmition::Usual))
         ->send_to_NPU();
     state = State::SendingDataToChilds;
     return;
-  } else if (state == State::SendingDataToChilds &&
-             type == BinaryTree::Type::Intermediate) {
+  } else if (
+      state == State::SendingDataToChilds &&
+      type == BinaryTree::Type::Intermediate) {
     sim_request snd_req;
     snd_req.srcRank = stream->owner->id;
     snd_req.dstRank = left_child;
@@ -183,9 +273,16 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData *data) {
     snd_req.reqType = UINT8;
     snd_req.vnet = this->stream->current_queue_id;
     snd_req.layerNum = layer_num;
-    stream->owner->front_end_sim_send(0, Sys::dummy_data, data_size, UINT8,
-                                      left_child, stream->stream_num, &snd_req,
-                                      &Sys::handleEvent, NULL);
+    stream->owner->front_end_sim_send(
+        0,
+        Sys::dummy_data,
+        data_size,
+        UINT8,
+        left_child,
+        stream->stream_num,
+        &snd_req,
+        &Sys::handleEvent,
+        NULL);
     sim_request snd_req2;
     snd_req2.srcRank = stream->owner->id;
     snd_req2.dstRank = left_child;
@@ -193,9 +290,16 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData *data) {
     snd_req2.reqType = UINT8;
     snd_req2.vnet = this->stream->current_queue_id;
     snd_req2.layerNum = layer_num;
-    stream->owner->front_end_sim_send(0, Sys::dummy_data, data_size, UINT8,
-                                      right_child, stream->stream_num,
-                                      &snd_req2, &Sys::handleEvent, NULL);
+    stream->owner->front_end_sim_send(
+        0,
+        Sys::dummy_data,
+        data_size,
+        UINT8,
+        right_child,
+        stream->stream_num,
+        &snd_req2,
+        &Sys::handleEvent,
+        NULL);
     exit();
     return;
   }
@@ -205,22 +309,39 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData *data) {
     sim_request rcv_req;
     rcv_req.vnet = this->stream->current_queue_id;
     rcv_req.layerNum = layer_num;
-    RecvPacketEventHadndlerData *ehd = new RecvPacketEventHadndlerData(
-        stream, stream->owner->id, EventType::PacketReceived,
-        stream->current_queue_id, stream->stream_num);
-    stream->owner->front_end_sim_recv(0, Sys::dummy_data, data_size, UINT8,
-                                      only_child_id, stream->stream_num,
-                                      &rcv_req, &Sys::handleEvent, ehd);
+    RecvPacketEventHadndlerData* ehd = new RecvPacketEventHadndlerData(
+        stream,
+        stream->owner->id,
+        EventType::PacketReceived,
+        stream->current_queue_id,
+        stream->stream_num);
+    stream->owner->front_end_sim_recv(
+        0,
+        Sys::dummy_data,
+        data_size,
+        UINT8,
+        only_child_id,
+        stream->stream_num,
+        &rcv_req,
+        &Sys::handleEvent,
+        ehd);
     state = State::WaitingForOneChildData;
-  } else if (state == State::WaitingForOneChildData &&
-             type == BinaryTree::Type::Root) { // root.2
-    (new PacketBundle(stream->owner, stream, true, true, data_size,
-                      MemBus::Transmition::Usual))
+  } else if (
+      state == State::WaitingForOneChildData &&
+      type == BinaryTree::Type::Root) { // root.2
+    (new PacketBundle(
+         stream->owner,
+         stream,
+         true,
+         true,
+         data_size,
+         MemBus::Transmition::Usual))
         ->send_to_NPU();
     state = State::SendingDataToChilds;
     return;
-  } else if (state == State::SendingDataToChilds &&
-             type == BinaryTree::Type::Root) { // root.2
+  } else if (
+      state == State::SendingDataToChilds &&
+      type == BinaryTree::Type::Root) { // root.2
     int only_child_id = left_child >= 0 ? left_child : right_child;
     sim_request snd_req;
     snd_req.srcRank = stream->owner->id;
@@ -230,9 +351,16 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData *data) {
     snd_req.vnet = this->stream->current_queue_id;
     // std::cout<<"here************"<<std::endl;
     snd_req.layerNum = layer_num;
-    stream->owner->front_end_sim_send(0, Sys::dummy_data, data_size, UINT8,
-                                      only_child_id, stream->stream_num,
-                                      &snd_req, &Sys::handleEvent, NULL);
+    stream->owner->front_end_sim_send(
+        0,
+        Sys::dummy_data,
+        data_size,
+        UINT8,
+        only_child_id,
+        stream->stream_num,
+        &snd_req,
+        &Sys::handleEvent,
+        NULL);
     exit();
     return;
   }

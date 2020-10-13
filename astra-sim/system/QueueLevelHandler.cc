@@ -46,8 +46,8 @@ std::pair<int, RingTopology::Direction> QueueLevelHandler::get_next_queue_id() {
   }
   return std::make_pair(tmp, dir);
 }
-std::pair<int, RingTopology::Direction>
-QueueLevelHandler::get_next_queue_id_first() {
+std::pair<int, RingTopology::Direction> QueueLevelHandler::
+    get_next_queue_id_first() {
   RingTopology::Direction dir;
   dir = RingTopology::Direction::Clockwise;
   if (queues.size() == 0) {
@@ -59,8 +59,8 @@ QueueLevelHandler::get_next_queue_id_first() {
   }
   return std::make_pair(tmp, dir);
 }
-std::pair<int, RingTopology::Direction>
-QueueLevelHandler::get_next_queue_id_last() {
+std::pair<int, RingTopology::Direction> QueueLevelHandler::
+    get_next_queue_id_last() {
   RingTopology::Direction dir;
   dir = RingTopology::Direction::Anticlockwise;
   if (queues.size() == 0) {

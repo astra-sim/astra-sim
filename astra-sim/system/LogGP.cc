@@ -27,8 +27,14 @@ LogGP::~LogGP() {
     delete NPU_MEM;
   }
 }
-LogGP::LogGP(std::string name, Sys *generator, Tick L, Tick o, Tick g, double G,
-             EventType trigger_event) {
+LogGP::LogGP(
+    std::string name,
+    Sys* generator,
+    Tick L,
+    Tick o,
+    Tick g,
+    double G,
+    EventType trigger_event) {
   this->L = L;
   this->o = o;
   this->g = g;
@@ -51,10 +57,25 @@ LogGP::LogGP(std::string name, Sys *generator, Tick L, Tick o, Tick g, double G,
               << local_reduction_delay << std::endl;
   }
 }
-void LogGP::attach_mem_bus(Sys *generator, Tick L, Tick o, Tick g, double G,
-                           bool model_shared_bus, int communication_delay) {
-  this->NPU_MEM = new MemBus("NPU2", "MEM2", generator, L, o, g, G,
-                             model_shared_bus, communication_delay, false);
+void LogGP::attach_mem_bus(
+    Sys* generator,
+    Tick L,
+    Tick o,
+    Tick g,
+    double G,
+    bool model_shared_bus,
+    int communication_delay) {
+  this->NPU_MEM = new MemBus(
+      "NPU2",
+      "MEM2",
+      generator,
+      L,
+      o,
+      g,
+      G,
+      model_shared_bus,
+      communication_delay,
+      false);
 }
 void LogGP::process_next_read() {
   Tick offset = 0;
@@ -79,19 +100,22 @@ void LogGP::process_next_read() {
   }
   sends.pop_front();
   curState = State::Sending;
-  generator->register_event(this, EventType::Send_Finished, NULL,
-                            offset + (G * (tmp.size - 1)));
+  generator->register_event(
+      this, EventType::Send_Finished, NULL, offset + (G * (tmp.size - 1)));
 }
-void LogGP::request_read(int bytes, bool processed, bool send_back,
-                         Callable *callable) {
-  MemMovRequest mr(request_num++, generator, this, bytes, 0, callable,
-                   processed, send_back);
+void LogGP::request_read(
+    int bytes,
+    bool processed,
+    bool send_back,
+    Callable* callable) {
+  MemMovRequest mr(
+      request_num++, generator, this, bytes, 0, callable, processed, send_back);
   if (NPU_MEM != NULL) {
     mr.callEvent = EventType::Consider_Send_Back;
     pre_send.push_back(mr);
     pre_send.back().wait_wait_for_mem_bus(--pre_send.end());
-    NPU_MEM->send_from_MA_to_NPU(MemBus::Transmition::Usual, mr.size, false,
-                                 false, &pre_send.back());
+    NPU_MEM->send_from_MA_to_NPU(
+        MemBus::Transmition::Usual, mr.size, false, false, &pre_send.back());
   } else {
     sends.push_back(mr);
     /*if(generator->id==0) {
@@ -115,11 +139,14 @@ void LogGP::switch_to_receiver(MemMovRequest mr, Tick offset) {
   receives.push_back(mr);
   prevState = curState;
   curState = State::Receiving;
-  generator->register_event(this, EventType::Rec_Finished, NULL,
-                            offset + ((mr.size - 1) * G) + L + o);
+  generator->register_event(
+      this,
+      EventType::Rec_Finished,
+      NULL,
+      offset + ((mr.size - 1) * G) + L + o);
   subsequent_reads = 0;
 }
-void LogGP::call(EventType event, CallData *data) {
+void LogGP::call(EventType event, CallData* data) {
   // std::cout<<"called "<<name<<std::endl;
   if (event == EventType::Send_Finished) {
     // std::cout<<"1"<<std::endl;
@@ -151,9 +178,12 @@ void LogGP::call(EventType event, CallData *data) {
         pre_process.push_back(receives.front());
         receives.pop_front();
         pre_process.back().wait_wait_for_mem_bus(--pre_process.end());
-        NPU_MEM->send_from_NPU_to_MA(MemBus::Transmition::Usual,
-                                     pre_process.back().size, false, true,
-                                     &pre_process.back());
+        NPU_MEM->send_from_NPU_to_MA(
+            MemBus::Transmition::Usual,
+            pre_process.back().size,
+            false,
+            true,
+            &pre_process.back());
       } else {
         receives.front().processed = false;
         if (generator->id == 0) {
@@ -174,7 +204,9 @@ void LogGP::call(EventType event, CallData *data) {
             Sys::boostedTick() - processing.front().start_time;
         processing.front().start_time = Sys::boostedTick();
         generator->register_event(
-            this, EventType::Processing_Finished, NULL,
+            this,
+            EventType::Processing_Finished,
+            NULL,
             ((processing.front().size / 100) * local_reduction_delay) + 50);
         processing_state = ProcState::Processing;
       }
@@ -187,9 +219,12 @@ void LogGP::call(EventType event, CallData *data) {
         pre_send.push_back(receives.front());
         receives.pop_front();
         pre_send.back().wait_wait_for_mem_bus(--pre_send.end());
-        NPU_MEM->send_from_NPU_to_MA(MemBus::Transmition::Usual,
-                                     pre_send.back().size, false, true,
-                                     &pre_send.back());
+        NPU_MEM->send_from_NPU_to_MA(
+            MemBus::Transmition::Usual,
+            pre_send.back().size,
+            false,
+            true,
+            &pre_send.back());
       } else {
         receives.front().send_back = false;
         sends.push_back(receives.front());
@@ -207,13 +242,17 @@ void LogGP::call(EventType event, CallData *data) {
         receives.front().loggp = this;
         retirements.push_back(receives.front());
         retirements.back().wait_wait_for_mem_bus(--retirements.end());
-        NPU_MEM->send_from_NPU_to_MA(MemBus::Transmition::Usual,
-                                     retirements.back().size, false, false,
-                                     &retirements.back());
+        NPU_MEM->send_from_NPU_to_MA(
+            MemBus::Transmition::Usual,
+            retirements.back().size,
+            false,
+            false,
+            &retirements.back());
         receives.pop_front();
       } else {
-        SharedBusStat *tmp = new SharedBusStat(
-            BusType::Shared, receives.front().total_transfer_queue_time,
+        SharedBusStat* tmp = new SharedBusStat(
+            BusType::Shared,
+            receives.front().total_transfer_queue_time,
             receives.front().total_transfer_time,
             receives.front().total_processing_queue_time,
             receives.front().total_processing_time);
@@ -243,9 +282,12 @@ void LogGP::call(EventType event, CallData *data) {
         pre_send.push_back(processing.front());
         processing.pop_front();
         pre_send.back().wait_wait_for_mem_bus(--pre_send.end());
-        NPU_MEM->send_from_NPU_to_MA(MemBus::Transmition::Usual,
-                                     pre_send.back().size, false, true,
-                                     &pre_send.back());
+        NPU_MEM->send_from_NPU_to_MA(
+            MemBus::Transmition::Usual,
+            pre_send.back().size,
+            false,
+            true,
+            &pre_send.back());
       } else {
         processing.front().send_back = false;
         sends.push_back(processing.front());
@@ -257,19 +299,23 @@ void LogGP::call(EventType event, CallData *data) {
         processing.front().loggp = this;
         retirements.push_back(processing.front());
         retirements.back().wait_wait_for_mem_bus(--retirements.end());
-        NPU_MEM->send_from_NPU_to_MA(MemBus::Transmition::Usual,
-                                     retirements.back().size, false, false,
-                                     &retirements.back());
+        NPU_MEM->send_from_NPU_to_MA(
+            MemBus::Transmition::Usual,
+            retirements.back().size,
+            false,
+            false,
+            &retirements.back());
         processing.pop_front();
       } else {
         if (generator->id == 0) {
           // std::cout<<"movreq: "<<processing.front().my_id<<
           //" finished processing in "<<name<<" and is finished, processing
-          //size: "<<processing.size()
+          // size: "<<processing.size()
           //<<" time: "<<generator->boostedTick()<<std::endl;
         }
-        SharedBusStat *tmp = new SharedBusStat(
-            BusType::Shared, processing.front().total_transfer_queue_time,
+        SharedBusStat* tmp = new SharedBusStat(
+            BusType::Shared,
+            processing.front().total_transfer_queue_time,
             processing.front().total_transfer_time,
             processing.front().total_processing_queue_time,
             processing.front().total_processing_time);
@@ -289,13 +335,16 @@ void LogGP::call(EventType event, CallData *data) {
       processing.front().start_time = Sys::boostedTick();
       processing_state = ProcState::Processing;
       generator->register_event(
-          this, EventType::Processing_Finished, NULL,
+          this,
+          EventType::Processing_Finished,
+          NULL,
           ((processing.front().size / 100) * local_reduction_delay) + 50);
     }
   } else if (event == EventType::Consider_Retire) {
     // std::cout<<"4"<<std::endl;
-    SharedBusStat *tmp = new SharedBusStat(
-        BusType::Shared, retirements.front().total_transfer_queue_time,
+    SharedBusStat* tmp = new SharedBusStat(
+        BusType::Shared,
+        retirements.front().total_transfer_queue_time,
         retirements.front().total_transfer_time,
         retirements.front().total_processing_queue_time,
         retirements.front().total_processing_time);
@@ -325,7 +374,9 @@ void LogGP::call(EventType event, CallData *data) {
           Sys::boostedTick() - processing.front().start_time;
       processing.front().start_time = Sys::boostedTick();
       generator->register_event(
-          this, EventType::Processing_Finished, NULL,
+          this,
+          EventType::Processing_Finished,
+          NULL,
           ((processing.front().size / 100) * local_reduction_delay) + 50);
       processing_state = ProcState::Processing;
     }

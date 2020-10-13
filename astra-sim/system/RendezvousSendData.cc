@@ -22,13 +22,19 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 #include "RendezvousSendData.hh"
 
 namespace AstraSim {
-RendezvousSendData::RendezvousSendData(int nodeId, Sys *generator, void *buffer,
-                                       int count, int type, int dst, int tag,
-                                       sim_request request,
-                                       void (*msg_handler)(void *fun_arg),
-                                       void *fun_arg)
+RendezvousSendData::RendezvousSendData(
+    int nodeId,
+    Sys* generator,
+    void* buffer,
+    int count,
+    int type,
+    int dst,
+    int tag,
+    sim_request request,
+    void (*msg_handler)(void* fun_arg),
+    void* fun_arg)
     : BasicEventHandlerData(nodeId, EventType::RendezvousSend) {
-  this->send = new SimSendCaller(generator, buffer, count, type, dst, tag,
-                                 request, msg_handler, fun_arg);
+  this->send = new SimSendCaller(
+      generator, buffer, count, type, dst, tag, request, msg_handler, fun_arg);
 }
 } // namespace AstraSim

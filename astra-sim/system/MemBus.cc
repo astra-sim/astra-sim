@@ -27,9 +27,17 @@ MemBus::~MemBus() {
   delete NPU_side;
   delete MA_side;
 }
-MemBus::MemBus(std::string side1, std::string side2, Sys *generator, Tick L,
-               Tick o, Tick g, double G, bool model_shared_bus,
-               int communication_delay, bool attach) {
+MemBus::MemBus(
+    std::string side1,
+    std::string side2,
+    Sys* generator,
+    Tick L,
+    Tick o,
+    Tick g,
+    double G,
+    bool model_shared_bus,
+    int communication_delay,
+    bool attach) {
   NPU_side = new LogGP(side1, generator, L, o, g, G, EventType::MA_to_NPU);
   MA_side = new LogGP(side2, generator, L, o, g, G, EventType::NPU_to_MA);
   NPU_side->partner = MA_side;
@@ -38,8 +46,8 @@ MemBus::MemBus(std::string side1, std::string side2, Sys *generator, Tick L,
   this->model_shared_bus = model_shared_bus;
   this->communication_delay = communication_delay;
   if (attach) {
-    NPU_side->attach_mem_bus(generator, L, o, g, 0.0038, model_shared_bus,
-                             communication_delay);
+    NPU_side->attach_mem_bus(
+        generator, L, o, g, 0.0038, model_shared_bus, communication_delay);
   }
   if (generator->id == 0) {
     std::cout << "Shared bus modeling enabled? " << std::boolalpha
@@ -50,37 +58,49 @@ MemBus::MemBus(std::string side1, std::string side2, Sys *generator, Tick L,
               << communication_delay << std::endl;
   }
 }
-void MemBus::send_from_NPU_to_MA(MemBus::Transmition transmition, int bytes,
-                                 bool processed, bool send_back,
-                                 Callable *callable) {
+void MemBus::send_from_NPU_to_MA(
+    MemBus::Transmition transmition,
+    int bytes,
+    bool processed,
+    bool send_back,
+    Callable* callable) {
   if (model_shared_bus && transmition == Transmition::Usual) {
     NPU_side->request_read(bytes, processed, send_back, callable);
   } else {
     if (transmition == Transmition::Fast) {
-      generator->register_event(callable, EventType::NPU_to_MA,
-                                new SharedBusStat(BusType::Shared, 0, 10, 0, 0),
-                                10);
+      generator->register_event(
+          callable,
+          EventType::NPU_to_MA,
+          new SharedBusStat(BusType::Shared, 0, 10, 0, 0),
+          10);
     } else {
       generator->register_event(
-          callable, EventType::NPU_to_MA,
+          callable,
+          EventType::NPU_to_MA,
           new SharedBusStat(BusType::Shared, 0, communication_delay, 0, 0),
           communication_delay);
     }
   }
 }
-void MemBus::send_from_MA_to_NPU(MemBus::Transmition transmition, int bytes,
-                                 bool processed, bool send_back,
-                                 Callable *callable) {
+void MemBus::send_from_MA_to_NPU(
+    MemBus::Transmition transmition,
+    int bytes,
+    bool processed,
+    bool send_back,
+    Callable* callable) {
   if (model_shared_bus && transmition == Transmition::Usual) {
     MA_side->request_read(bytes, processed, send_back, callable);
   } else {
     if (transmition == Transmition::Fast) {
-      generator->register_event(callable, EventType::MA_to_NPU,
-                                new SharedBusStat(BusType::Shared, 0, 10, 0, 0),
-                                10);
+      generator->register_event(
+          callable,
+          EventType::MA_to_NPU,
+          new SharedBusStat(BusType::Shared, 0, 10, 0, 0),
+          10);
     } else {
       generator->register_event(
-          callable, EventType::MA_to_NPU,
+          callable,
+          EventType::MA_to_NPU,
           new SharedBusStat(BusType::Shared, 0, communication_delay, 0, 0),
           communication_delay);
     }

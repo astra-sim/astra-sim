@@ -24,9 +24,15 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 #include "Sys.hh"
 namespace AstraSim {
 int MemMovRequest::id = 0;
-MemMovRequest::MemMovRequest(int request_num, Sys *generator, LogGP *loggp,
-                             int size, int latency, Callable *callable,
-                             bool processed, bool send_back)
+MemMovRequest::MemMovRequest(
+    int request_num,
+    Sys* generator,
+    LogGP* loggp,
+    int size,
+    int latency,
+    Callable* callable,
+    bool processed,
+    bool send_back)
     : SharedBusStat(BusType::Mem, 0, 0, 0, 0) {
   this->size = size;
   this->latency = latency;
@@ -44,16 +50,16 @@ MemMovRequest::MemMovRequest(int request_num, Sys *generator, LogGP *loggp,
   this->start_time = Sys::boostedTick();
   this->mem_bus_finished = true;
 }
-void MemMovRequest::call(EventType event, CallData *data) {
-  update_bus_stats(BusType::Mem, (SharedBusStat *)data);
+void MemMovRequest::call(EventType event, CallData* data) {
+  update_bus_stats(BusType::Mem, (SharedBusStat*)data);
   total_mem_bus_transfer_delay +=
-      ((SharedBusStat *)data)->total_shared_bus_transfer_delay;
+      ((SharedBusStat*)data)->total_shared_bus_transfer_delay;
   total_mem_bus_processing_delay +=
-      ((SharedBusStat *)data)->total_shared_bus_processing_delay;
+      ((SharedBusStat*)data)->total_shared_bus_processing_delay;
   total_mem_bus_processing_queue_delay +=
-      ((SharedBusStat *)data)->total_shared_bus_processing_queue_delay;
+      ((SharedBusStat*)data)->total_shared_bus_processing_queue_delay;
   total_mem_bus_transfer_queue_delay +=
-      ((SharedBusStat *)data)->total_shared_bus_transfer_queue_delay;
+      ((SharedBusStat*)data)->total_shared_bus_transfer_queue_delay;
   mem_request_counter = 1;
   // delete (SharedBusStat *)data;
   // callEvent=EventType::General;
