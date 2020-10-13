@@ -10,17 +10,17 @@ BIN_DIR="${BUILD_DIR}"/AnalyticalAstra/bin/
 BINARY="./AnalyticalAstra"
 
 # Functions
-function setup {
-    mkdir -p "${BUILD_DIR}"
-    mkdir -p "${RESULT_DIR}"
-}
-
-function cleanup {
+function cleanup_build {
     rm -rf "${BUILD_DIR}"
 }
 
 function cleanup_result {
     rm -rf "${RESULT_DIR}"
+}
+
+function setup {
+    mkdir -p "${BUILD_DIR}"
+    mkdir -p "${RESULT_DIR}"
 }
 
 function compile {
@@ -29,33 +29,19 @@ function compile {
     make
 }
 
-function run {
-    cd "${BIN_DIR}" || exit
-    "${BINARY}"
-}
-
-function run_with_args {
-    cd "${BIN_DIR}" || exit
-    "${BINARY}" "$@"
-}
-
 
 # Main Script
 case "$1" in
 -l|--clean)
-    cleanup;;
+    cleanup_build;;
 -lr|--clean-result)
-    cleanup
+    cleanup_build
     cleanup_result;;
 -c|--compile)
     setup
     compile;;
--r|--run)
-    if [ $# -ge 2 ]; then
-        run_with_args "${@:2}"
-    else
-        run
-    fi;;
 -h|--help|*)
-    printf "Prints help message";;
+    echo "AnalyticalAstra build script."
+    echo "Run $0 -c to compile.";;
 esac
+

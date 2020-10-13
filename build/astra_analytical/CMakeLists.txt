@@ -1,13 +1,23 @@
-project (SimpleAnalytical)
+# CMake requirement
+cmake_minimum_required(VERSION 3.15)
 
-set (CMAKE_CXX_STANDARD 17)
+# C++ requirement
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-include_directories("${PROJECT_SOURCE_DIR}/../../")
+# Compiler requirement
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.3)
+        message(FATAL_ERROR "g++ (GNU) version should be greater than 5.3, but found ${CMAKE_CXX_COMPILER_VERSION}")
+    endif()
+endif()
 
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY bin)
 
-add_subdirectory ("${PROJECT_SOURCE_DIR}/../../" AtraSim)
+# Setup project
+project (AstraSim_Analytical)
+
+# Compile AstraSim library
+add_subdirectory("${PROJECT_SOURCE_DIR}/../../" AstraSim)
+
+# Compile AnalyticalBackend binary
 add_subdirectory ("${PROJECT_SOURCE_DIR}/../../extern/network_backend/analytical" AnalyticalAstra)
-
