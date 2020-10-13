@@ -6,31 +6,35 @@ LICENSE file in the root directory of this source tree.
 #ifndef __DOUBLEBINARYTREETOPOLOGY_HH__
 #define __DOUBLEBINARYTREETOPOLOGY_HH__
 
-#include <map>
+#include <assert.h>
 #include <math.h>
-#include <fstream>
-#include <chrono>
-#include <ctime>
-#include <tuple>
-#include <cstdint>
-#include <list>
-#include <vector>
 #include <algorithm>
 #include <chrono>
+#include <cstdint>
+#include <ctime>
+#include <fstream>
+#include <list>
+#include <map>
 #include <sstream>
-#include <assert.h>
-#include "astra-sim/system/Common.hh"
+#include <tuple>
+#include <vector>
 #include "ComplexLogicalTopology.hh"
 #include "LocalRingGlobalBinaryTree.hh"
-namespace AstraSim{
-    class DoubleBinaryTreeTopology:public ComplexLogicalTopology{
-    public:
-        int counter;
-        LocalRingGlobalBinaryTree *DBMAX;
-        LocalRingGlobalBinaryTree *DBMIN;
-        LogicalTopology *get_topology();
-        ~DoubleBinaryTreeTopology();
-        DoubleBinaryTreeTopology(int id,int total_tree_nodes,int start,int stride,int local_dim);
-    };
-}
+#include "astra-sim/system/Common.hh"
+namespace AstraSim {
+class DoubleBinaryTreeTopology : public ComplexLogicalTopology {
+ public:
+  int counter;
+  LocalRingGlobalBinaryTree* DBMAX;
+  LocalRingGlobalBinaryTree* DBMIN;
+  LogicalTopology* get_topology();
+  ~DoubleBinaryTreeTopology();
+  DoubleBinaryTreeTopology(
+      int id,
+      int total_tree_nodes,
+      int start,
+      int stride,
+      int local_dim);
+};
+} // namespace AstraSim
 #endif

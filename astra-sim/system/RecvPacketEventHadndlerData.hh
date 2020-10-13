@@ -6,31 +6,36 @@ LICENSE file in the root directory of this source tree.
 #ifndef __RECVPACKETEVENTHADNDLERDATA_HH__
 #define __RECVPACKETEVENTHADNDLERDATA_HH__
 
-#include <map>
+#include <assert.h>
 #include <math.h>
-#include <fstream>
-#include <chrono>
-#include <ctime>
-#include <tuple>
-#include <cstdint>
-#include <list>
-#include <vector>
 #include <algorithm>
 #include <chrono>
+#include <cstdint>
+#include <ctime>
+#include <fstream>
+#include <list>
+#include <map>
 #include <sstream>
-#include <assert.h>
-#include "BasicEventHandlerData.hh"
+#include <tuple>
+#include <vector>
 #include "BaseStream.hh"
+#include "BasicEventHandlerData.hh"
 
-namespace AstraSim{
-    class RecvPacketEventHadndlerData:public BasicEventHandlerData,public MetaData{
-    public:
-        BaseStream *owner;
-        int vnet;
-        int stream_num;
-        bool message_end;
-        Tick ready_time;
-        RecvPacketEventHadndlerData(BaseStream *owner,int nodeId, EventType event,int vnet,int stream_num);
-    };
-}
+namespace AstraSim {
+class RecvPacketEventHadndlerData : public BasicEventHandlerData,
+                                    public MetaData {
+ public:
+  BaseStream* owner;
+  int vnet;
+  int stream_num;
+  bool message_end;
+  Tick ready_time;
+  RecvPacketEventHadndlerData(
+      BaseStream* owner,
+      int nodeId,
+      EventType event,
+      int vnet,
+      int stream_num);
+};
+} // namespace AstraSim
 #endif

@@ -6,36 +6,35 @@ LICENSE file in the root directory of this source tree.
 #ifndef __CSVWRITER_HH__
 #define __CSVWRITER_HH__
 
-
-#include <map>
+#include <fcntl.h>
 #include <math.h>
-#include <fstream>
-#include <chrono>
-#include <ctime>
-#include <tuple>
-#include <cstdint>
-#include <iostream>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <fcntl.h>
+#include <chrono>
+#include <cstdint>
+#include <ctime>
+#include <fstream>
+#include <iostream>
+#include <map>
+#include <tuple>
 
-namespace AstraSim{
-class CSVWriter{
-public:
-    //std::fstream inFile;
-    std::fstream myFile;
-    void initialize_csv(int rows, int cols);
-    CSVWriter(std::string path,std::string name);
-    void write_cell(int row,int column,std::string data);
-    std::string path;
-    std::string name;
-    ~CSVWriter(){
-        myFile.close();
-    }
-    inline bool exists_test(const std::string& name) {
-        struct stat buffer;
-        return (stat (name.c_str(), &buffer) == 0);
-    }
+namespace AstraSim {
+class CSVWriter {
+ public:
+  // std::fstream inFile;
+  std::fstream myFile;
+  void initialize_csv(int rows, int cols);
+  CSVWriter(std::string path, std::string name);
+  void write_cell(int row, int column, std::string data);
+  std::string path;
+  std::string name;
+  ~CSVWriter() {
+    myFile.close();
+  }
+  inline bool exists_test(const std::string& name) {
+    struct stat buffer;
+    return (stat(name.c_str(), &buffer) == 0);
+  }
 };
-}
+} // namespace AstraSim
 #endif
