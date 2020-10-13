@@ -57,7 +57,7 @@ Coming Soon!
 
 NOTE: The on-screen reported delays (no matter what backend is used) after the end of simulation are in cycles while the delays inside the csv files are in terms of microSeconds.
 
-#### ASTRA-SIM Command Line Options
+#### ASTRA-SIM Binary Command Line Options
 When running the binary file (no matter what backend is used), the following options may be passed to the binary file (see example scripts):
 
 **--network-configuration (required):** The network input file dir.
