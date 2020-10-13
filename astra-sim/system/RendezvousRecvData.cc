@@ -19,12 +19,15 @@ SOFTWARE.
 Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 *******************************************************************************/
 
-
 #include "RendezvousRecvData.hh"
-namespace AstraSim{
-    RendezvousRecvData::RendezvousRecvData(int nodeId, Sys *generator, void *buffer, int count, int type, int src,
-                                           int tag, sim_request request, void (*msg_handler)(void *fun_arg), void *fun_arg)
-            :BasicEventHandlerData(nodeId,EventType::RendezvousRecv){
-        this->recv=new SimRecvCaller(generator,buffer,count,type,src,tag,request,msg_handler,fun_arg);
-    }
+namespace AstraSim {
+RendezvousRecvData::RendezvousRecvData(int nodeId, Sys *generator, void *buffer,
+                                       int count, int type, int src, int tag,
+                                       sim_request request,
+                                       void (*msg_handler)(void *fun_arg),
+                                       void *fun_arg)
+    : BasicEventHandlerData(nodeId, EventType::RendezvousRecv) {
+  this->recv = new SimRecvCaller(generator, buffer, count, type, src, tag,
+                                 request, msg_handler, fun_arg);
 }
+} // namespace AstraSim

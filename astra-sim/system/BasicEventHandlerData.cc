@@ -20,9 +20,9 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 *******************************************************************************/
 
 #include "BasicEventHandlerData.hh"
-namespace AstraSim{
+namespace AstraSim {
 BasicEventHandlerData::BasicEventHandlerData(int nodeId, EventType event) {
-    this->nodeId=nodeId;
-    this->event=event;
+  this->nodeId = nodeId;
+  this->event = event;
 }
-}
+} // namespace AstraSim

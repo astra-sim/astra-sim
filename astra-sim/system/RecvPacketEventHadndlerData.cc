@@ -20,14 +20,16 @@ Author : Saeed Rashidi (saeed.rashidi@gatech.edu)
 *******************************************************************************/
 
 #include "RecvPacketEventHadndlerData.hh"
-namespace AstraSim{
-    RecvPacketEventHadndlerData::RecvPacketEventHadndlerData(BaseStream *owner,int nodeId, EventType event, int vnet, int stream_num)
-            :BasicEventHandlerData(nodeId,event) {
-        this->owner=owner;
-        this->vnet=vnet;
-        this->stream_num=stream_num;
-        this->message_end= true;
-        ready_time=Sys::boostedTick();
-        //std::cout<<"################## instantiated with nodeID: "<<this->nodeId<<std::endl;
-    }
+namespace AstraSim {
+RecvPacketEventHadndlerData::RecvPacketEventHadndlerData(
+    BaseStream *owner, int nodeId, EventType event, int vnet, int stream_num)
+    : BasicEventHandlerData(nodeId, event) {
+  this->owner = owner;
+  this->vnet = vnet;
+  this->stream_num = stream_num;
+  this->message_end = true;
+  ready_time = Sys::boostedTick();
+  // std::cout<<"################## instantiated with nodeID:
+  // "<<this->nodeId<<std::endl;
 }
+} // namespace AstraSim
