@@ -34,20 +34,25 @@ Saeed Rashidi, Srinivas Sridharan, Sudarshan Srinivasan, and Tushar Krishna,
 # Clone the repository
 $ git clone https://github.com/astra-sim/astra-sim.git
 
-# Build the repository
-#  - You will be asked what network backend to download: gem5 or ns3. It will be cloned into the network folder.
-#  - The SCALE-Sim compute model will be cloned to the compute folder
-$ cd astra-sim/astra-sim
-$ ./build.sh
+# cloning the repository
+$ cd astra-sim
+$ git submodule init
+$ git submodule update
 ```
 
-#### Instructions for running Garnet2.0 as network simulator
-1. Enter gem5 when prompted by build.sh. This will clone the https://github.com/georgia-tech-synergy-lab/gem5_astra repository inside the astra-sim/network folder
-2. Go to network/gem5_astra
-3. Run: "./my_scripts/build_Garnet_standalone.sh" to build the garnet network simulator.
-4. Go to astra_runs/ directory
-5. Run: "./sampleDLRM_a2a.sh runName" where runName is an arbitrary name you choose for this specific run. This will run a toy DLRM model over a physical alltoall topology.
-6. After the sim finishes, go to ../astra_results/runName-a2a directory, the detailed and EndToEnd csv files for this run are stored there (times are in microseconds in the csv files)
+#### Instructions for compiling & running Garnet2.0 as network simulator
+1. Run "./build/astra_garnet/build.sh -c" to compile and integrate astra-sim with gem5 (-l flag will clean the cpmpilation)
+2. Run an example inside the examples/ directory with garnet as a backend. example: "examples/run_allreduce.sh -n garnet" 
+3. The results of example script runs will be dumped inside "examples/results/" path the detailed and EndToEnd csv files for this run are stored there (times are in microseconds in the 
+
+NOTE: you can also run "./sampleDLRM_torus.sh runName" for step 5 instead. This will run a toy DLRM model over a physical 3D torus.
+
+NOTE: The on-screen reported delays after the end of simulation are in cycles while the delays inside the csv files are in terms of microSeconds.
+
+#### Instructions for compiling & running analytical backend as network simulator
+1. Run "./build/astra_analytical/build.sh -c" to compile and integrate astra-sim with gem5 (-l flag will clean the cpmpilation)
+2. Run an example inside the examples/ directory with garnet as a backend. example: "examples/run_allreduce.sh -n analytical" 
+3. The results of example script runs will be dumped inside "examples/results/" path the detailed and EndToEnd csv files for this run are stored there (times are in microseconds in the 
 
 NOTE: you can also run "./sampleDLRM_torus.sh runName" for step 5 instead. This will run a toy DLRM model over a physical 3D torus.
 
@@ -59,12 +64,12 @@ Coming Soon!
 
 ### Input Files to ASTRA-sim ###
 
-* Workload: workload/workload_inputs/
+* Workload: inputs/workload/workload_inputs/
    * see workload_inputs/README.md
    * see workload_generator/README.md
-* System: system/system_inputs/
+* System: inputs/system/system_inputs/
    * see system_inputs/README.md
-* Network: network/gem5_astra/network_inputs/
+* Network: inputs/network/gem5_astra/network_inputs/
    * see network_inputs/README.md
 
 ### Contact ###
