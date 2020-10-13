@@ -1,3 +1,12 @@
 [submodule "extern/googletest"]
 	path = extern/googletest
 	url = https://github.com/google/googletest.git
+[submodule "extern/compute/SCALE-Sim"]
+	path = extern/compute/SCALE-Sim
+	url = https://github.com/ARM-software/SCALE-Sim.git
+[submodule "extern/network_backend/analytical"]
+	path = extern/network_backend/analytical
+	url = https://github.com/astra-sim/analytical.git
+[submodule "extern/network_backend/garnet/gem5_astra"]
+	path = extern/network_backend/garnet/gem5_astra
+	url = https://github.com/georgia-tech-synergy-lab/gem5_astra.git

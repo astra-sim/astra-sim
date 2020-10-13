@@ -34,38 +34,65 @@ Saeed Rashidi, Srinivas Sridharan, Sudarshan Srinivasan, and Tushar Krishna,
 # Clone the repository
 $ git clone https://github.com/astra-sim/astra-sim.git
 
-# Build the repository
-#  - You will be asked what network backend to download: gem5 or ns3. It will be cloned into the network folder.
-#  - The SCALE-Sim compute model will be cloned to the compute folder
-$ cd astra-sim/astra-sim
-$ ./build.sh
+# cloning the submodules
+$ cd astra-sim
+$ git submodule init
+$ git submodule update
 ```
 
-#### Instructions for running Garnet2.0 as network simulator
-1. Enter gem5 when prompted by build.sh. This will clone the https://github.com/georgia-tech-synergy-lab/gem5_astra repository inside the astra-sim/network folder
-2. Go to network/gem5_astra
-3. Run: "./my_scripts/build_Garnet_standalone.sh" to build the garnet network simulator.
-4. Go to astra_runs/ directory
-5. Run: "./sampleDLRM_a2a.sh runName" where runName is an arbitrary name you choose for this specific run. This will run a toy DLRM model over a physical alltoall topology.
-6. After the sim finishes, go to ../astra_results/runName-a2a directory, the detailed and EndToEnd csv files for this run are stored there (times are in microseconds in the csv files)
+#### Instructions for compiling & running Garnet2.0 as the network simulator
+1. Run "./build/astra_garnet/build.sh -c" to compile and integrate astra-sim with gem5 (-l flag will clean the compilation). This will create a binary file where garnet is integrated with astra-sim. The analytical backend is hosted at  https://github.com/georgia-tech-synergy-lab/gem5_astra .
+2. Run an example inside the "examples/" directory with garnet as a backend. Example: "examples/run_allreduce.sh -n garnet". This command will run a single all-reduce collective on a Torus topology. 
+3. The results of example script runs will be dumped inside "examples/results/" path.
 
-NOTE: you can also run "./sampleDLRM_torus.sh runName" for step 5 instead. This will run a toy DLRM model over a physical 3D torus.
+#### Instructions for compiling & running analytical backend as the network simulator
+1. Run "./build/astra_analytical/build.sh -c" to compile and integrate astra-sim with gem5 (-l flag will clean the compilation). This will create a binary file where analytical backend is integrated with astra-sim. The analytical backend is hosted at https://github.com/astra-sim/analytical .
+2. Run an example inside the "examples/" directory with garnet as a backend. Example: "examples/run_allreduce.sh -n analytical". This command will run a single all-reduce collective on a Torus topology. 
+3. The results of example script runs will be dumped inside "examples/results/" path. 
 
-NOTE: The on-screen reported delays after the end of simulation are in cycles while the delays inside the csv files are in terms of microSeconds.
-
-
-#### Instructions for running NS3 as network simulator
+#### Instructions for compiling & running NS3 as the network simulator
 Coming Soon!
+
+NOTE: The on-screen reported delays (no matter what backend is used) after the end of simulation are in cycles while the delays inside the csv files are in terms of microseconds.
+
+#### ASTRA-SIM Binary Command Line Options
+When running the binary file (no matter what backend is used), the following options may be passed to the binary file (see example scripts):
+
+**--network-configuration (required):** The network input file dir.
+
+**--system-configuration  (required):** The system input file dir.
+
+**--workload-configuration (required):** The workload input file dir.
+
+**--path (required):** The path to dump the results.
+
+**--run-name  (required):** Name of the current run.
+
+**--num-passes  (required):** Number of training passes to simulate.
+
+**--total-stat-rows (required):** Total number of runs that want to write to the same csv file (please see run_multi.sh inside the "examples/"" directory). This is useful when multiple runs want to write to the same csv file. This value should be 1 if only 1 run is executed. 
+
+**--stat-row  (required):** The position of the run to write its stats into the csv stat files (please see run_multi.sh inside the "examples/"" directory). This is useful when multiple runs want to write to the same csv file. This value should be 0 if only 1 run is executed.
+
+**--compute-scale (optional):** Scales the all compute times (reported in the workload input file) by this scale. Tge default value is 1.
+
+**--comm-scale  (optional):** Scales the all communication sizes (reported in the workload input file) by this scale. Tge default value is 1.
+
+NOTE: The garnet+astra-sim binary also allows all of the network input options be overridden by the command line options. 
 
 ### Input Files to ASTRA-sim ###
 
-* Workload: workload/workload_inputs/
-   * see workload_inputs/README.md
-   * see workload_generator/README.md
-* System: system/system_inputs/
-   * see system_inputs/README.md
-* Network: network/gem5_astra/network_inputs/
-   * see network_inputs/README.md
+* Workload: inputs/workload/
+   * see inputs/workload/README.md
+   * see scripts/workload_generator/README.md for instruction on how to use an automated script to generate workload input files.
+* System: inputs/system/
+   * see inputs/system/README.md
+* Network: 
+    * inputs/network/garnet (for garnet backend inputs)
+      * see inputs/network/garnet/README.md
+    * inputs/network/analytical (for analytical backend inputs)
+      * see inputs/network/analytical/README.md
+    
 
 ### Contact ###
 Please email Saeed Rashidi (saeed.rashidi@gatech.edu) or Srinivas Sridharan (ssrinivas@fb.com) or Tushar Krishna (tushar@ece.gatech.edu) if you have any questions.

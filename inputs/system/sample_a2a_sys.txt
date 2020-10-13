@@ -1,0 +1,8 @@
+scheduling-policy: LIFO
+endpoint-delay: 10
+packet-routing: software
+injection-policy: normal
+preferred-dataset-splits: 4
+boost-mode: 1
+collective-implementation: doubleBinaryTreeLocalAllToAll
+collective-optimization: localBWAware
