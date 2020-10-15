@@ -3,7 +3,7 @@ file(GLOB astra_SRC
 	"${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/workload/*.cc"
 	"${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/collective/*.cc"
 	"${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/topology/*.cc"
-	"${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/memory/*.cc")
+	"${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/memory/*.cc"
 	"${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/fast-backend/*.cc")
 file(GLOB astra_test_SRC "${CMAKE_CURRENT_SOURCE_DIR}/test/*.cc")
 
