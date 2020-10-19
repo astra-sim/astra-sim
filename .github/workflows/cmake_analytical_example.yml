@@ -1,0 +1,26 @@
+name: build and run tests
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    # install dependencies
+    - name: boost
+      run: sudo apt-get update && sudo apt-get install -yq libboost-all-dev
+    - name: git submodules
+      run: git submodule update --init
+    # build project
+    - name: build
+      run: cd build/astra_analytical && ./build.sh -c
+    # run tests
+    - name: run alltoall
+      run: cd examples/ && ./run_alltoall_analytical.sh
+    - name: run allreduce
+      run: cd examples/ && ./run_allreduce_analytical.sh
+    - name: run dlrm
+      run: cd examples/ && ./run_DLRM_analytical.sh
