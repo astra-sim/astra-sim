@@ -1,0 +1,317 @@
+[
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/BaseStream.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/BaseStream.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/BaseStream.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/BasicEventHandlerData.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/BasicEventHandlerData.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/BasicEventHandlerData.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/CollectivePhase.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/CollectivePhase.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/CollectivePhase.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/DMA_Request.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/DMA_Request.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/DMA_Request.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/DataSet.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/DataSet.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/DataSet.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/IntData.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/IntData.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/IntData.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/LogGP.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/LogGP.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/LogGP.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/MemBus.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/MemBus.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/MemBus.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/MemMovRequest.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/MemMovRequest.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/MemMovRequest.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/MyPacket.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/MyPacket.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/MyPacket.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/NetworkStat.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/NetworkStat.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/NetworkStat.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/PacketBundle.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/PacketBundle.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/PacketBundle.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/QueueLevelHandler.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/QueueLevelHandler.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/QueueLevelHandler.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/QueueLevels.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/QueueLevels.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/QueueLevels.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/RecvPacketEventHadndlerData.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/RecvPacketEventHadndlerData.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/RecvPacketEventHadndlerData.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/RendezvousRecvData.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/RendezvousRecvData.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/RendezvousRecvData.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/RendezvousSendData.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/RendezvousSendData.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/RendezvousSendData.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/SharedBusStat.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/SharedBusStat.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/SharedBusStat.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/SimRecvCaller.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/SimRecvCaller.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/SimRecvCaller.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/SimSendCaller.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/SimSendCaller.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/SimSendCaller.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/StatData.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/StatData.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/StatData.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/StreamBaseline.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/StreamBaseline.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/StreamBaseline.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/StreamStat.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/StreamStat.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/StreamStat.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/Sys.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/Sys.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/Sys.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/collective/Algorithm.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/collective/Algorithm.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/collective/Algorithm.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/collective/AllToAll.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/collective/AllToAll.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/collective/AllToAll.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/collective/DoubleBinaryTreeAllReduce.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/collective/DoubleBinaryTreeAllReduce.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/collective/DoubleBinaryTreeAllReduce.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/collective/Ring.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/collective/Ring.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/collective/Ring.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/fast-backend/FastBackEnd.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/fast-backend/FastBackEnd.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/fast-backend/FastBackEnd.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/memory/SimpleMemory.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/memory/SimpleMemory.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/memory/SimpleMemory.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/topology/BasicLogicalTopology.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/topology/BasicLogicalTopology.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/topology/BasicLogicalTopology.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/topology/BinaryTree.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/topology/BinaryTree.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/topology/BinaryTree.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/topology/ComplexLogicalTopology.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/topology/ComplexLogicalTopology.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/topology/ComplexLogicalTopology.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/topology/DoubleBinaryTreeTopology.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/topology/DoubleBinaryTreeTopology.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/topology/DoubleBinaryTreeTopology.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/topology/LocalRingGlobalBinaryTree.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/topology/LocalRingGlobalBinaryTree.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/topology/LocalRingGlobalBinaryTree.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/topology/LocalRingNodeA2AGlobalDBT.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/topology/LocalRingNodeA2AGlobalDBT.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/topology/LocalRingNodeA2AGlobalDBT.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/topology/LogicalTopology.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/topology/LogicalTopology.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/topology/LogicalTopology.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/topology/Node.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/topology/Node.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/topology/Node.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/topology/RingTopology.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/topology/RingTopology.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/topology/RingTopology.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/system/topology/Torus3D.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/topology/Torus3D.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/system/topology/Torus3D.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/workload/CSVWriter.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/workload/CSVWriter.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/workload/CSVWriter.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/workload/Layer.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/workload/Layer.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/workload/Layer.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++11 -o CMakeFiles/AstraSim.dir/astra-sim/workload/Workload.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/astra-sim/workload/Workload.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/astra-sim/workload/Workload.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim/test",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim -isystem /data/users/bryanreese/git/bryan-astra-sim/extern/googletest/googletest/include -isystem /data/users/bryanreese/git/bryan-astra-sim/extern/googletest/googletest -isystem /data/users/bryanreese/git/bryan-astra-sim/extern/googletest/googlemock/include -isystem /data/users/bryanreese/git/bryan-astra-sim/extern/googletest/googlemock    -std=gnu++17 -o CMakeFiles/AstraTest.dir/TestBasicEventHandlerData.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/test/TestBasicEventHandlerData.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/test/TestBasicEventHandlerData.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim/test/extern/googletest/googlemock",
+  "command": "/bin/c++   -isystem /data/users/bryanreese/git/bryan-astra-sim/extern/googletest/googlemock/include -isystem /data/users/bryanreese/git/bryan-astra-sim/extern/googletest/googlemock -isystem /data/users/bryanreese/git/bryan-astra-sim/extern/googletest/googletest/include -isystem /data/users/bryanreese/git/bryan-astra-sim/extern/googletest/googletest    -Wall -Wshadow -Werror -Wno-error=dangling-else -DGTEST_HAS_PTHREAD=1 -fexceptions -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -std=c++17 -o CMakeFiles/gmock_main.dir/src/gmock_main.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/extern/googletest/googlemock/src/gmock_main.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/extern/googletest/googlemock/src/gmock_main.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim/test/extern/googletest/googlemock",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim/extern/googletest/googlemock/include -I/data/users/bryanreese/git/bryan-astra-sim/extern/googletest/googlemock -isystem /data/users/bryanreese/git/bryan-astra-sim/extern/googletest/googletest/include -isystem /data/users/bryanreese/git/bryan-astra-sim/extern/googletest/googletest    -Wall -Wshadow -Werror -Wno-error=dangling-else -DGTEST_HAS_PTHREAD=1 -fexceptions -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -std=c++17 -o CMakeFiles/gmock.dir/src/gmock-all.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/extern/googletest/googlemock/src/gmock-all.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/extern/googletest/googlemock/src/gmock-all.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim/test/extern/googletest/googletest",
+  "command": "/bin/c++   -isystem /data/users/bryanreese/git/bryan-astra-sim/extern/googletest/googletest/include -isystem /data/users/bryanreese/git/bryan-astra-sim/extern/googletest/googletest    -Wall -Wshadow -Werror -Wno-error=dangling-else -DGTEST_HAS_PTHREAD=1 -fexceptions -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -std=c++17 -o CMakeFiles/gtest_main.dir/src/gtest_main.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/extern/googletest/googletest/src/gtest_main.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/extern/googletest/googletest/src/gtest_main.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AstraSim/test/extern/googletest/googletest",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim/extern/googletest/googletest/include -I/data/users/bryanreese/git/bryan-astra-sim/extern/googletest/googletest    -Wall -Wshadow -Werror -Wno-error=dangling-else -DGTEST_HAS_PTHREAD=1 -fexceptions -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -std=c++17 -o CMakeFiles/gtest.dir/src/gtest-all.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/extern/googletest/googletest/src/gtest-all.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/extern/googletest/googletest/src/gtest-all.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AnalyticalAstra",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++17 -o CMakeFiles/AnalyticalAstra.dir/src/api/AnalyticalNetwork.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/extern/network_backend/analytical/src/api/AnalyticalNetwork.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/extern/network_backend/analytical/src/api/AnalyticalNetwork.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AnalyticalAstra",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++17 -o CMakeFiles/AnalyticalAstra.dir/src/api/SendRecvTrackingMap.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/extern/network_backend/analytical/src/api/SendRecvTrackingMap.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/extern/network_backend/analytical/src/api/SendRecvTrackingMap.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AnalyticalAstra",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++17 -o CMakeFiles/AnalyticalAstra.dir/src/api/SendRecvTrackingMapValue.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/extern/network_backend/analytical/src/api/SendRecvTrackingMapValue.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/extern/network_backend/analytical/src/api/SendRecvTrackingMapValue.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AnalyticalAstra",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++17 -o CMakeFiles/AnalyticalAstra.dir/src/event-queue/Event.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/extern/network_backend/analytical/src/event-queue/Event.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/extern/network_backend/analytical/src/event-queue/Event.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AnalyticalAstra",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++17 -o CMakeFiles/AnalyticalAstra.dir/src/event-queue/EventQueue.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/extern/network_backend/analytical/src/event-queue/EventQueue.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/extern/network_backend/analytical/src/event-queue/EventQueue.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AnalyticalAstra",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++17 -o CMakeFiles/AnalyticalAstra.dir/src/event-queue/EventQueueEntry.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/extern/network_backend/analytical/src/event-queue/EventQueueEntry.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/extern/network_backend/analytical/src/event-queue/EventQueueEntry.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AnalyticalAstra",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++17 -o CMakeFiles/AnalyticalAstra.dir/src/helper/CommandLineParser.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/extern/network_backend/analytical/src/helper/CommandLineParser.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/extern/network_backend/analytical/src/helper/CommandLineParser.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AnalyticalAstra",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++17 -o CMakeFiles/AnalyticalAstra.dir/src/main.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/extern/network_backend/analytical/src/main.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/extern/network_backend/analytical/src/main.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AnalyticalAstra",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++17 -o CMakeFiles/AnalyticalAstra.dir/src/topology/AllToAll.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/extern/network_backend/analytical/src/topology/AllToAll.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/extern/network_backend/analytical/src/topology/AllToAll.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AnalyticalAstra",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++17 -o CMakeFiles/AnalyticalAstra.dir/src/topology/Link.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/extern/network_backend/analytical/src/topology/Link.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/extern/network_backend/analytical/src/topology/Link.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AnalyticalAstra",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++17 -o CMakeFiles/AnalyticalAstra.dir/src/topology/Ring.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/extern/network_backend/analytical/src/topology/Ring.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/extern/network_backend/analytical/src/topology/Ring.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AnalyticalAstra",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++17 -o CMakeFiles/AnalyticalAstra.dir/src/topology/Switch.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/extern/network_backend/analytical/src/topology/Switch.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/extern/network_backend/analytical/src/topology/Switch.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AnalyticalAstra",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++17 -o CMakeFiles/AnalyticalAstra.dir/src/topology/Topology.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/extern/network_backend/analytical/src/topology/Topology.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/extern/network_backend/analytical/src/topology/Topology.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AnalyticalAstra",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++17 -o CMakeFiles/AnalyticalAstra.dir/src/topology/TopologyConfiguration.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/extern/network_backend/analytical/src/topology/TopologyConfiguration.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/extern/network_backend/analytical/src/topology/TopologyConfiguration.cc"
+},
+{
+  "directory": "/data/users/bryanreese/git/bryan-astra-sim/build/astra_analytical/build/AnalyticalAstra",
+  "command": "/bin/c++   -I/data/users/bryanreese/git/bryan-astra-sim    -std=gnu++17 -o CMakeFiles/AnalyticalAstra.dir/src/topology/Torus2D.cc.o -c /data/users/bryanreese/git/bryan-astra-sim/extern/network_backend/analytical/src/topology/Torus2D.cc",
+  "file": "/data/users/bryanreese/git/bryan-astra-sim/extern/network_backend/analytical/src/topology/Torus2D.cc"
+}
+]
