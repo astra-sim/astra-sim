@@ -8,7 +8,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-		- name: c-linter
-			uses: ArtificialAmateur/clang-tidy-action@master
+    - name: c-linter
+      uses: ArtificialAmateur/clang-tidy-action@master
     env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
