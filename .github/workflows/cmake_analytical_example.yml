@@ -1,9 +1,6 @@
 name: build and run tests
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+on: [push, pull_request]
+
 jobs:
   build:
     runs-on: ubuntu-latest
