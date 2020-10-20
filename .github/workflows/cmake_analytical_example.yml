@@ -1,4 +1,4 @@
-name: build and run tests
+name: Build Project and Run Examples
 on: [push, pull_request]
 
 jobs:

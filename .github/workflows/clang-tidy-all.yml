@@ -8,6 +8,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Install clang-tidy
+      run: sudo apt update && sudo apt install clang-tidy
     - name: Run clang-tidy
       uses: HorstBaerbel/action-clang-tidy@1.0
       # These are optional (defaults displayed)

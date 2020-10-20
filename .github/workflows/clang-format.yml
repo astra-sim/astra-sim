@@ -1,4 +1,4 @@
-name: test-clang-format
+name: Clang Format Full Tree
 on: [push, pull_request]
 
 jobs:
