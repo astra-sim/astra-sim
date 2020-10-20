@@ -1,4 +1,4 @@
-name: Clang Format Full Tree
+name: Clang-format Full Tree
 on: [push, pull_request]
 
 jobs:

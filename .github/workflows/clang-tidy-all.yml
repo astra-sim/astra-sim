@@ -8,14 +8,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Install clang-tidy
-      run: sudo apt update && sudo apt install clang-tidy
-    - name: Run clang-tidy
-      uses: HorstBaerbel/action-clang-tidy@1.0
-      # These are optional (defaults displayed)
-      with:
-        scandir: '.'
-        builddir: 'clang-build'
-        excludedirs: 'extern'
-        extensions: 'c,h,C,H,cpp,hpp,cc,hh,c++,h++,cxx,hxx'
-        cmakeoptions: ''
+		- name: c-linter
+			uses: ArtificialAmateur/clang-tidy-action@master
+    env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
