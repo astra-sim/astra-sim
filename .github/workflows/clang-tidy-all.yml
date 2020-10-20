@@ -9,6 +9,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: c-linter
-      uses: ArtificialAmateur/clang-tidy-action@master
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: ArtificialAmateur/cpp-linter-action@0.01
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
