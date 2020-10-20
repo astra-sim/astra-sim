@@ -14,6 +14,6 @@ jobs:
       with:
         scandir: '.'
         builddir: 'clang-build'
-        excludedirs: ''
+        excludedirs: 'extern'
         extensions: 'c,h,C,H,cpp,hpp,cc,hh,c++,h++,cxx,hxx'
         cmakeoptions: ''
