@@ -5,6 +5,7 @@ on: [push, pull_request]
 jobs:
   checkout-and-check-formatting:
     runs-on: ubuntu-latest
+    name: c-linter
 
     steps:
     - uses: actions/checkout@v2
