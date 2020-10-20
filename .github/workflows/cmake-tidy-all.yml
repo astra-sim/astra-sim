@@ -1,6 +1,6 @@
-name: Clang-tidy
+name: Clang-tidy Full Tree
 
-on: [push, pullrequest]
+on: [push, pull_request]
 
 jobs:
   checkout-and-check-formatting:
