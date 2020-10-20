@@ -13,7 +13,7 @@ jobs:
       # These are optional (defaults displayed)
       with:
         scandir: '.'
-        builddir: 'build'
+        builddir: 'clang-build'
         excludedirs: ''
         extensions: 'c,h,C,H,cpp,hpp,cc,hh,c++,h++,cxx,hxx'
         cmakeoptions: ''
