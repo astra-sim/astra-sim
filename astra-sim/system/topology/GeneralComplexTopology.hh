@@ -3,8 +3,8 @@ This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
-#ifndef __DOUBLEBINARYTREETOPOLOGY_HH__
-#define __DOUBLEBINARYTREETOPOLOGY_HH__
+#ifndef __GENERALCOMPLEXTOPOLOGY_HH__
+#define __GENERALCOMPLEXTOPOLOGY_HH__
 
 #include <assert.h>
 #include <math.h>
@@ -19,24 +19,21 @@ LICENSE file in the root directory of this source tree.
 #include <tuple>
 #include <vector>
 #include "ComplexLogicalTopology.hh"
-#include "LocalRingGlobalBinaryTree.hh"
 #include "astra-sim/system/Common.hh"
+
 namespace AstraSim {
-class DoubleBinaryTreeTopology : public ComplexLogicalTopology {
+class GeneralComplexTopology : public ComplexLogicalTopology {
  public:
-  int counter;
-  BinaryTree* DBMAX;
-  BinaryTree* DBMIN;
-  LogicalTopology* get_topology() override;
-  ~DoubleBinaryTreeTopology();
-  int get_num_of_dimensions() override;
-  BasicLogicalTopology * get_basic_topology_at_dimension(int dimension, ComType type) override;
-  int get_num_of_nodes_in_dimension(int dimension) override;
-  DoubleBinaryTreeTopology(
+    std::vector<LogicalTopology*> dimension_topology;
+    GeneralComplexTopology(
       int id,
-      int total_tree_nodes,
-      int start,
-      int stride);
+      std::vector<int> dimension_size,
+      std::vector<CollectiveImplementation> collective_implementation);
+  ~GeneralComplexTopology();
+  int get_num_of_nodes_in_dimension(int dimension) override;
+  BasicLogicalTopology * get_basic_topology_at_dimension(int dimension,
+                                                         ComType type) override;
+  int get_num_of_dimensions() override;
 };
 } // namespace AstraSim
 #endif

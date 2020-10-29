@@ -27,14 +27,18 @@ namespace AstraSim {
 class LocalRingGlobalBinaryTree : public ComplexLogicalTopology {
  public:
   RingTopology* local_dimension;
-  BinaryTree* global_dimension;
+  RingTopology* global_dimension_other;
+  BinaryTree* global_dimension_all_reduce;
+  int get_num_of_nodes_in_dimension(int dimension) override;
+  int get_num_of_dimensions() override;
+  BasicLogicalTopology * get_basic_topology_at_dimension(int dimension, ComType type) override;
   LocalRingGlobalBinaryTree(
       int id,
+      int local_dim,
       BinaryTree::TreeType tree_type,
       int total_tree_nodes,
       int start,
-      int stride,
-      int local_dim);
+      int stride);
   ~LocalRingGlobalBinaryTree();
 };
 } // namespace AstraSim

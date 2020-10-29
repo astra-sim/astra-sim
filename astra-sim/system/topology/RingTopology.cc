@@ -144,4 +144,7 @@ bool RingTopology::is_enabled() {
   }
   return false;
 }
+int RingTopology::get_num_of_nodes_in_dimension(int dimension) {
+  return get_nodes_in_ring();
+}
 } // namespace AstraSim

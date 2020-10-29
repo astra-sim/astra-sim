@@ -159,9 +159,6 @@ void Workload::iterate_micro_benchmark() {
   if (current_state != LoopState::Wait_For_Sim_Finish) {
     for (pass_counter = 0; pass_counter < TOTAL_PASS; pass_counter++) {
       layers[index]->issue_weight_grad_comm(
-          true,
-          true,
-          true,
           SchedulingPolicy::None,
           CollectiveBarrier::Non_Blocking);
     }
@@ -220,9 +217,6 @@ void Workload::iterate_data_parallel() {
     }
     delay_loaded = false;
     layers[index]->issue_weight_grad_comm(
-        true,
-        true,
-        true,
         SchedulingPolicy::None,
         CollectiveBarrier::Non_Blocking);
     if (index == 0) {
@@ -281,35 +275,7 @@ void Workload::iterate_hybrid_parallel_customized() {
     }
     if (!collective_issued) {
       collective_issued = true;
-      bool first = false;
-      bool second = false;
-      bool third = false;
-      if (layers[index]->specific_parallellism == ParallelismPolicy::Data) {
-        first = false;
-        second = false;
-        third = false;
-      } else if (
-          layers[index]->specific_parallellism == ParallelismPolicy::Model) {
-        first = true;
-        second = true;
-        third = true;
-      } else if (
-          layers[index]->specific_parallellism ==
-          ParallelismPolicy::HybridDataModel) {
-        first = true;
-        second = false;
-        third = false;
-      } else if (
-          layers[index]->specific_parallellism ==
-          ParallelismPolicy::HybridModelData) {
-        first = false;
-        second = true;
-        third = true;
-      }
       layers[index]->issue_forward_pass_comm(
-          first,
-          second,
-          third,
           SchedulingPolicy::None,
           CollectiveBarrier::Blocking);
       return;
@@ -339,35 +305,7 @@ void Workload::iterate_hybrid_parallel_customized() {
     }
     if (!collective_issued) {
       collective_issued = true;
-      bool first = false;
-      bool second = false;
-      bool third = false;
-      if (layers[index]->specific_parallellism == ParallelismPolicy::Data) {
-        first = true;
-        second = true;
-        third = true;
-      } else if (
-          layers[index]->specific_parallellism == ParallelismPolicy::Model) {
-        first = false;
-        second = false;
-        third = false;
-      } else if (
-          layers[index]->specific_parallellism ==
-          ParallelismPolicy::HybridDataModel) {
-        first = false;
-        second = true;
-        third = true;
-      } else if (
-          layers[index]->specific_parallellism ==
-          ParallelismPolicy::HybridModelData) {
-        first = true;
-        second = false;
-        third = false;
-      }
       layers[index]->issue_weight_grad_comm(
-          first,
-          second,
-          third,
           SchedulingPolicy::FIFO,
           CollectiveBarrier::Non_Blocking);
     }
@@ -406,35 +344,7 @@ void Workload::iterate_hybrid_parallel_customized() {
     }
     if (!collective_issued && index > 0) {
       collective_issued = true;
-      bool first = false;
-      bool second = false;
-      bool third = false;
-      if (layers[index]->specific_parallellism == ParallelismPolicy::Data) {
-        first = false;
-        second = false;
-        third = false;
-      } else if (
-          layers[index]->specific_parallellism == ParallelismPolicy::Model) {
-        first = true;
-        second = true;
-        third = true;
-      } else if (
-          layers[index]->specific_parallellism ==
-          ParallelismPolicy::HybridDataModel) {
-        first = true;
-        second = false;
-        third = false;
-      } else if (
-          layers[index]->specific_parallellism ==
-          ParallelismPolicy::HybridModelData) {
-        first = false;
-        second = true;
-        third = true;
-      }
       layers[index]->issue_input_grad_comm(
-          first,
-          second,
-          third,
           SchedulingPolicy::LIFO,
           CollectiveBarrier::Non_Blocking);
     }
@@ -473,9 +383,6 @@ void Workload::iterate_hybrid_parallel_data_model() {
     if (!collective_issued) {
       collective_issued = true;
       layers[index]->issue_forward_pass_comm(
-          true,
-          false,
-          false,
           SchedulingPolicy::None,
           CollectiveBarrier::Blocking);
       return;
@@ -506,9 +413,6 @@ void Workload::iterate_hybrid_parallel_data_model() {
     if (!collective_issued) {
       collective_issued = true;
       layers[index]->issue_weight_grad_comm(
-          false,
-          true,
-          true,
           SchedulingPolicy::FIFO,
           CollectiveBarrier::Non_Blocking);
     }
@@ -548,9 +452,6 @@ void Workload::iterate_hybrid_parallel_data_model() {
     if (!collective_issued && index > 0) {
       collective_issued = true;
       layers[index]->issue_input_grad_comm(
-          true,
-          false,
-          false,
           SchedulingPolicy::LIFO,
           CollectiveBarrier::Non_Blocking);
     }
@@ -589,9 +490,6 @@ void Workload::iterate_hybrid_parallel_model_data() {
     if (!collective_issued) {
       collective_issued = true;
       layers[index]->issue_forward_pass_comm(
-          false,
-          true,
-          true,
           SchedulingPolicy::None,
           CollectiveBarrier::Blocking);
       return;
@@ -622,9 +520,6 @@ void Workload::iterate_hybrid_parallel_model_data() {
     if (!collective_issued) {
       collective_issued = true;
       layers[index]->issue_weight_grad_comm(
-          true,
-          false,
-          false,
           SchedulingPolicy::FIFO,
           CollectiveBarrier::Non_Blocking);
     }
@@ -664,9 +559,6 @@ void Workload::iterate_hybrid_parallel_model_data() {
     if (!collective_issued && index > 0) {
       collective_issued = true;
       layers[index]->issue_input_grad_comm(
-          false,
-          true,
-          true,
           SchedulingPolicy::LIFO,
           CollectiveBarrier::Non_Blocking);
     }
@@ -705,9 +597,6 @@ void Workload::iterate_distributed_inference() {
     if (!collective_issued) {
       collective_issued = true;
       layers[index]->issue_forward_pass_comm(
-          true,
-          true,
-          true,
           SchedulingPolicy::None,
           CollectiveBarrier::Blocking);
       return;
@@ -754,10 +643,8 @@ void Workload::iterate_model_parallel() {
     }
     if (!collective_issued) {
       collective_issued = true;
+      std::vector<bool> involved_dimensions{ true,true,true };
       layers[index]->issue_forward_pass_comm(
-          true,
-          true,
-          true,
           SchedulingPolicy::None,
           CollectiveBarrier::Blocking);
       return;
@@ -820,10 +707,8 @@ void Workload::iterate_model_parallel() {
     }
     if (!collective_issued && index > 0) {
       collective_issued = true;
+      std::vector<bool> involved_dimensions{ true,true,true };
       layers[index]->issue_input_grad_comm(
-          true,
-          true,
-          true,
           SchedulingPolicy::LIFO,
           CollectiveBarrier::Non_Blocking);
     }
@@ -862,9 +747,6 @@ void Workload::iterate_hybrid_parallel_Transformer() {
     if (!collective_issued) {
       collective_issued = true;
       layers[index]->issue_forward_pass_comm(
-          true,
-          false,
-          true,
           SchedulingPolicy::None,
           CollectiveBarrier::Blocking);
       return;
@@ -895,9 +777,6 @@ void Workload::iterate_hybrid_parallel_Transformer() {
     if (!collective_issued) {
       collective_issued = true;
       layers[index]->issue_weight_grad_comm(
-          false,
-          true,
-          false,
           SchedulingPolicy::FIFO,
           CollectiveBarrier::Non_Blocking);
     }
@@ -937,9 +816,6 @@ void Workload::iterate_hybrid_parallel_Transformer() {
     if (!collective_issued && index > 0) {
       collective_issued = true;
       layers[index]->issue_input_grad_comm(
-          true,
-          false,
-          true,
           SchedulingPolicy::LIFO,
           CollectiveBarrier::Non_Blocking);
     }
@@ -978,9 +854,6 @@ void Workload::iterate_hybrid_parallel_Transformer_fwd_in_bckwd() {
     if (!collective_issued) {
       collective_issued = true;
       layers[index]->issue_forward_pass_comm(
-          true,
-          false,
-          true,
           SchedulingPolicy::None,
           CollectiveBarrier::Blocking);
       return;
@@ -1011,9 +884,6 @@ void Workload::iterate_hybrid_parallel_Transformer_fwd_in_bckwd() {
     if (!collective_issued) {
       collective_issued = true;
       layers[index]->issue_weight_grad_comm(
-          false,
-          true,
-          false,
           SchedulingPolicy::FIFO,
           CollectiveBarrier::Non_Blocking);
     }
@@ -1068,9 +938,6 @@ void Workload::iterate_hybrid_parallel_Transformer_fwd_in_bckwd() {
     if (!collective_issued && index > 0) {
       collective_issued = true;
       layers[index]->issue_input_grad_comm(
-          true,
-          false,
-          true,
           SchedulingPolicy::LIFO,
           CollectiveBarrier::Non_Blocking);
     }
@@ -1104,9 +971,6 @@ void Workload::iterate_hybrid_parallel_Transformer_fwd_in_bckwd() {
     if (!collective_issued) {
       collective_issued = true;
       layers[index]->issue_forward_pass_comm(
-          true,
-          false,
-          true,
           SchedulingPolicy::None,
           CollectiveBarrier::Blocking);
       return;
@@ -1162,9 +1026,6 @@ void Workload::iterate_hybrid_parallel_DLRM() {
         layers[index]->fwd_pass_comm_type == ComType::All_to_All) {
       collective_issued = true;
       layers[index]->issue_forward_pass_comm(
-          true,
-          true,
-          true,
           SchedulingPolicy::HIGHEST,
           CollectiveBarrier::Non_Blocking);
 
@@ -1205,9 +1066,6 @@ void Workload::iterate_hybrid_parallel_DLRM() {
     if (!collective_issued) {
       collective_issued = true;
       layers[index]->issue_weight_grad_comm(
-          true,
-          true,
-          true,
           SchedulingPolicy::None,
           CollectiveBarrier::Non_Blocking);
     }
@@ -1242,9 +1100,6 @@ void Workload::iterate_hybrid_parallel_DLRM() {
     }
     if (index == DLRM_LAST_BOTTOM_LAYER + 1) {
       layers[0]->issue_input_grad_comm(
-          true,
-          true,
-          true,
           SchedulingPolicy::HIGHEST,
           CollectiveBarrier::Non_Blocking);
     }
@@ -1300,6 +1155,63 @@ ParallelismPolicy Workload::decode_parallelsim(std::string parallelism) {
   else
     return ParallelismPolicy::None;
 }
+std::map<std::string, std::vector<bool>> Workload::decode_involved_dimensions
+    (ParallelismPolicy policy, int model_parallel_npu_group) {
+  std::map<std::string, std::vector<bool>> result;
+  std::vector<bool> none{ false, false, false,false, false,
+                          false,false, false, false,false };
+  std::vector<bool> all{ true, true, true,true, true,
+                          true,true, true, true,true };
+  if(policy==ParallelismPolicy::Data || policy==ParallelismPolicy::DLRM ||
+      policy==ParallelismPolicy::DLRMEnhanced ||
+      policy==ParallelismPolicy::MicroBenchmark){
+    result["fwd"]=none;
+    result["ig"]=none;
+    result["wg"]=all;
+  }
+  else if(policy==ParallelismPolicy::Model ||
+           policy==ParallelismPolicy::DistributedInference){
+    result["fwd"]=all;
+    result["ig"]=all;
+    result["wg"]=none;
+  }
+  else if(policy==ParallelismPolicy::HybridModelData){
+    std::vector<bool> data{true, false, false,false, false,
+                            false,false, false, false,false };
+    std::vector<bool> model{false, true, true,true, true,
+                             true,true, true, true,true };
+    result["fwd"]=model;
+    result["ig"]=model;
+    result["wg"]=data;
+  }
+  else if(policy==ParallelismPolicy::HybridDataModel){
+    std::vector<bool> model{true, false, false,false, false,
+                           false,false, false, false,false };
+    std::vector<bool> data{false, true, true,true, true,
+                            true,true, true, true,true };
+    result["fwd"]=model;
+    result["ig"]=model;
+    result["wg"]=data;
+  }
+  else if(policy==ParallelismPolicy::TransformerFwdInBckwd ||
+           policy==ParallelismPolicy::Transformer){
+    int model_parallel_boundary=generator->break_dimension(model_parallel_npu_group);
+    std::vector<bool> model;
+    std::vector<bool> data;
+    for(int i=0;i<=model_parallel_boundary;i++){
+        model.push_back(true);
+        data.push_back(false);
+    }
+    for(int i=model_parallel_boundary+1;i<10;i++){
+      model.push_back(false);
+      data.push_back(true);
+    }
+    result["fwd"]=model;
+    result["ig"]=model;
+    result["wg"]=data;
+  }
+  return result;
+}
 bool Workload::initialize_workload(std::string name) {
   std::map<int, bool> chekpoints;
   std::map<int, bool> need_checkpoint_initiation;
@@ -1318,29 +1230,48 @@ bool Workload::initialize_workload(std::string name) {
   int lines;
   inFile >> type;
   parallelismPolicy = decode_parallelsim(type);
-  if (parallelismPolicy == ParallelismPolicy::TransformerFwdInBckwd) {
+  int model_parallel_npu_group=-1;
+  if (parallelismPolicy == ParallelismPolicy::TransformerFwdInBckwd
+      || parallelismPolicy == ParallelismPolicy::Transformer) {
     std::string tmp;
     int i;
     inFile >> tmp;
-    inFile >> i;
-    std::cout << "checkpoints layers are: ";
-    while (i-- > 0) {
-      int layer;
-      inFile >> layer;
-      chekpoints[layer] = true;
-      std::cout << layer << ", ";
+    inFile >> model_parallel_npu_group;
+    if(generator->id==0){
+      std::cout <<tmp<< " is: "<<model_parallel_npu_group<<std::endl;
     }
-    std::cout << std::endl;
-    std::cout << "layers initiating fwd_in_bckwd are: ";
-    inFile >> tmp;
-    inFile >> i;
-    while (i-- > 0) {
-      int layer;
-      inFile >> layer;
-      need_checkpoint_initiation[layer] = true;
-      std::cout << layer << ", ";
+    if (parallelismPolicy == ParallelismPolicy::TransformerFwdInBckwd) {
+      inFile >> tmp;
+      inFile >> i;
+      if(generator->id==0){
+        std::cout << "checkpoints layers are: ";
+      }
+      while (i-- > 0) {
+        int layer;
+        inFile >> layer;
+        chekpoints[layer] = true;
+        if(generator->id==0){
+          std::cout << layer << ", ";
+        }
+      }
+      if(generator->id==0){
+        std::cout << std::endl;
+        std::cout << "layers initiating fwd_in_bckwd are: ";
+      }
+      inFile >> tmp;
+      inFile >> i;
+      while (i-- > 0) {
+        int layer;
+        inFile >> layer;
+        need_checkpoint_initiation[layer] = true;
+        if(generator->id==0){
+          std::cout << layer << ", ";
+        }
+      }
+      if(generator->id==0){
+        std::cout << std::endl;
+      }
     }
-    std::cout << std::endl;
   } else if (
       parallelismPolicy == ParallelismPolicy::DLRM ||
       parallelismPolicy == ParallelismPolicy::DLRMEnhanced) {
@@ -1357,6 +1288,8 @@ bool Workload::initialize_workload(std::string name) {
     inFile.close();
     return false;
   }
+  std::map<std::string, std::vector<bool>> general_involved_dimensions=
+      decode_involved_dimensions(parallelismPolicy,model_parallel_npu_group);
   inFile >> lines;
   run_type = type;
   SIZE = lines;
@@ -1391,6 +1324,8 @@ bool Workload::initialize_workload(std::string name) {
     int wg_update_time;
     inFile >> wg_update_time;
 
+    ParallelismPolicy specific_policy=ParallelismPolicy::None;
+    std::map<std::string, std::vector<bool>> selected_involved_dimensions;
     ComType fp_type = ComType::None;
     ComType ig_type = ComType::None;
     ComType wg_type = ComType::None;
@@ -1435,6 +1370,23 @@ bool Workload::initialize_workload(std::string name) {
       std::cout << "id: " << id << " , depen: " << depen
                 << " , wg_comp_time: " << wg_compute_time << std::endl;
     }
+    if (parallelismPolicy == ParallelismPolicy::HybridCustomized) {
+      std::string specific_parallelsim;
+      inFile >> specific_parallelsim;
+      specific_policy = decode_parallelsim(specific_parallelsim);
+    }
+    if ((parallelismPolicy == ParallelismPolicy::DLRM ||
+        parallelismPolicy == ParallelismPolicy::DLRMEnhanced) &&
+        i==0) {
+      specific_policy = ParallelismPolicy::Model;
+    }
+    if(specific_policy!=ParallelismPolicy::None){
+      selected_involved_dimensions=decode_involved_dimensions(specific_policy,
+                                                                model_parallel_npu_group);
+    }
+    else{
+      selected_involved_dimensions=general_involved_dimensions;
+    }
     Layer* l = new Layer(
         id,
         i,
@@ -1443,24 +1395,23 @@ bool Workload::initialize_workload(std::string name) {
         fp_compute_time * generator->compute_scale,
         fp_type,
         fp_comm_size * generator->comm_scale,
+        selected_involved_dimensions["fwd"],
         ig_compute_time * generator->compute_scale,
         ig_type,
         ig_comm_size * generator->comm_scale,
+        selected_involved_dimensions["ig"],
         wg_compute_time * generator->compute_scale,
         wg_type,
         wg_comm_size * generator->comm_scale,
-        wg_update_time);
+        selected_involved_dimensions["wg"],
+        wg_update_time,
+        specific_policy);
     if (chekpoints.find(i) != chekpoints.end()) {
       l->is_checkpoint = true;
     }
     if (need_checkpoint_initiation.find(i) !=
         need_checkpoint_initiation.end()) {
       l->needs_fwd_in_bckwd_initiation = true;
-    }
-    if (parallelismPolicy == ParallelismPolicy::HybridCustomized) {
-      std::string specific_parallelsim;
-      inFile >> specific_parallelsim;
-      l->specific_parallellism = decode_parallelsim(specific_parallelsim);
     }
     layers[i] = l;
   }

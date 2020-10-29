@@ -16,6 +16,7 @@ class LogicalTopology {
   static int get_reminder(int number, int divisible);
   virtual ~LogicalTopology() = default;
   virtual int get_num_of_dimensions() = 0;
+  virtual int get_num_of_nodes_in_dimension(int dimension) = 0;
   virtual BasicLogicalTopology* get_basic_topology_at_dimension(
       int dimension,
       ComType type) = 0;

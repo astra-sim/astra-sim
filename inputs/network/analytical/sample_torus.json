@@ -1,7 +1,7 @@
 {
   "topology-name": "Torus2D",
   "dims-count": 1,
-  "nodes-per-dim": 9,
+  "nodes-per-dim": 16,
   "link-bandwidth": 25,
   "link-latency": 500,
   "nic-latency": 0,

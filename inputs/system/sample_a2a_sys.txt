@@ -4,5 +4,8 @@ packet-routing: software
 injection-policy: normal
 preferred-dataset-splits: 4
 boost-mode: 1
-collective-implementation: doubleBinaryTreeLocalAllToAll
+all-reduce-implementation: direct_doubleBinaryTree
+all-gather-implementation: ring_ring
+reduce-scatter-implementation: ring_ring
+all-to-all-implementation: direct_direct
 collective-optimization: localBWAware

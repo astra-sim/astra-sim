@@ -25,7 +25,7 @@ namespace AstraSim {
 class RingTopology : public BasicLogicalTopology {
  public:
   enum class Direction { Clockwise, Anticlockwise };
-  enum class Dimension { Local, Vertical, Horizontal };
+  enum class Dimension { Local, Vertical, Horizontal, NA };
   std::string name;
   int id;
   int next_node_id;
@@ -34,6 +34,7 @@ class RingTopology : public BasicLogicalTopology {
   int total_nodes_in_ring;
   int index_in_ring;
   Dimension dimension;
+  int get_num_of_nodes_in_dimension(int dimension) override;
   RingTopology(
       Dimension dimension,
       int id,

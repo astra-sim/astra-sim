@@ -9,13 +9,13 @@ PacketBundle::PacketBundle(
     Sys* generator,
     BaseStream* stream,
     std::list<MyPacket*> locked_packets,
-    bool processed,
+    bool needs_processing,
     bool send_back,
     int size,
     MemBus::Transmition transmition) {
   this->generator = generator;
   this->locked_packets = locked_packets;
-  this->processed = processed;
+  this->needs_processing = needs_processing;
   this->send_back = send_back;
   this->size = size;
   this->stream = stream;
@@ -25,12 +25,12 @@ PacketBundle::PacketBundle(
 PacketBundle::PacketBundle(
     Sys* generator,
     BaseStream* stream,
-    bool processed,
+    bool needs_processing,
     bool send_back,
     int size,
     MemBus::Transmition transmition) {
   this->generator = generator;
-  this->processed = processed;
+  this->needs_processing = needs_processing;
   this->send_back = send_back;
   this->size = size;
   this->stream = stream;
@@ -39,18 +39,17 @@ PacketBundle::PacketBundle(
 }
 void PacketBundle::send_to_MA() {
   generator->memBus->send_from_NPU_to_MA(
-      transmition, size, processed, send_back, this);
+      transmition, size, needs_processing, send_back, this);
 }
 void PacketBundle::send_to_NPU() {
   generator->memBus->send_from_MA_to_NPU(
-      transmition, size, processed, send_back, this);
+      transmition, size, needs_processing, send_back, this);
 }
 void PacketBundle::call(EventType event, CallData* data) {
-  if (processed == true) {
-    processed = false;
-    generator->mem_read(size);
-    generator->mem_read(size);
-    this->delay = generator->mem_write(size);
+  if (needs_processing == true) {
+    needs_processing = false;
+    this->delay = generator->mem_write(size)+
+        generator->mem_read(size)+generator->mem_read(size);
     generator->try_register_event(
         this, EventType::CommProcessingFinished, data, this->delay);
     return;
