@@ -2,10 +2,10 @@ scheduling-policy: LIFO
 endpoint-delay: 10
 packet-routing: software
 injection-policy: normal
-preferred-dataset-splits: 4
-boost-mode: 1
-all-reduce-implementation: direct_doubleBinaryTree
-all-gather-implementation: ring_ring
-reduce-scatter-implementation: ring_ring
-all-to-all-implementation: direct_direct
+preferred-dataset-splits: 1
+boost-mode: 0
+all-reduce-implementation: doubleBinaryTree
+all-gather-implementation: ring
+reduce-scatter-implementation: ring
+all-to-all-implementation: oneDirect
 collective-optimization: localBWAware

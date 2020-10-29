@@ -35,9 +35,9 @@ BinaryTree::BinaryTree(
     tree->left_child = initialize_tree(depth - 1, tree);
   }
   build_tree(tree);
-  // std::cout<<"##############################################"<<std::endl;
-  // print(tree);
-  // std::cout<<"##############################################"<<std::endl;
+   //std::cout<<"##############################################"<<std::endl;
+   //print(tree);
+   //std::cout<<"##############################################"<<std::endl;
 }
 Node* BinaryTree::initialize_tree(int depth, Node* parent) {
   Node* tmp = new Node(-1, parent, NULL, NULL);

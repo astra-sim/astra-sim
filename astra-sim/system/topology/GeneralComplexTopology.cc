@@ -48,8 +48,14 @@ GeneralComplexTopology::GeneralComplexTopology(int id,
           return;
         }
         else if(collective_implementation[dim]==CollectiveImplementation::DoubleBinaryTree){
-            DoubleBinaryTreeTopology *DBT=new DoubleBinaryTreeTopology(id,dimension_size[dim],id%offset,offset);
-            dimension_topology.push_back(DBT);
+            if(dim!=0){
+                DoubleBinaryTreeTopology *DBT=new DoubleBinaryTreeTopology(id,dimension_size[dim],id%offset,offset);
+                dimension_topology.push_back(DBT);
+            }
+            else{
+                DoubleBinaryTreeTopology *DBT=new DoubleBinaryTreeTopology(id,dimension_size[dim],id-(id%dimension_size[0]),1);
+                dimension_topology.push_back(DBT);
+            }
         }
         offset*=dimension_size[dim];
     }

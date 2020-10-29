@@ -419,7 +419,6 @@ int Sys::break_dimension(int model_parallel_npu_group) {
       logical_topologies["ReduceScatter"]=new GeneralComplexTopology(id,logical_dims,reduce_scatter_implementation_per_dimension);
       logical_topologies["AllGather"]=new GeneralComplexTopology(id,logical_dims,all_gather_implementation_per_dimension);
       logical_topologies["AllToAll"]=new GeneralComplexTopology(id,logical_dims,all_to_all_implementation_per_dimension);
-      std::cout<<"p3"<<std::endl;
       return dimension_to_break;
     }
     else if(all_npus*physical_dims[dimension_to_break]==model_parallel_npu_group){
@@ -519,7 +518,7 @@ int Sys::front_end_sim_send(
     sim_request* request,
     void (*msg_handler)(void* fun_arg),
     void* fun_arg) {
-  /*if(id==1){
+  /*if(id==0){
     std::cout<<"send from: "<<id<<" to: "<<dst<<" at time: "<<boostedTick()
               <<std::endl;
   }*/
@@ -1049,6 +1048,8 @@ CollectivePhase Sys::generate_collective_phase(
         return vn;
     }
     else if(collective_implementation==CollectiveImplementation::DoubleBinaryTree){
+        //std::cout<<"DBT AR is created with id: "<<id << " and stride: "<<((BinaryTree*) topology)->stride<<std::endl;
+        //((BinaryTree*) topology)->print(((BinaryTree*) topology)->tree);
         CollectivePhase vn(
                 this,
                 queue_id,
@@ -1095,13 +1096,12 @@ DataSet * Sys::generate_collective(uint64_t size,
   int streams = ceil(((double)size) / chunk_size);
   int tmp;
   DataSet* dataset = new DataSet(streams);
-  streams_injected += streams;
   int pri = get_priority(pref_scheduling);
   for (int i = 0; i < streams; i++) {
     tmp = chunk_size;
     std::list<CollectivePhase> vect;
     if(collective_type!=ComType::All_Reduce || collectiveOptimization==CollectiveOptimization::Baseline){
-      for(int dim=0;dim<topology->get_num_of_dimensions();dim++){
+        for(int dim=0;dim<topology->get_num_of_dimensions();dim++){
           if(topology->get_num_of_nodes_in_dimension(dim)==1 || !dimensions_involved[dim]){
             continue;
           }
@@ -1126,9 +1126,9 @@ DataSet * Sys::generate_collective(uint64_t size,
         if(topology->get_num_of_nodes_in_dimension(dim)==1 || !dimensions_involved[dim]){
           continue;
         }
-        if(id==0){
+        /*if(id==0){
           std::cout<<"1, dim: "<<dim<<" ,topology dimension: "<<topology->get_num_of_dimensions()<<std::endl;
-        }
+        }*/
         std::pair<int, RingTopology::Direction> queue = vLevels->get_next_queue_at_level(dim);
         CollectivePhase phase=generate_collective_phase(ComType::Reduce_Scatter,
                                                         layer_num,
@@ -1144,9 +1144,9 @@ DataSet * Sys::generate_collective(uint64_t size,
         tmp = phase.final_data_size;
       }
       if(dimensions_involved[dim] && topology->get_num_of_nodes_in_dimension(dim)>1) {
-        if(id==0){
+        /*if(id==0){
           std::cout<<"2 ,dim: "<<dim<<std::endl;
-        }
+        }*/
         std::pair<int, RingTopology::Direction> queue =
             vLevels->get_next_queue_at_level(dim);
         CollectivePhase phase = generate_collective_phase(
@@ -1168,9 +1168,9 @@ DataSet * Sys::generate_collective(uint64_t size,
         if(topology->get_num_of_nodes_in_dimension(dim)==1 || !dimensions_involved[dim]){
           continue;
         }
-        if(id==0){
+        /*if(id==0){
           std::cout<<"3 , dim: "<<dim<<std::endl;
-        }
+        }*/
         std::pair<int, RingTopology::Direction> queue = vLevels->get_next_queue_at_level(dim);
         CollectivePhase phase=generate_collective_phase(ComType::All_Gatehr,
                                                         layer_num,
@@ -1196,6 +1196,9 @@ DataSet * Sys::generate_collective(uint64_t size,
       dataset->active= false;
       break;
     }
+  }
+  if(dataset->active){
+    streams_injected += streams;
   }
   return dataset;
 }
@@ -1268,14 +1271,14 @@ void Sys::proceed_to_next_vnet_baseline(StreamBaseline* stream) {
   if (stream->phases_to_go.size() == 0) {
     stream->take_bus_stats_average();
     stream->dataset->notify_stream_finished((StreamStat*)stream);
-    if (id == 0) {
+    /*if (id == 0) {
       std::cout << "stream number: " << stream->stream_num
                 << "  finished its execution in time: " << Sys::boostedTick()
                 << " total injected: " << streams_injected
                 << " ,total finished: " << streams_finished
                 << " ,total running streams: " << total_running_streams
                 << " ,pri: " << stream->priority << std::endl;
-    }
+    }*/
   }
   if (stream->current_queue_id >= 0) {
     std::list<BaseStream*>& target =
@@ -1316,7 +1319,7 @@ void Sys::proceed_to_next_vnet_baseline(StreamBaseline* stream) {
   stream->net_message_latency.push_back(0);
   stream->net_message_counter = 0;
 
-  if (id == 0) {
+  /*if (id == 0) {
     std::cout << "info ,for node: " << id << " stream num "
               << stream->stream_num
               << " has been changed to vnet: " << stream->current_queue_id
@@ -1327,7 +1330,7 @@ void Sys::proceed_to_next_vnet_baseline(StreamBaseline* stream) {
               << " ,total finished: " << streams_finished
               << " ,total running streams: " << total_running_streams
               << " ,pri: " << stream->priority << std::endl;
-  }
+  }*/
   insert_stream(&active_Streams[stream->current_queue_id], stream);
   // active_Streams[stream->current_queue_id].push_back(stream);
   stream->state = StreamState::Ready;

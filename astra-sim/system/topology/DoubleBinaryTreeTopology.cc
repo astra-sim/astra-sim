@@ -18,21 +18,20 @@ DoubleBinaryTreeTopology::DoubleBinaryTreeTopology(
             << total_tree_nodes << " ,start: " << start
             << " ,stride: " << stride << std::endl;
   DBMAX = new BinaryTree(id,BinaryTree::TreeType::RootMax,total_tree_nodes,start,stride);
-  DBMIN = new BinaryTree(id,BinaryTree::TreeType::RootMax,total_tree_nodes,start,stride);
+  DBMIN = new BinaryTree(id,BinaryTree::TreeType::RootMin,total_tree_nodes,start,stride);
   this->counter = 0;
 }
 LogicalTopology* DoubleBinaryTreeTopology::get_topology() {
   // return DBMIN;  //uncomment this and comment the rest lines of this funcion
   // if you want to run allreduce only on one logical tree
   BinaryTree* ans = NULL;
-  if (counter++ == 0) {
+  if (counter%2 == 0) {
     ans = DBMAX;
   } else {
     ans = DBMIN;
   }
-  if (counter > 1) {
-    counter = 0;
-  }
+  counter++;
+
   return ans;
 }
 int DoubleBinaryTreeTopology::get_num_of_dimensions(){

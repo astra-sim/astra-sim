@@ -1,5 +1,5 @@
 {
-  "topology-name": "Torus2D",
+  "topology-name": "Switch",
   "dims-count": 1,
   "nodes-per-dim": 4,
   "link-bandwidth": 25,
