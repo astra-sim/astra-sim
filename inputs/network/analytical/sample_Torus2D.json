@@ -1,8 +1,8 @@
 {
-  "topology-name": "Switch",
+  "topology-name": "Torus2D",
   "dimensions-count": 1,
-  "packages-counts": [8],
-  "topology-shape-configs": [[-1]],
+  "packages-counts": [9],
+  "topology-shape-configs": [[3, 3]],
   "link-bandwidth": [25],
   "link-latency": [500],
   "nic-latency": [0],
