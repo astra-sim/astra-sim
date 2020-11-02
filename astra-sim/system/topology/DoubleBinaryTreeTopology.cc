@@ -14,9 +14,11 @@ DoubleBinaryTreeTopology::DoubleBinaryTreeTopology(
     int total_tree_nodes,
     int start,
     int stride) {
-  std::cout << "Double binary tree created with total nodes: "
-            << total_tree_nodes << " ,start: " << start
-            << " ,stride: " << stride << std::endl;
+  if(id==0){
+      std::cout << "Node 0: Double binary tree created with total nodes: "
+                << total_tree_nodes << " ,start: " << start
+                << " ,stride: " << stride << std::endl;
+  }
   DBMAX = new BinaryTree(id,BinaryTree::TreeType::RootMax,total_tree_nodes,start,stride);
   DBMIN = new BinaryTree(id,BinaryTree::TreeType::RootMin,total_tree_nodes,start,stride);
   this->counter = 0;

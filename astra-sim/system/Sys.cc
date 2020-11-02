@@ -518,10 +518,10 @@ int Sys::front_end_sim_send(
     sim_request* request,
     void (*msg_handler)(void* fun_arg),
     void* fun_arg) {
-  /*if(id==0){
+  if(id==0){
     std::cout<<"send from: "<<id<<" to: "<<dst<<" at time: "<<boostedTick()
-              <<std::endl;
-  }*/
+              <<" ,size: "<<count<<std::endl;
+  }
   if (rendezvous_enabled) {
     return rendezvous_sim_send(
         delay, buffer, count, type, dst, tag, request, msg_handler, fun_arg);
@@ -601,6 +601,10 @@ int Sys::front_end_sim_recv(
     sim_request* request,
     void (*msg_handler)(void* fun_arg),
     void* fun_arg) {
+  if(id==0){
+    std::cout<<"recv at: "<<id<<" expecting data from: "<<src<<" at time: "<<boostedTick()
+    <<" ,size: "<<count<<std::endl;
+  }
   if (rendezvous_enabled) {
     return rendezvous_sim_recv(
         delay, buffer, count, type, src, tag, request, msg_handler, fun_arg);

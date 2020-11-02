@@ -26,6 +26,7 @@ GeneralComplexTopology::GeneralComplexTopology(int id,
                                                std::vector<int> dimension_size,
                                                std::vector <CollectiveImplementation> collective_implementation) {
     int offset=1;
+    int last_dim=collective_implementation.size()-1;
     for(int dim=0;dim<collective_implementation.size();dim++){
         if(collective_implementation[dim]==CollectiveImplementation::Ring ||
         collective_implementation[dim]==CollectiveImplementation::Direct){
@@ -48,12 +49,13 @@ GeneralComplexTopology::GeneralComplexTopology(int id,
           return;
         }
         else if(collective_implementation[dim]==CollectiveImplementation::DoubleBinaryTree){
-            if(dim!=0){
+            if(dim==last_dim){
                 DoubleBinaryTreeTopology *DBT=new DoubleBinaryTreeTopology(id,dimension_size[dim],id%offset,offset);
                 dimension_topology.push_back(DBT);
             }
             else{
-                DoubleBinaryTreeTopology *DBT=new DoubleBinaryTreeTopology(id,dimension_size[dim],id-(id%dimension_size[0]),1);
+                DoubleBinaryTreeTopology *DBT=new DoubleBinaryTreeTopology(id,dimension_size[dim],
+                                                                           id-(id%(offset*dimension_size[dim])),1);
                 dimension_topology.push_back(DBT);
             }
         }
