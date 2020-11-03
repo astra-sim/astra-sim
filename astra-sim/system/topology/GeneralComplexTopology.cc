@@ -55,7 +55,7 @@ GeneralComplexTopology::GeneralComplexTopology(int id,
             }
             else{
                 DoubleBinaryTreeTopology *DBT=new DoubleBinaryTreeTopology(id,dimension_size[dim],
-                                                                           id-(id%(offset*dimension_size[dim])),1);
+                                                                           (id-(id%(offset*dimension_size[dim])))+(id%offset),1);
                 dimension_topology.push_back(DBT);
             }
         }
