@@ -21,11 +21,11 @@ CollectivePhase::CollectivePhase(
 }
 CollectivePhase::CollectivePhase() {
   queue_id = -1;
-  generator = NULL;
-  algorithm = NULL;
+  generator = nullptr;
+  algorithm = nullptr;
 }
 void CollectivePhase::init(BaseStream* stream) {
-  if (algorithm != NULL) {
+  if (algorithm != nullptr) {
     algorithm->init(stream);
   }
 }

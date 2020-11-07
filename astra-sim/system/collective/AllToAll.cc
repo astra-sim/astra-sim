@@ -91,10 +91,10 @@ void AllToAll::run(EventType event, CallData* data) {
     }
   } else if (event == EventType::PacketReceived) {
     total_packets_received++;
-    insert_packet(NULL);
+    insert_packet(nullptr);
   } else if (event == EventType::StreamInit) {
     for (int i = 0; i < parallel_reduce; i++) {
-      insert_packet(NULL);
+      insert_packet(nullptr);
     }
   }
 }

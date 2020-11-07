@@ -59,22 +59,22 @@ Sys::~Sys() {
               << std::endl
               << "*****" << std::endl;
   }
-  all_generators[id] = NULL;
+  all_generators[id] = nullptr;
   for (auto lt : logical_topologies) {
     delete lt.second;
   }
   logical_topologies.clear();
-  if (scheduler_unit != NULL)
+  if (scheduler_unit != nullptr)
     delete scheduler_unit;
-  if (vLevels != NULL)
+  if (vLevels != nullptr)
     delete vLevels;
-  if (memBus != NULL)
+  if (memBus != nullptr)
     delete memBus;
-  if (workload != NULL)
+  if (workload != nullptr)
     delete workload;
   bool shouldExit = true;
   for (auto& a : all_generators) {
-    if (a != NULL) {
+    if (a != nullptr) {
       shouldExit = false;
       break;
     }
@@ -113,10 +113,10 @@ Sys::Sys(
     std::string run_name,
     bool seprate_log,
     bool rendezvous_enabled) {
-  scheduler_unit = NULL;
-  vLevels = NULL;
-  memBus = NULL;
-  workload = NULL;
+  scheduler_unit = nullptr;
+  vLevels = nullptr;
+  memBus = nullptr;
+  workload = nullptr;
   this->initialized = false;
 
   start_sim_time = std::chrono::high_resolution_clock::now();
@@ -149,7 +149,7 @@ Sys::Sys(
 
   if (result == false) {
     Tick cycle = 1;
-    try_register_event(this, EventType::NotInitialized, NULL, cycle);
+    try_register_event(this, EventType::NotInitialized, nullptr, cycle);
     return;
   }
 
@@ -326,7 +326,7 @@ Sys::Sys(
       this->seprate_log);
   if (workload->initialized == false) {
     Tick cycle = 1;
-    try_register_event(this, EventType::NotInitialized, NULL, cycle);
+    try_register_event(this, EventType::NotInitialized, nullptr, cycle);
     return;
   }
   this->initialized = true;
@@ -503,7 +503,7 @@ int Sys::sim_send(
             msg_handler,
             fun_arg),
         EventType::General,
-        NULL,
+        nullptr,
         delay);
   }
   return 1;
@@ -586,7 +586,7 @@ int Sys::sim_recv(
             msg_handler,
             fun_arg),
         EventType::General,
-        NULL,
+        nullptr,
         delay);
   }
   return 1;
@@ -614,7 +614,7 @@ int Sys::front_end_sim_recv(
   }
 }
 Tick Sys::mem_read(uint64_t bytes) {
-  if (MEM == NULL) {
+  if (MEM == nullptr) {
     return 10;
   }
   uint64_t delay_ns = MEM->npu_mem_read(bytes);
@@ -622,7 +622,7 @@ Tick Sys::mem_read(uint64_t bytes) {
   return delay_cycles;
 }
 Tick Sys::mem_write(uint64_t bytes) {
-  if (MEM == NULL) {
+  if (MEM == nullptr) {
     return 10;
   }
   uint64_t delay_ns = MEM->npu_mem_write(bytes);
@@ -959,9 +959,9 @@ std::vector<std::string> Sys::split_string(std::string str,std::string sep){
   char* current;
   std::vector<std::string> arr;
   current=strtok(cstr,sep.c_str());
-  while(current!=NULL){
+  while(current!=nullptr){
     arr.push_back(current);
-    current=strtok(NULL,sep.c_str());
+    current=strtok(nullptr,sep.c_str());
   }
   return arr;
 }
@@ -1232,9 +1232,9 @@ void Sys::exitSimLoop(std::string msg) {
 }
 Tick Sys::boostedTick() {
   Sys* ts = all_generators[0];
-  if (ts == NULL) {
+  if (ts == nullptr) {
     for (int i = 1; i < all_generators.size(); i++) {
-      if (all_generators[i] != NULL) {
+      if (all_generators[i] != nullptr) {
         ts = all_generators[i];
         break;
       }
@@ -1268,7 +1268,7 @@ void Sys::proceed_to_next_vnet_baseline(StreamBaseline* stream) {
   if (stream->steps_finished != 0) {
     stream->net_message_latency.back() /= stream->net_message_counter;
   }
-  if (stream->my_current_phase.algorithm != NULL) {
+  if (stream->my_current_phase.algorithm != nullptr) {
     delete stream->my_current_phase.algorithm;
   }
   // std::cout<<"here we are 2.5"<<std::endl;
@@ -1370,7 +1370,7 @@ void Sys::register_for_finished_stream(Callable* callable) {
 void Sys::increase_finished_streams(int amount) {
   streams_finished += amount;
   for (auto c : registered_for_finished_stream_event) {
-    c->call(EventType::StreamsFinishedIncrease, NULL);
+    c->call(EventType::StreamsFinishedIncrease, nullptr);
   }
 }
 
@@ -1487,7 +1487,7 @@ void Sys::schedule(int num) {
   }
 }
 void Sys::handleEvent(void* arg) {
-  if (arg == NULL) {
+  if (arg == nullptr) {
     return;
   }
   BasicEventHandlerData* ehd = (BasicEventHandlerData*)arg;
@@ -1503,13 +1503,13 @@ void Sys::handleEvent(void* arg) {
     // std::cout<<"rendevouz send handle event triggered at node: "<<id<<" for
     // call events! at time: "<<Sys::boostedTick()<<std::endl;
     RendezvousSendData* rsd = (RendezvousSendData*)ehd;
-    rsd->send->call(EventType::General, NULL);
+    rsd->send->call(EventType::General, nullptr);
     delete rsd;
   } else if (event == EventType::RendezvousRecv) {
     // std::cout<<"rendevouz recv triggered at node: "<<id<<" for call events!
     // at time: "<<Sys::boostedTick()<<std::endl;
     RendezvousRecvData* rrd = (RendezvousRecvData*)ehd;
-    rrd->recv->call(EventType::General, NULL);
+    rrd->recv->call(EventType::General, nullptr);
     delete rrd;
   } else if (event == EventType::PacketReceived) {
     RecvPacketEventHadndlerData* rcehd = (RecvPacketEventHadndlerData*)ehd;

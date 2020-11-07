@@ -52,7 +52,7 @@ BasicLogicalTopology * LocalRingNodeA2AGlobalDBT
       return global_dimension_other;
     }
   }
-  return NULL;
+  return nullptr;
 
 }
 int LocalRingNodeA2AGlobalDBT::get_num_of_nodes_in_dimension(int dimension) {

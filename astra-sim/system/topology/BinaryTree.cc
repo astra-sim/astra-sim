@@ -21,10 +21,10 @@ BinaryTree::BinaryTree(
   this->start = start;
   this->tree_type = tree_type;
   this->stride = stride;
-  tree = new Node(-1, NULL, NULL, NULL);
+  tree = new Node(-1, nullptr, nullptr, nullptr);
   int depth = 1;
   int tmp = total_tree_nodes;
-  // node_list.resize(total_nodes,NULL);
+  // node_list.resize(total_nodes,nullptr);
   while (tmp > 1) {
     depth++;
     tmp /= 2;
@@ -40,7 +40,7 @@ BinaryTree::BinaryTree(
    //std::cout<<"##############################################"<<std::endl;
 }
 Node* BinaryTree::initialize_tree(int depth, Node* parent) {
-  Node* tmp = new Node(-1, parent, NULL, NULL);
+  Node* tmp = new Node(-1, parent, nullptr, nullptr);
   if (depth > 1) {
     tmp->left_child = initialize_tree(depth - 1, tmp);
     tmp->right_child = initialize_tree(depth - 1, tmp);
@@ -48,43 +48,43 @@ Node* BinaryTree::initialize_tree(int depth, Node* parent) {
   return tmp;
 }
 void BinaryTree::build_tree(Node* node) {
-  if (node->left_child != NULL) {
+  if (node->left_child != nullptr) {
     build_tree(node->left_child);
   }
   node->id = start;
   node_list[start] = node;
   start += stride;
-  if (node->right_child != NULL) {
+  if (node->right_child != nullptr) {
     build_tree(node->right_child);
   }
   return;
 }
 int BinaryTree::get_parent_id(int id) {
   Node* parent = this->node_list[id]->parent;
-  if (parent != NULL) {
+  if (parent != nullptr) {
     return parent->id;
   }
   return -1;
 }
 int BinaryTree::get_right_child_id(int id) {
   Node* child = this->node_list[id]->right_child;
-  if (child != NULL) {
+  if (child != nullptr) {
     return child->id;
   }
   return -1;
 }
 int BinaryTree::get_left_child_id(int id) {
   Node* child = this->node_list[id]->left_child;
-  if (child != NULL) {
+  if (child != nullptr) {
     return child->id;
   }
   return -1;
 }
 BinaryTree::Type BinaryTree::get_node_type(int id) {
   Node* node = this->node_list[id];
-  if (node->parent == NULL) {
+  if (node->parent == nullptr) {
     return Type::Root;
-  } else if (node->left_child == NULL && node->right_child == NULL) {
+  } else if (node->left_child == nullptr && node->right_child == nullptr) {
     return Type::Leaf;
   } else {
     return Type::Intermediate;
@@ -92,13 +92,13 @@ BinaryTree::Type BinaryTree::get_node_type(int id) {
 }
 void BinaryTree::print(Node* node) {
   std::cout << "I am node: " << node->id;
-  if (node->left_child != NULL) {
+  if (node->left_child != nullptr) {
     std::cout << " and my left child is: " << node->left_child->id;
   }
-  if (node->right_child != NULL) {
+  if (node->right_child != nullptr) {
     std::cout << " and my right child is: " << node->right_child->id;
   }
-  if (node->parent != NULL) {
+  if (node->parent != nullptr) {
     std::cout << " and my parent is: " << node->parent->id;
   }
   BinaryTree::Type typ = get_node_type(node->id);
@@ -110,10 +110,10 @@ void BinaryTree::print(Node* node) {
     std::cout << " and I am Leaf ";
   }
   std::cout << std::endl;
-  if (node->left_child != NULL) {
+  if (node->left_child != nullptr) {
     print(node->left_child);
   }
-  if (node->right_child != NULL) {
+  if (node->right_child != nullptr) {
     print(node->right_child);
   }
 }

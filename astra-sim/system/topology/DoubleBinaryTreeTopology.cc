@@ -26,7 +26,7 @@ DoubleBinaryTreeTopology::DoubleBinaryTreeTopology(
 LogicalTopology* DoubleBinaryTreeTopology::get_topology() {
   // return DBMIN;  //uncomment this and comment the rest lines of this funcion
   // if you want to run allreduce only on one logical tree
-  BinaryTree* ans = NULL;
+  BinaryTree* ans = nullptr;
   if (counter%2 == 0) {
     ans = DBMAX;
   } else {
@@ -47,7 +47,7 @@ BasicLogicalTopology * DoubleBinaryTreeTopology::get_basic_topology_at_dimension
         return ((BinaryTree *)get_topology())->get_basic_topology_at_dimension(0,type);
     }
     else{
-        return NULL;
+        return nullptr;
     }
 }
 } // namespace AstraSim
