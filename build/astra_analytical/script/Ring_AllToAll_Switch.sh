@@ -22,8 +22,7 @@ mkdir -p "${STATS}"
 echo "[SCRIPT] Compiling AnalyticalAstra"
 "${COMPILE_SCRIPT}" -c
 
-# nodes=(2 4 8 16 32 64 128)
-nodes=(2 4 8)
+nodes=(2 4 8 16 32 64 128)
 commScale=(1)
 
 current_row=-1

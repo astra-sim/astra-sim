@@ -23,8 +23,7 @@ echo "[SCRIPT] Compiling AnalyticalAstra"
 "${COMPILE_SCRIPT}" -c
 
 # test sets
-# torus_width=(2 4 6 8 9 10 12 16 20 30 40)
-torus_width=(2 4)
+torus_width=(2 4 6 8 9 10 12 16 20 30 40)
 commScale=(1)
 
 current_row=-1
