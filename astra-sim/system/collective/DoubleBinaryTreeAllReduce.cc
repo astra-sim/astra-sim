@@ -74,7 +74,7 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData* data) {
         stream->stream_num,
         &snd_req,
         &Sys::handleEvent,
-        NULL);
+        nullptr);
     // receiving
     sim_request rcv_req;
     rcv_req.vnet = this->stream->current_queue_id;
@@ -211,7 +211,7 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData* data) {
         stream->stream_num,
         &snd_req,
         &Sys::handleEvent,
-        NULL);
+        nullptr);
     // receiving
     sim_request rcv_req;
     rcv_req.vnet = this->stream->current_queue_id;
@@ -266,7 +266,7 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData* data) {
         stream->stream_num,
         &snd_req,
         &Sys::handleEvent,
-        NULL);
+        nullptr);
     sim_request snd_req2;
     snd_req2.srcRank = stream->owner->id;
     snd_req2.dstRank = left_child;
@@ -283,7 +283,7 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData* data) {
         stream->stream_num,
         &snd_req2,
         &Sys::handleEvent,
-        NULL);
+        nullptr);
     exit();
     return;
   }
@@ -344,7 +344,7 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData* data) {
         stream->stream_num,
         &snd_req,
         &Sys::handleEvent,
-        NULL);
+        nullptr);
     exit();
     return;
   }

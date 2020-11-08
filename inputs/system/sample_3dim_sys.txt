@@ -3,6 +3,9 @@ endpoint-delay: 10
 packet-routing: software
 injection-policy: normal
 preferred-dataset-splits: 4
-boost-mode: 1
-collective-implementation: localRingNodeA2AGlobalDBT
+boost-mode: 0
+all-reduce-implementation: ring_direct_doubleBinaryTree
+all-gather-implementation: ring_ring_ring
+reduce-scatter-implementation: ring_ring_ring
+all-to-all-implementation: oneDirect
 collective-optimization: localBWAware

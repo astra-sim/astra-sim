@@ -29,7 +29,7 @@ class Sys;
 class PacketBundle : public Callable {
  public:
   std::list<MyPacket*> locked_packets;
-  bool processed;
+  bool needs_processing;
   bool send_back;
   int size;
   Sys* generator;
@@ -40,14 +40,14 @@ class PacketBundle : public Callable {
       Sys* generator,
       BaseStream* stream,
       std::list<MyPacket*> locked_packets,
-      bool processed,
+      bool needs_processing,
       bool send_back,
       int size,
       MemBus::Transmition transmition);
   PacketBundle(
       Sys* generator,
       BaseStream* stream,
-      bool processed,
+      bool needs_processing,
       bool send_back,
       int size,
       MemBus::Transmition transmition);

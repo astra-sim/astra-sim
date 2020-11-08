@@ -27,7 +27,7 @@ void CSVWriter::initialize_csv(int rows, int cols) {
   if (!myFile) {
     std::cout << "Unable to open file: " << path << std::endl;
   } else {
-    std::cout << "success in openning file" << std::endl;
+    std::cout << "success in opening CSV file for writing the report " << std::endl;
   }
 
   myFile.seekp(0, std::ios_base::beg);

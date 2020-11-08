@@ -23,6 +23,7 @@ LICENSE file in the root directory of this source tree.
 #include "Callable.hh"
 #include "CollectivePhase.hh"
 #include "Common.hh"
+#include "astra-sim/system/topology/RingTopology.hh"
 #include "astra-sim/workload/Workload.hh"
 
 namespace AstraSim {
@@ -35,6 +36,7 @@ class SimRecvCaller;
 class QueueLevels;
 class Workload;
 class LogicalTopology;
+class BasicLogicalTopology;
 class Sys : public Callable {
  public:
   class SchedulerUnit {
@@ -56,21 +58,16 @@ class Sys : public Callable {
     void notify_stream_added_into_ready_list();
   };
   SchedulerUnit* scheduler_unit;
-  enum class CollectiveOptimization { Baseline, LocalBWAware };
-  enum class CollectiveImplementation {
-    AllToAll,
-    DoubleBinaryTreeLocalAllToAll,
-    LocalRingNodeA2AGlobalDBT,
-    HierarchicalRing,
-    DoubleBinaryTree
-  };
   ~Sys();
   AstraNetworkAPI* NI;
   AstraMemoryAPI* MEM;
   int finished_workloads;
   int id;
 
-  CollectiveImplementation collectiveImplementation;
+  std::vector<CollectiveImplementation> all_reduce_implementation_per_dimension;
+  std::vector<CollectiveImplementation> reduce_scatter_implementation_per_dimension;
+  std::vector<CollectiveImplementation> all_gather_implementation_per_dimension;
+  std::vector<CollectiveImplementation> all_to_all_implementation_per_dimension;
   CollectiveOptimization collectiveOptimization;
 
   std::chrono::high_resolution_clock::time_point start_sim_time;
@@ -78,16 +75,7 @@ class Sys : public Callable {
 
   std::list<Callable*> registered_for_finished_stream_event;
 
-  int local_dim;
-  int vertical_dim;
-  int horizontal_dim;
-  int perpendicular_dim;
-  int fourth_dim;
-  int local_queus;
-  int vertical_queues;
-  int horizontal_queues;
-  int perpendicular_queues;
-  int fourth_queues;
+  std::vector<int> physical_dims;
   int priority_counter;
   bool boost_mode;
   bool rendezvous_enabled;
@@ -135,7 +123,10 @@ class Sys : public Callable {
   std::string inp_scheduling_policy;
   std::string inp_packet_routing;
   std::string inp_injection_policy;
-  std::string inp_collective_implementation;
+  std::string inp_all_reduce_implementation;
+  std::string inp_reduce_scatter_implementation;
+  std::string inp_all_gather_implementation;
+  std::string inp_all_to_all_implementation;
   std::string inp_collective_optimization;
   float inp_L;
   float inp_o;
@@ -180,16 +171,16 @@ class Sys : public Callable {
       AstraMemoryAPI* MEM,
       int id,
       int num_passes,
-      int local_dim,
-      int vertical_dim,
-      int horizontal_dim,
-      int perpendicular_dim,
+      int first_dim,
+      int second_dim,
+      int third_dim,
       int fourth_dim,
-      int local_queus,
-      int vertical_queues,
-      int horizontal_queues,
-      int perpendicular_queues,
+      int fifth_dim,
+      int first_queues,
+      int second_queues,
+      int third_queues,
       int fourth_queues,
+      int fifth_queues,
       std::string my_sys,
       std::string my_workload,
       float comm_scale,
@@ -207,6 +198,8 @@ class Sys : public Callable {
   std::string trim(const std::string& str, const std::string& whitespace);
   bool parse_var(std::string var, std::string value);
   bool post_process_inputs();
+  std::vector<CollectiveImplementation> generate_collective_implementation_from_input(std::string input);
+  int break_dimension(int model_parallel_npu_group);
   int front_end_sim_send(
       Tick delay,
       void* buffer,
@@ -270,87 +263,45 @@ class Sys : public Callable {
   Tick mem_read(uint64_t bytes);
   Tick mem_write(uint64_t bytes);
   static int get_layer_numbers(std::string workload_input);
+  std::vector<std::string> split_string(std::string str,std::string sep);
   DataSet* generate_all_reduce(
-      int size,
-      bool local,
-      bool vertical,
-      bool horizontal,
+      uint64_t size,
+      std::vector<bool> involved_dimensions,
       SchedulingPolicy pref_scheduling,
       int layer);
   DataSet* generate_all_to_all(
-      int size,
-      bool local,
-      bool vertical,
-      bool horizontal,
+      uint64_t size,
+      std::vector<bool> involved_dimensions,
       SchedulingPolicy pref_scheduling,
       int layer);
   DataSet* generate_all_gather(
-      int size,
-      bool local,
-      bool vertical,
-      bool horizontal,
+      uint64_t size,
+      std::vector<bool> involved_dimensions,
       SchedulingPolicy pref_scheduling,
       int layer);
   DataSet* generate_reduce_scatter(
-      int size,
-      bool local,
-      bool vertical,
-      bool horizontal,
+      uint64_t size,
+      std::vector<bool> involved_dimensions,
       SchedulingPolicy pref_scheduling,
       int layer);
-  DataSet* generate_alltoall_all_to_all(
-      int size,
-      bool local_run,
-      bool horizontal_run,
-      SchedulingPolicy pref_scheduling,
-      int layer);
-  DataSet* generate_alltoall_all_reduce(
-      int size,
-      bool local_run,
-      bool horizontal_run,
-      SchedulingPolicy pref_scheduling,
-      int layer);
-  DataSet* generate_tree_all_reduce(
-      int size,
-      bool local_run,
-      bool horizontal_run,
-      SchedulingPolicy pref_scheduling,
-      int layer);
-  DataSet* generate_hierarchical_all_to_all(
-      int size,
-      bool local_run,
-      bool vertical_run,
-      bool horizontal_run,
-      SchedulingPolicy pref_scheduling,
-      int layer);
-  DataSet* generate_hierarchical_all_reduce(
-      int size,
-      bool local_run,
-      bool vertical_run,
-      bool horizontal_run,
-      SchedulingPolicy pref_scheduling,
-      int layer);
-  DataSet* generate_hierarchical_all_gather(
-      int size,
-      bool local_run,
-      bool vertical_run,
-      bool horizontal_run,
-      SchedulingPolicy pref_scheduling,
-      int layer);
-  DataSet* generate_hierarchical_reduce_scatter(
-      int size,
-      bool local_run,
-      bool vertical_run,
-      bool horizontal_run,
-      SchedulingPolicy pref_scheduling,
-      int layer);
-  DataSet* generate_LocalRingNodeA2AGlobalDBT_all_reduce(
-      int size,
-      bool local_run,
-      bool vertical_run,
-      bool horizontal_run,
-      SchedulingPolicy pref_scheduling,
-      int layer);
+  DataSet * generate_collective(uint64_t size,
+                                int layer_num,
+                                LogicalTopology *topology,
+                                std::vector<CollectiveImplementation> implementation_per_dimension,
+                                std::vector<bool> dimensions_involved,
+                                ComType collective_type,
+                                SchedulingPolicy pref_scheduling);
+  CollectivePhase generate_collective_phase(
+          ComType collective_type,
+          int layer_num,
+          BasicLogicalTopology *topology,
+          uint64_t data_size,
+          int queue_id,
+          RingTopology::Direction direction,
+          PacketRouting routing,
+          InjectionPolicy injection_policy,
+          CollectiveImplementation collective_implementation,
+          bool boost_mode);
   void insert_stream(std::list<BaseStream*>* queue, BaseStream* baseStream);
   void proceed_to_next_vnet_baseline(StreamBaseline* stream);
   int determine_chunk_size(int size, ComType type);

@@ -16,7 +16,7 @@ QueueLevelHandler::QueueLevelHandler(int level, int start, int end) {
 }
 std::pair<int, RingTopology::Direction> QueueLevelHandler::get_next_queue_id() {
   RingTopology::Direction dir;
-  if (level != 0 && queues.size() > 1 && allocator >= (queues.size() / 2)) {
+  if (queues.size() > 1 && allocator >= (queues.size() / 2)) {
     dir = RingTopology::Direction::Anticlockwise;
   } else {
     dir = RingTopology::Direction::Clockwise;

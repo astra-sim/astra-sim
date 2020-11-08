@@ -15,7 +15,7 @@ void MyPacket::set_notifier(Callable* c) {
 }
 void MyPacket::call(EventType event, CallData* data) {
   cycles_needed = 0;
-  if (notifier != NULL)
-    notifier->call(EventType::General, NULL);
+  if (notifier != nullptr)
+    notifier->call(EventType::General, nullptr);
 }
 } // namespace AstraSim

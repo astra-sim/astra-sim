@@ -15,13 +15,17 @@ Layer::Layer(
     int fwd_pass_compute_time,
     ComType fwd_pass_comm_type,
     int fwd_pass_comm_size,
+    std::vector<bool> fwd_pass_comm_involved_dimensions,
     int input_grad_compute_time,
     ComType input_grad_comm_type,
     int input_grad_comm_size,
+    std::vector<bool> input_grad_comm_involved_dimensions,
     int weight_grad_compute_time,
     ComType weight_grad_comm_type,
     int weight_grad_comm_size,
-    int weight_grad_update_time) {
+    std::vector<bool> weight_grad_comm_involved_dimensions,
+    int weight_grad_update_time,
+    ParallelismPolicy specific_policy) {
   this->id = id;
   this->layer_num = layer_num;
   this->generator = generator;
@@ -29,12 +33,15 @@ Layer::Layer(
   this->fwd_pass_compute_time = fwd_pass_compute_time;
   this->fwd_pass_comm_type = fwd_pass_comm_type;
   this->fwd_pass_comm_size = fwd_pass_comm_size;
+  this->fwd_pass_comm_involved_dimensions=fwd_pass_comm_involved_dimensions;
   this->input_grad_compute_time = input_grad_compute_time;
   this->input_grad_comm_type = input_grad_comm_type;
   this->input_grad_comm_size = input_grad_comm_size;
+  this->input_grad_comm_involved_dimensions=input_grad_comm_involved_dimensions;
   this->weight_grad_compute_time = weight_grad_compute_time;
   this->weight_grad_comm_type = weight_grad_comm_type;
   this->weight_grad_comm_size = weight_grad_comm_size;
+  this->weight_grad_comm_involved_dimensions=weight_grad_comm_involved_dimensions;
   this->collective_counter = 0;
 
   this->weight_grad_update_time = weight_grad_update_time;
@@ -58,7 +65,7 @@ Layer::Layer(
   this->last_wg_finished = 0;
   this->needs_fwd_in_bckwd_initiation = false;
   this->is_checkpoint = false;
-  this->specific_parallellism = ParallelismPolicy::None;
+  this->specific_parallellism = specific_policy;
   assert(generator != NULL);
 }
 
@@ -520,23 +527,24 @@ LayerData Layer::report(
   return layerData;
 }
 void Layer::issue_forward_pass_comm(
-    bool local,
-    bool vertical,
-    bool horizontal,
     SchedulingPolicy pref_scheduling,
     CollectiveBarrier barrier) {
   DataSet* fp = NULL;
-  DataSet* fp2 = NULL;
   fwd_barrier = barrier;
   collective_counter++;
   if (fwd_pass_comm_type == ComType::All_Reduce) {
     fp = generator->generate_all_reduce(
         fwd_pass_comm_size,
-        local,
-        vertical,
-        horizontal,
+        fwd_pass_comm_involved_dimensions,
         pref_scheduling,
         layer_num);
+    if(!fp->active){
+      delete fp;
+      if (barrier == CollectiveBarrier::Blocking) {
+        workload->call(EventType::General, NULL);
+      }
+      return;
+    }
     if (generator->id == 0) {
       std::cout << "info: all-reduce forward pass collective issued for layer: "
                 << id << std::endl;
@@ -544,11 +552,16 @@ void Layer::issue_forward_pass_comm(
   } else if (fwd_pass_comm_type == ComType::All_to_All) {
     fp = generator->generate_all_to_all(
         fwd_pass_comm_size,
-        local,
-        vertical,
-        horizontal,
+        fwd_pass_comm_involved_dimensions,
         pref_scheduling,
         layer_num);
+    if(!fp->active){
+      delete fp;
+      if (barrier == CollectiveBarrier::Blocking) {
+        workload->call(EventType::General, NULL);
+      }
+      return;
+    }
     if (generator->id == 0) {
       std::cout << "info: all-to-all forward pass collective issued for layer: "
                 << id << std::endl;
@@ -556,11 +569,16 @@ void Layer::issue_forward_pass_comm(
   } else if (fwd_pass_comm_type == ComType::All_Gatehr) {
     fp = generator->generate_all_gather(
         fwd_pass_comm_size,
-        local,
-        vertical,
-        horizontal,
+        fwd_pass_comm_involved_dimensions,
         pref_scheduling,
         layer_num);
+    if(!fp->active){
+      delete fp;
+      if (barrier == CollectiveBarrier::Blocking) {
+        workload->call(EventType::General, NULL);
+      }
+      return;
+    }
     if (generator->id == 0) {
       std::cout << "info: all-gather forward pass collective issued for layer: "
                 << id << std::endl;
@@ -568,31 +586,21 @@ void Layer::issue_forward_pass_comm(
   } else if (fwd_pass_comm_type == ComType::Reduce_Scatter) {
     fp = generator->generate_reduce_scatter(
         fwd_pass_comm_size,
-        local,
-        vertical,
-        horizontal,
+        fwd_pass_comm_involved_dimensions,
         pref_scheduling,
         layer_num);
+    if(!fp->active){
+      delete fp;
+      if (barrier == CollectiveBarrier::Blocking) {
+        workload->call(EventType::General, NULL);
+      }
+      return;
+    }
     if (generator->id == 0) {
       std::cout
           << "info: reduce-scatter forward pass collective issued for layer: "
           << id << std::endl;
     }
-  } else if (fwd_pass_comm_type == ComType::All_Reduce_All_to_All) {
-    fp = generator->generate_all_reduce(
-        fwd_pass_comm_size,
-        local,
-        vertical,
-        horizontal,
-        pref_scheduling,
-        layer_num);
-    fp2 = generator->generate_all_to_all(
-        lookup_table_size,
-        local,
-        vertical,
-        horizontal,
-        pref_scheduling,
-        layer_num);
   } else if (fwd_pass_comm_type == ComType::None) {
     collective_counter--;
     if (generator->id == 0) {
@@ -608,29 +616,26 @@ void Layer::issue_forward_pass_comm(
   }
   fwd_pass_datasets[fp->my_id] = fp;
   fp->set_notifier(this, EventType::Fwd_Comm_Finished);
-  if (fp2 != NULL) {
-    fwd_pass_datasets[fp2->my_id] = fp2;
-    fp2->set_notifier(this, EventType::Fwd_Comm_Finished);
-  }
 }
 void Layer::issue_input_grad_comm(
-    bool local,
-    bool vertical,
-    bool horizontal,
     SchedulingPolicy pref_scheduling,
     CollectiveBarrier barrier) {
   DataSet* ig = NULL;
-  DataSet* ig2 = NULL;
   ig_barrier = barrier;
   collective_counter++;
   if (input_grad_comm_type == ComType::All_Reduce) {
     ig = generator->generate_all_reduce(
         input_grad_comm_size,
-        local,
-        vertical,
-        horizontal,
+        input_grad_comm_involved_dimensions,
         pref_scheduling,
         layer_num);
+    if(!ig->active){
+      delete ig;
+      if (barrier == CollectiveBarrier::Blocking) {
+        workload->call(EventType::General, NULL);
+      }
+      return;
+    }
     if (generator->id == 0) {
       std::cout << "info: all-reduce input grad collective issued for layer: "
                 << id << std::endl;
@@ -638,11 +643,16 @@ void Layer::issue_input_grad_comm(
   } else if (input_grad_comm_type == ComType::All_to_All) {
     ig = generator->generate_all_to_all(
         input_grad_comm_size,
-        local,
-        vertical,
-        horizontal,
+        input_grad_comm_involved_dimensions,
         pref_scheduling,
         layer_num);
+    if(!ig->active){
+      delete ig;
+      if (barrier == CollectiveBarrier::Blocking) {
+        workload->call(EventType::General, NULL);
+      }
+      return;
+    }
     if (generator->id == 0) {
       std::cout << "info: all-to-all input grad collective issued for layer: "
                 << id << std::endl;
@@ -650,11 +660,16 @@ void Layer::issue_input_grad_comm(
   } else if (input_grad_comm_type == ComType::All_Gatehr) {
     ig = generator->generate_all_gather(
         input_grad_comm_size,
-        local,
-        vertical,
-        horizontal,
+        input_grad_comm_involved_dimensions,
         pref_scheduling,
         layer_num);
+    if(!ig->active){
+      delete ig;
+      if (barrier == CollectiveBarrier::Blocking) {
+        workload->call(EventType::General, NULL);
+      }
+      return;
+    }
     if (generator->id == 0) {
       std::cout << "info: all-gather input grad collective issued for layer: "
                 << id << std::endl;
@@ -662,31 +677,21 @@ void Layer::issue_input_grad_comm(
   } else if (input_grad_comm_type == ComType::Reduce_Scatter) {
     ig = generator->generate_reduce_scatter(
         input_grad_comm_size,
-        local,
-        vertical,
-        horizontal,
+        input_grad_comm_involved_dimensions,
         pref_scheduling,
         layer_num);
+    if(!ig->active){
+      delete ig;
+      if (barrier == CollectiveBarrier::Blocking) {
+        workload->call(EventType::General, NULL);
+      }
+      return;
+    }
     if (generator->id == 0) {
       std::cout
           << "info: reduce-scatter input grad collective issued for layer: "
           << id << std::endl;
     }
-  } else if (input_grad_comm_type == ComType::All_Reduce_All_to_All) {
-    ig = generator->generate_all_reduce(
-        input_grad_comm_size,
-        local,
-        vertical,
-        horizontal,
-        pref_scheduling,
-        layer_num);
-    ig2 = generator->generate_all_to_all(
-        lookup_table_size,
-        local,
-        vertical,
-        horizontal,
-        pref_scheduling,
-        layer_num);
   } else if (input_grad_comm_type == ComType::None) {
     collective_counter--;
     if (generator->id == 0) {
@@ -704,31 +709,28 @@ void Layer::issue_input_grad_comm(
   }
   input_grad_datasets[ig->my_id] = ig;
   ig->set_notifier(this, EventType::Input_Grad_Comm_Finished);
-  if (ig2 != NULL) {
-    input_grad_datasets[ig2->my_id] = ig2;
-    ig2->set_notifier(this, EventType::Input_Grad_Comm_Finished);
-  }
 }
 void Layer::issue_weight_grad_comm(
-    bool local,
-    bool vertical,
-    bool horizontal,
     SchedulingPolicy pref_scheduling,
     CollectiveBarrier barrier) {
   // if(weight_grad_dataset!=NULL)
   // delete weight_grad_dataset;
   DataSet* wg = NULL;
-  DataSet* wg2 = NULL;
   wg_barrier = barrier;
   collective_counter++;
   if (weight_grad_comm_type == ComType::All_Reduce) {
     wg = generator->generate_all_reduce(
         weight_grad_comm_size,
-        local,
-        vertical,
-        horizontal,
+        weight_grad_comm_involved_dimensions,
         pref_scheduling,
         layer_num);
+    if(!wg->active){
+      delete wg;
+      if (barrier == CollectiveBarrier::Blocking) {
+        workload->call(EventType::General, NULL);
+      }
+      return;
+    }
     if (generator->id == 0) {
       std::cout << "info: allr-educe weight grad collective issued for layer: "
                 << id << " with size: " << weight_grad_comm_size << std::endl;
@@ -736,11 +738,16 @@ void Layer::issue_weight_grad_comm(
   } else if (weight_grad_comm_type == ComType::All_to_All) {
     wg = generator->generate_all_to_all(
         weight_grad_comm_size,
-        local,
-        vertical,
-        horizontal,
+        weight_grad_comm_involved_dimensions,
         pref_scheduling,
         layer_num);
+    if(!wg->active){
+      delete wg;
+      if (barrier == CollectiveBarrier::Blocking) {
+        workload->call(EventType::General, NULL);
+      }
+      return;
+    }
     if (generator->id == 0) {
       std::cout << "info: all-to-all weight grad collective issued for layer: "
                 << id << " with size: " << weight_grad_comm_size << std::endl;
@@ -748,11 +755,16 @@ void Layer::issue_weight_grad_comm(
   } else if (weight_grad_comm_type == ComType::All_Gatehr) {
     wg = generator->generate_all_gather(
         weight_grad_comm_size,
-        local,
-        vertical,
-        horizontal,
+        weight_grad_comm_involved_dimensions,
         pref_scheduling,
         layer_num);
+    if(!wg->active){
+      delete wg;
+      if (barrier == CollectiveBarrier::Blocking) {
+        workload->call(EventType::General, NULL);
+      }
+      return;
+    }
     if (generator->id == 0) {
       std::cout << "info: all-gather weight grad collective issued for layer: "
                 << id << std::endl;
@@ -760,31 +772,21 @@ void Layer::issue_weight_grad_comm(
   } else if (weight_grad_comm_type == ComType::Reduce_Scatter) {
     wg = generator->generate_reduce_scatter(
         weight_grad_comm_size,
-        local,
-        vertical,
-        horizontal,
+        weight_grad_comm_involved_dimensions,
         pref_scheduling,
         layer_num);
+    if(!wg->active){
+      delete wg;
+      if (barrier == CollectiveBarrier::Blocking) {
+        workload->call(EventType::General, NULL);
+      }
+      return;
+    }
     if (generator->id == 0) {
       std::cout
           << "info: reduce-scatter weight grad collective issued for layer: "
           << id << std::endl;
     }
-  } else if (weight_grad_comm_type == ComType::All_Reduce_All_to_All) {
-    wg = generator->generate_all_reduce(
-        weight_grad_comm_size,
-        local,
-        vertical,
-        horizontal,
-        pref_scheduling,
-        layer_num);
-    wg2 = generator->generate_all_to_all(
-        lookup_table_size,
-        local,
-        vertical,
-        horizontal,
-        pref_scheduling,
-        layer_num);
   } else if (weight_grad_comm_type == ComType::None) {
     collective_counter--;
     if (generator->id == 0) {
@@ -800,9 +802,5 @@ void Layer::issue_weight_grad_comm(
   }
   weight_grad_datasets[wg->my_id] = wg;
   wg->set_notifier(this, EventType::Wight_Grad_Comm_Finished);
-  if (wg2 != NULL) {
-    weight_grad_datasets[wg2->my_id] = wg2;
-    wg2->set_notifier(this, EventType::Wight_Grad_Comm_Finished);
-  }
 }
 } // namespace AstraSim

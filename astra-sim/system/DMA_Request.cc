@@ -10,7 +10,7 @@ DMA_Request::DMA_Request(int id, int slots, int latency, int bytes) {
   this->latency = latency;
   this->id = id;
   this->executed = false;
-  this->stream_owner = NULL;
+  this->stream_owner = nullptr;
   this->bytes = bytes;
 }
 DMA_Request::DMA_Request(

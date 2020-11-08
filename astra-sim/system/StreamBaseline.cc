@@ -28,7 +28,7 @@ void StreamBaseline::init() {
   if (!my_current_phase.enabled) {
     return;
   }
-  my_current_phase.algorithm->run(EventType::StreamInit, NULL);
+  my_current_phase.algorithm->run(EventType::StreamInit, nullptr);
   if (steps_finished == 1) {
     queuing_delay.push_back(last_phase_change - creation_time);
   }
@@ -44,7 +44,7 @@ void StreamBaseline::call(EventType event, CallData* data) {
     SharedBusStat* sharedBusStat = (SharedBusStat*)data;
     update_bus_stats(BusType::Both, sharedBusStat);
     my_current_phase.algorithm->run(EventType::General, data);
-    if (data != NULL) {
+    if (data != nullptr) {
       delete sharedBusStat;
     }
   }

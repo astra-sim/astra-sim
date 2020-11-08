@@ -6,6 +6,10 @@ LICENSE file in the root directory of this source tree.
 #ifndef __COMMON_HH__
 #define __COMMON_HH__
 #include "AstraNetworkAPI.hh"
+#include <string>
+#include <vector>
+#include <string.h>
+#include <stdio.h>
 namespace AstraSim {
 #define CLOCK_PERIOD 1
 typedef unsigned long long Tick;
@@ -16,6 +20,18 @@ enum class ComType {
   All_Reduce,
   All_to_All,
   All_Reduce_All_to_All
+};
+enum class CollectiveOptimization { Baseline, LocalBWAware };
+enum class CollectiveImplementation {
+    Ring,
+    OneRing,
+    Direct,
+    OneDirect,
+    AllToAll,
+    DoubleBinaryTreeLocalAllToAll,
+    LocalRingNodeA2AGlobalDBT,
+    HierarchicalRing,
+    DoubleBinaryTree
 };
 enum class CollectiveBarrier { Blocking, Non_Blocking };
 enum class SchedulingPolicy { LIFO, FIFO, HIGHEST, None };
