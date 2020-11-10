@@ -1,0 +1,13 @@
+{
+  "topology-name": "Switch",
+  "use-fast-version": true,
+  "dimensions-count": 1,
+  "units-count": [4],
+  "link-latency": [500],
+  "link-bandwidth": [25],
+  "nic-latency": [0],
+  "router-latency": [10],
+  "hbm-latency": [500, 500],
+  "hbm-bandwidth": [370],
+  "hbm-scale": [1]
+}
