@@ -10,7 +10,8 @@ SimpleMemory::SimpleMemory(
     double access_latency,
     double npu_access_bw_GB,
     double nic_access_bw_GB) {
-  this->last_request_serviced = 0;
+  this->last_read_request_serviced = 0;
+  this->last_write_request_serviced = 0;
   this->nic_read_request_count = 0;
   this->nic_write_request_count = 0;
   this->npu_read_request_count = 0;
@@ -71,12 +72,12 @@ uint64_t SimpleMemory::nic_mem_read(uint64_t size) {
   double time_ns = time.time_val;
   double delay = (size / nic_access_bw_GB);
   double offset = 0;
-  if (time_ns + access_latency < last_request_serviced) {
-    offset = (last_request_serviced + delay) - time_ns;
-    last_request_serviced += delay;
+  if (time_ns + access_latency < last_read_request_serviced) {
+    offset = (last_read_request_serviced + delay) - time_ns;
+    last_read_request_serviced += delay;
   } else {
     offset = (time_ns + access_latency + delay) - time_ns;
-    last_request_serviced = time_ns + access_latency + delay;
+    last_read_request_serviced = time_ns + access_latency + delay;
   }
   // std::cout<<"nic read req,,node id: "<<NI->sim_comm_get_rank()<<", bytes:
   // "<<size<<
@@ -90,12 +91,12 @@ uint64_t SimpleMemory::nic_mem_write(uint64_t size) {
   double time_ns = time.time_val;
   double delay = (size / nic_access_bw_GB);
   double offset = 0;
-  if (time_ns + access_latency < last_request_serviced) {
-    offset = (last_request_serviced + delay) - time_ns;
-    last_request_serviced += delay;
+  if (time_ns + access_latency < last_write_request_serviced) {
+      offset = (last_write_request_serviced + delay) - time_ns;
+      last_write_request_serviced += delay;
   } else {
     offset = (time_ns + access_latency + delay) - time_ns;
-    last_request_serviced = time_ns + access_latency + delay;
+      last_write_request_serviced = time_ns + access_latency + delay;
   }
   // std::cout<<"nic write req, node id: "<<NI->sim_comm_get_rank()<<", bytes:
   // "<<size<<
