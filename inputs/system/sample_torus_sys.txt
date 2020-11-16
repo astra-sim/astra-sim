@@ -4,9 +4,9 @@ packet-routing: software
 active-chunks-per-dimension: 1
 preferred-dataset-splits: 1
 boost-mode: 0
-all-reduce-implementation: ring_ring
-all-gather-implementation: ring_ring
-reduce-scatter-implementation: ring_ring
-all-to-all-implementation: oneDirect
+all-reduce-implementation: ring_ring_ring
+all-gather-implementation: ring_ring_ring
+reduce-scatter-implementation: ring_ring_ring
+all-to-all-implementation: ring_ring_ring
 collective-optimization: localBWAware
 direct-collective-window: 2
