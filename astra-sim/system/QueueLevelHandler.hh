@@ -19,6 +19,7 @@ LICENSE file in the root directory of this source tree.
 #include <tuple>
 #include <vector>
 #include "astra-sim/system/topology/RingTopology.hh"
+#include "AstraNetworkAPI.hh"
 
 namespace AstraSim {
 class QueueLevelHandler {
@@ -28,7 +29,8 @@ class QueueLevelHandler {
   int first_allocator;
   int last_allocator;
   int level;
-  QueueLevelHandler(int level, int start, int end);
+  AstraNetworkAPI::BackendType backend;
+  QueueLevelHandler(int level, int start, int end,AstraNetworkAPI::BackendType backend);
   std::pair<int, RingTopology::Direction> get_next_queue_id();
   std::pair<int, RingTopology::Direction> get_next_queue_id_first();
   std::pair<int, RingTopology::Direction> get_next_queue_id_last();

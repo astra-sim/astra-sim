@@ -40,9 +40,13 @@ class MetaData {
 
 class AstraNetworkAPI {
  public:
+  enum class BackendType{NotSpecified,Garnet,NS3,Analytical};
   bool enabled;
   int rank;
 
+  virtual BackendType get_backend_type(){
+      return BackendType::NotSpecified;
+  };
   virtual int sim_comm_size(sim_comm comm, int* size) = 0;
   virtual int sim_comm_get_rank() {
     return rank;

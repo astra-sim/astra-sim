@@ -25,6 +25,8 @@ LICENSE file in the root directory of this source tree.
 #include "RendezvousRecvData.hh"
 #include "RendezvousSendData.hh"
 
+#include <cmath>
+
 namespace AstraSim {
 Tick Sys::offset = 0;
 int Sys::total_nodes = 0;
@@ -138,6 +140,8 @@ Sys::Sys(
   this->processing_latency = 10;
   this->communication_delay = 10;
   this->local_reduction_delay = 1;
+  this->direct_collective_window=-1;
+  this->active_chunks_per_dimension=1;
   this->seprate_log = seprate_log;
   this->rendezvous_enabled = rendezvous_enabled;
   if ((id + 1) > all_generators.size()) {
@@ -259,29 +263,15 @@ Sys::Sys(
     NI->enabled = false;
     std::cout << "Node " << id << " has been totally disabled" << std::endl;
   }
-  int concurrent_streams = 1;
-  int active_first_phase = 64;
-  if (injection_policy == InjectionPolicy::SemiAggressive) {
-    concurrent_streams = 16;
-  } else if (injection_policy == InjectionPolicy::Aggressive) {
-    concurrent_streams = 32;
-  } else if (injection_policy == InjectionPolicy::ExtraAggressive) {
-    concurrent_streams = 64;
-    active_first_phase = 128;
-  } else if (injection_policy == InjectionPolicy::Infinite) {
-    active_first_phase = 1000000;
-    concurrent_streams = 1000000;
+  int concurrent_streams = (int) std::ceil(((double)active_chunks_per_dimension)/first_queues);
+  int active_first_phase = concurrent_streams*first_queues;
+  if(id==0){
+      std::cout<<"The final active chunks per dimension after allocating to queues is: "<<active_first_phase<<std::endl;
   }
-  int max_running;
-  if (first_dim == 1) {
-    max_running = third_queues * concurrent_streams;
-  } else {
-    max_running = (first_queues + third_queues) * concurrent_streams;
-  }
-  max_running = 100000000;
+  int max_running=100000000;
   scheduler_unit = new SchedulerUnit(
       this, levels, max_running, active_first_phase, concurrent_streams);
-  vLevels = new QueueLevels(levels, 0);
+  vLevels = new QueueLevels(levels, 0,NI->get_backend_type());
 
   logical_topologies["AllReduce"]=new GeneralComplexTopology(id,dims,all_reduce_implementation_per_dimension);
   logical_topologies["ReduceScatter"]=new GeneralComplexTopology(id,dims,reduce_scatter_implementation_per_dimension);
@@ -518,10 +508,10 @@ int Sys::front_end_sim_send(
     sim_request* request,
     void (*msg_handler)(void* fun_arg),
     void* fun_arg) {
-  if(id==0){
+  /*if(id==0){
     std::cout<<"send from: "<<id<<" to: "<<dst<<" at time: "<<boostedTick()
               <<" ,size: "<<count<<std::endl;
-  }
+  }*/
   if (rendezvous_enabled) {
     return rendezvous_sim_send(
         delay, buffer, count, type, dst, tag, request, msg_handler, fun_arg);
@@ -601,10 +591,10 @@ int Sys::front_end_sim_recv(
     sim_request* request,
     void (*msg_handler)(void* fun_arg),
     void* fun_arg) {
-  if(id==0){
+  /*if(id==0){
     std::cout<<"recv at: "<<id<<" expecting data from: "<<src<<" at time: "<<boostedTick()
     <<" ,size: "<<count<<std::endl;
-  }
+  }*/
   if (rendezvous_enabled) {
     return rendezvous_sim_recv(
         delay, buffer, count, type, src, tag, request, msg_handler, fun_arg);
@@ -687,6 +677,9 @@ bool Sys::parse_var(std::string var, std::string value) {
   } else if (var == "all-to-all-implementation:") {
     std::stringstream mval(value);
     mval >> inp_all_to_all_implementation;
+  } else if (var == "direct-collective-window:") {
+      std::stringstream mval(value);
+      mval >> direct_collective_window;
   } else if (var == "collective-optimization:") {
     std::stringstream mval(value);
     mval >> inp_collective_optimization;
@@ -699,8 +692,9 @@ bool Sys::parse_var(std::string var, std::string value) {
     mval >> local_reduction_delay;
   } else if (var == "packet-routing:") {
     inp_packet_routing = value;
-  } else if (var == "injection-policy:") {
-    inp_injection_policy = value;
+  } else if (var == "active-chunks-per-dimension:") {
+    std::stringstream mval(value);
+    mval >>  active_chunks_per_dimension;
   } else if (var == "L:") {
     std::stringstream mval(value);
     mval >> inp_L;
@@ -750,22 +744,6 @@ bool Sys::post_process_inputs() {
   else{
     std::cout<<"unknown value for"<<" packet routing "
               <<" in hardware in sys input file"<<std::endl;
-    return false;
-  }
-  if (inp_injection_policy == "semiAggressive") {
-    injection_policy = InjectionPolicy ::SemiAggressive;
-  } else if (inp_injection_policy == "aggressive") {
-    injection_policy = InjectionPolicy ::Aggressive;
-  } else if (inp_injection_policy == "extraAggressive") {
-    injection_policy = InjectionPolicy::ExtraAggressive;
-  } else if (inp_injection_policy == "infinite") {
-    injection_policy = InjectionPolicy ::Infinite;
-  } else if (inp_injection_policy == "normal") {
-    injection_policy = InjectionPolicy ::Normal;
-  }
-  else{
-    std::cout<<"unknown value for"<<" injection policy "
-             <<" in hardware in sys input file"<<std::endl;
     return false;
   }
 
@@ -1041,6 +1019,7 @@ CollectivePhase Sys::generate_collective_phase(
                 queue_id,
                 new AllToAll(
                         collective_type,
+                        direct_collective_window,
                         id,
                         layer_num,
                         (RingTopology*) topology,

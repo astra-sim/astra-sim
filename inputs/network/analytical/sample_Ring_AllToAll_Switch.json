@@ -1,7 +1,7 @@
 {
   "topology-name": "Ring_AllToAll_Switch",
   "dimensions-count": 3,
-  "packages-counts": [2, 8, 2],
+  "packages-counts": [2, 2, 4],
   "topology-shape-configs": [[1], [0], [0]],
   "link-bandwidth": [250, 25, 12.5],
   "link-latency": [500, 500, 500],

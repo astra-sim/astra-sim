@@ -5,7 +5,7 @@ LICENSE file in the root directory of this source tree.
 
 #include "QueueLevelHandler.hh"
 namespace AstraSim {
-QueueLevelHandler::QueueLevelHandler(int level, int start, int end) {
+QueueLevelHandler::QueueLevelHandler(int level, int start, int end,AstraNetworkAPI::BackendType backend) {
   for (int i = start; i <= end; i++) {
     queues.push_back(i);
   }
@@ -13,10 +13,11 @@ QueueLevelHandler::QueueLevelHandler(int level, int start, int end) {
   first_allocator = 0;
   last_allocator = queues.size() / 2;
   this->level = level;
+  this->backend=backend;
 }
 std::pair<int, RingTopology::Direction> QueueLevelHandler::get_next_queue_id() {
   RingTopology::Direction dir;
-  if (queues.size() > 1 && allocator >= (queues.size() / 2)) {
+  if ((backend!=AstraNetworkAPI::BackendType::Garnet || level>0) && queues.size() > 1 && allocator >= (queues.size() / 2)) {
     dir = RingTopology::Direction::Anticlockwise;
   } else {
     dir = RingTopology::Direction::Clockwise;

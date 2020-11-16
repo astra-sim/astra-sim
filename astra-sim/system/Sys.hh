@@ -86,7 +86,6 @@ class Sys : public Callable {
 
   int preferred_dataset_splits;
   PacketRouting alltoall_routing;
-  InjectionPolicy injection_policy;
   float compute_scale;
   float comm_scale;
   float injection_scale;
@@ -122,7 +121,6 @@ class Sys : public Callable {
 
   std::string inp_scheduling_policy;
   std::string inp_packet_routing;
-  std::string inp_injection_policy;
   std::string inp_all_reduce_implementation;
   std::string inp_reduce_scatter_implementation;
   std::string inp_all_gather_implementation;
@@ -133,6 +131,8 @@ class Sys : public Callable {
   float inp_g;
   float inp_G;
   int inp_model_shared_bus;
+  int direct_collective_window;
+  int active_chunks_per_dimension;
   bool model_shared_bus;
   int inp_boost_mode;
 
