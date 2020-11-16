@@ -25,9 +25,9 @@
 	For example, "ring_doubleBinaryTree" means we create a 
 	logical topology with 2 dimensions and we perform ring algorithm
 	on the first dimension followed by double binary tree on the second
-	dimension for the all-reduce pattern. Hence the number of physical dimension shoulld be
-	equal to the number of logical dimensions. The only exeptions are oneRing/oneDirect
-	where we assumes no matter how many physical dimensions we have, we create a one big logical
+	dimension for the all-reduce pattern. Hence the number of physical dimension should be
+	equal to the number of logical dimensions. The only exceptions are oneRing/oneDirect
+	where we assume no matter how many physical dimensions we have, we create a one big logical
 	ring/direct(AllToAll) topology where all NPUs are connected and perfrom a one phase ring/direct algorithm. 
 * **reduce-scatter-implementation:**: (Dimension0CollectiveAlg_Dimension1CollectiveAlg_...\_DimensionNCollectiveAlg)
 	* The same as "all-reduce-implementation:" but for reduce-scatter collective. 
