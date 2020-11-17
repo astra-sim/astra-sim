@@ -28,6 +28,7 @@ class AllToAll : public Ring {
  public:
   AllToAll(
       ComType type,
+      int window,
       int id,
       int layer_num,
       RingTopology* allToAllTopology,

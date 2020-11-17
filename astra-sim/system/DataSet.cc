@@ -14,22 +14,23 @@ DataSet::DataSet(int total_streams) {
   this->finished_streams = 0;
   this->finished = false;
   this->finish_tick = 0;
+  this->active=true;
   this->creation_tick = Sys::boostedTick();
-  this->notifier = NULL;
+  this->notifier = nullptr;
 }
 void DataSet::set_notifier(Callable* layer, EventType event) {
   notifier = new std::pair<Callable*, EventType>(layer, event);
 }
 void DataSet::notify_stream_finished(StreamStat* data) {
   finished_streams++;
-  if (data != NULL) {
+  if (data != nullptr) {
     update_stream_stats(data);
   }
   if (finished_streams == total_streams) {
     finished = true;
     // std::cout<<"********************************Dataset finished"<<std::endl;
     finish_tick = Sys::boostedTick();
-    if (notifier != NULL) {
+    if (notifier != nullptr) {
       take_stream_stats_average();
       Callable* c = notifier->first;
       EventType ev = notifier->second;

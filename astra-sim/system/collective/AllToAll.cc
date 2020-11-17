@@ -7,6 +7,7 @@ LICENSE file in the root directory of this source tree.
 namespace AstraSim {
 AllToAll::AllToAll(
     ComType type,
+    int window,
     int id,
     int layer_num,
     RingTopology* allToAllTopology,
@@ -32,7 +33,12 @@ AllToAll::AllToAll(
   }
   switch (routing) {
     case PacketRouting::Hardware:
-      parallel_reduce = nodes_in_ring - 1;
+      if(window==-1){
+        parallel_reduce = nodes_in_ring - 1;
+      }
+      else{
+        parallel_reduce=(int)std::min(window,nodes_in_ring - 1);
+      }
       break;
     case PacketRouting::Software:
       parallel_reduce = 1;
@@ -91,10 +97,10 @@ void AllToAll::run(EventType event, CallData* data) {
     }
   } else if (event == EventType::PacketReceived) {
     total_packets_received++;
-    insert_packet(NULL);
+    insert_packet(nullptr);
   } else if (event == EventType::StreamInit) {
     for (int i = 0; i < parallel_reduce; i++) {
-      insert_packet(NULL);
+      insert_packet(nullptr);
     }
   }
 }

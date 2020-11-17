@@ -7,7 +7,7 @@ LICENSE file in the root directory of this source tree.
 #include "Sys.hh"
 namespace AstraSim {
 LogGP::~LogGP() {
-  if (NPU_MEM != NULL) {
+  if (NPU_MEM != nullptr) {
     delete NPU_MEM;
   }
 }
@@ -32,7 +32,7 @@ LogGP::LogGP(
   this->trigger_event = trigger_event;
   this->subsequent_reads = 0;
   this->THRESHOLD = 8;
-  this->NPU_MEM = NULL;
+  this->NPU_MEM = nullptr;
   request_num = 0;
   this->local_reduction_delay = generator->local_reduction_delay;
 
@@ -85,7 +85,7 @@ void LogGP::process_next_read() {
   sends.pop_front();
   curState = State::Sending;
   generator->register_event(
-      this, EventType::Send_Finished, NULL, offset + (G * (tmp.size - 1)));
+      this, EventType::Send_Finished, nullptr, offset + (G * (tmp.size - 1)));
 }
 void LogGP::request_read(
     int bytes,
@@ -94,7 +94,7 @@ void LogGP::request_read(
     Callable* callable) {
   MemMovRequest mr(
       request_num++, generator, this, bytes, 0, callable, processed, send_back);
-  if (NPU_MEM != NULL) {
+  if (NPU_MEM != nullptr) {
     mr.callEvent = EventType::Consider_Send_Back;
     pre_send.push_back(mr);
     pre_send.back().wait_wait_for_mem_bus(--pre_send.end());
@@ -110,7 +110,7 @@ void LogGP::request_read(
       if (subsequent_reads > THRESHOLD && partner->sends.size() > 0 &&
           partner->subsequent_reads <= THRESHOLD) {
         if (partner->curState == State::Free) {
-          partner->call(EventType::General, NULL);
+          partner->call(EventType::General, nullptr);
         }
         return;
       }
@@ -126,7 +126,7 @@ void LogGP::switch_to_receiver(MemMovRequest mr, Tick offset) {
   generator->register_event(
       this,
       EventType::Rec_Finished,
-      NULL,
+      nullptr,
       offset + ((mr.size - 1) * G) + L + o);
   subsequent_reads = 0;
 }
@@ -150,7 +150,7 @@ void LogGP::call(EventType event, CallData* data) {
     }
     if (receives.front().processed == true) {
       // std::cout<<"2.1"<<std::endl;
-      if (NPU_MEM != NULL) {
+      if (NPU_MEM != nullptr) {
         receives.front().processed = false;
         receives.front().loggp = this;
         receives.front().callEvent = EventType::Consider_Process;
@@ -190,13 +190,13 @@ void LogGP::call(EventType event, CallData* data) {
         generator->register_event(
             this,
             EventType::Processing_Finished,
-            NULL,
+            nullptr,
             ((processing.front().size / 100) * local_reduction_delay) + 50);
         processing_state = ProcState::Processing;
       }
     } else if (receives.front().send_back == true) {
       // std::cout<<"2.2"<<std::endl;
-      if (NPU_MEM != NULL) {
+      if (NPU_MEM != nullptr) {
         receives.front().send_back = false;
         receives.front().callEvent = EventType::Consider_Send_Back;
         receives.front().loggp = this;
@@ -221,7 +221,7 @@ void LogGP::call(EventType event, CallData* data) {
         //"<<receives.size()
         //<<" time: "<<generator->boostedTick()<<std::endl;
       }
-      if (NPU_MEM != NULL) {
+      if (NPU_MEM != nullptr) {
         receives.front().callEvent = EventType::Consider_Retire;
         receives.front().loggp = this;
         retirements.push_back(receives.front());
@@ -259,7 +259,7 @@ void LogGP::call(EventType event, CallData* data) {
       //<<" time: "<<generator->boostedTick()<<std::endl;
     }
     if (processing.front().send_back == true) {
-      if (NPU_MEM != NULL) {
+      if (NPU_MEM != nullptr) {
         processing.front().send_back = false;
         processing.front().loggp = this;
         processing.front().callEvent = EventType::Consider_Send_Back;
@@ -278,7 +278,7 @@ void LogGP::call(EventType event, CallData* data) {
         processing.pop_front();
       }
     } else {
-      if (NPU_MEM != NULL) {
+      if (NPU_MEM != nullptr) {
         processing.front().callEvent = EventType::Consider_Retire;
         processing.front().loggp = this;
         retirements.push_back(processing.front());
@@ -321,7 +321,7 @@ void LogGP::call(EventType event, CallData* data) {
       generator->register_event(
           this,
           EventType::Processing_Finished,
-          NULL,
+          nullptr,
           ((processing.front().size / 100) * local_reduction_delay) + 50);
     }
   } else if (event == EventType::Consider_Retire) {
@@ -360,7 +360,7 @@ void LogGP::call(EventType event, CallData* data) {
       generator->register_event(
           this,
           EventType::Processing_Finished,
-          NULL,
+          nullptr,
           ((processing.front().size / 100) * local_reduction_delay) + 50);
       processing_state = ProcState::Processing;
     }
@@ -382,7 +382,7 @@ void LogGP::call(EventType event, CallData* data) {
       if (subsequent_reads > THRESHOLD && partner->sends.size() > 0 &&
           partner->subsequent_reads <= THRESHOLD) {
         if (partner->curState == State::Free) {
-          partner->call(EventType::General, NULL);
+          partner->call(EventType::General, nullptr);
         }
         return;
       }

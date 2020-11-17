@@ -10,7 +10,8 @@ LICENSE file in the root directory of this source tree.
 namespace AstraSim {
 class SimpleMemory : public AstraMemoryAPI {
  public:
-  double last_request_serviced;
+  double last_read_request_serviced;
+  double last_write_request_serviced;
   double npu_access_bw_GB;
   double nic_access_bw_GB;
   double access_latency;

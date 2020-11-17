@@ -20,19 +20,28 @@ LICENSE file in the root directory of this source tree.
 #include <vector>
 #include "ComplexLogicalTopology.hh"
 #include "DoubleBinaryTreeTopology.hh"
+#include "RingTopology.hh"
 #include "astra-sim/system/Common.hh"
 
 namespace AstraSim {
 class LocalRingNodeA2AGlobalDBT : public ComplexLogicalTopology {
  public:
-  DoubleBinaryTreeTopology* global_all_reduce_dimension;
+  DoubleBinaryTreeTopology* global_dimension_all_reduce;
+  RingTopology* global_dimension_other;
+  RingTopology *local_dimension;
+  RingTopology *node_dimension;
   LocalRingNodeA2AGlobalDBT(
       int id,
+      int local_dim,
+      int node_dim,
       int total_tree_nodes,
       int start,
-      int stride,
-      int local_dim);
+      int stride);
   ~LocalRingNodeA2AGlobalDBT();
+  int get_num_of_nodes_in_dimension(int dimension) override;
+  BasicLogicalTopology * get_basic_topology_at_dimension(int dimension,
+                                                        ComType type) override;
+  int get_num_of_dimensions() override;
 };
 } // namespace AstraSim
 #endif

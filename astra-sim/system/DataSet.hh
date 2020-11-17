@@ -31,6 +31,7 @@ class DataSet : public Callable, public StreamStat {
   int total_streams;
   int finished_streams;
   bool finished;
+  bool active;
   Tick finish_tick;
   Tick creation_tick;
   std::pair<Callable*, EventType>* notifier;

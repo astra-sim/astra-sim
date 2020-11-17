@@ -1,0 +1,13 @@
+{
+  "topology-name": "Ring_AllToAll",
+  "dimensions-count": 2,
+  "packages-counts": [2, 4],
+  "topology-shape-configs": [[1], [0]],
+  "link-bandwidth": [25, 25],
+  "link-latency": [500, 500],
+  "nic-latency": [0, 0],
+  "router-latency": [0, 0],
+  "hbm-bandwidth": [500, 500],
+  "hbm-latency": [10, 10],
+  "hbm-scale": [1.5, 1.5]
+}

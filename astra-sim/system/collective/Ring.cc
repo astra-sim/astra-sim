@@ -118,10 +118,10 @@ void Ring::run(EventType event, CallData* data) {
     iteratable();
   } else if (event == EventType::PacketReceived) {
     total_packets_received++;
-    insert_packet(NULL);
+    insert_packet(nullptr);
   } else if (event == EventType::StreamInit) {
     for (int i = 0; i < parallel_reduce; i++) {
-      insert_packet(NULL);
+      insert_packet(nullptr);
     }
   }
 }
@@ -299,7 +299,7 @@ bool Ring::ready() {
       stream->stream_num,
       &snd_req,
       &Sys::handleEvent,
-      NULL); // stream_num+(packet.preferred_dest*50)
+      nullptr); // stream_num+(packet.preferred_dest*50)
   sim_request rcv_req;
   rcv_req.vnet = this->stream->current_queue_id;
   rcv_req.layerNum = layer_num;

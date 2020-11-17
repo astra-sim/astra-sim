@@ -35,16 +35,19 @@ class Layer : public Callable, public StreamStat {
   ComType fwd_pass_comm_type;
   int fwd_pass_comm_size;
   Tick fwd_update_time;
+  std::vector<bool> fwd_pass_comm_involved_dimensions;
 
   int input_grad_compute_time;
   ComType input_grad_comm_type;
   int input_grad_comm_size;
   Tick input_grad_update_time;
+  std::vector<bool> input_grad_comm_involved_dimensions;
 
   int weight_grad_compute_time;
   ComType weight_grad_comm_type;
   int weight_grad_comm_size;
   Tick weight_grad_update_time;
+  std::vector<bool> weight_grad_comm_involved_dimensions;
 
   bool needs_fwd_in_bckwd_initiation;
   bool is_checkpoint;
@@ -92,13 +95,17 @@ class Layer : public Callable, public StreamStat {
       int fwd_pass_compute_time,
       ComType fwd_pass_comm_type,
       int fwd_pass_comm_size,
+      std::vector<bool> fwd_pass_comm_involved_dimensions,
       int input_grad_compute_time,
       ComType input_grad_comm_type,
       int input_grad_comm_size,
+      std::vector<bool> input_grad_comm_involved_dimensions,
       int weight_grad_compute_time,
       ComType weight_grad_comm_type,
       int weight_grad_comm_size,
-      int weight_grad_update_time);
+      std::vector<bool> weight_grad_comm_involved_dimensions,
+      int weight_grad_update_time,
+      ParallelismPolicy specific_policy);
   void call(EventType event, CallData* mdata);
   Tick get_fwd_pass_compute();
   Tick get_input_grad_compute();
@@ -123,21 +130,12 @@ class Layer : public Callable, public StreamStat {
       double& total_exposed,
       bool seprate_log);
   void issue_forward_pass_comm(
-      bool local,
-      bool vertical,
-      bool horizontal,
       SchedulingPolicy pref_scheduling,
       CollectiveBarrier barrier);
   void issue_input_grad_comm(
-      bool local,
-      bool vertical,
-      bool horizontal,
       SchedulingPolicy pref_scheduling,
       CollectiveBarrier barrier);
   void issue_weight_grad_comm(
-      bool local,
-      bool vertical,
-      bool horizontal,
       SchedulingPolicy pref_scheduling,
       CollectiveBarrier barrier);
 };

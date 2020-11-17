@@ -1,0 +1,13 @@
+{
+  "topology-name": "Torus2D",
+  "dimensions-count": 1,
+  "packages-counts": [9],
+  "topology-shape-configs": [[3, 3]],
+  "link-bandwidth": [25],
+  "link-latency": [500],
+  "nic-latency": [0],
+  "router-latency": [0],
+  "hbm-bandwidth": [13],
+  "hbm-latency": [500],
+  "hbm-scale": [1]
+}

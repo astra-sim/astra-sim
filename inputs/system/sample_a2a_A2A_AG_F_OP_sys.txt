@@ -1,0 +1,12 @@
+scheduling-policy: LIFO
+endpoint-delay: 10
+packet-routing: software
+active-chunks-per-dimension: 2
+preferred-dataset-splits: 32
+boost-mode: 0
+all-reduce-implementation: direct_direct
+all-gather-implementation: ring_ring
+reduce-scatter-implementation: ring_ring
+all-to-all-implementation: direct_direct
+collective-optimization: localBWAware
+direct-collective-window: 4

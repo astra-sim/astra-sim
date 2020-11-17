@@ -28,7 +28,7 @@ BaseStream::BaseStream(
     ready_counter[stream_num] = 0;
   }
   for (auto& vn : phases_to_go) {
-    if (vn.algorithm != NULL) {
+    if (vn.algorithm != nullptr) {
       vn.init(this);
     }
   }
