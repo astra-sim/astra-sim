@@ -28,7 +28,8 @@
 	dimension for the all-reduce pattern. Hence the number of physical dimension should be
 	equal to the number of logical dimensions. The only exceptions are oneRing/oneDirect
 	where we assume no matter how many physical dimensions we have, we create a one big logical
-	ring/direct(AllToAll) topology where all NPUs are connected and perfrom a one phase ring/direct algorithm. 
+	ring/direct(AllToAll) topology where all NPUs are connected and perfrom a one phase ring/direct algorithm.
+	Note that oneRing and oneDirect is not available for Garnet Backend in this version. 
 * **reduce-scatter-implementation:**: (Dimension0CollectiveAlg_Dimension1CollectiveAlg_...\_DimensionNCollectiveAlg)
 	* The same as "all-reduce-implementation:" but for reduce-scatter collective. 
 	The available options (algorithms) are: ring, direct, oneRing, oneDirect.
