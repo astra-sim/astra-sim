@@ -10,26 +10,25 @@ CSVWriter::CSVWriter(std::string path, std::string name) {
   this->name = name;
 }
 void CSVWriter::initialize_csv(int rows, int cols) {
-  std::cout << "path to create csvs is: " << path << std::endl;
+  std::cout << "CSV path and filename: " << path + name << std::endl;
   do {
-    std::cout << "trying to open: " << path << std::endl;
     myFile.open(path + name, std::fstream::out);
   } while (!myFile.is_open());
+
   do {
     myFile.close();
   } while (myFile.is_open());
 
   do {
-    std::cout << "trying to open: " << path << std::endl;
     myFile.open(path + name, std::fstream::out | std::fstream::in);
   } while (!myFile.is_open());
 
   if (!myFile) {
     std::cerr << "Unable to open file: " << path << std::endl;
-    std::cerr << "This error is fatal. Please check your path and filename." << std::endl;
+    std::cerr << "This error is fatal. Please make sure the CSV write path exists." << std::endl;
     exit(1);
   } else {
-    std::cout << "Success in opening CSV file for writing the report " << std::endl;
+    std::cout << "Success in opening CSV file for writing the report." << std::endl;
   }
 
   myFile.seekp(0, std::ios_base::beg);
