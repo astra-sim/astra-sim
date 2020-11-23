@@ -240,7 +240,7 @@ FastBackEnd::handleEvent (void *arg)
     }
   else
     {
-      std::cout << "Event type undefined!" << std::endl;
+      std::cerr << "Event type undefined!" << std::endl;
     }
 }
 
@@ -390,7 +390,7 @@ FastBackEnd::sim_send (void *buffer, int count, int type, int dst, int tag, sim_
         default:
           {
             // should not fall here
-            std::cout << "sim_send inflight pair error" << std::endl;
+            std::cerr << "sim_send inflight pair error" << std::endl;
             exit (-1);
           }
         }
@@ -467,7 +467,7 @@ FastBackEnd::sim_recv (void *buffer, int count, int type, int src, int tag, sim_
         default:
           {
             // should not fall here
-            std::cout << "sim_recv inflight pair error" << std::endl;
+            std::cerr << "sim_recv inflight pair error" << std::endl;
             exit (-1);
           }
         }

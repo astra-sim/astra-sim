@@ -25,9 +25,11 @@ void CSVWriter::initialize_csv(int rows, int cols) {
   } while (!myFile.is_open());
 
   if (!myFile) {
-    std::cout << "Unable to open file: " << path << std::endl;
+    std::cerr << "Unable to open file: " << path << std::endl;
+    std::cerr << "This error is fatal. Please check your path and filename." << std::endl;
+    exit(1);
   } else {
-    std::cout << "success in opening CSV file for writing the report " << std::endl;
+    std::cout << "Success in opening CSV file for writing the report " << std::endl;
   }
 
   myFile.seekp(0, std::ios_base::beg);
@@ -74,7 +76,8 @@ void CSVWriter::write_cell(int row, int column, std::string data) {
       column--;
     }
     if (*buf == '\n') {
-      std::cout << "fatal error in inserting cewll!" << std::endl;
+      std::cerr << "fatal error in inserting cewll!" << std::endl;
+      exit(1);
     }
   }
   str = str + data;

@@ -149,7 +149,7 @@ Sys::Sys(
   }
   all_generators[id] = this;
 
-  bool result = initialize_sys(my_sys + ".txt");
+  bool result = initialize_sys(my_sys);
 
   if (result == false) {
     Tick cycle = 1;
@@ -308,7 +308,7 @@ Sys::Sys(
   workload = new Workload(
       run_name,
       this,
-      my_workload + ".txt",
+      my_workload,
       num_passes,
       total_stat_rows,
       stat_row,
@@ -811,15 +811,16 @@ bool Sys::initialize_sys(std::string name) {
   inFile.open(name);
   if (!inFile) {
     if (id == 0) {
-      std::cout << "Unable to open file: " << name << std::endl;
-      std::cout << "############ Exiting because unable to open the system "
+      std::cerr << "Unable to open file: " << name << std::endl;
+      std::cerr << "############ Exiting because unable to open the system "
                    "input file ############"
                 << std::endl;
+      std::cerr << "This error is fatal. Please check your path and filename." << std::endl;
     }
-    return false;
+    exit(1);
   } else {
     if (id == 0) {
-      std::cout << "success in openning system file" << std::endl;
+      std::cout << "Success in opening system file" << std::endl;
     }
   }
   std::string var;
@@ -1046,7 +1047,7 @@ CollectivePhase Sys::generate_collective_phase(
     }
     else{
         if(id==0) {
-            std::cout
+            std::cerr
                     << "Warning: No known collective implementation for all-reduce, switching to the default ring-based collective"
                     << std::endl;
         }
@@ -1192,7 +1193,7 @@ void Sys::call_events() {
       (std::get<0>(callable))
           ->call(std::get<1>(callable), std::get<2>(callable));
     } catch (...) {
-      std::cout << "warning! a callable is removed before call" << std::endl;
+      std::cerr << "warning! a callable is removed before call" << std::endl;
     }
   }
   if (event_queue[Sys::boostedTick()].size() > 0) {
