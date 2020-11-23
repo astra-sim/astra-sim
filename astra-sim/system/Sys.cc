@@ -727,11 +727,11 @@ bool Sys::parse_var(std::string var, std::string value) {
     }
   } else if (var != "") {
     if (id == 0) {
-      std::cout << "######### Exiting because " << var
-                << " is undefined inside system input file #########"
+      std::cerr << "######### Exiting because " << var
+                << " is an unknown variable. Check your system input file. #########"
                 << std::endl;
     }
-    return false;
+    exit(1);
   }
   return true;
 }
