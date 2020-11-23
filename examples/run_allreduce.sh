@@ -8,8 +8,8 @@ BINARY=""
 NETWORK=""
 CONFIG=""
 SYNTHETIC=""
-SYSTEM="${SCRIPT_DIR:?}"/../inputs/system/sample_torus_sys
-WORKLOAD="${SCRIPT_DIR:?}"/../inputs/workload/microAllReduce
+SYSTEM="${SCRIPT_DIR:?}"/../inputs/system/sample_torus_sys.txt
+WORKLOAD="${SCRIPT_DIR:?}"/../inputs/workload/microAllReduce.txt
 STATS="${SCRIPT_DIR:?}"/results/run_allreduce
 
 while getopts n: flag

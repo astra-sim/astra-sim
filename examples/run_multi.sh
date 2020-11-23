@@ -6,8 +6,8 @@ SCRIPT_DIR=$(dirname "$(realpath $0)")
 # Absolute paths to useful directories
 BINARY="${SCRIPT_DIR:?}"/../build/astra_analytical/build/AnalyticalAstra/bin/AnalyticalAstra
 NETWORK="${SCRIPT_DIR:?}"/../inputs/network/analytical/sample_Torus2D.json
-SYSTEM="${SCRIPT_DIR:?}"/../inputs/system/sample_torus_sys
-WORKLOAD="${SCRIPT_DIR:?}"/../inputs/workload/microAllReduce
+SYSTEM="${SCRIPT_DIR:?}"/../inputs/system/sample_torus_sys.txt
+WORKLOAD="${SCRIPT_DIR:?}"/../inputs/workload/microAllReduce.txt
 STATS="${SCRIPT_DIR:?}"/results/run_multi
 
 rm -rf "${STATS}"
