@@ -26,6 +26,7 @@ class ComputeAPI {
       uint64_t N,
       void (*msg_handler)(void* fun_arg),
       ComputeMetaData* fun_arg) = 0;
+  virtual ~ComputeAPI() = 0;
 };
 } // namespace AstraSim
 #endif
