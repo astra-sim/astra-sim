@@ -29,13 +29,15 @@ GeneralComplexTopology::GeneralComplexTopology(int id,
     int last_dim=collective_implementation.size()-1;
     for(int dim=0;dim<collective_implementation.size();dim++){
         if(collective_implementation[dim]==CollectiveImplementation::Ring ||
-        collective_implementation[dim]==CollectiveImplementation::Direct){
+        collective_implementation[dim]==CollectiveImplementation::Direct ||
+        collective_implementation[dim]==CollectiveImplementation::HalvingDoubling){
             RingTopology *ring=new RingTopology(RingTopology::Dimension::NA,id,dimension_size[dim],
                                                 (id%(offset*dimension_size[dim]))/offset,offset);
             dimension_topology.push_back(ring);
         }
         else if(collective_implementation[dim]==CollectiveImplementation::OneRing ||
-           collective_implementation[dim]==CollectiveImplementation::OneDirect){
+           collective_implementation[dim]==CollectiveImplementation::OneDirect ||
+           collective_implementation[dim]==CollectiveImplementation::OneHalvingDoubling){
           int total_npus=1;
           for(int d:dimension_size){
             total_npus*=d;

@@ -31,7 +31,9 @@ enum class CollectiveImplementation {
     DoubleBinaryTreeLocalAllToAll,
     LocalRingNodeA2AGlobalDBT,
     HierarchicalRing,
-    DoubleBinaryTree
+    DoubleBinaryTree,
+    HalvingDoubling,
+    OneHalvingDoubling,
 };
 enum class CollectiveBarrier { Blocking, Non_Blocking };
 enum class SchedulingPolicy { LIFO, FIFO, HIGHEST, None };

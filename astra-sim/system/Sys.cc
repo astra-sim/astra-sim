@@ -14,6 +14,7 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/collective/AllToAll.hh"
 #include "astra-sim/system/collective/DoubleBinaryTreeAllReduce.hh"
 #include "astra-sim/system/collective/Ring.hh"
+#include "astra-sim/system/collective/HalvingDoubling.hh"
 
 #include "astra-sim/system/topology/BasicLogicalTopology.hh"
 #include "astra-sim/system/topology/DoubleBinaryTreeTopology.hh"
@@ -650,6 +651,12 @@ std::vector<CollectiveImplementation> Sys::generate_collective_implementation_fr
     else if(dimension_input=="oneDirect"){
       result.push_back(CollectiveImplementation::OneDirect);
     }
+    else if(dimension_input=="halvingDoubling"){
+        result.push_back(CollectiveImplementation::HalvingDoubling);
+    }
+    else if(dimension_input=="oneHalvingDoubling"){
+        result.push_back(CollectiveImplementation::OneHalvingDoubling);
+    }
     else{
       result.clear();
       return result;
@@ -928,7 +935,8 @@ int Sys::nextPowerOf2(int n) {
   return 1 << count;
 }
 void Sys::sys_panic(std::string msg) {
-  std::cout << msg << std::endl;
+  std::cerr << msg << std::endl;
+  exit(1);
 }
 void Sys::iterate() {
   call_events();
@@ -1032,8 +1040,6 @@ CollectivePhase Sys::generate_collective_phase(
         return vn;
     }
     else if(collective_implementation==CollectiveImplementation::DoubleBinaryTree){
-        //std::cout<<"DBT AR is created with id: "<<id << " and stride: "<<((BinaryTree*) topology)->stride<<std::endl;
-        //((BinaryTree*) topology)->print(((BinaryTree*) topology)->tree);
         CollectivePhase vn(
                 this,
                 queue_id,
@@ -1045,27 +1051,26 @@ CollectivePhase Sys::generate_collective_phase(
                         boost_mode));
         return vn;
     }
-    else{
-        if(id==0) {
-            std::cerr
-                    << "Warning: No known collective implementation for all-reduce, switching to the default ring-based collective"
-                    << std::endl;
-        }
+    else if(collective_implementation==CollectiveImplementation::HalvingDoubling
+       || collective_implementation==CollectiveImplementation::OneHalvingDoubling){
         CollectivePhase vn(
                 this,
                 queue_id,
-                new Ring(
+                new HalvingDoubling(
                         collective_type,
                         id,
                         layer_num,
                         (RingTopology*) topology,
                         data_size,
-                        direction,
-                        routing,
-                        injection_policy,
                         boost_mode)
         );
         return vn;
+    }
+    else{
+        std::cerr
+        << "Error: No known collective implementation for collective phase"
+        << std::endl;
+        exit(1);
     }
 }
 DataSet * Sys::generate_collective(uint64_t size,
