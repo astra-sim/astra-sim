@@ -30,7 +30,6 @@ LICENSE file in the root directory of this source tree.
 
 namespace AstraSim {
 Tick Sys::offset = 0;
-int Sys::total_nodes = 0;
 uint8_t* Sys::dummy_data = new uint8_t[2];
 std::vector<Sys*> Sys::all_generators;
 
@@ -95,16 +94,8 @@ Sys::Sys(
     AstraMemoryAPI* MEM,
     int id,
     int num_passes,
-    int first_dim,
-    int second_dim,
-    int third_dim,
-    int fourth_dim,
-    int fifth_dim,
-    int first_queues,
-    int second_queues,
-    int third_queues,
-    int fourth_queues,
-    int fifth_queues,
+    std::vector<int> physical_dims,
+    std::vector<int> queues_per_dim,
     std::string my_sys,
     std::string my_workload,
     float comm_scale,
@@ -153,12 +144,10 @@ Sys::Sys(
   bool result = initialize_sys(my_sys);
 
   if (result == false) {
-    Tick cycle = 1;
-    try_register_event(this, EventType::NotInitialized, nullptr, cycle);
-    return;
+    sys_panic("Unable to initialize the system layer because the file can not be openned");
   }
 
-  if (id == 0) {
+  /*if (id == 0) {
     std::cout << "loc dim: " << first_dim
               << " ,vert dim: " << second_dim
               << " ,horiz dim: " << third_dim
@@ -166,132 +155,64 @@ Sys::Sys(
               << " ,fourth dim: " << fifth_dim
               << " ,queues: " << first_queues << ", " << second_queues << ", "
               << third_queues << std::endl;
-  }
+  }*/
 
   this->pending_events = 0;
 
   int total_disabled = 0;
-  int ver = second_dim < 1 ? 1 : second_dim;
-  int perp = fourth_dim < 1 ? 1 : fourth_dim;
-  int loc = first_dim < 1 ? 1 : first_dim;
-  int hor = third_dim < 1 ? 1 : third_dim;
-  int four = fifth_dim < 1 ? 1 : fifth_dim;
-  total_nodes = hor * loc * perp * ver * four;
-  std::vector<int> dims{ loc,ver,hor,perp,four };
-  this->physical_dims=dims;
-
-  int element;
-  for (element = 0; element < first_queues; element++) {
-    bool enabled = !boost_mode;
-    if (id < loc) {
-      enabled = true;
-    }
-    std::list<BaseStream*> temp;
-    active_Streams[element] = temp;
-    std::list<int> pri;
-    stream_priorities[element] = pri;
-    if (!enabled) {
-      total_disabled++;
-    }
+  this->physical_dims=physical_dims;
+  int element=0;
+  all_queues=0;
+  total_nodes=1;
+  for(int current_dim=0;current_dim<queues_per_dim.size();current_dim++){
+      all_queues += queues_per_dim[current_dim];
+      bool enabled = !boost_mode;
+      if(id%total_nodes==0 && id<total_nodes*physical_dims[current_dim]){
+          enabled=true;
+      }
+      if (!enabled) {
+          total_disabled+=queues_per_dim[current_dim];
+      }
+      if(physical_dims[current_dim]>=1){
+        total_nodes*=physical_dims[current_dim];
+      }
+      for(int j=0;j<queues_per_dim[current_dim];j++){
+          std::list<BaseStream*> temp;
+          active_Streams[element] = temp;
+          std::list<int> pri;
+          stream_priorities[element] = pri;
+          element++;
+      }
   }
-  int pastElement = element;
-  for (; element < second_queues + pastElement; element++) {
-    bool enabled = !boost_mode;
-    if (id % (loc * hor) == 0 && id < (loc * hor * ver)) {
-      enabled = true;
-    }
-    std::list<BaseStream*> temp;
-    active_Streams[element] = temp;
-    std::list<int> pri;
-    stream_priorities[element] = pri;
-    if (!enabled) {
-      total_disabled++;
-    }
-  }
-  pastElement = element;
-  for (; element < third_queues + pastElement; element++) {
-    bool enabled = !boost_mode;
-    if (id % loc == 0 && id < (loc * hor)) {
-      enabled = true;
-    }
-    std::list<BaseStream*> temp;
-    active_Streams[element] = temp;
-    std::list<int> pri;
-    stream_priorities[element] = pri;
-    if (!enabled) {
-      total_disabled++;
-    }
-  }
-  pastElement = element;
-  for (; element < fourth_queues + pastElement; element++) {
-    bool enabled = !boost_mode;
-    if (id % (loc * hor * ver) == 0 && id < (loc * hor * ver * perp)) {
-      enabled = true;
-    }
-    std::list<BaseStream*> temp;
-    active_Streams[element] = temp;
-    std::list<int> pri;
-    stream_priorities[element] = pri;
-    if (!enabled) {
-      total_disabled++;
-    }
-  }
-  pastElement = element;
-  for (; element < fifth_queues + pastElement; element++) {
-    bool enabled = !boost_mode;
-    if (id % (loc * hor * ver * perp) == 0) {
-      enabled = true;
-    }
-    std::list<BaseStream*> temp;
-    active_Streams[element] = temp;
-    std::list<int> pri;
-    stream_priorities[element] = pri;
-    if (!enabled) {
-      total_disabled++;
-    }
-  }
-  std::vector<int> levels{
-      first_queues,
-      second_queues,
-      third_queues,
-      fourth_queues,
-      fifth_queues};
-  int total_levels = 0;
-  for (auto l : levels) {
-    total_levels += l;
-  }
-  if (total_levels == total_disabled) {
+  if (all_queues == total_disabled) {
     NI->enabled = false;
     std::cout << "Node " << id << " has been totally disabled" << std::endl;
   }
-  int concurrent_streams = (int) std::ceil(((double)active_chunks_per_dimension)/first_queues);
-  int active_first_phase = concurrent_streams*first_queues;
+  int concurrent_streams = (int) std::ceil(((double)active_chunks_per_dimension)/queues_per_dim[0]);
+  int active_first_phase = concurrent_streams*queues_per_dim[0];
   if(id==0){
       std::cout<<"The final active chunks per dimension after allocating to queues is: "<<active_first_phase<<std::endl;
   }
   int max_running=100000000;
   scheduler_unit = new SchedulerUnit(
-      this, levels, max_running, active_first_phase, concurrent_streams);
-  vLevels = new QueueLevels(levels, 0,NI->get_backend_type());
+      this, queues_per_dim, max_running, active_first_phase, concurrent_streams);
+  vLevels = new QueueLevels(queues_per_dim, 0,NI->get_backend_type());
 
-  logical_topologies["AllReduce"]=new GeneralComplexTopology(id,dims,all_reduce_implementation_per_dimension);
-  logical_topologies["ReduceScatter"]=new GeneralComplexTopology(id,dims,reduce_scatter_implementation_per_dimension);
-  logical_topologies["AllGather"]=new GeneralComplexTopology(id,dims,all_gather_implementation_per_dimension);
-  logical_topologies["AllToAll"]=new GeneralComplexTopology(id,dims,all_to_all_implementation_per_dimension);
+  logical_topologies["AllReduce"]=new GeneralComplexTopology(id,physical_dims,all_reduce_implementation_per_dimension);
+  logical_topologies["ReduceScatter"]=new GeneralComplexTopology(id,physical_dims,reduce_scatter_implementation_per_dimension);
+  logical_topologies["AllGather"]=new GeneralComplexTopology(id,physical_dims,all_gather_implementation_per_dimension);
+  logical_topologies["AllToAll"]=new GeneralComplexTopology(id,physical_dims,all_to_all_implementation_per_dimension);
 
   stream_counter = 0;
-  all_queues = first_queues + second_queues + third_queues +
-      fourth_queues + fifth_queues;
-  enabled = true;
 
   if (id == 0) {
     std::atexit(exiting);
     std::cout << "total nodes: " << total_nodes << std::endl;
-    std::cout << "local dim: " << first_dim
+    /*std::cout << "local dim: " << first_dim
               << " , vertical dim: " << second_dim
               << " , horizontal dim: " << third_dim
               << " , perpendicular dim: " << fourth_dim
-              << " , fourth dim: " << fifth_dim << std::endl;
+              << " , fourth dim: " << fifth_dim << std::endl;*/
   }
   // NI->sim_init(); CHANGED BY PALLAVI**
   NI->sim_init(MEM);
@@ -316,8 +237,7 @@ Sys::Sys(
       path,
       this->seprate_log);
   if (workload->initialized == false) {
-    Tick cycle = 1;
-    try_register_event(this, EventType::NotInitialized, nullptr, cycle);
+    sys_panic("Unable to initialize the workload layer because it can not open the workload file");
     return;
   }
   this->initialized = true;

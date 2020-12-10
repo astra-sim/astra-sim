@@ -109,7 +109,7 @@ class Sys : public Callable {
   std::map<std::string, LogicalTopology*> logical_topologies;
   std::map<Tick, std::list<std::tuple<Callable*, EventType, CallData*>>>
       event_queue;
-  static int total_nodes;
+  int total_nodes;
   static Tick offset;
   static std::vector<Sys*> all_generators;
   static uint8_t* dummy_data;
@@ -171,16 +171,8 @@ class Sys : public Callable {
       AstraMemoryAPI* MEM,
       int id,
       int num_passes,
-      int first_dim,
-      int second_dim,
-      int third_dim,
-      int fourth_dim,
-      int fifth_dim,
-      int first_queues,
-      int second_queues,
-      int third_queues,
-      int fourth_queues,
-      int fifth_queues,
+      std::vector<int> physical_dims,
+      std::vector<int> queues_per_dim,
       std::string my_sys,
       std::string my_workload,
       float comm_scale,
