@@ -1,4 +1,6 @@
 #!/bin/bash
+set -e
+
 workload=medium_DLRM
 
 # Absolue path to this script
