@@ -1116,11 +1116,13 @@ void Workload::iterate_hybrid_parallel_DLRM() {
 }
 int Workload::get_layer_numbers(std::string workload_input) {
   std::ifstream inFile;
-  inFile.open("workload_inputs/" + workload_input + ".txt");
+  inFile.open("workload_inputs/" + workload_input);
   if (!inFile) {
-    std::cout << "Unable to open file: " << workload_input << std::endl;
+    std::cerr << "Unable to open file: " << workload_input << std::endl;
+    std::cerr << "This error is fatal. Please check your path and filename." << std::endl;
+    exit(1);
   } else {
-    std::cout << "success in openning file" << std::endl;
+    std::cout << "Success in opening workload file" << std::endl;
   }
   std::string dummyLine;
   std::getline(inFile, dummyLine);
@@ -1218,13 +1220,16 @@ bool Workload::initialize_workload(std::string name) {
   std::ifstream inFile;
   inFile.open(name);
   if (!inFile) {
-    std::cout << "Unable to open file: " << name << std::endl;
-    std::cout << "######### Exiting because unable to open the workload input "
+    std::cerr << "Unable to open file: " << name << std::endl;
+    std::cerr << "######### Exiting because unable to open the workload input "
                  "file #########"
               << std::endl;
-    return false;
+    std::cerr << "This error is fatal. Please check your path and filename." << std::endl;
+    exit(1);
   } else {
-    std::cout << "success in openning file" << std::endl;
+    if(generator->id==0){
+      std::cout << "Success in opening workload file" << std::endl;
+    }
   }
   std::string type;
   int lines;
@@ -1282,11 +1287,11 @@ bool Workload::initialize_workload(std::string name) {
           << DLRM_LAST_BOTTOM_LAYER << std::endl;
     }
   } else if (parallelismPolicy == ParallelismPolicy::None) {
-    std::cout << "######### Exiting because unable to decode the workload "
+    std::cerr << "######### Exiting because unable to decode the workload "
                  "parallelization strategy #########"
               << std::endl;
     inFile.close();
-    return false;
+    exit(1);
   }
   std::map<std::string, std::vector<bool>> general_involved_dimensions=
       decode_involved_dimensions(parallelismPolicy,model_parallel_npu_group);

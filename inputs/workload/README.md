@@ -12,7 +12,7 @@ The format of workload input is as follows (NOTE that all communication sizes ar
 	(int: **forward pass compute time**) (ALLREDUCE/ALLGATHER/ALLTOALL: **forward pass communication type**) (int: **forward pass communication size**)
 	(int: **input grad compute time**) (ALLREDUCE/ALLGATHER/ALLTOALL: **input grad communication type**) (int: **input grad communication size**)
 	(int: **weight grad compute time**) (ALLREDUCE/ALLGATHER/ALLTOALL: **weight grad communication type**) (int: **weight grad communication size**) 
-	(**delay per 1KB weight/input/output update after the collective is finished**)} 
+	(**delay per entire weight/input/output update after the collective is finished**)} 
 
 *NOTE: all parameters inside the bracket are defined in a single line for each layer of the DNN network.* 
 	 

@@ -5,21 +5,21 @@ LICENSE file in the root directory of this source tree.
 
 #include "QueueLevels.hh"
 namespace AstraSim {
-QueueLevels::QueueLevels(int total_levels, int queues_per_level, int offset) {
+QueueLevels::QueueLevels(int total_levels, int queues_per_level, int offset,AstraNetworkAPI::BackendType backend) {
   int start = offset;
   // levels.resize(total_levels);
   for (int i = 0; i < total_levels; i++) {
-    QueueLevelHandler tmp(i, start, start + queues_per_level - 1);
+    QueueLevelHandler tmp(i, start, start + queues_per_level - 1,backend);
     levels.push_back(tmp);
     start += queues_per_level;
   }
 }
-QueueLevels::QueueLevels(std::vector<int> lv, int offset) {
+QueueLevels::QueueLevels(std::vector<int> lv, int offset,AstraNetworkAPI::BackendType backend) {
   int start = offset;
   // levels.resize(total_levels);
   int l = 0;
   for (auto& i : lv) {
-    QueueLevelHandler tmp(l++, start, start + i - 1);
+    QueueLevelHandler tmp(l++, start, start + i - 1,backend);
     levels.push_back(tmp);
     start += i;
   }
