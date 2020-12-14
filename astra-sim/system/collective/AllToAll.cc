@@ -36,6 +36,9 @@ AllToAll::AllToAll(
   else{
       parallel_reduce=(int)std::min(window,nodes_in_ring - 1);
   }
+  if(type==ComType::All_to_All){
+      this->stream_count=nodes_in_ring-1;
+  }
 }
 int AllToAll::get_non_zero_latency_packets() {
   if (((RingTopology*)logicalTopology)->dimension !=

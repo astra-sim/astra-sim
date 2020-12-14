@@ -55,12 +55,10 @@ Ring::Ring(
           this->parallel_reduce = nodes_in_ring - 1;
           break;
         case InjectionPolicy::Normal:
-          this->parallel_reduce =
-              1 >= nodes_in_ring - 1 ? nodes_in_ring - 1 : 1;
+          this->parallel_reduce = 1;
           break;
         default:
-          this->parallel_reduce =
-              1 >= nodes_in_ring - 1 ? nodes_in_ring - 1 : 1;
+          this->parallel_reduce = 1 ;
           break;
       }
       break;
