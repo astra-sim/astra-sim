@@ -22,7 +22,7 @@ enum class ComType {
   All_Reduce_All_to_All
 };
 enum class CollectiveOptimization { Baseline, LocalBWAware };
-enum class CollectiveImplementation {
+enum class CollectiveImplementationType {
     Ring,
     OneRing,
     Direct,
@@ -89,6 +89,26 @@ enum class EventType {
   StreamsFinishedIncrease,
   CommProcessingFinished,
   NotInitialized
+};
+class CloneInterface
+{
+    public:
+        virtual CloneInterface* clone() const = 0;
+};
+class CollectiveImplementation: public CloneInterface{
+    public:
+        CollectiveImplementationType type;
+        CollectiveImplementation(CollectiveImplementationType type){this->type=type;};
+        virtual CloneInterface* clone() const { return new CollectiveImplementation(*this); }
+};
+class DirectCollectiveImplementation: public CollectiveImplementation{
+    public:
+        int direct_collective_window;
+        CloneInterface* clone() const { return new DirectCollectiveImplementation(*this); };
+        DirectCollectiveImplementation(CollectiveImplementationType type, int direct_collective_window):
+        CollectiveImplementation(type){
+            this->direct_collective_window=direct_collective_window;
+        }
 };
 } // namespace AstraSim
 #endif

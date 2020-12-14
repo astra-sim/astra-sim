@@ -66,6 +66,18 @@ Sys::~Sys() {
     delete lt.second;
   }
   logical_topologies.clear();
+  for(auto ci : all_reduce_implementation_per_dimension){
+      delete ci;
+  }
+  for(auto ci : reduce_scatter_implementation_per_dimension){
+      delete ci;
+  }
+  for(auto ci : all_gather_implementation_per_dimension){
+      delete ci;
+  }
+  for(auto ci : all_to_all_implementation_per_dimension){
+    delete ci;
+  }
   if (scheduler_unit != nullptr)
     delete scheduler_unit;
   if (vLevels != nullptr)
@@ -268,7 +280,7 @@ int Sys::break_dimension(int model_parallel_npu_group) {
         }
       }
 
-      std::vector<CollectiveImplementation>::iterator it=
+      std::vector<CollectiveImplementation*>::iterator it=
           all_reduce_implementation_per_dimension.begin();
       if(all_reduce_implementation_per_dimension.size()>dimension_to_break){
         std::advance(it,dimension_to_break);
@@ -276,7 +288,7 @@ int Sys::break_dimension(int model_parallel_npu_group) {
       else{
         std::advance(it,all_reduce_implementation_per_dimension.size());
       }
-      CollectiveImplementation replicate=*it;
+      CollectiveImplementation *replicate=(CollectiveImplementation *)(*it)->clone();
       all_reduce_implementation_per_dimension.insert(it,replicate);
 
       it=
@@ -287,7 +299,7 @@ int Sys::break_dimension(int model_parallel_npu_group) {
       else{
         std::advance(it,reduce_scatter_implementation_per_dimension.size());
       }
-      replicate=*it;
+      replicate=(CollectiveImplementation *)(*it)->clone();
       reduce_scatter_implementation_per_dimension.insert(it,replicate);
 
       it=
@@ -298,7 +310,7 @@ int Sys::break_dimension(int model_parallel_npu_group) {
       else{
         std::advance(it,all_gather_implementation_per_dimension.size());
       }
-      replicate=*it;
+      replicate=(CollectiveImplementation *)(*it)->clone();
       all_gather_implementation_per_dimension.insert(it,replicate);
 
       it=
@@ -309,7 +321,7 @@ int Sys::break_dimension(int model_parallel_npu_group) {
       else{
         std::advance(it,all_to_all_implementation_per_dimension.size());
       }
-      replicate=*it;
+      replicate=(CollectiveImplementation *)(*it)->clone();
       all_to_all_implementation_per_dimension.insert(it,replicate);
       /*std::cout<<"logical dims: "<<std::endl;
       for(auto a:logical_dims){
@@ -552,34 +564,42 @@ std::string Sys::trim(
 
   return str.substr(strBegin, strRange);
 }
-std::vector<CollectiveImplementation> Sys::generate_collective_implementation_from_input(std::string input) {
+std::vector<CollectiveImplementation*> Sys::generate_collective_implementation_from_input(std::string input) {
   std::vector<std::string> inputs_per_dimension=split_string(input,"_");
-  std::vector<CollectiveImplementation> result;
+  std::vector<CollectiveImplementation*> result;
   for(std::string dimension_input:inputs_per_dimension){
     if(dimension_input=="ring"){
-      result.push_back(CollectiveImplementation::Ring);
+      result.push_back(new CollectiveImplementation(CollectiveImplementationType::Ring));
     }
     else if(dimension_input=="oneRing"){
-      result.push_back(CollectiveImplementation::OneRing);
+      result.push_back(new CollectiveImplementation(CollectiveImplementationType::OneRing));
     }
     else if(dimension_input=="doubleBinaryTree"){
-      result.push_back(CollectiveImplementation::DoubleBinaryTree);
+      result.push_back(new CollectiveImplementation(CollectiveImplementationType::DoubleBinaryTree));
     }
-    else if(dimension_input=="direct"){
-      result.push_back(CollectiveImplementation::Direct);
+    else if(dimension_input.rfind("direct", 0) == 0){
+      int window=-1;
+      if(dimension_input!="direct"){
+          window=std::stoi(dimension_input.substr(6,10));
+      }
+      result.push_back(new DirectCollectiveImplementation(CollectiveImplementationType::Direct,window));
     }
-    else if(dimension_input=="oneDirect"){
-      result.push_back(CollectiveImplementation::OneDirect);
+    else if(dimension_input.rfind("oneDirect", 0) == 0){
+       int window=-1;
+       if(dimension_input!="oneDirect"){
+           window=std::stoi(dimension_input.substr(9,10));
+       }
+      result.push_back(new DirectCollectiveImplementation(CollectiveImplementationType::OneDirect, window));
     }
     else if(dimension_input=="halvingDoubling"){
-        result.push_back(CollectiveImplementation::HalvingDoubling);
+        result.push_back(new CollectiveImplementation(CollectiveImplementationType::HalvingDoubling));
     }
     else if(dimension_input=="oneHalvingDoubling"){
-        result.push_back(CollectiveImplementation::OneHalvingDoubling);
+        result.push_back(new CollectiveImplementation(CollectiveImplementationType::OneHalvingDoubling));
     }
     else{
-      result.clear();
-      return result;
+      sys_panic("Cannot interpret collective implementations. Please check the collective implementations in the sys"
+                "input file");
     }
   }
   return result;
@@ -617,8 +637,6 @@ bool Sys::parse_var(std::string var, std::string value) {
   } else if (var == "local-reduction-delay:") {
     std::stringstream mval(value);
     mval >> local_reduction_delay;
-  } else if (var == "packet-routing:") {
-    inp_packet_routing = value;
   } else if (var == "active-chunks-per-dimension:") {
     std::stringstream mval(value);
     mval >>  active_chunks_per_dimension;
@@ -653,27 +671,14 @@ bool Sys::parse_var(std::string var, std::string value) {
       this->seprate_log = true;
     }
   } else if (var != "") {
-    if (id == 0) {
-      std::cerr << "######### Exiting because " << var
-                << " is an unknown variable. Check your system input file. #########"
-                << std::endl;
-    }
+    std::cerr << "######### Exiting because " << var
+    << " is an unknown variable. Check your system input file. #########"
+    << std::endl;
     exit(1);
   }
   return true;
 }
 bool Sys::post_process_inputs() {
-  if (inp_packet_routing == "hardware") {
-    alltoall_routing = PacketRouting::Hardware;
-  } else if (inp_packet_routing == "software") {
-    alltoall_routing = PacketRouting ::Software;
-  }
-  else{
-    std::cout<<"unknown value for"<<" packet routing "
-              <<" in hardware in sys input file"<<std::endl;
-    return false;
-  }
-
   all_reduce_implementation_per_dimension=
       generate_collective_implementation_from_input(inp_all_reduce_implementation);
   if(all_reduce_implementation_per_dimension.size()==0){
@@ -919,12 +924,11 @@ CollectivePhase Sys::generate_collective_phase(
     uint64_t data_size,
     int queue_id,
     RingTopology::Direction direction,
-    PacketRouting routing,
     InjectionPolicy injection_policy,
-    CollectiveImplementation collective_implementation,
+    CollectiveImplementation *collective_implementation,
    bool boost_mode) {
-    if(collective_implementation==CollectiveImplementation::Ring
-      || collective_implementation==CollectiveImplementation::OneRing){
+    if(collective_implementation->type==CollectiveImplementationType::Ring
+      || collective_implementation->type==CollectiveImplementationType::OneRing){
         CollectivePhase vn(
                 this,
                 queue_id,
@@ -935,31 +939,29 @@ CollectivePhase Sys::generate_collective_phase(
                     (RingTopology*) topology,
                     data_size,
                     direction,
-                    routing,
                     injection_policy,
                     boost_mode)
         );
         return vn;
     }
-    else if(collective_implementation==CollectiveImplementation::Direct
-           || collective_implementation==CollectiveImplementation::OneDirect){
+    else if(collective_implementation->type==CollectiveImplementationType::Direct
+           || collective_implementation->type==CollectiveImplementationType::OneDirect){
         CollectivePhase vn(
                 this,
                 queue_id,
                 new AllToAll(
                         collective_type,
-                        direct_collective_window,
+                        ((DirectCollectiveImplementation*)collective_implementation)->direct_collective_window,
                         id,
                         layer_num,
                         (RingTopology*) topology,
                         data_size,
                         direction,
-                        PacketRouting::Hardware,
                         InjectionPolicy::Normal,
                         boost_mode));
         return vn;
     }
-    else if(collective_implementation==CollectiveImplementation::DoubleBinaryTree){
+    else if(collective_implementation->type==CollectiveImplementationType::DoubleBinaryTree){
         CollectivePhase vn(
                 this,
                 queue_id,
@@ -971,8 +973,8 @@ CollectivePhase Sys::generate_collective_phase(
                         boost_mode));
         return vn;
     }
-    else if(collective_implementation==CollectiveImplementation::HalvingDoubling
-       || collective_implementation==CollectiveImplementation::OneHalvingDoubling){
+    else if(collective_implementation->type==CollectiveImplementationType::HalvingDoubling
+       || collective_implementation->type==CollectiveImplementationType::OneHalvingDoubling){
         CollectivePhase vn(
                 this,
                 queue_id,
@@ -996,7 +998,7 @@ CollectivePhase Sys::generate_collective_phase(
 DataSet * Sys::generate_collective(uint64_t size,
                                    int layer_num,
                                    LogicalTopology *topology,
-                                   std::vector<CollectiveImplementation> implementation_per_dimension,
+                                   std::vector<CollectiveImplementation*> implementation_per_dimension,
                                    std::vector<bool> dimensions_involved,
                                    ComType collective_type,
                                    SchedulingPolicy pref_scheduling) {
@@ -1021,7 +1023,6 @@ DataSet * Sys::generate_collective(uint64_t size,
                                                         tmp,
                                                         queue.first,
                                                         queue.second,
-                                                        alltoall_routing,
                                                         InjectionPolicy::Normal,
                                                         implementation_per_dimension[dim],
                                                         boost_mode);
@@ -1045,7 +1046,6 @@ DataSet * Sys::generate_collective(uint64_t size,
                                                         tmp,
                                                         queue.first,
                                                         queue.second,
-                                                        alltoall_routing,
                                                         InjectionPolicy::Normal,
                                                         implementation_per_dimension[dim],
                                                         boost_mode);
@@ -1065,7 +1065,6 @@ DataSet * Sys::generate_collective(uint64_t size,
             tmp,
             queue.first,
             queue.second,
-            alltoall_routing,
             InjectionPolicy::Normal,
             implementation_per_dimension[dim],
             boost_mode);
@@ -1087,7 +1086,6 @@ DataSet * Sys::generate_collective(uint64_t size,
                                                         tmp,
                                                         queue.first,
                                                         queue.second,
-                                                        alltoall_routing,
                                                         InjectionPolicy::Normal,
                                                         implementation_per_dimension[dim],
                                                         boost_mode);

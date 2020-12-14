@@ -24,20 +24,20 @@ GeneralComplexTopology::~GeneralComplexTopology(){
 }
 GeneralComplexTopology::GeneralComplexTopology(int id,
                                                std::vector<int> dimension_size,
-                                               std::vector <CollectiveImplementation> collective_implementation) {
+                                               std::vector <CollectiveImplementation*> collective_implementation) {
     int offset=1;
     int last_dim=collective_implementation.size()-1;
     for(int dim=0;dim<collective_implementation.size();dim++){
-        if(collective_implementation[dim]==CollectiveImplementation::Ring ||
-        collective_implementation[dim]==CollectiveImplementation::Direct ||
-        collective_implementation[dim]==CollectiveImplementation::HalvingDoubling){
+        if(collective_implementation[dim]->type==CollectiveImplementationType::Ring ||
+        collective_implementation[dim]->type==CollectiveImplementationType::Direct ||
+        collective_implementation[dim]->type==CollectiveImplementationType::HalvingDoubling){
             RingTopology *ring=new RingTopology(RingTopology::Dimension::NA,id,dimension_size[dim],
                                                 (id%(offset*dimension_size[dim]))/offset,offset);
             dimension_topology.push_back(ring);
         }
-        else if(collective_implementation[dim]==CollectiveImplementation::OneRing ||
-           collective_implementation[dim]==CollectiveImplementation::OneDirect ||
-           collective_implementation[dim]==CollectiveImplementation::OneHalvingDoubling){
+        else if(collective_implementation[dim]->type==CollectiveImplementationType::OneRing ||
+           collective_implementation[dim]->type==CollectiveImplementationType::OneDirect ||
+           collective_implementation[dim]->type==CollectiveImplementationType::OneHalvingDoubling){
           int total_npus=1;
           for(int d:dimension_size){
             total_npus*=d;
@@ -50,7 +50,7 @@ GeneralComplexTopology::GeneralComplexTopology(int id,
           dimension_topology.push_back(ring);
           return;
         }
-        else if(collective_implementation[dim]==CollectiveImplementation::DoubleBinaryTree){
+        else if(collective_implementation[dim]->type==CollectiveImplementationType::DoubleBinaryTree){
             if(dim==last_dim){
                 DoubleBinaryTreeTopology *DBT=new DoubleBinaryTreeTopology(id,dimension_size[dim],id%offset,offset);
                 dimension_topology.push_back(DBT);

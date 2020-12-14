@@ -64,10 +64,10 @@ class Sys : public Callable {
   int finished_workloads;
   int id;
 
-  std::vector<CollectiveImplementation> all_reduce_implementation_per_dimension;
-  std::vector<CollectiveImplementation> reduce_scatter_implementation_per_dimension;
-  std::vector<CollectiveImplementation> all_gather_implementation_per_dimension;
-  std::vector<CollectiveImplementation> all_to_all_implementation_per_dimension;
+  std::vector<CollectiveImplementation*> all_reduce_implementation_per_dimension;
+  std::vector<CollectiveImplementation*> reduce_scatter_implementation_per_dimension;
+  std::vector<CollectiveImplementation*> all_gather_implementation_per_dimension;
+  std::vector<CollectiveImplementation*> all_to_all_implementation_per_dimension;
   CollectiveOptimization collectiveOptimization;
 
   std::chrono::high_resolution_clock::time_point start_sim_time;
@@ -85,7 +85,6 @@ class Sys : public Callable {
   int communication_delay;
 
   int preferred_dataset_splits;
-  PacketRouting alltoall_routing;
   float compute_scale;
   float comm_scale;
   float injection_scale;
@@ -120,7 +119,6 @@ class Sys : public Callable {
   bool enabled;
 
   std::string inp_scheduling_policy;
-  std::string inp_packet_routing;
   std::string inp_all_reduce_implementation;
   std::string inp_reduce_scatter_implementation;
   std::string inp_all_gather_implementation;
@@ -190,7 +188,7 @@ class Sys : public Callable {
   std::string trim(const std::string& str, const std::string& whitespace);
   bool parse_var(std::string var, std::string value);
   bool post_process_inputs();
-  std::vector<CollectiveImplementation> generate_collective_implementation_from_input(std::string input);
+  std::vector<CollectiveImplementation*> generate_collective_implementation_from_input(std::string input);
   int break_dimension(int model_parallel_npu_group);
   int front_end_sim_send(
       Tick delay,
@@ -279,7 +277,7 @@ class Sys : public Callable {
   DataSet * generate_collective(uint64_t size,
                                 int layer_num,
                                 LogicalTopology *topology,
-                                std::vector<CollectiveImplementation> implementation_per_dimension,
+                                std::vector<CollectiveImplementation*> implementation_per_dimension,
                                 std::vector<bool> dimensions_involved,
                                 ComType collective_type,
                                 SchedulingPolicy pref_scheduling);
@@ -290,9 +288,8 @@ class Sys : public Callable {
           uint64_t data_size,
           int queue_id,
           RingTopology::Direction direction,
-          PacketRouting routing,
           InjectionPolicy injection_policy,
-          CollectiveImplementation collective_implementation,
+          CollectiveImplementation *collective_implementation,
           bool boost_mode);
   void insert_stream(std::list<BaseStream*>* queue, BaseStream* baseStream);
   void proceed_to_next_vnet_baseline(StreamBaseline* stream);

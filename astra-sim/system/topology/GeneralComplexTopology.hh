@@ -28,7 +28,7 @@ class GeneralComplexTopology : public ComplexLogicalTopology {
     GeneralComplexTopology(
       int id,
       std::vector<int> dimension_size,
-      std::vector<CollectiveImplementation> collective_implementation);
+      std::vector<CollectiveImplementation*> collective_implementation);
   ~GeneralComplexTopology();
   int get_num_of_nodes_in_dimension(int dimension) override;
   BasicLogicalTopology * get_basic_topology_at_dimension(int dimension,
