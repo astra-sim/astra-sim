@@ -34,12 +34,12 @@ class AllToAll : public Ring {
       RingTopology* allToAllTopology,
       int data_size,
       RingTopology::Direction direction,
-      PacketRouting routing,
       InjectionPolicy injection_policy,
       bool boost_mode);
   void run(EventType event, CallData* data);
   void process_max_count();
   int get_non_zero_latency_packets();
+  int middle_point;
 };
 } // namespace AstraSim
 #endif

@@ -13,7 +13,6 @@ AllToAll::AllToAll(
     RingTopology* allToAllTopology,
     int data_size,
     RingTopology::Direction direction,
-    PacketRouting routing,
     InjectionPolicy injection_policy,
     bool boost_mode)
     : Ring(
@@ -23,26 +22,19 @@ AllToAll::AllToAll(
           allToAllTopology,
           data_size,
           direction,
-          routing,
           injection_policy,
           boost_mode) {
   this->name = Name::AllToAll;
   this->enabled = true;
+  this->middle_point=nodes_in_ring - 1;
   if (boost_mode) {
     this->enabled = allToAllTopology->is_enabled();
   }
-  switch (routing) {
-    case PacketRouting::Hardware:
-      if(window==-1){
-        parallel_reduce = nodes_in_ring - 1;
-      }
-      else{
-        parallel_reduce=(int)std::min(window,nodes_in_ring - 1);
-      }
-      break;
-    case PacketRouting::Software:
-      parallel_reduce = 1;
-      break;
+  if(window==-1){
+      parallel_reduce = nodes_in_ring - 1;
+  }
+  else{
+      parallel_reduce=(int)std::min(window,nodes_in_ring - 1);
   }
 }
 int AllToAll::get_non_zero_latency_packets() {
@@ -64,7 +56,7 @@ void AllToAll::process_max_count() {
     }
     release_packets();
     remained_packets_per_max_count = 1;
-    if (routing == PacketRouting::Hardware) {
+
       current_receiver = ((RingTopology*)logicalTopology)
                              ->get_receiver_node(current_receiver, direction);
       if (current_receiver == id) {
@@ -77,14 +69,14 @@ void AllToAll::process_max_count() {
         current_sender = ((RingTopology*)logicalTopology)
                              ->get_sender_node(current_sender, direction);
       }
-    }
+
   }
 }
 void AllToAll::run(EventType event, CallData* data) {
   if (event == EventType::General) {
     free_packets += 1;
-    if (comType == ComType::All_Reduce && stream_count <= parallel_reduce) {
-      if (total_packets_received < parallel_reduce) {
+    if (comType == ComType::All_Reduce && stream_count <= middle_point) {
+      if (total_packets_received < middle_point) {
         return;
       }
       for (int i = 0; i < parallel_reduce; i++) {
@@ -97,6 +89,9 @@ void AllToAll::run(EventType event, CallData* data) {
     }
   } else if (event == EventType::PacketReceived) {
     total_packets_received++;
+    /*if(id==0){
+        std::cout<<"message received at time: "<<stream->owner->boostedTick()<<std::endl;
+    }*/
     insert_packet(nullptr);
   } else if (event == EventType::StreamInit) {
     for (int i = 0; i < parallel_reduce; i++) {

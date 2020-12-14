@@ -14,7 +14,6 @@ Ring::Ring(
     RingTopology* ring_topology,
     int data_size,
     RingTopology::Direction direction,
-    PacketRouting routing,
     InjectionPolicy injection_policy,
     bool boost_mode)
     : Algorithm(layer_num) {
@@ -28,7 +27,6 @@ Ring::Ring(
   this->current_receiver = ring_topology->get_receiver_node(id, direction);
   this->current_sender = ring_topology->get_sender_node(id, direction);
   this->parallel_reduce = 1;
-  this->routing = routing;
   this->injection_policy = injection_policy;
   this->total_packets_sent = 0;
   this->total_packets_received = 0;
@@ -51,14 +49,7 @@ Ring::Ring(
       stream_count = 2 * (nodes_in_ring - 1);
       break;
     case ComType::All_to_All:
-      switch (routing) {
-        case PacketRouting::Software:
-          this->stream_count = ((nodes_in_ring - 1) * nodes_in_ring) / 2;
-          break;
-        case PacketRouting::Hardware:
-          this->stream_count = nodes_in_ring - 1;
-          break;
-      }
+      this->stream_count = ((nodes_in_ring - 1) * nodes_in_ring) / 2;
       switch (injection_policy) {
         case InjectionPolicy::Aggressive:
           this->parallel_reduce = nodes_in_ring - 1;
@@ -188,22 +179,6 @@ void Ring::process_max_count() {
     }
     release_packets();
     remained_packets_per_max_count = 1;
-    if (true) {
-      if (comType == ComType::All_to_All &&
-          routing == PacketRouting::Hardware) { // Should be fixed to include
-                                                // edge cases
-        current_receiver = ((RingTopology*)logicalTopology)
-                               ->get_receiver_node(current_receiver, direction);
-        current_sender = ((RingTopology*)logicalTopology)
-                             ->get_sender_node(current_sender, direction);
-        if (id == 0 && stream_count > 0) {
-          // std::cout<<"the all_to_all stream: "<<stream_num<<" with fi
-          // streams: "<<steps_finished
-          //<<" has changed its dest from: "<<prev_dest<<"  to:
-          //"<<my_current_phase.dest_node<<std::endl;
-        }
-      }
-    }
   }
 }
 void Ring::reduce() {

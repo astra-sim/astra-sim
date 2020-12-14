@@ -42,7 +42,6 @@ class Ring : public Algorithm {
   int remained_packets_per_max_count;
   int remained_packets_per_message;
   int parallel_reduce;
-  PacketRouting routing;
   InjectionPolicy injection_policy;
   std::list<MyPacket> packets;
   bool toggle;
@@ -62,7 +61,6 @@ class Ring : public Algorithm {
       RingTopology* ring_topology,
       int data_size,
       RingTopology::Direction direction,
-      PacketRouting routing,
       InjectionPolicy injection_policy,
       bool boost_mode);
   virtual void run(EventType event, CallData* data);
