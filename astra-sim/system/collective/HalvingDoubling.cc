@@ -31,7 +31,7 @@ namespace AstraSim {
         this->zero_latency_packets = 0;
         this->non_zero_latency_packets = 0;
         this->toggle = false;
-        this->name = Name::Ring;
+        this->name = Name::HalvingDoubling;
         this->enabled = true;
         if (boost_mode) {
             this->enabled = ring_topology->is_enabled();
@@ -92,7 +92,7 @@ namespace AstraSim {
         if(rank_offset==0){
             return RingTopology::Direction::Clockwise;
         }
-        int reminder=(id/rank_offset)%2;
+        int reminder=(((RingTopology *)logicalTopology)->index_in_ring /rank_offset)%2;
         if(reminder==0){
             return RingTopology::Direction::Clockwise;
         }
@@ -190,6 +190,9 @@ namespace AstraSim {
                 current_receiver = ((RingTopology*)logicalTopology)
                         ->get_receiver_node(current_receiver, direction);
                 current_sender = current_receiver;
+                /*if (id == 0) {
+                    std::cout << "halvingDoubling: Current partner rank with rank0 is: "<<current_sender<<" Current stream count: "<<stream_count<<std::endl;
+                }*/
             }
         }
     }
