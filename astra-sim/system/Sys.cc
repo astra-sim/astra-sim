@@ -779,17 +779,25 @@ Sys::SchedulerUnit::SchedulerUnit(
     int ready_list_threshold,
     int queue_threshold) {
   this->sys = sys;
-  int base = 0;
+
   this->ready_list_threshold = ready_list_threshold;
   this->queue_threshold = queue_threshold;
   this->max_running_streams = max_running_streams;
+
+  this->latency_per_dimension.resize(queues.size(),0);
+  this->total_chunks_per_dimension.resize(queues.size(),0);
+
+  int base = 0;
+  int dimension=0;
   for (auto q : queues) {
     for (int i = 0; i < q; i++) {
       this->running_streams[base] = 0;
       std::list<BaseStream*>::iterator it;
       this->stream_pointer[base] = it;
+      this->queue_id_to_dimension[base]=dimension;
       base++;
     }
+    dimension++;
   }
 }
 void Sys::SchedulerUnit::notify_stream_added_into_ready_list() {
@@ -822,12 +830,14 @@ void Sys::SchedulerUnit::notify_stream_added(int vnet) {
     std::advance(stream_pointer[vnet], 1);
   }
 }
-void Sys::SchedulerUnit::notify_stream_removed(int vnet) {
+void Sys::SchedulerUnit::notify_stream_removed(int vnet,Tick running_time) {
   // std::cout<<"hello1, vnet: "<<vnet<<std::endl;
-  /*if((sys->active_Streams[vnet]).size()==0){
-      this->stream_pointer[vnet]=sys->active_Streams[vnet].end();
-  }*/
   running_streams[vnet]--;
+
+  int dimension=this->queue_id_to_dimension[vnet];
+  latency_per_dimension[dimension]+=running_time;
+  total_chunks_per_dimension[dimension]++;
+
   if (this->sys->first_phase_streams < ready_list_threshold &&
       this->sys->total_running_streams < max_running_streams) {
     int max = ready_list_threshold - sys->first_phase_streams;
@@ -846,6 +856,14 @@ void Sys::SchedulerUnit::notify_stream_removed(int vnet) {
     running_streams[vnet]++;
     std::advance(stream_pointer[vnet], 1);
   }
+}
+std::vector<double> Sys::SchedulerUnit::get_average_latency_per_dimension() {
+    std::vector<double> result;
+    result.resize(latency_per_dimension.size(),-1);
+    for(int i=0;i<result.size();i++){
+        result[i]=latency_per_dimension[i]/total_chunks_per_dimension[i];
+    }
+    return result;
 }
 int Sys::nextPowerOf2(int n) {
   int count = 0;
@@ -1203,7 +1221,7 @@ void Sys::proceed_to_next_vnet_baseline(StreamBaseline* stream) {
   if (stream->phases_to_go.size() == 0) {
     total_running_streams--;
     if (previous_vnet >= 0) {
-      scheduler_unit->notify_stream_removed(previous_vnet);
+      scheduler_unit->notify_stream_removed(previous_vnet,Sys::boostedTick()-stream->last_init);
       // std::cout<<"notified stream removed for first phase streams:
       // "<<first_phase_streams<<std::endl;
     }
@@ -1246,10 +1264,10 @@ void Sys::proceed_to_next_vnet_baseline(StreamBaseline* stream) {
     stream->declare_ready();
     stream->suspend_ready();
   }
-  scheduler_unit->notify_stream_added(stream->current_queue_id);
   if (previous_vnet >= 0) {
-    scheduler_unit->notify_stream_removed(previous_vnet);
+    scheduler_unit->notify_stream_removed(previous_vnet,Sys::boostedTick()-stream->last_init);
   }
+  scheduler_unit->notify_stream_added(stream->current_queue_id);
 }
 void Sys::exiting() {}
 void Sys::insert_stream(std::list<BaseStream*>* queue, BaseStream* baseStream) {

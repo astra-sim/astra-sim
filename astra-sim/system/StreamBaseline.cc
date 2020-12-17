@@ -25,6 +25,7 @@ void StreamBaseline::init() {
   // std::cout<<"stream number: "<<stream_num<<"is inited in node:
   // "<<owner->id<<std::endl;
   initialized = true;
+  last_init=Sys::boostedTick();
   if (!my_current_phase.enabled) {
     return;
   }

@@ -47,15 +47,21 @@ class Sys : public Callable {
     int max_running_streams;
     std::map<int, int> running_streams;
     std::map<int, std::list<BaseStream*>::iterator> stream_pointer;
+
+    std::vector<Tick> latency_per_dimension;
+    std::vector<double> total_chunks_per_dimension;
+    std::map<int,int> queue_id_to_dimension;
+
     SchedulerUnit(
         Sys* sys,
         std::vector<int> queues,
         int max_running_streams,
         int ready_list_threshold,
         int queue_threshold);
-    void notify_stream_removed(int vnet);
+    void notify_stream_removed(int vnet,Tick running_time);
     void notify_stream_added(int vnet);
     void notify_stream_added_into_ready_list();
+    std::vector<double> get_average_latency_per_dimension();
   };
   SchedulerUnit* scheduler_unit;
   ~Sys();
