@@ -124,6 +124,10 @@ void Workload::report() {
   }
   astraSimDataAPI.total_compute = total_compute;
   astraSimDataAPI.total_exposed_comm = total_exposed;
+  astraSimDataAPI.avg_chunk_latency_per_logical_dimension=generator->scheduler_unit->get_average_latency_per_dimension();
+  for(auto &latency:astraSimDataAPI.avg_chunk_latency_per_logical_dimension){
+      latency/=FREQ;
+  }
   std::cout << "*************************" << std::endl;
   std::cout << "all passes finished at time: " << Sys::boostedTick()
             << ", id of first layer: " << layers[0]->id << std::endl;

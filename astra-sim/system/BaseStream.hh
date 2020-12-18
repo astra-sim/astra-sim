@@ -42,6 +42,7 @@ class BaseStream : public Callable, public StreamStat {
   CollectivePhase my_current_phase;
   ComType current_com_type;
   Tick creation_time;
+  Tick last_init;
   Sys* owner;
   DataSet* dataset;
   int steps_finished;
