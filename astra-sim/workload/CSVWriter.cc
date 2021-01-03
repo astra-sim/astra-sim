@@ -11,10 +11,16 @@ CSVWriter::CSVWriter(std::string path, std::string name) {
 }
 void CSVWriter::initialize_csv(int rows, int cols) {
   std::cout << "CSV path and filename: " << path + name << std::endl;
+  int trial=10000;
   do {
     myFile.open(path + name, std::fstream::out);
-  } while (!myFile.is_open());
-
+    trial--;
+  } while (!myFile.is_open() && trial>0);
+  if(trial==0){
+      std::cerr << "Unable to create file: " << path << std::endl;
+      std::cerr << "This error is fatal. Please make sure the CSV write path exists." << std::endl;
+      exit(1);
+  }
   do {
     myFile.close();
   } while (myFile.is_open());
