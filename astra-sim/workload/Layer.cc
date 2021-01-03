@@ -530,12 +530,11 @@ LayerData Layer::report(
         i=1;
         std::vector<double> avg_chunk_latency_per_dimension = generator->scheduler_unit->get_average_latency_per_dimension();
         for (auto &cl : avg_chunk_latency_per_dimension) {
-            std::cout << "id: " << id
-                      << " ,Average chunk latency for logical dimension  " << i
+            std::cout << " ,Average chunk latency for logical dimension  " << i++
                       << " of topology: " << cl << std::endl;
             if (stat_row == 0) {
                 detailed->write_cell(
-                        0, count, "avg chunk delay dimension " + std::to_string(i++));
+                        0, count, "avg chunk delay dimension " + std::to_string(i-1));
             }
             detailed->write_cell(
                     1 + stat_row,
