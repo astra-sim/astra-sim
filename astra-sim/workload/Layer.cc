@@ -99,6 +99,7 @@ void Layer::call(EventType event, CallData* mdata) {
       std::cout << "***** info: weight gradient collective for layer: " << id
                 << " is finished************" << std::endl;
     }
+    weight_grad_datasets[data]->finish_tick+=weight_grad_update_time;
     total_weight_grad_comm += weight_grad_datasets[data]->finish_tick -
         weight_grad_datasets[data]->creation_tick;
     if (weight_grad_datasets.size() == 1 &&
@@ -138,6 +139,7 @@ void Layer::call(EventType event, CallData* mdata) {
       std::cout << "***** info: input gradient collective for layer: " << id
                 << " is finished************" << std::endl;
     }
+    input_grad_datasets[data]->finish_tick+=input_grad_update_time;
     total_input_grad_comm += input_grad_datasets[data]->finish_tick -
         input_grad_datasets[data]->creation_tick;
     if (input_grad_datasets.size() == 1 &&
@@ -177,6 +179,7 @@ void Layer::call(EventType event, CallData* mdata) {
       std::cout << "***** info: fwd pass comm collective for layer: " << id
                 << " is finished************" << std::endl;
     }
+    fwd_pass_datasets[data]->finish_tick+=fwd_update_time;
     total_fwd_comm += fwd_pass_datasets[data]->finish_tick -
         fwd_pass_datasets[data]->creation_tick;
     if (fwd_pass_datasets.size() == 1 &&

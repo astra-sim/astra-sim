@@ -82,6 +82,12 @@ class Sys : public Callable {
   std::list<Callable*> registered_for_finished_stream_event;
 
   std::vector<int> physical_dims;
+  std::vector<int> queues_per_dim;
+  int max_running;
+  int concurrent_streams;
+  int active_first_phase;
+
+
   int priority_counter;
   bool boost_mode;
   bool rendezvous_enabled;

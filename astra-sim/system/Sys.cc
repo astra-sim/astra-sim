@@ -173,6 +173,7 @@ Sys::Sys(
 
   int total_disabled = 0;
   this->physical_dims=physical_dims;
+  this->queues_per_dim=queues_per_dim;
   int element=0;
   all_queues=0;
   total_nodes=1;
@@ -200,12 +201,12 @@ Sys::Sys(
     NI->enabled = false;
     std::cout << "Node " << id << " has been totally disabled" << std::endl;
   }
-  int concurrent_streams = (int) std::ceil(((double)active_chunks_per_dimension)/queues_per_dim[0]);
-  int active_first_phase = concurrent_streams*queues_per_dim[0];
+  concurrent_streams = (int) std::ceil(((double)active_chunks_per_dimension)/queues_per_dim[0]);
+  active_first_phase = concurrent_streams*queues_per_dim[0];
   if(id==0){
       std::cout<<"The final active chunks per dimension after allocating to queues is: "<<active_first_phase<<std::endl;
   }
-  int max_running=100000000;
+  max_running=100000000;
   scheduler_unit = new SchedulerUnit(
       this, queues_per_dim, max_running, active_first_phase, concurrent_streams);
   vLevels = new QueueLevels(queues_per_dim, 0,NI->get_backend_type());
@@ -266,6 +267,15 @@ int Sys::break_dimension(int model_parallel_npu_group) {
         delete lt.second;
       }
       logical_topologies.clear();
+
+      delete scheduler_unit;
+      delete vLevels;
+      std::vector<int>::iterator levelIterator=queues_per_dim.begin();
+      std::advance(levelIterator,dimension_to_break);
+      queues_per_dim.insert(levelIterator,queues_per_dim[dimension_to_break]);
+      scheduler_unit=new SchedulerUnit(this,queues_per_dim,max_running,active_first_phase,concurrent_streams);
+      vLevels=new QueueLevels(queues_per_dim,0,NI->get_backend_type());
+
       int first_subdim=model_parallel_npu_group/all_npus;
       int second_subdim=physical_dims[dimension_to_break]/first_subdim;
       std::vector<int> logical_dims;
@@ -779,7 +789,6 @@ Sys::SchedulerUnit::SchedulerUnit(
     int ready_list_threshold,
     int queue_threshold) {
   this->sys = sys;
-
   this->ready_list_threshold = ready_list_threshold;
   this->queue_threshold = queue_threshold;
   this->max_running_streams = max_running_streams;
