@@ -37,6 +37,7 @@ enum class CollectiveImplementationType {
 };
 enum class CollectiveBarrier { Blocking, Non_Blocking };
 enum class SchedulingPolicy { LIFO, FIFO, HIGHEST, None };
+enum class IntraDimensionScheduling { FIFO, RG };
 enum class InjectionPolicy {
   Infinite,
   Aggressive,

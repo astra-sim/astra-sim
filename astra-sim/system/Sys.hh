@@ -141,10 +141,10 @@ class Sys : public Callable {
   float inp_g;
   float inp_G;
   int inp_model_shared_bus;
-  int direct_collective_window;
   int active_chunks_per_dimension;
   bool model_shared_bus;
   int inp_boost_mode;
+    IntraDimensionScheduling intra_dimension_scheduling;
 
   void register_for_finished_stream(Callable* callable);
   void increase_finished_streams(int amount);

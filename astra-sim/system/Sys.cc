@@ -124,6 +124,7 @@ Sys::Sys(
   memBus = nullptr;
   workload = nullptr;
   this->initialized = false;
+  this->intra_dimension_scheduling=IntraDimensionScheduling::FIFO;
 
   start_sim_time = std::chrono::high_resolution_clock::now();
   this->NI = NI;
@@ -144,7 +145,6 @@ Sys::Sys(
   this->processing_latency = 10;
   this->communication_delay = 10;
   this->local_reduction_delay = 1;
-  this->direct_collective_window=-1;
   this->active_chunks_per_dimension=1;
   this->seprate_log = seprate_log;
   this->rendezvous_enabled = rendezvous_enabled;
@@ -634,9 +634,6 @@ bool Sys::parse_var(std::string var, std::string value) {
   } else if (var == "all-to-all-implementation:") {
     std::stringstream mval(value);
     mval >> inp_all_to_all_implementation;
-  } else if (var == "direct-collective-window:") {
-      std::stringstream mval(value);
-      mval >> direct_collective_window;
   } else if (var == "collective-optimization:") {
     std::stringstream mval(value);
     mval >> inp_collective_optimization;
@@ -671,6 +668,19 @@ bool Sys::parse_var(std::string var, std::string value) {
   } else if (var == "boost-mode:") {
     std::stringstream mval(value);
     mval >> inp_boost_mode;
+  } else if (var == "intra-dimension-scheduling:"){
+      std::stringstream mval(value);
+      std::string tmp;
+      mval >> tmp;
+      if(tmp=="FIFO"){
+          intra_dimension_scheduling=IntraDimensionScheduling::FIFO;
+      }
+      else if(tmp=="RG"){
+          intra_dimension_scheduling=IntraDimensionScheduling::RG;
+      }
+      else{
+          sys_panic("unknown value for intra-dimension-scheduling  in sys input file");
+      }
   } else if (var == "seprate-log:") {
     std::stringstream mval(value);
     int int_to_bool;
@@ -692,39 +702,29 @@ bool Sys::post_process_inputs() {
   all_reduce_implementation_per_dimension=
       generate_collective_implementation_from_input(inp_all_reduce_implementation);
   if(all_reduce_implementation_per_dimension.size()==0){
-    std::cout<<"unknown value for"<<" all-reduce-implementation "
-             <<" in sys input file"<<std::endl;
-    return false;
+    sys_panic("unknown value for all-reduce-implementation in sys input file");
   }
   reduce_scatter_implementation_per_dimension=
       generate_collective_implementation_from_input(inp_reduce_scatter_implementation);
   if(reduce_scatter_implementation_per_dimension.size()==0){
-    std::cout<<"unknown value for"<<" all-reduce-implementation "
-             <<" in sys input file"<<std::endl;
-    return false;
+    sys_panic("unknown value for reduce-scatter-implementation in sys input file");
   }
   all_gather_implementation_per_dimension=
       generate_collective_implementation_from_input(inp_all_gather_implementation);
   if(all_gather_implementation_per_dimension.size()==0){
-    std::cout<<"unknown value for"<<" all-reduce-implementation "
-             <<" in sys input file"<<std::endl;
-    return false;
+    sys_panic("unknown value for all-gather-implementation in sys input file");
   }
   all_to_all_implementation_per_dimension=
       generate_collective_implementation_from_input(inp_all_to_all_implementation);
   if(all_to_all_implementation_per_dimension.size()==0){
-    std::cout<<"unknown value for"<<" all-reduce-implementation "
-             <<" in sys input file"<<std::endl;
-    return false;
+    sys_panic("unknown value for all-to-all-implementation in sys input file");
   }
   if (inp_collective_optimization == "baseline") {
     collectiveOptimization = CollectiveOptimization::Baseline;
   } else if (inp_collective_optimization == "localBWAware") {
     collectiveOptimization = CollectiveOptimization::LocalBWAware;
   } else{
-    std::cout<<"unknown value for"<<" collective optimization "
-             <<" in sys input file"<<std::endl;
-    return false;
+    sys_panic("unknown value for collective optimization in sys input file");
   }
 
   if (inp_boost_mode == 1) {
@@ -737,9 +737,7 @@ bool Sys::post_process_inputs() {
   } else if (inp_scheduling_policy == "FIFO") {
     this->scheduling_policy = SchedulingPolicy::FIFO;
   } else{
-    std::cout<<"unknown value for"<<" scheduling policy "
-             <<" in hardware in sys input file"<<std::endl;
-    return false;
+    sys_panic("unknown value for scheduling policy in sys input file");
   }
   if (inp_model_shared_bus == 1) {
     model_shared_bus = true;
@@ -1281,16 +1279,44 @@ void Sys::proceed_to_next_vnet_baseline(StreamBaseline* stream) {
 void Sys::exiting() {}
 void Sys::insert_stream(std::list<BaseStream*>* queue, BaseStream* baseStream) {
   std::list<BaseStream*>::iterator it = queue->begin();
-  while (it != queue->end()) {
-    if ((*it)->initialized == true) {
-      std::advance(it, 1);
-      continue;
-    } else if ((*it)->priority > baseStream->priority) {
-      std::advance(it, 1);
-      continue;
-    } else {
-      break;
-    }
+  if(intra_dimension_scheduling==IntraDimensionScheduling::FIFO){
+      while (it != queue->end()) {
+        if ((*it)->initialized == true) {
+          std::advance(it, 1);
+          continue;
+        } else if ((*it)->priority >= baseStream->priority) {
+          std::advance(it, 1);
+          continue;
+        } else {
+          break;
+        }
+      }
+  }
+  else{
+      ComType one_to_last=ComType::None;
+      ComType last=ComType::None;
+      while (it != queue->end()) {
+          one_to_last=last;
+          last=(*it)->current_com_type;
+          if ((*it)->initialized == true) {
+              std::advance(it, 1);
+              if(it != queue->end() && (*it)->initialized==false){
+                  one_to_last=last;
+                  last=(*it)->current_com_type;
+                  std::advance(it, 1);
+              }
+              continue;
+          } else if ((*it)->priority > baseStream->priority) {
+              std::advance(it, 1);
+              continue;
+          } else if ((last==ComType::Reduce_Scatter && one_to_last==ComType::All_Gatehr) ||
+                  (last==ComType::All_Gatehr && one_to_last==ComType::Reduce_Scatter)) {
+              std::advance(it, 1);
+              continue;
+          } else {
+              break;
+          }
+      }
   }
   queue->insert(it, baseStream);
 }
