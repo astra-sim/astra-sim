@@ -120,9 +120,7 @@ void CSVWriter::finalize_csv(std::list<std::list <std::pair<uint64_t, double>>> 
             break;
         }
     }
-    do{
-        myFile.close();
-    } while (myFile.is_open());
+    myFile.close();
 }
 void CSVWriter::write_cell(int row, int column, std::string data) {
   std::string str = "";
