@@ -24,8 +24,8 @@ namespace AstraSim {
 class Usage{
 public:
     int level;
-    Tick start;
-    Tick end;
+    uint64_t start;
+    uint64_t end;
     Usage(int level, uint64_t start, uint64_t end);
 };
 } // namespace AstraSim
