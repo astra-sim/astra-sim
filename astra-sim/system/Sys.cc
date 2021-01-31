@@ -823,7 +823,7 @@ void Sys::SchedulerUnit::notify_stream_added_into_ready_list() {
   return;
 }
 void Sys::SchedulerUnit::notify_stream_added(int vnet) {
-  if(++total_active_chunks_per_dimension[queue_id_to_dimension[vnet]]==1){
+  if(sys->id==0 && ++total_active_chunks_per_dimension[queue_id_to_dimension[vnet]]==1){
       usage[queue_id_to_dimension[vnet]].increase_usage();
   }
   stream_pointer[vnet] = sys->active_Streams[vnet].begin();
@@ -837,7 +837,7 @@ void Sys::SchedulerUnit::notify_stream_added(int vnet) {
 }
 void Sys::SchedulerUnit::notify_stream_removed(int vnet,Tick running_time) {
   // std::cout<<"hello1, vnet: "<<vnet<<std::endl;
-    if(--total_active_chunks_per_dimension[queue_id_to_dimension[vnet]]==0){
+    if(sys->id==0 && --total_active_chunks_per_dimension[queue_id_to_dimension[vnet]]==0){
         usage[queue_id_to_dimension[vnet]].decrease_usage();
     }
   running_streams[vnet]--;
@@ -1280,7 +1280,9 @@ void Sys::proceed_to_next_vnet_baseline(StreamBaseline* stream) {
 void Sys::exiting() {}
 void Sys::insert_stream(std::list<BaseStream*>* queue, BaseStream* baseStream) {
   std::list<BaseStream*>::iterator it = queue->begin();
-  if(intra_dimension_scheduling==IntraDimensionScheduling::FIFO){
+  if(intra_dimension_scheduling==IntraDimensionScheduling::FIFO ||
+          baseStream->current_queue_id<0 ||
+          baseStream->current_com_type==ComType::All_to_All){
       while (it != queue->end()) {
         if ((*it)->initialized == true) {
           std::advance(it, 1);
@@ -1307,7 +1309,7 @@ void Sys::insert_stream(std::list<BaseStream*>* queue, BaseStream* baseStream) {
                   std::advance(it, 1);
               }
               continue;
-          } else if ((*it)->priority >= baseStream->priority) {
+          } else if ((*it)->priority > baseStream->priority) {
               std::advance(it, 1);
               continue;
           } else if ((baseStream->current_com_type==ComType::Reduce_Scatter ||
