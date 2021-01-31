@@ -25,6 +25,7 @@ LICENSE file in the root directory of this source tree.
 #include "Common.hh"
 #include "astra-sim/system/topology/RingTopology.hh"
 #include "astra-sim/workload/Workload.hh"
+#include "UsageTracker.hh"
 
 namespace AstraSim {
 class MemBus;
@@ -50,7 +51,9 @@ class Sys : public Callable {
 
     std::vector<Tick> latency_per_dimension;
     std::vector<double> total_chunks_per_dimension;
+    std::vector<uint64_t> total_active_chunks_per_dimension;
     std::map<int,int> queue_id_to_dimension;
+    std::vector<UsageTracker> usage;
 
     SchedulerUnit(
         Sys* sys,

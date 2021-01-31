@@ -793,6 +793,7 @@ Sys::SchedulerUnit::SchedulerUnit(
 
   this->latency_per_dimension.resize(queues.size(),0);
   this->total_chunks_per_dimension.resize(queues.size(),0);
+  this->total_active_chunks_per_dimension.resize(queues.size(),0);
 
   int base = 0;
   int dimension=0;
@@ -805,6 +806,8 @@ Sys::SchedulerUnit::SchedulerUnit(
       base++;
     }
     dimension++;
+    UsageTracker u(2);
+    usage.push_back(u);
   }
 }
 void Sys::SchedulerUnit::notify_stream_added_into_ready_list() {
@@ -820,14 +823,9 @@ void Sys::SchedulerUnit::notify_stream_added_into_ready_list() {
   return;
 }
 void Sys::SchedulerUnit::notify_stream_added(int vnet) {
-  /*if(running_streams[vnet]==0 || (sys->active_Streams[vnet]).size()==1){
-      this->stream_pointer[vnet]=sys->active_Streams[vnet].begin();
+  if(++total_active_chunks_per_dimension[queue_id_to_dimension[vnet]]==1){
+      usage[queue_id_to_dimension[vnet]].increase_usage();
   }
-  else if(this->stream_pointer[vnet]==sys->active_Streams[vnet].end()){
-      this->stream_pointer[vnet]=sys->active_Streams[vnet].end();
-      --(this->stream_pointer[vnet]);
-  }*/
-  // temp
   stream_pointer[vnet] = sys->active_Streams[vnet].begin();
   std::advance(stream_pointer[vnet], running_streams[vnet]);
   while (stream_pointer[vnet] != sys->active_Streams[vnet].end() &&
@@ -839,6 +837,9 @@ void Sys::SchedulerUnit::notify_stream_added(int vnet) {
 }
 void Sys::SchedulerUnit::notify_stream_removed(int vnet,Tick running_time) {
   // std::cout<<"hello1, vnet: "<<vnet<<std::endl;
+    if(--total_active_chunks_per_dimension[queue_id_to_dimension[vnet]]==0){
+        usage[queue_id_to_dimension[vnet]].decrease_usage();
+    }
   running_streams[vnet]--;
 
   int dimension=this->queue_id_to_dimension[vnet];

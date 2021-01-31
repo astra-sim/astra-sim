@@ -12,6 +12,7 @@ LICENSE file in the root directory of this source tree.
 #include <stdio.h>
 namespace AstraSim {
 #define CLOCK_PERIOD 1
+#define FREQ (1000.0 / CLOCK_PERIOD)
 typedef unsigned long long Tick;
 enum class ComType {
   None,

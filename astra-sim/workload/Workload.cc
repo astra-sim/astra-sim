@@ -15,6 +15,9 @@ Workload::~Workload() {
   if (detailed != NULL) {
     delete detailed;
   }
+  if (dimension_utilization != NULL) {
+      delete dimension_utilization;
+  }
   for (int i = 0; i < SIZE; i++) {
     delete layers[i];
   }
@@ -61,6 +64,7 @@ Workload::Workload(
               << " ,stat row: " << stat_row << std::endl;
     detailed = new CSVWriter(path, "detailed.csv");
     end_to_end = new CSVWriter(path, "EndToEnd.csv");
+    dimension_utilization = new CSVWriter(path, run_name+"_dimension_utilization.csv");
     if (stat_row == 0) {
       initialize_stat_files();
     }
@@ -132,8 +136,12 @@ void Workload::report() {
   std::cout << "all passes finished at time: " << Sys::boostedTick()
             << ", id of first layer: " << layers[0]->id << std::endl;
   generator->NI->pass_front_end_report(astraSimDataAPI);
-  // std::cout << "Total cycles waiting for communication to be finished: " <<
-  // waiting_for_comm << std::endl;
+
+  std::list<std::list <std::pair<uint64_t, double>>> dims;
+  for(int i=0;i<generator->scheduler_unit->usage.size();i++){
+      dims.push_back(generator->scheduler_unit->usage[i].report_percentage(10000));
+  }
+  dimension_utilization->finalize_csv(dims);
 }
 void Workload::check_for_sim_end() {
   if (pass_counter == TOTAL_PASS) {
