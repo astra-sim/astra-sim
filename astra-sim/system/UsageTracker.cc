@@ -49,7 +49,6 @@ void UsageTracker::report(CSVWriter *writer, int offset) {
 std::list <std::pair<uint64_t, double>>  UsageTracker::report_percentage(uint64_t cycles) {
     decrease_usage();
     increase_usage();
-    std::cout<<"Total Usage queue size: "<<this->usage.size()<<std::endl;
     uint64_t total_activity_possible=(this->levels-1)*cycles;
     std::list<Usage>::iterator usage_pointer=this->usage.begin();
     uint64_t current_activity=0;
