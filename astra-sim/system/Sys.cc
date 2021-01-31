@@ -1307,11 +1307,13 @@ void Sys::insert_stream(std::list<BaseStream*>* queue, BaseStream* baseStream) {
                   std::advance(it, 1);
               }
               continue;
-          } else if ((*it)->priority > baseStream->priority) {
+          } else if ((*it)->priority >= baseStream->priority) {
               std::advance(it, 1);
               continue;
-          } else if ((last==ComType::Reduce_Scatter && one_to_last==ComType::All_Gatehr) ||
-                  (last==ComType::All_Gatehr && one_to_last==ComType::Reduce_Scatter)) {
+          } else if ((baseStream->current_com_type==ComType::Reduce_Scatter ||
+          baseStream->current_com_type==ComType::All_Gatehr)
+          && ((last==ComType::Reduce_Scatter && one_to_last==ComType::All_Gatehr) ||
+                  (last==ComType::All_Gatehr && one_to_last==ComType::Reduce_Scatter))) {
               std::advance(it, 1);
               continue;
           } else {

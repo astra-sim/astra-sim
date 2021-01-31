@@ -6,7 +6,7 @@ LICENSE file in the root directory of this source tree.
 
 #include "Usage.hh"
 namespace AstraSim {
-Usage::Usage(int level, Tick start, Tick end) {
+Usage::Usage(int level, uint64_t start, uint64_t end) {
     this->level=level;
     this->start=start;
     this->end=end;
