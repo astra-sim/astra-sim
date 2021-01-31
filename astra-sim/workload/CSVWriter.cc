@@ -75,7 +75,9 @@ void CSVWriter::finalize_csv(std::list<std::list <std::pair<uint64_t, double>>> 
     } while (!myFile.is_open());
 
     if (!myFile) {
-        std::cout << "Unable to open file: " << path << std::endl;
+        std::cerr << "Unable to open file: " << path+name << std::endl;
+        std::cerr << "This error is fatal. Please make sure the CSV write path exists." << std::endl;
+        exit(1);
     } else {
         std::cout << "success in openning file" << std::endl;
     }
