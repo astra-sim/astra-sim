@@ -32,7 +32,9 @@ class CSVWriter {
   std::string path;
   std::string name;
   ~CSVWriter() {
-    myFile.close();
+    if(myFile.is_open()){
+        myFile.close();
+    }
   }
   inline bool exists_test(const std::string& name) {
     struct stat buffer;
