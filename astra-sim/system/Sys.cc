@@ -1282,7 +1282,8 @@ void Sys::insert_stream(std::list<BaseStream*>* queue, BaseStream* baseStream) {
   std::list<BaseStream*>::iterator it = queue->begin();
   if(intra_dimension_scheduling==IntraDimensionScheduling::FIFO ||
           baseStream->current_queue_id<0 ||
-          baseStream->current_com_type==ComType::All_to_All){
+          baseStream->current_com_type==ComType::All_to_All ||
+          baseStream->current_com_type==ComType::All_Reduce){
       while (it != queue->end()) {
         if ((*it)->initialized == true) {
           std::advance(it, 1);
@@ -1312,10 +1313,8 @@ void Sys::insert_stream(std::list<BaseStream*>* queue, BaseStream* baseStream) {
           } else if ((*it)->priority > baseStream->priority) {
               std::advance(it, 1);
               continue;
-          } else if ((baseStream->current_com_type==ComType::Reduce_Scatter ||
-          baseStream->current_com_type==ComType::All_Gatehr)
-          && ((last==ComType::Reduce_Scatter && one_to_last==ComType::All_Gatehr) ||
-                  (last==ComType::All_Gatehr && one_to_last==ComType::Reduce_Scatter))) {
+          } else if ((last==ComType::Reduce_Scatter && one_to_last==ComType::All_Gatehr) ||
+                  (last==ComType::All_Gatehr && one_to_last==ComType::Reduce_Scatter)) {
               std::advance(it, 1);
               continue;
           } else {
