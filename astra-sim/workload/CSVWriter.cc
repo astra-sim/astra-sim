@@ -56,20 +56,28 @@ void CSVWriter::initialize_csv(int rows, int cols) {
 }
 void CSVWriter::finalize_csv(std::list<std::list <std::pair<uint64_t, double>>> dims) {
     std::cout<<"path to create csvs is: "<<path<<std::endl;
+    int trial=10000;
     do{
-        std::cout << "trying to open: " << path << std::endl;
         myFile.open(path+name, std::fstream::out);
-    }while (!myFile.is_open());
+        trial--;
+    }while (!myFile.is_open() && trial>0);
+    if(trial==0){
+        std::cerr << "Unable to create file: " << path+name << std::endl;
+        std::cerr << "This error is fatal. Please make sure the CSV write path exists." << std::endl;
+        exit(1);
+    }
     do{
         myFile.close();
     }while (myFile.is_open());
+    
     do{
-        std::cout << "trying to open: " << path << std::endl;
         myFile.open(path+name, std::fstream::out | std::fstream::in);
     } while (!myFile.is_open());
 
     if (!myFile) {
-        std::cout << "Unable to open file: " << path << std::endl;
+        std::cerr << "Unable to open file: " << path+name << std::endl;
+        std::cerr << "This error is fatal. Please make sure the CSV write path exists." << std::endl;
+        exit(1);
     } else {
         std::cout << "success in openning file" << std::endl;
     }

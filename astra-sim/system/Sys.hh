@@ -147,7 +147,9 @@ class Sys : public Callable {
   int active_chunks_per_dimension;
   bool model_shared_bus;
   int inp_boost_mode;
-    IntraDimensionScheduling intra_dimension_scheduling;
+  IntraDimensionScheduling intra_dimension_scheduling;
+  InterDimensionScheduling inter_dimension_scheduling;
+  int round_robin_inter_dimension_scheduler;
 
   void register_for_finished_stream(Callable* callable);
   void increase_finished_streams(int amount);

@@ -49,6 +49,7 @@ Workload::Workload(
   this->waiting_for_comm = 0;
   end_to_end = NULL;
   detailed = NULL;
+  dimension_utilization=NULL;
   this->path = path;
   this->stat_row = stat_row;
   this->seprate_log = seprate_log;
