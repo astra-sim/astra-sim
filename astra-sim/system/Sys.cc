@@ -27,6 +27,8 @@ LICENSE file in the root directory of this source tree.
 #include "RendezvousSendData.hh"
 
 #include <cmath>
+#include <numeric>
+#include <algorithm>
 
 namespace AstraSim {
 Tick Sys::offset = 0;
@@ -125,6 +127,8 @@ Sys::Sys(
   workload = nullptr;
   this->initialized = false;
   this->intra_dimension_scheduling=IntraDimensionScheduling::FIFO;
+  this->inter_dimension_scheduling=InterDimensionScheduling::Ascending;
+  round_robin_inter_dimension_scheduler=0;
 
   start_sim_time = std::chrono::high_resolution_clock::now();
   this->NI = NI;
@@ -202,7 +206,7 @@ Sys::Sys(
     std::cout << "Node " << id << " has been totally disabled" << std::endl;
   }
   concurrent_streams = (int) std::ceil(((double)active_chunks_per_dimension)/queues_per_dim[0]);
-  active_first_phase = concurrent_streams*queues_per_dim[0];
+  active_first_phase = 100000000;
   if(id==0){
       std::cout<<"The final active chunks per dimension after allocating to queues is: "<<active_first_phase<<std::endl;
   }
@@ -681,6 +685,22 @@ bool Sys::parse_var(std::string var, std::string value) {
       else{
           sys_panic("unknown value for intra-dimension-scheduling  in sys input file");
       }
+  } else if (var == "inter-dimension-scheduling:"){
+    std::stringstream mval(value);
+    std::string tmp;
+    mval >> tmp;
+    if(tmp=="ascending"){
+      inter_dimension_scheduling=InterDimensionScheduling::Ascending;
+    }
+    else if(tmp=="greedy"){
+      inter_dimension_scheduling=InterDimensionScheduling::Greedy;
+    }
+    else if(tmp=="roundRobin"){
+      inter_dimension_scheduling=InterDimensionScheduling::RoundRobin;
+    }
+    else{
+      sys_panic("unknown value for inter-dimension-scheduling  in sys input file");
+    }
   } else if (var == "seprate-log:") {
     std::stringstream mval(value);
     int int_to_bool;
@@ -817,7 +837,6 @@ void Sys::SchedulerUnit::notify_stream_added_into_ready_list() {
     if (max > max_running_streams - this->sys->total_running_streams) {
       max = max_running_streams - this->sys->total_running_streams;
     }
-    // sys->ask_for_schedule(max);
     sys->schedule(max);
   }
   return;
@@ -825,6 +844,11 @@ void Sys::SchedulerUnit::notify_stream_added_into_ready_list() {
 void Sys::SchedulerUnit::notify_stream_added(int vnet) {
   if(sys->id==0 && ++total_active_chunks_per_dimension[queue_id_to_dimension[vnet]]==1){
       usage[queue_id_to_dimension[vnet]].increase_usage();
+  }
+  if(sys->id==0){
+    std::cout<<"dim"<<queue_id_to_dimension[vnet]<<" chunk added at: "<<Sys::boostedTick()
+             <<" ,current active: "<<
+        total_active_chunks_per_dimension[queue_id_to_dimension[vnet]]<<std::endl;
   }
   stream_pointer[vnet] = sys->active_Streams[vnet].begin();
   std::advance(stream_pointer[vnet], running_streams[vnet]);
@@ -839,6 +863,11 @@ void Sys::SchedulerUnit::notify_stream_removed(int vnet,Tick running_time) {
   // std::cout<<"hello1, vnet: "<<vnet<<std::endl;
     if(sys->id==0 && --total_active_chunks_per_dimension[queue_id_to_dimension[vnet]]==0){
         usage[queue_id_to_dimension[vnet]].decrease_usage();
+    }
+    if(sys->id==0){
+      std::cout<<"dim"<<queue_id_to_dimension[vnet]<<" chunk removed at: "<<Sys::boostedTick()
+               <<" ,current active: "<<
+               total_active_chunks_per_dimension[queue_id_to_dimension[vnet]]<<std::endl;
     }
   running_streams[vnet]--;
 
@@ -1034,23 +1063,38 @@ DataSet * Sys::generate_collective(uint64_t size,
   int tmp;
   DataSet* dataset = new DataSet(streams);
   int pri = get_priority(pref_scheduling);
+
   for (int i = 0; i < streams; i++) {
+
+    std::vector<int> dim_mapper(topology->get_num_of_dimensions()) ;
+    std::iota (std::begin(dim_mapper), std::end(dim_mapper), 0);
+
+    if(inter_dimension_scheduling==InterDimensionScheduling::RoundRobin){
+      std::rotate(dim_mapper.begin(),dim_mapper.begin()+round_robin_inter_dimension_scheduler,dim_mapper.end());
+      std::rotate(dimensions_involved.begin(),dimensions_involved.begin()+round_robin_inter_dimension_scheduler,
+                  dimensions_involved.begin()+topology->get_num_of_dimensions());
+      round_robin_inter_dimension_scheduler++;
+      if(round_robin_inter_dimension_scheduler==topology->get_num_of_dimensions()){
+        round_robin_inter_dimension_scheduler=0;
+      }
+    }
+
     tmp = chunk_size;
     std::list<CollectivePhase> vect;
     if(collective_type!=ComType::All_Reduce || collectiveOptimization==CollectiveOptimization::Baseline){
         for(int dim=0;dim<topology->get_num_of_dimensions();dim++){
-          if(topology->get_num_of_nodes_in_dimension(dim)==1 || !dimensions_involved[dim]){
+          if(topology->get_num_of_nodes_in_dimension(dim_mapper[dim])==1 || !dimensions_involved[dim_mapper[dim]]){
             continue;
           }
-          std::pair<int, RingTopology::Direction> queue = vLevels->get_next_queue_at_level(dim);
+          std::pair<int, RingTopology::Direction> queue = vLevels->get_next_queue_at_level(dim_mapper[dim]);
         CollectivePhase phase=generate_collective_phase(collective_type,
                                                         layer_num,
-                                                        topology->get_basic_topology_at_dimension(dim,collective_type),
+                                                        topology->get_basic_topology_at_dimension(dim_mapper[dim],collective_type),
                                                         tmp,
                                                         queue.first,
                                                         queue.second,
                                                         InjectionPolicy::Normal,
-                                                        implementation_per_dimension[dim],
+                                                        implementation_per_dimension[dim_mapper[dim]],
                                                         boost_mode);
         vect.push_back(phase);
         tmp = phase.final_data_size;
@@ -1059,61 +1103,55 @@ DataSet * Sys::generate_collective(uint64_t size,
     else{
       int dim=0;
       for(dim=0;dim<topology->get_num_of_dimensions()-1;dim++){
-        if(topology->get_num_of_nodes_in_dimension(dim)==1 || !dimensions_involved[dim]){
+        if(topology->get_num_of_nodes_in_dimension(dim_mapper[dim])==1 || !dimensions_involved[dim_mapper[dim]]){
           continue;
         }
-        /*if(id==0){
-          std::cout<<"1, dim: "<<dim<<" ,topology dimension: "<<topology->get_num_of_dimensions()<<std::endl;
-        }*/
-        std::pair<int, RingTopology::Direction> queue = vLevels->get_next_queue_at_level(dim);
+        std::pair<int, RingTopology::Direction> queue = vLevels->get_next_queue_at_level(dim_mapper[dim]);
         CollectivePhase phase=generate_collective_phase(ComType::Reduce_Scatter,
                                                         layer_num,
-                                                        topology->get_basic_topology_at_dimension(dim,ComType::Reduce_Scatter),
+                                                        topology->get_basic_topology_at_dimension(dim_mapper[dim],ComType::Reduce_Scatter),
                                                         tmp,
                                                         queue.first,
                                                         queue.second,
                                                         InjectionPolicy::Normal,
-                                                        implementation_per_dimension[dim],
+                                                        implementation_per_dimension[dim_mapper[dim]],
                                                         boost_mode);
         vect.push_back(phase);
         tmp = phase.final_data_size;
       }
-      if(dimensions_involved[dim] && topology->get_num_of_nodes_in_dimension(dim)>1) {
-        /*if(id==0){
-          std::cout<<"2 ,dim: "<<dim<<std::endl;
-        }*/
+      while(dim>0 && (dimensions_involved[dim_mapper[dim]]==false || topology->get_num_of_nodes_in_dimension(dim_mapper[dim])==1)){
+        dim--;
+      }
+      if(dimensions_involved[dim_mapper[dim]] && topology->get_num_of_nodes_in_dimension(dim_mapper[dim])>1) {
         std::pair<int, RingTopology::Direction> queue =
-            vLevels->get_next_queue_at_level(dim);
+            vLevels->get_next_queue_at_level(dim_mapper[dim]);
         CollectivePhase phase = generate_collective_phase(
             ComType::All_Reduce,
             layer_num,
-            topology->get_basic_topology_at_dimension(dim, ComType::All_Reduce),
+            topology->get_basic_topology_at_dimension(dim_mapper[dim], ComType::All_Reduce),
             tmp,
             queue.first,
             queue.second,
             InjectionPolicy::Normal,
-            implementation_per_dimension[dim],
+            implementation_per_dimension[dim_mapper[dim]],
             boost_mode);
         vect.push_back(phase);
         tmp = phase.final_data_size;
       }
       dim--;
       for(;dim>=0;dim--){
-        if(topology->get_num_of_nodes_in_dimension(dim)==1 || !dimensions_involved[dim]){
+        if(topology->get_num_of_nodes_in_dimension(dim_mapper[dim])==1 || !dimensions_involved[dim_mapper[dim]]){
           continue;
         }
-        /*if(id==0){
-          std::cout<<"3 , dim: "<<dim<<std::endl;
-        }*/
-        std::pair<int, RingTopology::Direction> queue = vLevels->get_next_queue_at_level(dim);
+        std::pair<int, RingTopology::Direction> queue = vLevels->get_next_queue_at_level(dim_mapper[dim]);
         CollectivePhase phase=generate_collective_phase(ComType::All_Gatehr,
                                                         layer_num,
-                                                        topology->get_basic_topology_at_dimension(dim,ComType::All_Gatehr),
+                                                        topology->get_basic_topology_at_dimension(dim_mapper[dim],ComType::All_Gatehr),
                                                         tmp,
                                                         queue.first,
                                                         queue.second,
                                                         InjectionPolicy::Normal,
-                                                        implementation_per_dimension[dim],
+                                                        implementation_per_dimension[dim_mapper[dim]],
                                                         boost_mode);
         vect.push_back(phase);
         tmp = phase.final_data_size;
@@ -1422,11 +1460,9 @@ void Sys::schedule(int num) {
     int top_vn = ready_list.front()->phases_to_go.front().queue_id;
     int total_waiting_streams = ready_list.size();
     int total_phases = ready_list.front()->phases_to_go.size();
-    if (method == "proposed") {
-    } // proceed_to_next_vnet((Stream *)ready_list.front());}
-    else {
-      proceed_to_next_vnet_baseline((StreamBaseline*)ready_list.front());
-    }
+
+    proceed_to_next_vnet_baseline((StreamBaseline*)ready_list.front());
+
     if (ready_list.front()->current_queue_id == -1) {
       Sys::sys_panic(
           "should not happen! " +
@@ -1443,7 +1479,6 @@ void Sys::schedule(int num) {
     counter--;
     first_phase_streams++;
     total_running_streams++;
-    scheduler_unit->notify_stream_added(top_vn);
   }
 }
 void Sys::handleEvent(void* arg) {
