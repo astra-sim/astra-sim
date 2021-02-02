@@ -85,6 +85,10 @@ class AstraNetworkAPI {
     return;
   };
 
+  // get BW in GB/s for each physical dimension
+  virtual double get_BW_at_dimension(int dim){
+    return -1;
+  };
   AstraNetworkAPI(int rank) {
     this->rank = rank;
     enabled = true;
