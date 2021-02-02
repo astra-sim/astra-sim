@@ -845,11 +845,11 @@ void Sys::SchedulerUnit::notify_stream_added(int vnet) {
   if(sys->id==0 && ++total_active_chunks_per_dimension[queue_id_to_dimension[vnet]]==1){
       usage[queue_id_to_dimension[vnet]].increase_usage();
   }
-  if(sys->id==0){
+  /*if(sys->id==0){
     std::cout<<"dim"<<queue_id_to_dimension[vnet]<<" chunk added at: "<<Sys::boostedTick()
              <<" ,current active: "<<
         total_active_chunks_per_dimension[queue_id_to_dimension[vnet]]<<std::endl;
-  }
+  }*/
   stream_pointer[vnet] = sys->active_Streams[vnet].begin();
   std::advance(stream_pointer[vnet], running_streams[vnet]);
   while (stream_pointer[vnet] != sys->active_Streams[vnet].end() &&
@@ -864,11 +864,11 @@ void Sys::SchedulerUnit::notify_stream_removed(int vnet,Tick running_time) {
     if(sys->id==0 && --total_active_chunks_per_dimension[queue_id_to_dimension[vnet]]==0){
         usage[queue_id_to_dimension[vnet]].decrease_usage();
     }
-    if(sys->id==0){
+    /*if(sys->id==0){
       std::cout<<"dim"<<queue_id_to_dimension[vnet]<<" chunk removed at: "<<Sys::boostedTick()
                <<" ,current active: "<<
                total_active_chunks_per_dimension[queue_id_to_dimension[vnet]]<<std::endl;
-    }
+    }*/
   running_streams[vnet]--;
 
   int dimension=this->queue_id_to_dimension[vnet];
@@ -1251,7 +1251,7 @@ void Sys::proceed_to_next_vnet_baseline(StreamBaseline* stream) {
                 << " ,pri: " << stream->priority << std::endl;
     }*/
   }
-  if (stream->current_queue_id >= 0) {
+  if (stream->current_queue_id >= 0 && stream->my_current_phase.enabled) {
     std::list<BaseStream*>& target =
         active_Streams.at(stream->my_current_phase.queue_id);
     for (std::list<BaseStream*>::iterator it = target.begin();
@@ -1268,8 +1268,6 @@ void Sys::proceed_to_next_vnet_baseline(StreamBaseline* stream) {
     total_running_streams--;
     if (previous_vnet >= 0) {
       scheduler_unit->notify_stream_removed(previous_vnet,Sys::boostedTick()-stream->last_init);
-      // std::cout<<"notified stream removed for first phase streams:
-      // "<<first_phase_streams<<std::endl;
     }
     delete stream;
     return;
@@ -1302,8 +1300,10 @@ void Sys::proceed_to_next_vnet_baseline(StreamBaseline* stream) {
               << " ,total running streams: " << total_running_streams
               << " ,pri: " << stream->priority << std::endl;
   }*/
-  insert_stream(&active_Streams[stream->current_queue_id], stream);
-  // active_Streams[stream->current_queue_id].push_back(stream);
+  if (stream->my_current_phase.enabled) {
+      insert_stream(&active_Streams[stream->current_queue_id], stream);
+  }
+
   stream->state = StreamState::Ready;
 
   if (!stream->my_current_phase.enabled) {
@@ -1314,6 +1314,10 @@ void Sys::proceed_to_next_vnet_baseline(StreamBaseline* stream) {
     scheduler_unit->notify_stream_removed(previous_vnet,Sys::boostedTick()-stream->last_init);
   }
   scheduler_unit->notify_stream_added(stream->current_queue_id);
+  /*if(!stream->my_current_phase.enabled){
+      std::cout<<"I am node: "<<id<<"and the current chunk: "<<stream->stream_num
+              <<"is disabled on me for phase "<<stream->steps_finished<<std::endl;
+  }*/
 }
 void Sys::exiting() {}
 void Sys::insert_stream(std::list<BaseStream*>* queue, BaseStream* baseStream) {
