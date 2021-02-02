@@ -138,11 +138,13 @@ void Workload::report() {
             << ", id of first layer: " << layers[0]->id << std::endl;
   generator->NI->pass_front_end_report(astraSimDataAPI);
 
-  std::list<std::list <std::pair<uint64_t, double>>> dims;
-  for(int i=0;i<generator->scheduler_unit->usage.size();i++){
-      dims.push_back(generator->scheduler_unit->usage[i].report_percentage(10000));
+  if(this->seprate_log) {
+      std::list < std::list < std::pair < uint64_t, double>>> dims;
+      for (int i = 0; i < generator->scheduler_unit->usage.size(); i++) {
+          dims.push_back(generator->scheduler_unit->usage[i].report_percentage(10000));
+      }
+      dimension_utilization->finalize_csv(dims);
   }
-  dimension_utilization->finalize_csv(dims);
 }
 void Workload::check_for_sim_end() {
   if (pass_counter == TOTAL_PASS) {
