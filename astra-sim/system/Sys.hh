@@ -38,6 +38,7 @@ class QueueLevels;
 class Workload;
 class LogicalTopology;
 class BasicLogicalTopology;
+class OfflineGreedy;
 class Sys : public Callable {
  public:
   class SchedulerUnit {
@@ -150,6 +151,7 @@ class Sys : public Callable {
   IntraDimensionScheduling intra_dimension_scheduling;
   InterDimensionScheduling inter_dimension_scheduling;
   int round_robin_inter_dimension_scheduler;
+  OfflineGreedy *offline_greedy;
 
   void register_for_finished_stream(Callable* callable);
   void increase_finished_streams(int amount);

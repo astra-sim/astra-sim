@@ -22,6 +22,7 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/topology/LocalRingNodeA2AGlobalDBT.hh"
 #include "astra-sim/system/topology/Torus3D.hh"
 #include "astra-sim/system/topology/GeneralComplexTopology.hh"
+#include "astra-sim/system/scheduling/OfflineGreedy.hh"
 
 #include "RendezvousRecvData.hh"
 #include "RendezvousSendData.hh"
@@ -88,6 +89,8 @@ Sys::~Sys() {
     delete memBus;
   if (workload != nullptr)
     delete workload;
+  if (offline_greedy != nullptr)
+    delete offline_greedy;
   bool shouldExit = true;
   for (auto& a : all_generators) {
     if (a != nullptr) {
@@ -125,6 +128,7 @@ Sys::Sys(
   vLevels = nullptr;
   memBus = nullptr;
   workload = nullptr;
+  offline_greedy= nullptr;
   this->initialized = false;
   this->intra_dimension_scheduling=IntraDimensionScheduling::FIFO;
   this->inter_dimension_scheduling=InterDimensionScheduling::Ascending;
@@ -256,6 +260,9 @@ Sys::Sys(
   if (workload->initialized == false) {
     sys_panic("Unable to initialize the workload layer because it can not open the workload file");
     return;
+  }
+  if(inter_dimension_scheduling==InterDimensionScheduling::OfflineGreedy){
+    offline_greedy=new OfflineGreedy(this);
   }
   this->initialized = true;
 }
@@ -692,8 +699,8 @@ bool Sys::parse_var(std::string var, std::string value) {
     if(tmp=="ascending"){
       inter_dimension_scheduling=InterDimensionScheduling::Ascending;
     }
-    else if(tmp=="greedy"){
-      inter_dimension_scheduling=InterDimensionScheduling::Greedy;
+    else if(tmp=="offlineGreedy"){
+      inter_dimension_scheduling=InterDimensionScheduling::OfflineGreedy;
     }
     else if(tmp=="roundRobin"){
       inter_dimension_scheduling=InterDimensionScheduling::RoundRobin;
@@ -1071,12 +1078,16 @@ DataSet * Sys::generate_collective(uint64_t size,
 
     if(inter_dimension_scheduling==InterDimensionScheduling::RoundRobin){
       std::rotate(dim_mapper.begin(),dim_mapper.begin()+round_robin_inter_dimension_scheduler,dim_mapper.end());
-      std::rotate(dimensions_involved.begin(),dimensions_involved.begin()+round_robin_inter_dimension_scheduler,
-                  dimensions_involved.begin()+topology->get_num_of_dimensions());
+      //std::rotate(dimensions_involved.begin(),dimensions_involved.begin()+round_robin_inter_dimension_scheduler,
+                  //dimensions_involved.begin()+topology->get_num_of_dimensions());
       round_robin_inter_dimension_scheduler++;
       if(round_robin_inter_dimension_scheduler==topology->get_num_of_dimensions()){
         round_robin_inter_dimension_scheduler=0;
       }
+    }
+    else if(inter_dimension_scheduling==InterDimensionScheduling::OfflineGreedy){
+      dim_mapper=offline_greedy->get_chunk_scheduling(stream_counter,chunk_size,
+                                                        dimensions_involved);
     }
 
     tmp = chunk_size;
@@ -1100,7 +1111,8 @@ DataSet * Sys::generate_collective(uint64_t size,
         tmp = phase.final_data_size;
       }
     }
-    else if(inter_dimension_scheduling==InterDimensionScheduling::Greedy){
+    else if(inter_dimension_scheduling==InterDimensionScheduling::OfflineGreedy ||
+        inter_dimension_scheduling==InterDimensionScheduling::OnlineGreedy){
         int dim=0;
         for(dim=0;dim<topology->get_num_of_dimensions();dim++){
             if(topology->get_num_of_nodes_in_dimension(dim_mapper[dim])==1 || !dimensions_involved[dim_mapper[dim]]){
