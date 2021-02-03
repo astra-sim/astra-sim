@@ -1100,6 +1100,44 @@ DataSet * Sys::generate_collective(uint64_t size,
         tmp = phase.final_data_size;
       }
     }
+    else if(inter_dimension_scheduling==InterDimensionScheduling::Greedy){
+        int dim=0;
+        for(dim=0;dim<topology->get_num_of_dimensions();dim++){
+            if(topology->get_num_of_nodes_in_dimension(dim_mapper[dim])==1 || !dimensions_involved[dim_mapper[dim]]){
+                continue;
+            }
+            std::pair<int, RingTopology::Direction> queue = vLevels->get_next_queue_at_level(dim_mapper[dim]);
+            CollectivePhase phase=generate_collective_phase(ComType::Reduce_Scatter,
+                                                            layer_num,
+                                                            topology->get_basic_topology_at_dimension(dim_mapper[dim],ComType::Reduce_Scatter),
+                                                            tmp,
+                                                            queue.first,
+                                                            queue.second,
+                                                            InjectionPolicy::Normal,
+                                                            implementation_per_dimension[dim_mapper[dim]],
+                                                            boost_mode);
+            vect.push_back(phase);
+            tmp = phase.final_data_size;
+        }
+        dim--;
+        for(;dim>=0;dim--){
+            if(topology->get_num_of_nodes_in_dimension(dim_mapper[dim])==1 || !dimensions_involved[dim_mapper[dim]]){
+                continue;
+            }
+            std::pair<int, RingTopology::Direction> queue = vLevels->get_next_queue_at_level(dim_mapper[dim]);
+            CollectivePhase phase=generate_collective_phase(ComType::All_Gatehr,
+                                                            layer_num,
+                                                            topology->get_basic_topology_at_dimension(dim_mapper[dim],ComType::All_Gatehr),
+                                                            tmp,
+                                                            queue.first,
+                                                            queue.second,
+                                                            InjectionPolicy::Normal,
+                                                            implementation_per_dimension[dim_mapper[dim]],
+                                                            boost_mode);
+            vect.push_back(phase);
+            tmp = phase.final_data_size;
+        }
+    }
     else{
       int dim=0;
       for(dim=0;dim<topology->get_num_of_dimensions()-1;dim++){
