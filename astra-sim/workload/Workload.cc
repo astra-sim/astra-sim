@@ -9,19 +9,19 @@ LICENSE file in the root directory of this source tree.
 
 namespace AstraSim {
 Workload::~Workload() {
-  if (end_to_end != NULL) {
+  if (end_to_end != nullptr) {
     delete end_to_end;
   }
-  if (detailed != NULL) {
+  if (detailed != nullptr) {
     delete detailed;
   }
-  if (dimension_utilization != NULL) {
+  if (dimension_utilization != nullptr) {
       delete dimension_utilization;
   }
   for (int i = 0; i < SIZE; i++) {
     delete layers[i];
   }
-  if (layers != NULL) {
+  if (layers != nullptr) {
     delete[] layers;
   }
 }
@@ -35,7 +35,7 @@ Workload::Workload(
     std::string path,
     bool seprate_log) {
   this->initialized = false;
-  this->layers = NULL;
+  this->layers = nullptr;
   this->SIZE = 0;
   this->counter = 0;
   this->delay_loaded = false;
@@ -47,9 +47,9 @@ Workload::Workload(
   this->pass_counter = 0;
   this->index = 0;
   this->waiting_for_comm = 0;
-  end_to_end = NULL;
-  detailed = NULL;
-  dimension_utilization=NULL;
+  end_to_end = nullptr;
+  detailed = nullptr;
+  dimension_utilization=nullptr;
   this->path = path;
   this->stat_row = stat_row;
   this->seprate_log = seprate_log;
