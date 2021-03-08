@@ -45,7 +45,7 @@ std::vector<int> OfflineGreedy::get_chunk_scheduling(long long chunk_id, uint64_
         continue;
       }
       result.push_back(dim.dim_num);
-      dim.elapsed_time+=((chunk_size/1048576)*
+      dim.elapsed_time+=((((double)chunk_size)/1048576)*
           (((double)(dim_size[dim.dim_num]-1))/(dim_size[dim.dim_num]-1)))/
           (dim_BW[dim.dim_num]/dim_BW[0]);
       chunk_size/=dim_size[dim.dim_num];

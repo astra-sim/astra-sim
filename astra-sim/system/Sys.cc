@@ -1065,7 +1065,7 @@ DataSet * Sys::generate_collective(uint64_t size,
                                    ComType collective_type,
                                    SchedulingPolicy pref_scheduling) {
 
-  int chunk_size = determine_chunk_size(size, ComType::All_to_All);
+  int chunk_size = determine_chunk_size(size, collective_type);
   int streams = ceil(((double)size) / chunk_size);
   int tmp;
   DataSet* dataset = new DataSet(streams);
