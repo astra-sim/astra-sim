@@ -462,10 +462,11 @@ int Sys::front_end_sim_send(
     sim_request* request,
     void (*msg_handler)(void* fun_arg),
     void* fun_arg) {
-  /*if(id==0){
+  if(count<=0){
     std::cout<<"send from: "<<id<<" to: "<<dst<<" at time: "<<boostedTick()
               <<" ,size: "<<count<<std::endl;
-  }*/
+    sys_panic("below zero send!");
+  }
   if (rendezvous_enabled) {
     return rendezvous_sim_send(
         delay, buffer, count, type, dst, tag, request, msg_handler, fun_arg);
@@ -545,10 +546,11 @@ int Sys::front_end_sim_recv(
     sim_request* request,
     void (*msg_handler)(void* fun_arg),
     void* fun_arg) {
-  /*if(id==0){
+  if(count<=0){
     std::cout<<"recv at: "<<id<<" expecting data from: "<<src<<" at time: "<<boostedTick()
     <<" ,size: "<<count<<std::endl;
-  }*/
+    sys_panic("below zero recv!");
+  }
   if (rendezvous_enabled) {
     return rendezvous_sim_recv(
         delay, buffer, count, type, src, tag, request, msg_handler, fun_arg);
@@ -1070,9 +1072,9 @@ DataSet * Sys::generate_collective(uint64_t size,
   int tmp;
   DataSet* dataset = new DataSet(streams);
   int pri = get_priority(pref_scheduling);
-
-  for (int i = 0; i < streams; i++) {
-
+  int count=0;
+  while (size>0) {
+    count++;
     std::vector<int> dim_mapper(topology->get_num_of_dimensions()) ;
     std::iota (std::begin(dim_mapper), std::end(dim_mapper), 0);
 
@@ -1086,8 +1088,14 @@ DataSet * Sys::generate_collective(uint64_t size,
       }
     }
     else if(inter_dimension_scheduling==InterDimensionScheduling::OfflineGreedy){
-      dim_mapper=offline_greedy->get_chunk_scheduling(stream_counter,chunk_size,
+      uint64_t prev_size=size;
+      dim_mapper=offline_greedy->get_chunk_scheduling(stream_counter,size,chunk_size,
                                                         dimensions_involved);
+      chunk_size=prev_size-size;
+    }
+
+    if(inter_dimension_scheduling!=InterDimensionScheduling::OfflineGreedy){
+      size-=chunk_size;
     }
 
     tmp = chunk_size;
@@ -1219,7 +1227,8 @@ DataSet * Sys::generate_collective(uint64_t size,
     }
   }
   if(dataset->active){
-    streams_injected += streams;
+    streams_injected += count;
+    dataset->total_streams=count;
   }
   return dataset;
 }
