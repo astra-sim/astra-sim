@@ -66,7 +66,7 @@ std::vector<int> OfflineGreedy::get_chunk_scheduling(long long chunk_id, uint64_
         /*if(sys->id==0){
           std::cout<<"remaining: "<<remaining_data_size<<" ,load difference: "<<load_difference <<", min: "<<dim.elapsed_time<<" ,max: "<<dim_elapsed_time.back().elapsed_time<<" , calculated chunk size: "<<chunk_size<<std::endl;
         }*/
-        if(chunk_size<(1048576*2)){
+        if(chunk_size<(recommended_chunk_size/16)){
           result.resize(dim_elapsed_time.size());
           std::iota (std::begin(result), std::end(result), 0);
           global_chunk_size[chunk_id]=std::min(remaining_data_size,recommended_chunk_size);
