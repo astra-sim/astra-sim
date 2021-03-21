@@ -462,9 +462,10 @@ int Sys::front_end_sim_send(
     sim_request* request,
     void (*msg_handler)(void* fun_arg),
     void* fun_arg) {
-  /*if(id==0){
+  /*if(count<=0){
     std::cout<<"send from: "<<id<<" to: "<<dst<<" at time: "<<boostedTick()
               <<" ,size: "<<count<<std::endl;
+    sys_panic("below zero send!");
   }*/
   if (rendezvous_enabled) {
     return rendezvous_sim_send(
@@ -545,9 +546,10 @@ int Sys::front_end_sim_recv(
     sim_request* request,
     void (*msg_handler)(void* fun_arg),
     void* fun_arg) {
-  /*if(id==0){
+  /*if(count<=0){
     std::cout<<"recv at: "<<id<<" expecting data from: "<<src<<" at time: "<<boostedTick()
     <<" ,size: "<<count<<std::endl;
+    sys_panic("below zero recv!");
   }*/
   if (rendezvous_enabled) {
     return rendezvous_sim_recv(
@@ -688,6 +690,12 @@ bool Sys::parse_var(std::string var, std::string value) {
       }
       else if(tmp=="RG"){
           intra_dimension_scheduling=IntraDimensionScheduling::RG;
+      }
+      else if(tmp=="smallestFirst"){
+        intra_dimension_scheduling=IntraDimensionScheduling::SmallestFirst;
+      }
+      else if(tmp=="lessRemainingPhaseFirst"){
+        intra_dimension_scheduling=IntraDimensionScheduling::LessRemainingPhaseFirst;
       }
       else{
           sys_panic("unknown value for intra-dimension-scheduling  in sys input file");
@@ -1065,14 +1073,15 @@ DataSet * Sys::generate_collective(uint64_t size,
                                    ComType collective_type,
                                    SchedulingPolicy pref_scheduling) {
 
-  int chunk_size = determine_chunk_size(size, ComType::All_to_All);
+  int chunk_size = determine_chunk_size(size, collective_type);
+  uint64_t recommended_chunk_size=chunk_size;
   int streams = ceil(((double)size) / chunk_size);
   int tmp;
   DataSet* dataset = new DataSet(streams);
   int pri = get_priority(pref_scheduling);
-
-  for (int i = 0; i < streams; i++) {
-
+  int count=0;
+  while (size>0) {
+    count++;
     std::vector<int> dim_mapper(topology->get_num_of_dimensions()) ;
     std::iota (std::begin(dim_mapper), std::end(dim_mapper), 0);
 
@@ -1086,8 +1095,14 @@ DataSet * Sys::generate_collective(uint64_t size,
       }
     }
     else if(inter_dimension_scheduling==InterDimensionScheduling::OfflineGreedy){
-      dim_mapper=offline_greedy->get_chunk_scheduling(stream_counter,chunk_size,
+      uint64_t prev_size=size;
+      dim_mapper=offline_greedy->get_chunk_scheduling(stream_counter,size,recommended_chunk_size,
                                                         dimensions_involved);
+      chunk_size=prev_size-size;
+    }
+
+    if(inter_dimension_scheduling!=InterDimensionScheduling::OfflineGreedy){
+      size-=chunk_size;
     }
 
     tmp = chunk_size;
@@ -1219,7 +1234,8 @@ DataSet * Sys::generate_collective(uint64_t size,
     }
   }
   if(dataset->active){
-    streams_injected += streams;
+    streams_injected += count;
+    dataset->total_streams=count;
   }
   return dataset;
 }
@@ -1388,7 +1404,7 @@ void Sys::insert_stream(std::list<BaseStream*>* queue, BaseStream* baseStream) {
         }
       }
   }
-  else{
+  else if(intra_dimension_scheduling==IntraDimensionScheduling::RG){
       ComType one_to_last=ComType::None;
       ComType last=ComType::None;
       while (it != queue->end()) {
@@ -1413,6 +1429,32 @@ void Sys::insert_stream(std::list<BaseStream*>* queue, BaseStream* baseStream) {
               break;
           }
       }
+  }
+  else if(intra_dimension_scheduling==IntraDimensionScheduling::SmallestFirst){
+    while (it != queue->end()) {
+      if ((*it)->initialized == true) {
+        std::advance(it, 1);
+        continue;
+      } else if ((*it)->my_current_phase.initial_data_size < baseStream->my_current_phase.initial_data_size) {
+        std::advance(it, 1);
+        continue;
+      } else {
+        break;
+      }
+    }
+  }
+  else if(intra_dimension_scheduling==IntraDimensionScheduling::LessRemainingPhaseFirst){
+    while (it != queue->end()) {
+      if ((*it)->initialized == true) {
+        std::advance(it, 1);
+        continue;
+      } else if ((*it)->phases_to_go.size() < baseStream->phases_to_go.size()) {
+        std::advance(it, 1);
+        continue;
+      } else {
+        break;
+      }
+    }
   }
   queue->insert(it, baseStream);
 }
