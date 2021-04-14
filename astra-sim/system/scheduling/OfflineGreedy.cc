@@ -51,21 +51,18 @@ std::vector<int> OfflineGreedy::get_chunk_scheduling(long long chunk_id, uint64_
     std::sort(dim_elapsed_time.begin(),dim_elapsed_time.end());
     std::vector<int> result;
     uint64_t chunk_size=recommended_chunk_size;//*(dim_BW[dim_elapsed_time.front().dim_num]/dim_BW[0]);
-    bool chunk_size_calculated=false;
-    //global_chunk_size[chunk_id]=std::min(remaining_data_size,chunk_size);
-    //remaining_data_size-=std::min(remaining_data_size,chunk_size);
+    //bool chunk_size_calculated=false;
+    global_chunk_size[chunk_id]=std::min(remaining_data_size,chunk_size);
+    remaining_data_size-=std::min(remaining_data_size,chunk_size);
     for(auto &dim:dim_elapsed_time){
       if(!dimensions_involved[dim.dim_num] || dim_size[dim.dim_num]==1){
         result.push_back(dim.dim_num);
         continue;
       }
-      else if(!chunk_size_calculated){
+      /*else if(!chunk_size_calculated){
         chunk_size_calculated=true;
         double load_difference=dim_elapsed_time.back().elapsed_time-dim.elapsed_time;
         chunk_size=get_chunk_size_from_elapsed_time(load_difference,dim);
-        /*if(sys->id==0){
-          std::cout<<"remaining: "<<remaining_data_size<<" ,load difference: "<<load_difference <<", min: "<<dim.elapsed_time<<" ,max: "<<dim_elapsed_time.back().elapsed_time<<" , calculated chunk size: "<<chunk_size<<std::endl;
-        }*/
         if(chunk_size<(recommended_chunk_size/16)){
           result.resize(dim_elapsed_time.size());
           std::iota (std::begin(result), std::end(result), 0);
@@ -102,7 +99,7 @@ std::vector<int> OfflineGreedy::get_chunk_scheduling(long long chunk_id, uint64_
           global_chunk_size[chunk_id]=std::min(remaining_data_size,chunk_size);
           remaining_data_size-=std::min(remaining_data_size,chunk_size);
         }
-      }
+      }*/
       result.push_back(dim.dim_num);
       dim.elapsed_time+=((((double)chunk_size)/1048576)*
           (((double)(dim_size[dim.dim_num]-1))/(dim_size[dim.dim_num])))/
