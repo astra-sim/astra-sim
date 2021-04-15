@@ -133,6 +133,7 @@ Sys::Sys(
   this->intra_dimension_scheduling=IntraDimensionScheduling::FIFO;
   this->inter_dimension_scheduling=InterDimensionScheduling::Ascending;
   round_robin_inter_dimension_scheduler=0;
+  this->last_scheduled_collective=0;
 
   start_sim_time = std::chrono::high_resolution_clock::now();
   this->NI = NI;
@@ -261,7 +262,8 @@ Sys::Sys(
     sys_panic("Unable to initialize the workload layer because it can not open the workload file");
     return;
   }
-  if(inter_dimension_scheduling==InterDimensionScheduling::OfflineGreedy){
+  if(inter_dimension_scheduling==InterDimensionScheduling::OfflineGreedy ||
+      inter_dimension_scheduling==InterDimensionScheduling::OfflineGreedyFlex){
     offline_greedy=new OfflineGreedy(this);
   }
   this->initialized = true;
@@ -710,6 +712,9 @@ bool Sys::parse_var(std::string var, std::string value) {
     else if(tmp=="offlineGreedy"){
       inter_dimension_scheduling=InterDimensionScheduling::OfflineGreedy;
     }
+    else if(tmp=="offlineGreedyFlex"){
+      inter_dimension_scheduling=InterDimensionScheduling::OfflineGreedyFlex;
+    }
     else if(tmp=="roundRobin"){
       inter_dimension_scheduling=InterDimensionScheduling::RoundRobin;
     }
@@ -1080,10 +1085,20 @@ DataSet * Sys::generate_collective(uint64_t size,
   DataSet* dataset = new DataSet(streams);
   int pri = get_priority(pref_scheduling);
   int count=0;
+  if(id==0 && (inter_dimension_scheduling==InterDimensionScheduling::OfflineGreedy ||
+      inter_dimension_scheduling==InterDimensionScheduling::OfflineGreedyFlex)){
+    if(last_scheduled_collective!=Sys::boostedTick()){
+        offline_greedy->reset_loads();
+        last_scheduled_collective=Sys::boostedTick();
+    }
+  }
   while (size>0) {
     count++;
     std::vector<int> dim_mapper(topology->get_num_of_dimensions()) ;
     std::iota (std::begin(dim_mapper), std::end(dim_mapper), 0);
+    if(collective_type==ComType::All_Gatehr){
+      std::reverse(dim_mapper.begin(),dim_mapper.end());
+    }
 
     if(inter_dimension_scheduling==InterDimensionScheduling::RoundRobin){
       std::rotate(dim_mapper.begin(),dim_mapper.begin()+round_robin_inter_dimension_scheduler,dim_mapper.end());
@@ -1094,14 +1109,18 @@ DataSet * Sys::generate_collective(uint64_t size,
         round_robin_inter_dimension_scheduler=0;
       }
     }
-    else if(inter_dimension_scheduling==InterDimensionScheduling::OfflineGreedy){
+    else if(collective_type!=ComType::All_to_All && (inter_dimension_scheduling==InterDimensionScheduling::OfflineGreedy ||
+        inter_dimension_scheduling==InterDimensionScheduling::OfflineGreedyFlex)){
       uint64_t prev_size=size;
       dim_mapper=offline_greedy->get_chunk_scheduling(stream_counter,size,recommended_chunk_size,
-                                                        dimensions_involved);
+                                                        dimensions_involved,
+                                                        inter_dimension_scheduling,
+                                                        collective_type);
       chunk_size=prev_size-size;
     }
 
-    if(inter_dimension_scheduling!=InterDimensionScheduling::OfflineGreedy){
+    if(collective_type==ComType::All_to_All || (inter_dimension_scheduling!=InterDimensionScheduling::OfflineGreedy &&
+        inter_dimension_scheduling!=InterDimensionScheduling::OfflineGreedyFlex)){
       size-=chunk_size;
     }
 
@@ -1127,6 +1146,7 @@ DataSet * Sys::generate_collective(uint64_t size,
       }
     }
     else if(inter_dimension_scheduling==InterDimensionScheduling::OfflineGreedy ||
+        inter_dimension_scheduling==InterDimensionScheduling::OfflineGreedyFlex ||
         inter_dimension_scheduling==InterDimensionScheduling::OnlineGreedy){
         int dim=0;
         for(dim=0;dim<topology->get_num_of_dimensions();dim++){

@@ -26,9 +26,12 @@ class OfflineGreedy {
     std::vector<double> dim_BW;
     std::vector<int> dim_size;
     OfflineGreedy(Sys *sys);
+    void reset_loads();
     std::vector<int> get_chunk_scheduling(long long chunk_id, uint64_t &remaining_data_size,
-                                          uint64_t recommended_chunk_size,std::vector<bool> &dimensions_involved);
-    uint64_t get_chunk_size_from_elapsed_time(double elapsed_time,DimElapsedTime dim);
+                                          uint64_t recommended_chunk_size,std::vector<bool> &dimensions_involved,
+                                          InterDimensionScheduling inter_dim_scheduling,
+                                          ComType comm_type);
+    uint64_t get_chunk_size_from_elapsed_time(double elapsed_time,DimElapsedTime dim,ComType comm_type);
     static std::map<long long,std::vector<int>> chunk_schedule;
     static std::map<long long,int> schedule_consumer;
     static std::map<long long,uint64_t> global_chunk_size;
