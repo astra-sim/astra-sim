@@ -152,6 +152,7 @@ class Sys : public Callable {
   InterDimensionScheduling inter_dimension_scheduling;
   int round_robin_inter_dimension_scheduler;
   OfflineGreedy *offline_greedy;
+  Tick last_scheduled_collective;
 
   void register_for_finished_stream(Callable* callable);
   void increase_finished_streams(int amount);

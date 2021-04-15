@@ -39,7 +39,7 @@ enum class CollectiveImplementationType {
 enum class CollectiveBarrier { Blocking, Non_Blocking };
 enum class SchedulingPolicy { LIFO, FIFO, HIGHEST, None };
 enum class IntraDimensionScheduling { FIFO, RG, SmallestFirst,LessRemainingPhaseFirst };
-enum class InterDimensionScheduling { Ascending, OnlineGreedy,RoundRobin,OfflineGreedy};
+enum class InterDimensionScheduling { Ascending, OnlineGreedy,RoundRobin,OfflineGreedy,OfflineGreedyFlex};
 enum class InjectionPolicy {
   Infinite,
   Aggressive,
