@@ -269,6 +269,9 @@ Sys::Sys(
   this->initialized = true;
 }
 int Sys::break_dimension(int model_parallel_npu_group) {
+  if(model_parallel_npu_group==1){
+      return -1;
+  }
   int dimension_to_break=0;
   int all_npus=1;
   for(;dimension_to_break<physical_dims.size();dimension_to_break++){
