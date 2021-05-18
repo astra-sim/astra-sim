@@ -11,7 +11,7 @@ AllToAll::AllToAll(
     int id,
     int layer_num,
     RingTopology* allToAllTopology,
-    int data_size,
+    uint64_t data_size,
     RingTopology::Direction direction,
     InjectionPolicy injection_policy,
     bool boost_mode)

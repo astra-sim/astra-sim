@@ -28,8 +28,8 @@ class CollectivePhase {
  public:
   Sys* generator;
   int queue_id;
-  int initial_data_size;
-  int final_data_size;
+  uint64_t initial_data_size;
+  uint64_t final_data_size;
   bool enabled;
   ComType comm_type;
   Algorithm* algorithm;

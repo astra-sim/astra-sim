@@ -12,7 +12,7 @@ Ring::Ring(
     int id,
     int layer_num,
     RingTopology* ring_topology,
-    int data_size,
+    uint64_t data_size,
     RingTopology::Direction direction,
     InjectionPolicy injection_policy,
     bool boost_mode)

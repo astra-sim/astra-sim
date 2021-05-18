@@ -16,7 +16,7 @@ namespace AstraSim {
             int id,
             int layer_num,
             RingTopology* ring_topology,
-            int data_size,
+            uint64_t data_size,
             bool boost_mode)
             : Algorithm(layer_num) {
         this->comType = type;

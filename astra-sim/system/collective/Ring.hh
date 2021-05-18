@@ -48,7 +48,7 @@ class Ring : public Algorithm {
   long free_packets;
   long total_packets_sent;
   long total_packets_received;
-  int msg_size;
+  uint64_t msg_size;
   std::list<MyPacket*> locked_packets;
   bool processed;
   bool send_back;
@@ -59,7 +59,7 @@ class Ring : public Algorithm {
       int id,
       int layer_num,
       RingTopology* ring_topology,
-      int data_size,
+      uint64_t data_size,
       RingTopology::Direction direction,
       InjectionPolicy injection_policy,
       bool boost_mode);

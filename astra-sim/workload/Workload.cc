@@ -1320,28 +1320,28 @@ bool Workload::initialize_workload(std::string name) {
     int depen;
     inFile >> depen;
 
-    int fp_compute_time;
+    Tick fp_compute_time;
     inFile >> fp_compute_time;
     std::string fp_comm_type_s;
     inFile >> fp_comm_type_s;
-    int fp_comm_size;
+    uint64_t fp_comm_size;
     inFile >> fp_comm_size;
 
-    int ig_compute_time;
+    Tick ig_compute_time;
     inFile >> ig_compute_time;
     std::string ig_comm_type_s;
     inFile >> ig_comm_type_s;
-    int ig_comm_size;
+    uint64_t ig_comm_size;
     inFile >> ig_comm_size;
 
-    int wg_compute_time;
+    Tick wg_compute_time;
     inFile >> wg_compute_time;
     std::string wg_comm_type_s;
     inFile >> wg_comm_type_s;
-    int wg_comm_size;
+    uint64_t wg_comm_size;
     inFile >> wg_comm_size;
     // wg_comm_size=2048;
-    int wg_update_time;
+    Tick wg_update_time;
     inFile >> wg_update_time;
 
     ParallelismPolicy specific_policy=ParallelismPolicy::None;

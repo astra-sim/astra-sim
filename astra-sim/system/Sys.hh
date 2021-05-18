@@ -213,7 +213,7 @@ class Sys : public Callable {
   int front_end_sim_send(
       Tick delay,
       void* buffer,
-      int count,
+      uint64_t count,
       int type,
       int dst,
       int tag,
@@ -223,7 +223,7 @@ class Sys : public Callable {
   int front_end_sim_recv(
       Tick delay,
       void* buffer,
-      int count,
+      uint64_t count,
       int type,
       int src,
       int tag,
@@ -233,7 +233,7 @@ class Sys : public Callable {
   int sim_send(
       Tick delay,
       void* buffer,
-      int count,
+      uint64_t count,
       int type,
       int dst,
       int tag,
@@ -243,7 +243,7 @@ class Sys : public Callable {
   int sim_recv(
       Tick delay,
       void* buffer,
-      int count,
+      uint64_t count,
       int type,
       int src,
       int tag,
@@ -253,7 +253,7 @@ class Sys : public Callable {
   int rendezvous_sim_send(
       Tick delay,
       void* buffer,
-      int count,
+      uint64_t count,
       int type,
       int dst,
       int tag,
@@ -263,7 +263,7 @@ class Sys : public Callable {
   int rendezvous_sim_recv(
       Tick delay,
       void* buffer,
-      int count,
+      uint64_t count,
       int type,
       int src,
       int tag,
@@ -313,7 +313,7 @@ class Sys : public Callable {
           bool boost_mode);
   void insert_stream(std::list<BaseStream*>* queue, BaseStream* baseStream);
   void proceed_to_next_vnet_baseline(StreamBaseline* stream);
-  int determine_chunk_size(int size, ComType type);
+  int determine_chunk_size(uint64_t size, ComType type);
   int get_priority(SchedulingPolicy pref_scheduling);
   static void handleEvent(void* arg);
   timespec_t generate_time(int cycles);

@@ -28,7 +28,7 @@ struct sim_request {
   uint32_t dstRank;
   uint32_t tag;
   req_type_e reqType;
-  uint32_t reqCount;
+  uint64_t reqCount;
   uint32_t vnet;
   uint32_t layerNum;
 };
@@ -65,7 +65,7 @@ class AstraNetworkAPI {
       void* fun_arg) = 0;
   virtual int sim_send(
       void* buffer,
-      int count,
+      uint64_t count,
       int type,
       int dst,
       int tag,
@@ -74,7 +74,7 @@ class AstraNetworkAPI {
       void* fun_arg) = 0;
   virtual int sim_recv(
       void* buffer,
-      int count,
+      uint64_t count,
       int type,
       int src,
       int tag,

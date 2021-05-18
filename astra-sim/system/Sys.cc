@@ -399,7 +399,7 @@ int Sys::get_priority(SchedulingPolicy pref_scheduling) {
 int Sys::rendezvous_sim_send(
     Tick delay,
     void* buffer,
-    int count,
+    uint64_t count,
     int type,
     int dst,
     int tag,
@@ -430,7 +430,7 @@ int Sys::rendezvous_sim_send(
 int Sys::sim_send(
     Tick delay,
     void* buffer,
-    int count,
+    uint64_t count,
     int type,
     int dst,
     int tag,
@@ -460,7 +460,7 @@ int Sys::sim_send(
 int Sys::front_end_sim_send(
     Tick delay,
     void* buffer,
-    int count,
+    uint64_t count,
     int type,
     int dst,
     int tag,
@@ -483,7 +483,7 @@ int Sys::front_end_sim_send(
 int Sys::rendezvous_sim_recv(
     Tick delay,
     void* buffer,
-    int count,
+    uint64_t count,
     int type,
     int src,
     int tag,
@@ -514,7 +514,7 @@ int Sys::rendezvous_sim_recv(
 int Sys::sim_recv(
     Tick delay,
     void* buffer,
-    int count,
+    uint64_t count,
     int type,
     int src,
     int tag,
@@ -544,7 +544,7 @@ int Sys::sim_recv(
 int Sys::front_end_sim_recv(
     Tick delay,
     void* buffer,
-    int count,
+    uint64_t count,
     int type,
     int src,
     int tag,
@@ -955,8 +955,8 @@ std::vector<std::string> Sys::split_string(std::string str,std::string sep){
   }
   return arr;
 }
-int Sys::determine_chunk_size(int size, ComType type) {
-  int chunk_size = size / preferred_dataset_splits;
+int Sys::determine_chunk_size(uint64_t size, ComType type) {
+  uint64_t chunk_size = size / preferred_dataset_splits;
   return chunk_size;
 }
 DataSet* Sys::generate_all_reduce(
@@ -1081,7 +1081,7 @@ DataSet * Sys::generate_collective(uint64_t size,
                                    ComType collective_type,
                                    SchedulingPolicy pref_scheduling) {
 
-  int chunk_size = determine_chunk_size(size, collective_type);
+  uint64_t chunk_size = determine_chunk_size(size, collective_type);
   uint64_t recommended_chunk_size=chunk_size;
   int streams = ceil(((double)size) / chunk_size);
   int tmp;
