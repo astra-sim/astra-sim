@@ -134,17 +134,17 @@ public:
   int sim_init (AstraMemoryAPI *MEM);
   timespec_t sim_get_time ();
   void sim_schedule (timespec_t delta, void (*fun_ptr) (void *fun_arg), void *fun_arg);
-  int sim_send (void *buffer, int count, int type, int dst, int tag, sim_request *request,
+  int sim_send (void *buffer, uint64_t count, int type, int dst, int tag, sim_request *request,
                 void (*msg_handler) (void *fun_arg), void *fun_arg);
-  int sim_recv (void *buffer, int count, int type, int src, int tag, sim_request *request,
+  int sim_recv (void *buffer, uint64_t count, int type, int src, int tag, sim_request *request,
                 void (*msg_handler) (void *fun_arg), void *fun_arg);
   FastBackEnd (int rank, AstraNetworkAPI *wrapped_backend);
 
   void update_table_recv (double start, double finished, int src, uint64_t comm_size);
   void update_table_send (double start, double finished, int dst, uint64_t comm_size);
-  int relay_send_request (void *buffer, int count, int type, int dst, int tag, sim_request *request,
+  int relay_send_request (void *buffer, uint64_t count, int type, int dst, int tag, sim_request *request,
                           void (*msg_handler) (void *fun_arg), void *fun_arg);
-  int relay_recv_request (void *buffer, int count, int type, int src, int tag, sim_request *request,
+  int relay_recv_request (void *buffer, uint64_t count, int type, int src, int tag, sim_request *request,
                           void (*msg_handler) (void *fun_arg), void *fun_arg);
   int fast_send_recv_request (double delay, void (*msg_handler) (void *fun_arg), void *fun_arg);
 

@@ -10,7 +10,7 @@ RendezvousSendData::RendezvousSendData(
     int nodeId,
     Sys* generator,
     void* buffer,
-    int count,
+    uint64_t count,
     int type,
     int dst,
     int tag,

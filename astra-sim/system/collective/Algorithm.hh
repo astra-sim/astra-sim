@@ -32,8 +32,8 @@ class Algorithm : public Callable {
   int id;
   BaseStream* stream;
   LogicalTopology* logicalTopology;
-  int data_size;
-  int final_data_size;
+  uint64_t data_size;
+  uint64_t final_data_size;
   ComType comType;
   bool enabled;
   int layer_num;
