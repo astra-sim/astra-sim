@@ -7,3 +7,6 @@
 [submodule "extern/network_backend/garnet/gem5_astra"]
 	path = extern/network_backend/garnet/gem5_astra
 	url = https://github.com/georgia-tech-synergy-lab/gem5_astra.git
+[submodule "extern/compute/SCALE-Sim"]
+	path = extern/compute/SCALE-Sim
+	url = https://github.com/scalesim-project/scale-sim-v2.git
