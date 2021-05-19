@@ -77,6 +77,11 @@ std::vector<int> OfflineGreedy::get_chunk_scheduling(long long chunk_id, uint64_
     uint64_t chunk_size=recommended_chunk_size;//*(dim_BW[dim_elapsed_time.front().dim_num]/dim_BW[0]);
     bool chunk_size_calculated=false;
     if(inter_dim_scheduling==InterDimensionScheduling::OfflineGreedy){
+      //test
+      //double l_difference=fabs(dim_elapsed_time.back().elapsed_time-dim_elapsed_time.front().elapsed_time);
+      //uint64_t diff=get_chunk_size_from_elapsed_time(l_difference,dim_elapsed_time.front(),ComType::comm_type);
+      //std::cout<<std::endl<<std::endl<<"Different size: "<<diff<<" , dim to test: "<<dim_elapsed_time.front().dim_num<<" , diff: "<<l_difference<<std::endl<<std::endl;
+      //end test
       global_chunk_size[chunk_id]=std::min(remaining_data_size,chunk_size);
       remaining_data_size-=std::min(remaining_data_size,chunk_size);
     }
@@ -143,19 +148,14 @@ std::vector<int> OfflineGreedy::get_chunk_scheduling(long long chunk_id, uint64_
                 dim_elapsed_time[myDim].elapsed_time+=((((double)chunk_size)/1048576)*
                                (((double)(dim_size[myDim]-1))/(dim_size[myDim])))/
                               (dim_BW[myDim]/dim_BW[0]);
+                chunk_size/=dim_size[myDim];
             }
             else{
                 dim_elapsed_time[myDim].elapsed_time+=((((double)chunk_size)/1048576)*
                                                      (((double)(dim_size[myDim]-1))))/
                                                     (dim_BW[myDim]/dim_BW[0]);
+                chunk_size*=dim_size[myDim];
             }
-            if(comm_type==ComType::Reduce_Scatter){
-              chunk_size/=dim_size[myDim];
-            }
-            else{
-              chunk_size*=dim_size[myDim];
-            }
-            //std::cout<<"dim: "<<myDim<<
           }
           return result;
         }
@@ -163,6 +163,73 @@ std::vector<int> OfflineGreedy::get_chunk_scheduling(long long chunk_id, uint64_
           global_chunk_size[chunk_id]=std::min(remaining_data_size,chunk_size);
           remaining_data_size-=std::min(remaining_data_size,chunk_size);
         }
+      }
+      else if(inter_dim_scheduling==InterDimensionScheduling::OfflineGreedy && !chunk_size_calculated){
+          chunk_size_calculated=true;
+          uint64_t diff_size=0;
+          if(comm_type==ComType::Reduce_Scatter){
+              double load_difference=fabs(dim_elapsed_time.back().elapsed_time-dim.elapsed_time);
+              diff_size=get_chunk_size_from_elapsed_time(load_difference,dim,ComType::Reduce_Scatter);
+          }
+          else{
+              int lastIndex=dim_elapsed_time.size()-1;
+              while(!dimensions_involved[dim_elapsed_time[lastIndex].dim_num] ||
+                    dim_size[dim_elapsed_time[lastIndex].dim_num]==1){
+                  lastIndex--;
+              }
+              double load_difference=fabs(dim_elapsed_time[lastIndex].elapsed_time-dim.elapsed_time);
+              diff_size=get_chunk_size_from_elapsed_time(load_difference,dim_elapsed_time[lastIndex],ComType::All_Gatehr);
+              lastIndex--;
+              //std::cout<<"hi"<<std::endl;
+              while(dim_elapsed_time_pointer<=lastIndex){
+                  if(dimensions_involved[dim_elapsed_time[lastIndex].dim_num] &&
+                     dim_size[dim_elapsed_time[lastIndex].dim_num]>1){
+                      diff_size/=dim_size[dim_elapsed_time[lastIndex].dim_num];
+                  }
+                  lastIndex--;
+              }
+              //std::cout<<"hello"<<std::endl;
+          }
+          if(diff_size<(recommended_chunk_size/16)){
+              //std::cout<<std::endl<<std::endl<<"load diff across dims is low, going with default scheduling!"<<" diff: "<<diff_size<<std::endl<<std::endl;
+              result.resize(dim_elapsed_time.size());
+              std::iota (std::begin(result), std::end(result), 0);
+              chunk_schedule[chunk_id]=result;
+              schedule_consumer[chunk_id]=1;
+              std::vector<DimElapsedTime> myReordered;
+              myReordered.resize(dim_elapsed_time.size(),dim_elapsed_time[0]);
+              for(int myDim=0;myDim<dim_elapsed_time.size();myDim++){
+                  for(int searchDim=0;searchDim<dim_elapsed_time.size();searchDim++){
+                      if(dim_elapsed_time[searchDim].dim_num==myDim){
+                          myReordered[myDim]=dim_elapsed_time[searchDim];
+                          break;
+                      }
+                  }
+              }
+              dim_elapsed_time=myReordered;
+              if(comm_type==ComType::All_Gatehr){
+                  std::reverse(dim_elapsed_time.begin(),dim_elapsed_time.end());
+              }
+              for(int myDim=0;myDim<dim_elapsed_time.size();myDim++){
+                  if(!dimensions_involved[myDim] || dim_size[myDim]==1){
+                      result.push_back(myDim);
+                      continue;
+                  }
+                  if(comm_type==ComType::Reduce_Scatter){
+                      dim_elapsed_time[myDim].elapsed_time+=((((double)chunk_size)/1048576)*
+                                                             (((double)(dim_size[myDim]-1))/(dim_size[myDim])))/
+                                                            (dim_BW[myDim]/dim_BW[0]);
+                      chunk_size/=dim_size[myDim];
+                  }
+                  else{
+                      dim_elapsed_time[myDim].elapsed_time+=((((double)chunk_size)/1048576)*
+                                                             (((double)(dim_size[myDim]-1))))/
+                                                            (dim_BW[myDim]/dim_BW[0]);
+                      chunk_size *= dim_size[myDim];
+                  }
+              }
+              return result;
+          }
       }
       result.push_back(dim.dim_num);
       if(comm_type==ComType::Reduce_Scatter) {
