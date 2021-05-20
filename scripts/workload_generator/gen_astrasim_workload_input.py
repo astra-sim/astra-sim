@@ -20,6 +20,8 @@ SCALESIM_PATH = r"../../extern/compute/SCALE-Sim"
 SCALESIM_OUTPUT_PATH = SCALESIM_PATH + '/outputs'
 SCALESIM_CONFIG = r"../../extern/compute/SCALE-Sim/configs/google.cfg"
 OUTPUT_FILE_NAME = r"workload.txt"
+# SCALE Sim installed flag
+scale_sim_installed_flag = False
 
 Hybrid                  = "HYBRID"
 ForwardPassCycles       = "fwd_pass_cycles"
@@ -311,21 +313,24 @@ def writeGeneratedTopologyToFile(folder_name, file_name, items):
 
 def runScaleSim(topology_file, folder_name):
     global SCALESIM_OUTPUT_PATH
+    global scale_sim_installed_flag
     current_path = os.getcwd()
     full_path = os.path.join(os.getcwd(), Outputs, folder_name, FLAGS.run_name, topology_file)
 
     if SCALESIM_VER == 2:
-        os.chdir(SCALESIM_PATH)
-        process = subprocess.Popen(["python3", "setup.py", "install"])
-        process.wait()
-        os.chdir(current_path)
+        if not scale_sim_installed_flag:
+            os.chdir(SCALESIM_PATH)
+            process = subprocess.Popen(["python3", "setup.py", "install"])
+            process.wait()
+            os.chdir(current_path)
+            scale_sim_installed_flag = True
+
         SCALESIM_RUN_PATH = SCALESIM_PATH + '/scalesim/'
     else:
         SCALESIM_RUN_PATH = SCALESIM_PATH
 
     os.chdir(SCALESIM_RUN_PATH)
     if SCALESIM_VER == 2:
-        current_path = os.getcwd()
         SCALESIM_OUTPUT_PATH = current_path + "/outputs/"
         process = subprocess.Popen(["python3", "scale.py",
                                     "-c", SCALESIM_CONFIG,
@@ -478,7 +483,7 @@ def main(argv):
 
     fwd_pass, inp_grad, weight_grad = getTopology(layers)
 
-    scaleSimOutput =  getScaleSimOutputInternal(fwd_pass, inp_grad, weight_grad, ParallelizationStrategy)
+    scaleSimOutput = getScaleSimOutputInternal(fwd_pass, inp_grad, weight_grad, ParallelizationStrategy)
 
     astraSimOutput = AstraSimOutput(layers, scaleSimOutput)
     astraSimOutput.generate()
