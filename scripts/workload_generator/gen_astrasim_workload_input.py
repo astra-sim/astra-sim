@@ -15,9 +15,13 @@ NumberOfChannels        = 1
 # End common variables for all layers
 
 # Region for constants
-SCALESIM_PATH = r"../../compute/SCALE-Sim"
-SCALESIM_CONFIG = r"../../compute/SCALE-Sim/configs/google.cfg"
+SCALESIM_VER = 2
+SCALESIM_PATH = r"../../extern/compute/SCALE-Sim"
+SCALESIM_OUTPUT_PATH = SCALESIM_PATH + '/outputs'
+SCALESIM_CONFIG = r"../../extern/compute/SCALE-Sim/configs/google.cfg"
 OUTPUT_FILE_NAME = r"workload.txt"
+# SCALE Sim installed flag
+scale_sim_installed_flag = False
 
 Hybrid                  = "HYBRID"
 ForwardPassCycles       = "fwd_pass_cycles"
@@ -252,7 +256,7 @@ class TopologyItem:
         file_handle.write("Layer name,ifmap height,ifmap width,filter height,filter width,channels,num filter,strides,\n")
 
 class Layer:
-    def __init__(self, name, m, n, k, prallelism):
+    def __init__(self, name, m, n, k, parallelism):
         self.name = name
         self.m = int(m) # batch size
         self.n = int(n) # output dimension
@@ -267,7 +271,10 @@ class Layer:
         self.parallelism = row[4]
 
     def print(self):
-        print (self.name + ", " + self.m + ", " + self.n + ", " + self.k + ", " + self.parallelism)
+        # FIX ISSUE #41
+        # print (self.name + ", " + self.m + ", " + self.n + ", " + self.k + ", " + self.parallelism)
+        outlog = ", ".join([str(x) for x in [self.name, self.m, self.n, self.k, self.parallelism]])
+        print(outlog)
 
 def writeGeneratedTopologyToFile(folder_name, file_name, items):
     current_path = os.getcwd()
@@ -305,10 +312,32 @@ def writeGeneratedTopologyToFile(folder_name, file_name, items):
     os.chdir(current_path)
 
 def runScaleSim(topology_file, folder_name):
+    global SCALESIM_OUTPUT_PATH
+    global scale_sim_installed_flag
     current_path = os.getcwd()
     full_path = os.path.join(os.getcwd(), Outputs, folder_name, FLAGS.run_name, topology_file)
-    os.chdir(SCALESIM_PATH)
-    process = subprocess.Popen(["python3", "scale.py", "-arch_config=" + SCALESIM_CONFIG, "-network="+full_path])
+
+    if SCALESIM_VER == 2:
+        if not scale_sim_installed_flag:
+            os.chdir(SCALESIM_PATH)
+            process = subprocess.Popen(["python3", "setup.py", "install"])
+            process.wait()
+            os.chdir(current_path)
+            scale_sim_installed_flag = True
+
+        SCALESIM_RUN_PATH = SCALESIM_PATH + '/scalesim/'
+    else:
+        SCALESIM_RUN_PATH = SCALESIM_PATH
+
+    os.chdir(SCALESIM_RUN_PATH)
+    if SCALESIM_VER == 2:
+        SCALESIM_OUTPUT_PATH = current_path + "/outputs/"
+        process = subprocess.Popen(["python3", "scale.py",
+                                    "-c", SCALESIM_CONFIG,
+                                    "-t", full_path,
+                                    "-p", SCALESIM_OUTPUT_PATH])
+    else:
+        process = subprocess.Popen(["python3", "scale.py", "-arch_config=" + SCALESIM_CONFIG, "-network="+full_path])
     process.wait()
     os.chdir(current_path)
 
@@ -317,10 +346,16 @@ def getCylesFromScaleSimOutput(folder_name, topology_file):
     config.read(SCALESIM_CONFIG)
     run_name = config.get('general', 'run_name').strip('"')
 
-    cycles_filename = topology_file.rstrip("csv").rstrip(".") + "_cycles.csv" # remove .csv frim topology file and makes it _cycles.csv
+    if SCALESIM_VER == 2:
+        cycles_filename = "COMPUTE_REPORT.csv"
+    else:
+        cycles_filename = topology_file.rstrip("csv").rstrip(".") + "_cycles.csv" # remove .csv frim topology file and makes it _cycles.csv
 
     current_path = os.getcwd()
-    full_path = os.path.join(SCALESIM_PATH, "outputs", run_name)
+    if SCALESIM_VER == 2:
+        full_path = SCALESIM_OUTPUT_PATH + '/' + run_name
+    else:
+        full_path = os.path.join(SCALESIM_PATH, "outputs", run_name)
     os.chdir(full_path)
     cpy_path = os.path.join(current_path, Outputs, folder_name, FLAGS.run_name)
     process = subprocess.call("cp -rf " + cycles_filename + " " + cpy_path, shell=True)
@@ -448,7 +483,7 @@ def main(argv):
 
     fwd_pass, inp_grad, weight_grad = getTopology(layers)
 
-    scaleSimOutput =  getScaleSimOutputInternal(fwd_pass, inp_grad, weight_grad, ParallelizationStrategy)
+    scaleSimOutput = getScaleSimOutputInternal(fwd_pass, inp_grad, weight_grad, ParallelizationStrategy)
 
     astraSimOutput = AstraSimOutput(layers, scaleSimOutput)
     astraSimOutput.generate()
