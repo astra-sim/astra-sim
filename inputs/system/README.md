@@ -2,13 +2,13 @@
 	* The order we proritize collectives according based on their time of arrival.
         LIFO means that most recently created collectives have higher priority. While
 	FIFO is the reverse.
-*   **endpoint-delay **: (int)
+*   **endpoint-delay**: (int)
 	* The time NPU spends processing a message after receiving it in terms of cycles.
 *   **packet-routing**: (software/hardware)
 	* software means that the ubderlying network only can support neighbor-to-neighbor 
 	direct communication and software needs to handle non-neighbor communication.
         hardware means that the network protocol allows non-neighbor direct communication.
-*  **active-chunks-per-dimension: **: (int)
+*  **active-chunks-per-dimension:**: (int)
 	* This corresponds to the Maximum number of chunks we like execute in parallel on
 	each logical dimesnion of topology.
 *  **preferred-dataset-splits**: (int)
