@@ -97,6 +97,7 @@ class CloneInterface
 {
     public:
         virtual CloneInterface* clone() const = 0;
+        virtual ~CloneInterface() = default;
 };
 class CollectiveImplementation: public CloneInterface{
     public:
