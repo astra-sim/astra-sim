@@ -4,10 +4,6 @@
 	FIFO is the reverse.
 *   **endpoint-delay**: (int)
 	* The time NPU spends processing a message after receiving it in terms of cycles.
-*   **packet-routing**: (software/hardware)
-	* software means that the ubderlying network only can support neighbor-to-neighbor 
-	direct communication and software needs to handle non-neighbor communication.
-        hardware means that the network protocol allows non-neighbor direct communication.
 *  **active-chunks-per-dimension:**: (int)
 	* This corresponds to the Maximum number of chunks we like execute in parallel on
 	each logical dimesnion of topology.
@@ -44,10 +40,10 @@
 	The available options (algorithms) are: ring, direct, oneRing, oneDirect.  
 * **collective-optimization**: (baseline/localBWAware)
 	* baseline issues allreduce across all dimensions to handle
-	allreduce of single chunk. While localBWAware issues a 
-	reduce-scatter on  local dimension first (to beak data size)
-	followed by allreduce on other dimensions, followed by final allgather
-	on the local dimension.
+	allreduce of single chunk. While for an N-dimensional network, localBWAware issues a series of
+	reduce-scatters on all dimensions from dim1 to dimN-1, followed by all-reduce on dimN, and then
+	series of all-gathers starting from dimN-1 to dim1. This optimization is used to reduce the
+	chunk size as it goes to the next network dimensions.
 * **direct-collective-window**: (int)
 	* This parameter tells NPU how many simultaneous messages it should send in parallel (for each chunk)
 	to its peers for direct algorithm (if selected). Each NPU simultaneously sends messages up to this value
