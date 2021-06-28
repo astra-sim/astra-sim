@@ -1,0 +1,35 @@
+name: Clang-tidy for all files in repo
+on: [pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    # install dependencies
+    - name: Install clang-tidy
+      run: sudo apt update && sudo apt install -yq clang-tidy
+    # build project
+    - name: Test Build and run clang-tidy
+      run: |
+        mkdir -p artifacts/
+        cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON . > artifacts/cmake_output.txt 2>&1
+        find astra-sim/ -name '*.cc' -exec clang-tidy {} \; > artifacts/clang-tidy-output-cc.txt
+        find astra-sim/ -name '*.hh' -exec clang-tidy {} \; > artifacts/clang-tidy-output-hh.txt
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: clang-tidy-All-Source
+        path: artifacts
+
+    - name: Check Output
+      run: |
+        if [ "$(wc -l artifacts/clang-tidy-output-cc.txt | awk '{print $1}')" -gt 0 ]
+        then
+          echo "We have clang-tidy messages to look at."
+          exit 1
+        elif [ "$(wc -l artifacts/clang-tidy-output-hh.txt | awk '{print $1}')" -gt 0 ]
+        then
+          echo "Header files need help! We have clang-tidy messages to look at"
+          exit 1
+        fi

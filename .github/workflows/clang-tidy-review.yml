@@ -8,7 +8,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - uses: ZedThree/clang-tidy-review@v0.2.0
+    - uses: bryanmr/clang-tidy-review@master
+      with:
+        compile_json: true
       id: review
     # If there are any comments, fail the check
     - if: steps.review.outpus.total_comments > 0
