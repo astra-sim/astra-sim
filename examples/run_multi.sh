@@ -30,7 +30,7 @@ for i in "${!npus[@]}"; do
     --workload-configuration="${WORKLOAD}" \
     --path="${STATS}/" \
     --units-count "${npus[$i]}" "${npus[$i]}" "${npus[$i]}" \
-    --links-count 2 2 \
+    --links-count 2 2 2 \
     --num-passes 2 \
     --num-queues-per-dim 1 \
     --comm-scale $inj \
