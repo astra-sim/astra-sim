@@ -1,12 +1,11 @@
 scheduling-policy: LIFO
 endpoint-delay: 10
-packet-routing: software
 active-chunks-per-dimension: 1
-preferred-dataset-splits: 1
+preferred-dataset-splits: 4
 boost-mode: 0
-all-reduce-implementation: ring_doubleBinaryTree
-all-gather-implementation: ring_direct
-reduce-scatter-implementation: ring_direct
-all-to-all-implementation: ring_direct
+all-reduce-implementation: doubleBinaryTree
+all-gather-implementation: halvingDoubling
+reduce-scatter-implementation: halvingDoubling
+all-to-all-implementation: direct
 collective-optimization: localBWAware
 direct-collective-window: 2

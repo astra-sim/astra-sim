@@ -9,16 +9,19 @@ LICENSE file in the root directory of this source tree.
 
 namespace AstraSim {
 Workload::~Workload() {
-  if (end_to_end != NULL) {
+  if (end_to_end != nullptr) {
     delete end_to_end;
   }
-  if (detailed != NULL) {
+  if (detailed != nullptr) {
     delete detailed;
+  }
+  if (dimension_utilization != nullptr) {
+      delete dimension_utilization;
   }
   for (int i = 0; i < SIZE; i++) {
     delete layers[i];
   }
-  if (layers != NULL) {
+  if (layers != nullptr) {
     delete[] layers;
   }
 }
@@ -32,7 +35,7 @@ Workload::Workload(
     std::string path,
     bool seprate_log) {
   this->initialized = false;
-  this->layers = NULL;
+  this->layers = nullptr;
   this->SIZE = 0;
   this->counter = 0;
   this->delay_loaded = false;
@@ -44,8 +47,9 @@ Workload::Workload(
   this->pass_counter = 0;
   this->index = 0;
   this->waiting_for_comm = 0;
-  end_to_end = NULL;
-  detailed = NULL;
+  end_to_end = nullptr;
+  detailed = nullptr;
+  dimension_utilization=nullptr;
   this->path = path;
   this->stat_row = stat_row;
   this->seprate_log = seprate_log;
@@ -61,6 +65,7 @@ Workload::Workload(
               << " ,stat row: " << stat_row << std::endl;
     detailed = new CSVWriter(path, "detailed.csv");
     end_to_end = new CSVWriter(path, "EndToEnd.csv");
+    dimension_utilization = new CSVWriter(path, run_name+"_dimension_utilization.csv");
     if (stat_row == 0) {
       initialize_stat_files();
     }
@@ -124,12 +129,22 @@ void Workload::report() {
   }
   astraSimDataAPI.total_compute = total_compute;
   astraSimDataAPI.total_exposed_comm = total_exposed;
+  astraSimDataAPI.avg_chunk_latency_per_logical_dimension=generator->scheduler_unit->get_average_latency_per_dimension();
+  for(auto &latency:astraSimDataAPI.avg_chunk_latency_per_logical_dimension){
+      latency/=FREQ;
+  }
   std::cout << "*************************" << std::endl;
   std::cout << "all passes finished at time: " << Sys::boostedTick()
             << ", id of first layer: " << layers[0]->id << std::endl;
   generator->NI->pass_front_end_report(astraSimDataAPI);
-  // std::cout << "Total cycles waiting for communication to be finished: " <<
-  // waiting_for_comm << std::endl;
+
+  if(this->seprate_log) {
+      std::list < std::list < std::pair < uint64_t, double>>> dims;
+      for (int i = 0; i < generator->scheduler_unit->usage.size(); i++) {
+          dims.push_back(generator->scheduler_unit->usage[i].report_percentage(10000));
+      }
+      dimension_utilization->finalize_csv(dims);
+  }
 }
 void Workload::check_for_sim_end() {
   if (pass_counter == TOTAL_PASS) {
@@ -1305,28 +1320,28 @@ bool Workload::initialize_workload(std::string name) {
     int depen;
     inFile >> depen;
 
-    int fp_compute_time;
+    Tick fp_compute_time;
     inFile >> fp_compute_time;
     std::string fp_comm_type_s;
     inFile >> fp_comm_type_s;
-    int fp_comm_size;
+    uint64_t fp_comm_size;
     inFile >> fp_comm_size;
 
-    int ig_compute_time;
+    Tick ig_compute_time;
     inFile >> ig_compute_time;
     std::string ig_comm_type_s;
     inFile >> ig_comm_type_s;
-    int ig_comm_size;
+    uint64_t ig_comm_size;
     inFile >> ig_comm_size;
 
-    int wg_compute_time;
+    Tick wg_compute_time;
     inFile >> wg_compute_time;
     std::string wg_comm_type_s;
     inFile >> wg_comm_type_s;
-    int wg_comm_size;
+    uint64_t wg_comm_size;
     inFile >> wg_comm_size;
     // wg_comm_size=2048;
-    int wg_update_time;
+    Tick wg_update_time;
     inFile >> wg_update_time;
 
     ParallelismPolicy specific_policy=ParallelismPolicy::None;

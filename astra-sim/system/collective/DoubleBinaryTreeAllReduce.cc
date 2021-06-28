@@ -11,7 +11,7 @@ DoubleBinaryTreeAllReduce::DoubleBinaryTreeAllReduce(
     int id,
     int layer_num,
     BinaryTree* tree,
-    int data_size,
+    uint64_t data_size,
     bool boost_mode)
     : Algorithm(layer_num) {
   this->id = id;

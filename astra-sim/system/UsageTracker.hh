@@ -3,8 +3,8 @@ This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
-#ifndef __RENDEZVOUSRECVDATA_HH__
-#define __RENDEZVOUSRECVDATA_HH__
+#ifndef __USAGETRACKER_HH__
+#define __USAGETRACKER_HH__
 
 #include <assert.h>
 #include <math.h>
@@ -18,26 +18,24 @@ LICENSE file in the root directory of this source tree.
 #include <sstream>
 #include <tuple>
 #include <vector>
-#include "BasicEventHandlerData.hh"
+#include "Callable.hh"
 #include "Common.hh"
-#include "SimRecvCaller.hh"
+#include "astra-sim/workload/CSVWriter.hh"
+#include "Usage.hh"
 
 namespace AstraSim {
-class Sys;
-class RendezvousRecvData : public BasicEventHandlerData, public MetaData {
- public:
-  SimRecvCaller* recv;
-  RendezvousRecvData(
-      int nodeId,
-      Sys* generator,
-      void* buffer,
-      uint64_t count,
-      int type,
-      int src,
-      int tag,
-      sim_request request,
-      void (*msg_handler)(void* fun_arg),
-      void* fun_arg);
+class UsageTracker{
+public:
+    int levels;
+    int current_level;
+    Tick last_tick;
+    std::list<Usage> usage;
+    UsageTracker(int levels);
+    void increase_usage();
+    void decrease_usage();
+    void set_usage(int level);
+    void report(CSVWriter *writer,int offset);
+    std::list <std::pair<uint64_t, double>>  report_percentage(uint64_t cycles);
 };
 } // namespace AstraSim
 #endif

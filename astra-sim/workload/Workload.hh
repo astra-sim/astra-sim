@@ -45,7 +45,7 @@ enum class ParallelismPolicy {
   DistributedInference,
   None
 };
-#define FREQ (1000.0 / CLOCK_PERIOD)
+
 
 class Workload : Callable {
  public:
@@ -106,6 +106,7 @@ class Workload : Callable {
   static int get_layer_numbers(std::string workload_input);
   CSVWriter* detailed;
   CSVWriter* end_to_end;
+  CSVWriter* dimension_utilization;
   std::string path;
   std::string run_name;
   int stat_row;

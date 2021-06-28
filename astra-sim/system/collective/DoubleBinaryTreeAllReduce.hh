@@ -18,6 +18,7 @@ LICENSE file in the root directory of this source tree.
 #include <sstream>
 #include <tuple>
 #include <vector>
+#include <stdlib.h>
 #include "Algorithm.hh"
 #include "astra-sim/system/CallData.hh"
 #include "astra-sim/system/Common.hh"
@@ -49,7 +50,7 @@ class DoubleBinaryTreeAllReduce : public Algorithm {
       int id,
       int layer_num,
       BinaryTree* tree,
-      int data_size,
+      uint64_t data_size,
       bool boost_mode);
   // void init(BaseStream *stream);
 };

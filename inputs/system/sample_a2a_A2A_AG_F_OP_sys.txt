@@ -1,7 +1,6 @@
 scheduling-policy: LIFO
 endpoint-delay: 10
-packet-routing: software
-active-chunks-per-dimension: 2
+active-chunks-per-dimension: 1
 preferred-dataset-splits: 32
 boost-mode: 0
 all-reduce-implementation: direct_direct

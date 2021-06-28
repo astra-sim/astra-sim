@@ -17,6 +17,8 @@ LICENSE file in the root directory of this source tree.
 #include <iostream>
 #include <map>
 #include <tuple>
+#include <list>
+#include <vector>
 
 namespace AstraSim {
 class CSVWriter {
@@ -24,12 +26,15 @@ class CSVWriter {
   // std::fstream inFile;
   std::fstream myFile;
   void initialize_csv(int rows, int cols);
+  void finalize_csv(std::list<std::list <std::pair<uint64_t, double>>> dims);
   CSVWriter(std::string path, std::string name);
   void write_cell(int row, int column, std::string data);
   std::string path;
   std::string name;
   ~CSVWriter() {
-    myFile.close();
+    if(myFile.is_open()){
+        myFile.close();
+    }
   }
   inline bool exists_test(const std::string& name) {
     struct stat buffer;

@@ -12,6 +12,7 @@ LICENSE file in the root directory of this source tree.
 #include <stdio.h>
 namespace AstraSim {
 #define CLOCK_PERIOD 1
+#define FREQ (1000.0 / CLOCK_PERIOD)
 typedef unsigned long long Tick;
 enum class ComType {
   None,
@@ -22,7 +23,7 @@ enum class ComType {
   All_Reduce_All_to_All
 };
 enum class CollectiveOptimization { Baseline, LocalBWAware };
-enum class CollectiveImplementation {
+enum class CollectiveImplementationType {
     Ring,
     OneRing,
     Direct,
@@ -31,10 +32,14 @@ enum class CollectiveImplementation {
     DoubleBinaryTreeLocalAllToAll,
     LocalRingNodeA2AGlobalDBT,
     HierarchicalRing,
-    DoubleBinaryTree
+    DoubleBinaryTree,
+    HalvingDoubling,
+    OneHalvingDoubling,
 };
 enum class CollectiveBarrier { Blocking, Non_Blocking };
 enum class SchedulingPolicy { LIFO, FIFO, HIGHEST, None };
+enum class IntraDimensionScheduling { FIFO, RG, SmallestFirst,LessRemainingPhaseFirst };
+enum class InterDimensionScheduling { Ascending, OnlineGreedy,RoundRobin,OfflineGreedy,OfflineGreedyFlex};
 enum class InjectionPolicy {
   Infinite,
   Aggressive,
@@ -87,6 +92,27 @@ enum class EventType {
   StreamsFinishedIncrease,
   CommProcessingFinished,
   NotInitialized
+};
+class CloneInterface
+{
+    public:
+        virtual CloneInterface* clone() const = 0;
+        virtual ~CloneInterface() = default;
+};
+class CollectiveImplementation: public CloneInterface{
+    public:
+        CollectiveImplementationType type;
+        CollectiveImplementation(CollectiveImplementationType type){this->type=type;};
+        virtual CloneInterface* clone() const { return new CollectiveImplementation(*this); }
+};
+class DirectCollectiveImplementation: public CollectiveImplementation{
+    public:
+        int direct_collective_window;
+        CloneInterface* clone() const { return new DirectCollectiveImplementation(*this); };
+        DirectCollectiveImplementation(CollectiveImplementationType type, int direct_collective_window):
+        CollectiveImplementation(type){
+            this->direct_collective_window=direct_collective_window;
+        }
 };
 } // namespace AstraSim
 #endif

@@ -12,19 +12,19 @@ Layer::Layer(
     int layer_num,
     Sys* generator,
     Workload* workload,
-    int fwd_pass_compute_time,
+    Tick fwd_pass_compute_time,
     ComType fwd_pass_comm_type,
-    int fwd_pass_comm_size,
+    uint64_t fwd_pass_comm_size,
     std::vector<bool> fwd_pass_comm_involved_dimensions,
-    int input_grad_compute_time,
+    Tick input_grad_compute_time,
     ComType input_grad_comm_type,
-    int input_grad_comm_size,
+    uint64_t input_grad_comm_size,
     std::vector<bool> input_grad_comm_involved_dimensions,
-    int weight_grad_compute_time,
+    Tick weight_grad_compute_time,
     ComType weight_grad_comm_type,
-    int weight_grad_comm_size,
+    uint64_t weight_grad_comm_size,
     std::vector<bool> weight_grad_comm_involved_dimensions,
-    int weight_grad_update_time,
+    Tick weight_grad_update_time,
     ParallelismPolicy specific_policy) {
   this->id = id;
   this->layer_num = layer_num;
@@ -99,6 +99,7 @@ void Layer::call(EventType event, CallData* mdata) {
       std::cout << "***** info: weight gradient collective for layer: " << id
                 << " is finished************" << std::endl;
     }
+    weight_grad_datasets[data]->finish_tick+=weight_grad_update_time;
     total_weight_grad_comm += weight_grad_datasets[data]->finish_tick -
         weight_grad_datasets[data]->creation_tick;
     if (weight_grad_datasets.size() == 1 &&
@@ -138,6 +139,7 @@ void Layer::call(EventType event, CallData* mdata) {
       std::cout << "***** info: input gradient collective for layer: " << id
                 << " is finished************" << std::endl;
     }
+    input_grad_datasets[data]->finish_tick+=input_grad_update_time;
     total_input_grad_comm += input_grad_datasets[data]->finish_tick -
         input_grad_datasets[data]->creation_tick;
     if (input_grad_datasets.size() == 1 &&
@@ -177,6 +179,7 @@ void Layer::call(EventType event, CallData* mdata) {
       std::cout << "***** info: fwd pass comm collective for layer: " << id
                 << " is finished************" << std::endl;
     }
+    fwd_pass_datasets[data]->finish_tick+=fwd_update_time;
     total_fwd_comm += fwd_pass_datasets[data]->finish_tick -
         fwd_pass_datasets[data]->creation_tick;
     if (fwd_pass_datasets.size() == 1 &&
@@ -523,6 +526,26 @@ LayerData Layer::report(
           count++,
           std::to_string(ml / FREQ));
     }
+    if (layer_num == workload->SIZE - 1) {
+        std::cout << "*************************  Chunk Stats Per Logical Dimension (for all layers) "
+                     "************************* "
+                  << id << std::endl;
+        i=1;
+        std::vector<double> avg_chunk_latency_per_dimension = generator->scheduler_unit->get_average_latency_per_dimension();
+        for (auto &cl : avg_chunk_latency_per_dimension) {
+            std::cout << " ,Average chunk latency for logical dimension  " << i++
+                      << " of topology: " << cl << std::endl;
+            if (stat_row == 0) {
+                detailed->write_cell(
+                        0, count, "avg chunk delay dimension " + std::to_string(i-1));
+            }
+            detailed->write_cell(
+                    1 + stat_row,
+                    count++,
+                    std::to_string(cl / FREQ));
+        }
+    }
+
   }
   return layerData;
 }

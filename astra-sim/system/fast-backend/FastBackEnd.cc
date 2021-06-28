@@ -313,7 +313,7 @@ FastBackEnd::update_table_recv (double start, double finished, int src, uint64_t
 }
 
 int
-FastBackEnd::relay_recv_request (void *buffer, int count, int type, int src, int tag,
+FastBackEnd::relay_recv_request (void *buffer, uint64_t count, int type, int src, int tag,
                                  sim_request *request, void (*msg_handler) (void *fun_arg),
                                  void *fun_arg)
 {
@@ -326,7 +326,7 @@ FastBackEnd::relay_recv_request (void *buffer, int count, int type, int src, int
 }
 
 int
-FastBackEnd::relay_send_request (void *buffer, int count, int type, int dst, int tag,
+FastBackEnd::relay_send_request (void *buffer, uint64_t count, int type, int dst, int tag,
                                  sim_request *request, void (*msg_handler) (void *fun_arg),
                                  void *fun_arg)
 {
@@ -352,7 +352,7 @@ FastBackEnd::fast_send_recv_request (double delay, void (*msg_handler) (void *fu
 }
 
 int
-FastBackEnd::sim_send (void *buffer, int count, int type, int dst, int tag, sim_request *request,
+FastBackEnd::sim_send (void *buffer, uint64_t count, int type, int dst, int tag, sim_request *request,
                        void (*msg_handler) (void *fun_arg), void *fun_arg)
 {
   auto src = sim_comm_get_rank ();
@@ -429,7 +429,7 @@ FastBackEnd::sim_send (void *buffer, int count, int type, int dst, int tag, sim_
 }
 
 int
-FastBackEnd::sim_recv (void *buffer, int count, int type, int src, int tag, sim_request *request,
+FastBackEnd::sim_recv (void *buffer, uint64_t count, int type, int src, int tag, sim_request *request,
                        void (*msg_handler) (void *fun_arg), void *fun_arg)
 {
   auto dst = sim_comm_get_rank ();

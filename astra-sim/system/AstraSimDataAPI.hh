@@ -7,6 +7,7 @@ LICENSE file in the root directory of this source tree.
 #define __ASTRASIMDATAAPI_HH__
 #include <iostream>
 #include <list>
+#include <vector>
 namespace AstraSim {
 class LayerData {
  public:
@@ -29,6 +30,7 @@ class AstraSimDataAPI {
  public:
   std::string run_name;
   std::list<LayerData> layers_stats;
+  std::vector<double> avg_chunk_latency_per_logical_dimension;
   double workload_finished_time;
   double total_compute;
   double total_exposed_comm;

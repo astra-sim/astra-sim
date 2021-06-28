@@ -31,7 +31,7 @@ class RendezvousSendData : public BasicEventHandlerData, public MetaData {
       int nodeId,
       Sys* generator,
       void* buffer,
-      int count,
+      uint64_t count,
       int type,
       int dst,
       int tag,

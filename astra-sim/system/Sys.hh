@@ -25,6 +25,7 @@ LICENSE file in the root directory of this source tree.
 #include "Common.hh"
 #include "astra-sim/system/topology/RingTopology.hh"
 #include "astra-sim/workload/Workload.hh"
+#include "UsageTracker.hh"
 
 namespace AstraSim {
 class MemBus;
@@ -37,6 +38,7 @@ class QueueLevels;
 class Workload;
 class LogicalTopology;
 class BasicLogicalTopology;
+class OfflineGreedy;
 class Sys : public Callable {
  public:
   class SchedulerUnit {
@@ -47,15 +49,23 @@ class Sys : public Callable {
     int max_running_streams;
     std::map<int, int> running_streams;
     std::map<int, std::list<BaseStream*>::iterator> stream_pointer;
+
+    std::vector<Tick> latency_per_dimension;
+    std::vector<double> total_chunks_per_dimension;
+    std::vector<uint64_t> total_active_chunks_per_dimension;
+    std::map<int,int> queue_id_to_dimension;
+    std::vector<UsageTracker> usage;
+
     SchedulerUnit(
         Sys* sys,
         std::vector<int> queues,
         int max_running_streams,
         int ready_list_threshold,
         int queue_threshold);
-    void notify_stream_removed(int vnet);
+    void notify_stream_removed(int vnet,Tick running_time);
     void notify_stream_added(int vnet);
     void notify_stream_added_into_ready_list();
+    std::vector<double> get_average_latency_per_dimension();
   };
   SchedulerUnit* scheduler_unit;
   ~Sys();
@@ -64,10 +74,10 @@ class Sys : public Callable {
   int finished_workloads;
   int id;
 
-  std::vector<CollectiveImplementation> all_reduce_implementation_per_dimension;
-  std::vector<CollectiveImplementation> reduce_scatter_implementation_per_dimension;
-  std::vector<CollectiveImplementation> all_gather_implementation_per_dimension;
-  std::vector<CollectiveImplementation> all_to_all_implementation_per_dimension;
+  std::vector<CollectiveImplementation*> all_reduce_implementation_per_dimension;
+  std::vector<CollectiveImplementation*> reduce_scatter_implementation_per_dimension;
+  std::vector<CollectiveImplementation*> all_gather_implementation_per_dimension;
+  std::vector<CollectiveImplementation*> all_to_all_implementation_per_dimension;
   CollectiveOptimization collectiveOptimization;
 
   std::chrono::high_resolution_clock::time_point start_sim_time;
@@ -76,6 +86,12 @@ class Sys : public Callable {
   std::list<Callable*> registered_for_finished_stream_event;
 
   std::vector<int> physical_dims;
+  std::vector<int> queues_per_dim;
+  int max_running;
+  int concurrent_streams;
+  int active_first_phase;
+
+
   int priority_counter;
   bool boost_mode;
   bool rendezvous_enabled;
@@ -85,7 +101,6 @@ class Sys : public Callable {
   int communication_delay;
 
   int preferred_dataset_splits;
-  PacketRouting alltoall_routing;
   float compute_scale;
   float comm_scale;
   float injection_scale;
@@ -109,7 +124,7 @@ class Sys : public Callable {
   std::map<std::string, LogicalTopology*> logical_topologies;
   std::map<Tick, std::list<std::tuple<Callable*, EventType, CallData*>>>
       event_queue;
-  static int total_nodes;
+  int total_nodes;
   static Tick offset;
   static std::vector<Sys*> all_generators;
   static uint8_t* dummy_data;
@@ -120,7 +135,6 @@ class Sys : public Callable {
   bool enabled;
 
   std::string inp_scheduling_policy;
-  std::string inp_packet_routing;
   std::string inp_all_reduce_implementation;
   std::string inp_reduce_scatter_implementation;
   std::string inp_all_gather_implementation;
@@ -131,10 +145,14 @@ class Sys : public Callable {
   float inp_g;
   float inp_G;
   int inp_model_shared_bus;
-  int direct_collective_window;
   int active_chunks_per_dimension;
   bool model_shared_bus;
   int inp_boost_mode;
+  IntraDimensionScheduling intra_dimension_scheduling;
+  InterDimensionScheduling inter_dimension_scheduling;
+  int round_robin_inter_dimension_scheduler;
+  OfflineGreedy *offline_greedy;
+  Tick last_scheduled_collective;
 
   void register_for_finished_stream(Callable* callable);
   void increase_finished_streams(int amount);
@@ -171,16 +189,8 @@ class Sys : public Callable {
       AstraMemoryAPI* MEM,
       int id,
       int num_passes,
-      int first_dim,
-      int second_dim,
-      int third_dim,
-      int fourth_dim,
-      int fifth_dim,
-      int first_queues,
-      int second_queues,
-      int third_queues,
-      int fourth_queues,
-      int fifth_queues,
+      std::vector<int> physical_dims,
+      std::vector<int> queues_per_dim,
       std::string my_sys,
       std::string my_workload,
       float comm_scale,
@@ -198,12 +208,12 @@ class Sys : public Callable {
   std::string trim(const std::string& str, const std::string& whitespace);
   bool parse_var(std::string var, std::string value);
   bool post_process_inputs();
-  std::vector<CollectiveImplementation> generate_collective_implementation_from_input(std::string input);
+  std::vector<CollectiveImplementation*> generate_collective_implementation_from_input(std::string input);
   int break_dimension(int model_parallel_npu_group);
   int front_end_sim_send(
       Tick delay,
       void* buffer,
-      int count,
+      uint64_t count,
       int type,
       int dst,
       int tag,
@@ -213,7 +223,7 @@ class Sys : public Callable {
   int front_end_sim_recv(
       Tick delay,
       void* buffer,
-      int count,
+      uint64_t count,
       int type,
       int src,
       int tag,
@@ -223,7 +233,7 @@ class Sys : public Callable {
   int sim_send(
       Tick delay,
       void* buffer,
-      int count,
+      uint64_t count,
       int type,
       int dst,
       int tag,
@@ -233,7 +243,7 @@ class Sys : public Callable {
   int sim_recv(
       Tick delay,
       void* buffer,
-      int count,
+      uint64_t count,
       int type,
       int src,
       int tag,
@@ -243,7 +253,7 @@ class Sys : public Callable {
   int rendezvous_sim_send(
       Tick delay,
       void* buffer,
-      int count,
+      uint64_t count,
       int type,
       int dst,
       int tag,
@@ -253,7 +263,7 @@ class Sys : public Callable {
   int rendezvous_sim_recv(
       Tick delay,
       void* buffer,
-      int count,
+      uint64_t count,
       int type,
       int src,
       int tag,
@@ -287,7 +297,7 @@ class Sys : public Callable {
   DataSet * generate_collective(uint64_t size,
                                 int layer_num,
                                 LogicalTopology *topology,
-                                std::vector<CollectiveImplementation> implementation_per_dimension,
+                                std::vector<CollectiveImplementation*> implementation_per_dimension,
                                 std::vector<bool> dimensions_involved,
                                 ComType collective_type,
                                 SchedulingPolicy pref_scheduling);
@@ -298,13 +308,12 @@ class Sys : public Callable {
           uint64_t data_size,
           int queue_id,
           RingTopology::Direction direction,
-          PacketRouting routing,
           InjectionPolicy injection_policy,
-          CollectiveImplementation collective_implementation,
+          CollectiveImplementation *collective_implementation,
           bool boost_mode);
   void insert_stream(std::list<BaseStream*>* queue, BaseStream* baseStream);
   void proceed_to_next_vnet_baseline(StreamBaseline* stream);
-  int determine_chunk_size(int size, ComType type);
+  int determine_chunk_size(uint64_t size, ComType type);
   int get_priority(SchedulingPolicy pref_scheduling);
   static void handleEvent(void* arg);
   timespec_t generate_time(int cycles);
