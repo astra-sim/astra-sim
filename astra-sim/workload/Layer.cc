@@ -449,8 +449,9 @@ LayerData Layer::report(
         EndToEnd->write_cell(0, 12, "total comp");
         EndToEnd->write_cell(0, 13, "total exposed comm");
       }
+      total_exposed=(((double)Sys::boostedTick()) / FREQ)-total_compute;
       EndToEnd->write_cell(1 + stat_row, 12, std::to_string(total_compute));
-      EndToEnd->write_cell(1 + stat_row, 13, std::to_string((((double)Sys::boostedTick()) / FREQ)-total_compute));
+      EndToEnd->write_cell(1 + stat_row, 13, std::to_string(total_exposed));
     }
 
     /*std::cout<<"*************************  Shared bus stats
