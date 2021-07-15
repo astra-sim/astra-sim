@@ -151,13 +151,6 @@ void Workload::check_for_sim_end() {
     current_state = LoopState::Wait_For_Sim_Finish;
     if (generator->streams_finished != generator->streams_injected &&
         registered_for_finished_streams == false) {
-      if(generator->id==0) {
-        for (int i = 0; i < SIZE; i++) {
-          layers[i]->is_fwd_pass_comm_finished_blocking();
-          layers[i]->is_input_grad_comm_finished_blocking();
-          layers[i]->is_weight_grad_comm_finished_blocking();
-        }
-      }
       generator->register_for_finished_stream(this);
       registered_for_finished_streams = true;
       // generator->register_event(this, EventType::General, NULL, 1);
@@ -820,6 +813,9 @@ void Workload::iterate_hybrid_parallel_Transformer() {
       }
       pass_counter++;
       current_state = LoopState::Forward_Pass;
+      if(pass_counter == TOTAL_PASS){
+          layers[0]->is_weight_grad_comm_finished_blocking();
+      }
     } else {
       current_state = LoopState::Input_Gradient;
     }
@@ -928,6 +924,9 @@ void Workload::iterate_hybrid_parallel_Transformer_fwd_in_bckwd() {
       }
       pass_counter++;
       current_state = LoopState::Forward_Pass;
+      if(pass_counter == TOTAL_PASS){
+          layers[0]->is_weight_grad_comm_finished_blocking();
+      }
     } else {
       current_state = LoopState::Input_Gradient;
     }
