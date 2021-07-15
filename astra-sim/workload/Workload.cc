@@ -151,6 +151,13 @@ void Workload::check_for_sim_end() {
     current_state = LoopState::Wait_For_Sim_Finish;
     if (generator->streams_finished != generator->streams_injected &&
         registered_for_finished_streams == false) {
+      if(generator->id==0) {
+        for (int i = 0; i < SIZE; i++) {
+          layers[i]->is_fwd_pass_comm_finished_blocking();
+          layers[i]->is_input_grad_comm_finished_blocking();
+          layers[i]->is_weight_grad_comm_finished_blocking();
+        }
+      }
       generator->register_for_finished_stream(this);
       registered_for_finished_streams = true;
       // generator->register_event(this, EventType::General, NULL, 1);
@@ -828,11 +835,12 @@ void Workload::iterate_hybrid_parallel_Transformer() {
           this, EventType::Workload_Wait, NULL, counter);
       return;
     }
-    if (!collective_issued && index > 0) {
+    if (!collective_issued) {
       collective_issued = true;
       layers[index]->issue_input_grad_comm(
           SchedulingPolicy::LIFO,
-          CollectiveBarrier::Non_Blocking);
+          CollectiveBarrier::Blocking);
+           return;
     }
     collective_issued = false;
     delay_loaded = false;
@@ -950,11 +958,12 @@ void Workload::iterate_hybrid_parallel_Transformer_fwd_in_bckwd() {
           this, EventType::Workload_Wait, NULL, counter);
       return;
     }
-    if (!collective_issued && index > 0) {
+    if (!collective_issued) {
       collective_issued = true;
       layers[index]->issue_input_grad_comm(
           SchedulingPolicy::LIFO,
-          CollectiveBarrier::Non_Blocking);
+          CollectiveBarrier::Blocking);
+      return;
     }
     checkpoint_initiated = false;
     collective_issued = false;

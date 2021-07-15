@@ -191,7 +191,8 @@ std::vector<int> OfflineGreedy::get_chunk_scheduling(long long chunk_id, uint64_
               //std::cout<<"hello"<<std::endl;
           }
           if(diff_size<(recommended_chunk_size/16)){
-              //std::cout<<std::endl<<std::endl<<"load diff across dims is low, going with default scheduling!"<<" diff: "<<diff_size<<std::endl<<std::endl;
+              //std::cout<<std::endl<<std::endl<<"load diff across dims is low, going with default scheduling!"<<" diff: "<<diff_size<<"dim max: "
+                      //<<dim_elapsed_time.back().dim_num<<" ,dim min: "<<dim.dim_num<<std::endl<<std::endl;
               result.resize(dim_elapsed_time.size());
               std::iota (std::begin(result), std::end(result), 0);
               chunk_schedule[chunk_id]=result;
@@ -212,7 +213,7 @@ std::vector<int> OfflineGreedy::get_chunk_scheduling(long long chunk_id, uint64_
               }
               for(int myDim=0;myDim<dim_elapsed_time.size();myDim++){
                   if(!dimensions_involved[myDim] || dim_size[myDim]==1){
-                      result.push_back(myDim);
+                      //result.push_back(myDim);
                       continue;
                   }
                   if(comm_type==ComType::Reduce_Scatter){

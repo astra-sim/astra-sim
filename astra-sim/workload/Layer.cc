@@ -253,7 +253,9 @@ bool Layer::is_fwd_pass_comm_finished_blocking() {
   if (fwd_pass_datasets.size() == 0) {
     return true;
   }
-  started_waiting_for_fwd_pass.push_back(Sys::boostedTick());
+  if(started_waiting_for_fwd_pass.size()==0){
+    started_waiting_for_fwd_pass.push_back(Sys::boostedTick());
+  }
   return false;
 }
 bool Layer::is_input_grad_comm_finished() {
@@ -268,7 +270,9 @@ bool Layer::is_input_grad_comm_finished_blocking() {
       0) { //&& Sys::boostedTick()-last_ig_finished>=input_grad_update_time
     return true;
   }
-  started_waiting_for_input_grad.push_back(Sys::boostedTick());
+  if(started_waiting_for_input_grad.size()==0) {
+    started_waiting_for_input_grad.push_back(Sys::boostedTick());
+  }
   return false;
 }
 bool Layer::is_weight_grad_comm_finished() {
@@ -282,7 +286,9 @@ bool Layer::is_weight_grad_comm_finished_blocking() {
   if (weight_grad_datasets.size() == 0) {
     return true;
   }
-  this->started_waiting_for_weight_grad.push_back(Sys::boostedTick());
+  if(started_waiting_for_weight_grad.size()==0) {
+    this->started_waiting_for_weight_grad.push_back(Sys::boostedTick());
+  }
   return false;
 }
 LayerData Layer::report(
@@ -444,7 +450,7 @@ LayerData Layer::report(
         EndToEnd->write_cell(0, 13, "total exposed comm");
       }
       EndToEnd->write_cell(1 + stat_row, 12, std::to_string(total_compute));
-      EndToEnd->write_cell(1 + stat_row, 13, std::to_string(total_exposed));
+      EndToEnd->write_cell(1 + stat_row, 13, std::to_string((((double)Sys::boostedTick()) / FREQ)-total_compute));
     }
 
     /*std::cout<<"*************************  Shared bus stats
@@ -570,7 +576,16 @@ void Layer::issue_forward_pass_comm(
     }
     if (generator->id == 0) {
       std::cout << "info: all-reduce forward pass collective issued for layer: "
-                << id << std::endl;
+                << id << " , involved dimensions: ";
+      for(int i=0; i<fwd_pass_comm_involved_dimensions.size(); i++){
+          if(fwd_pass_comm_involved_dimensions[i]== true){
+              std::cout<<" 1,";
+          }
+          else{
+              std::cout<<" 0,";
+          }
+      }
+      std::cout<<std::endl;
     }
   } else if (fwd_pass_comm_type == ComType::All_to_All) {
     fp = generator->generate_all_to_all(
