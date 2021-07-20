@@ -18,11 +18,39 @@ DimElapsedTime::DimElapsedTime(int dim_num) {
 }
 OfflineGreedy::OfflineGreedy(Sys *sys) {
    this->sys=sys;
-   this->dim_size=sys->physical_dims;
-   this->dim_BW.resize(this->dim_size.size());
-   for(int i=0;i<this->dim_size.size();i++){
-     this->dim_BW[i]=sys->NI->get_BW_at_dimension(i);
-     this->dim_elapsed_time.push_back(DimElapsedTime(i));
+   if(sys->dim_to_break==-1) {
+       this->dim_size=sys->physical_dims;
+       this->dim_BW.resize(this->dim_size.size());
+       for(int i=0;i<this->dim_size.size();i++){
+           this->dim_BW[i]=sys->NI->get_BW_at_dimension(i);
+           this->dim_elapsed_time.push_back(DimElapsedTime(i));
+       }
+   }
+   else{
+       this->dim_size=sys->logical_broken_dims;
+       this->dim_BW.resize(this->dim_size.size());
+       for(int i=0;i<this->dim_size.size();i++){
+           if(i>sys->dim_to_break){
+               this->dim_BW[i]=sys->NI->get_BW_at_dimension(i-1);
+           }
+           else{
+               this->dim_BW[i]=sys->NI->get_BW_at_dimension(i);
+           }
+           this->dim_elapsed_time.push_back(DimElapsedTime(i));
+       }
+   }
+   if(sys->id==0){
+     std::cout<<"Themis is configured with the following parameters: "<<std::endl;
+     std::cout<<"Dim size: ";
+     for(int i=0;i<this->dim_size.size();i++){
+       std::cout<<this->dim_size[i]<<", ";
+     }
+     std::cout<<std::endl;
+     std::cout<<"BW per dim: ";
+     for(int i=0;i<this->dim_BW.size();i++){
+       std::cout<<this->dim_BW[i]<<", ";
+     }
+     std::cout<<std::endl<<std::endl;
    }
 }
 uint64_t OfflineGreedy::get_chunk_size_from_elapsed_time(double elapsed_time, DimElapsedTime dim, ComType comm_type) {
