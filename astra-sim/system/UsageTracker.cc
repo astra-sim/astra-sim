@@ -61,8 +61,8 @@ std::list <std::pair<uint64_t, double>>  UsageTracker::report_percentage(uint64_
     std::list <std::pair<uint64_t, double>> result;
     while(usage_pointer!=this->usage.end()){
         Usage current_usage=*usage_pointer;
-        uint64_t begin=std::max(period_start,current_usage.start);
-        uint64_t end=std::min(period_end,current_usage.end);
+        uint64_t begin=std::max(static_cast<uint64_t>(period_start),current_usage.start);
+        uint64_t end=std::min(static_cast<uint64_t>(period_end),current_usage.end);
         assert(begin<=end);
         current_activity+=((end-begin)*current_usage.level);
         if(current_usage.end>=period_end){
