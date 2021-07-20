@@ -1095,8 +1095,11 @@ DataSet * Sys::generate_collective(uint64_t size,
         last_scheduled_collective=Sys::boostedTick();
     }
   }
+
+
   while (size>0) {
     count++;
+
     std::vector<int> dim_mapper(topology->get_num_of_dimensions()) ;
     std::iota (std::begin(dim_mapper), std::end(dim_mapper), 0);
     if(collective_type==ComType::All_Gatehr){
@@ -1126,9 +1129,9 @@ DataSet * Sys::generate_collective(uint64_t size,
         inter_dimension_scheduling!=InterDimensionScheduling::OfflineGreedyFlex)){
       size-=chunk_size;
     }
-
     tmp = chunk_size;
     std::list<CollectivePhase> vect;
+
     if(collective_type!=ComType::All_Reduce || collectiveOptimization==CollectiveOptimization::Baseline){
         for(int dim=0;dim<topology->get_num_of_dimensions();dim++){
           if(topology->get_num_of_nodes_in_dimension(dim_mapper[dim])==1 || !dimensions_involved[dim_mapper[dim]]){
@@ -1190,7 +1193,13 @@ DataSet * Sys::generate_collective(uint64_t size,
     }
     else{
       int dim=0;
-      for(dim=0;dim<topology->get_num_of_dimensions()-1;dim++){
+      int last_active_dim=0;
+      for(dim=0;dim<topology->get_num_of_dimensions();dim++){
+        if(topology->get_num_of_nodes_in_dimension(dim_mapper[dim])!=1 && dimensions_involved[dim_mapper[dim]]) {
+          last_active_dim=dim;
+        }
+      }
+      for(dim=0;dim<last_active_dim;dim++){
         if(topology->get_num_of_nodes_in_dimension(dim_mapper[dim])==1 || !dimensions_involved[dim_mapper[dim]]){
           continue;
         }

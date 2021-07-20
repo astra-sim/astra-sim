@@ -813,6 +813,9 @@ void Workload::iterate_hybrid_parallel_Transformer() {
       }
       pass_counter++;
       current_state = LoopState::Forward_Pass;
+      if(pass_counter == TOTAL_PASS){
+          layers[0]->is_weight_grad_comm_finished_blocking();
+      }
     } else {
       current_state = LoopState::Input_Gradient;
     }
@@ -828,11 +831,12 @@ void Workload::iterate_hybrid_parallel_Transformer() {
           this, EventType::Workload_Wait, NULL, counter);
       return;
     }
-    if (!collective_issued && index > 0) {
+    if (!collective_issued) {
       collective_issued = true;
       layers[index]->issue_input_grad_comm(
           SchedulingPolicy::LIFO,
-          CollectiveBarrier::Non_Blocking);
+          CollectiveBarrier::Blocking);
+           return;
     }
     collective_issued = false;
     delay_loaded = false;
@@ -920,6 +924,9 @@ void Workload::iterate_hybrid_parallel_Transformer_fwd_in_bckwd() {
       }
       pass_counter++;
       current_state = LoopState::Forward_Pass;
+      if(pass_counter == TOTAL_PASS){
+          layers[0]->is_weight_grad_comm_finished_blocking();
+      }
     } else {
       current_state = LoopState::Input_Gradient;
     }
@@ -950,11 +957,12 @@ void Workload::iterate_hybrid_parallel_Transformer_fwd_in_bckwd() {
           this, EventType::Workload_Wait, NULL, counter);
       return;
     }
-    if (!collective_issued && index > 0) {
+    if (!collective_issued) {
       collective_issued = true;
       layers[index]->issue_input_grad_comm(
           SchedulingPolicy::LIFO,
-          CollectiveBarrier::Non_Blocking);
+          CollectiveBarrier::Blocking);
+      return;
     }
     checkpoint_initiated = false;
     collective_issued = false;

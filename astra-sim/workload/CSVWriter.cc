@@ -92,7 +92,7 @@ void CSVWriter::finalize_csv(std::list<std::list <std::pair<uint64_t, double>>> 
     int dim_num=1;
     myFile<<" time (us) ";
     myFile<<",";
-    for(auto &dim:dims){
+    for(int i=0;i<dims.size();i++){
         myFile<<"dim"+std::to_string(dim_num)+" util";
         myFile<<',';
         dim_num++;

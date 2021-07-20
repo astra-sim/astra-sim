@@ -36,6 +36,8 @@ function compile {
     ln -s ../../../astra-sim
     cd ../memory
     ln -s ../../../astra-sim
+    cd ../scheduling
+    ln -s ../../../astra-sim
     cd ../../workload
     ln -s ../../astra-sim
     cd "${GEM5_DIR}"
@@ -46,6 +48,7 @@ function compile {
     rm system/collective/astra-sim
     rm system/topology/astra-sim
     rm system/memory/astra-sim
+    rm system/scheduling/astra-sim
     rm workload/astra-sim
     cd "${SCRIPT_DIR:?}"
 }

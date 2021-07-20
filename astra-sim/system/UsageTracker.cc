@@ -53,11 +53,11 @@ std::list <std::pair<uint64_t, double>>  UsageTracker::report_percentage(uint64_
     for(Usage u:usage){
       std::cout<<"start: "<<u.start<<" ,end: "<<u.end<<" ,level: "<<u.level<<std::endl;
     }*/
-    uint64_t total_activity_possible=(this->levels-1)*cycles;
+    Tick total_activity_possible=(this->levels-1)*cycles;
     std::list<Usage>::iterator usage_pointer=this->usage.begin();
-    uint64_t current_activity=0;
-    uint64_t period_start=0;
-    uint64_t period_end=cycles;
+    Tick current_activity=0;
+    Tick period_start=0;
+    Tick period_end=cycles;
     std::list <std::pair<uint64_t, double>> result;
     while(usage_pointer!=this->usage.end()){
         Usage current_usage=*usage_pointer;
@@ -66,7 +66,7 @@ std::list <std::pair<uint64_t, double>>  UsageTracker::report_percentage(uint64_
         assert(begin<=end);
         current_activity+=((end-begin)*current_usage.level);
         if(current_usage.end>=period_end){
-            result.push_back(std::make_pair(period_end,(((double)current_activity)/total_activity_possible)*100));
+            result.push_back(std::make_pair((uint64_t)period_end,(((double)current_activity)/total_activity_possible)*100));
             period_start+=cycles;
             period_end+=cycles;
             current_activity=0;
