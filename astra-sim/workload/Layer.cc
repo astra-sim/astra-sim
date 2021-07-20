@@ -291,6 +291,18 @@ bool Layer::is_weight_grad_comm_finished_blocking() {
   }
   return false;
 }
+void Layer::print_involved_dimensions(std::vector<bool> &involved_dimensions) {
+    std::cout<<" involved dimensions: ";
+    for(int i=0; i<involved_dimensions.size(); i++){
+        if(involved_dimensions[i]== true){
+            std::cout<<" 1,";
+        }
+        else{
+            std::cout<<" 0,";
+        }
+    }
+    std::cout<<std::endl;
+}
 LayerData Layer::report(
     std::string run_name,
     int layer_num,
@@ -577,16 +589,8 @@ void Layer::issue_forward_pass_comm(
     }
     if (generator->id == 0) {
       std::cout << "info: all-reduce forward pass collective issued for layer: "
-                << id << " , involved dimensions: ";
-      for(int i=0; i<fwd_pass_comm_involved_dimensions.size(); i++){
-          if(fwd_pass_comm_involved_dimensions[i]== true){
-              std::cout<<" 1,";
-          }
-          else{
-              std::cout<<" 0,";
-          }
-      }
-      std::cout<<std::endl;
+                << id << ",";
+      print_involved_dimensions(fwd_pass_comm_involved_dimensions);
     }
   } else if (fwd_pass_comm_type == ComType::All_to_All) {
     fp = generator->generate_all_to_all(
@@ -603,7 +607,8 @@ void Layer::issue_forward_pass_comm(
     }
     if (generator->id == 0) {
       std::cout << "info: all-to-all forward pass collective issued for layer: "
-                << id << std::endl;
+                << id <<",";
+      print_involved_dimensions(fwd_pass_comm_involved_dimensions);
     }
   } else if (fwd_pass_comm_type == ComType::All_Gatehr) {
     fp = generator->generate_all_gather(
@@ -620,7 +625,8 @@ void Layer::issue_forward_pass_comm(
     }
     if (generator->id == 0) {
       std::cout << "info: all-gather forward pass collective issued for layer: "
-                << id << std::endl;
+                << id <<",";
+      print_involved_dimensions(fwd_pass_comm_involved_dimensions);
     }
   } else if (fwd_pass_comm_type == ComType::Reduce_Scatter) {
     fp = generator->generate_reduce_scatter(
@@ -638,7 +644,8 @@ void Layer::issue_forward_pass_comm(
     if (generator->id == 0) {
       std::cout
           << "info: reduce-scatter forward pass collective issued for layer: "
-          << id << std::endl;
+          << id <<",";
+      print_involved_dimensions(fwd_pass_comm_involved_dimensions);
     }
   } else if (fwd_pass_comm_type == ComType::None) {
     collective_counter--;
@@ -677,7 +684,8 @@ void Layer::issue_input_grad_comm(
     }
     if (generator->id == 0) {
       std::cout << "info: all-reduce input grad collective issued for layer: "
-                << id << std::endl;
+                << id <<",";
+      print_involved_dimensions(input_grad_comm_involved_dimensions);
     }
   } else if (input_grad_comm_type == ComType::All_to_All) {
     ig = generator->generate_all_to_all(
@@ -694,7 +702,8 @@ void Layer::issue_input_grad_comm(
     }
     if (generator->id == 0) {
       std::cout << "info: all-to-all input grad collective issued for layer: "
-                << id << std::endl;
+                << id <<",";
+      print_involved_dimensions(input_grad_comm_involved_dimensions);
     }
   } else if (input_grad_comm_type == ComType::All_Gatehr) {
     ig = generator->generate_all_gather(
@@ -711,7 +720,8 @@ void Layer::issue_input_grad_comm(
     }
     if (generator->id == 0) {
       std::cout << "info: all-gather input grad collective issued for layer: "
-                << id << std::endl;
+                << id <<",";
+      print_involved_dimensions(input_grad_comm_involved_dimensions);
     }
   } else if (input_grad_comm_type == ComType::Reduce_Scatter) {
     ig = generator->generate_reduce_scatter(
@@ -729,7 +739,8 @@ void Layer::issue_input_grad_comm(
     if (generator->id == 0) {
       std::cout
           << "info: reduce-scatter input grad collective issued for layer: "
-          << id << std::endl;
+          << id <<",";
+      print_involved_dimensions(input_grad_comm_involved_dimensions);
     }
   } else if (input_grad_comm_type == ComType::None) {
     collective_counter--;
@@ -771,8 +782,9 @@ void Layer::issue_weight_grad_comm(
       return;
     }
     if (generator->id == 0) {
-      std::cout << "info: allr-educe weight grad collective issued for layer: "
-                << id << " with size: " << weight_grad_comm_size << std::endl;
+      std::cout << "info: all-reduce weight grad collective issued for layer: "
+                << id << " with size: " << weight_grad_comm_size <<",";
+      print_involved_dimensions(weight_grad_comm_involved_dimensions);
     }
   } else if (weight_grad_comm_type == ComType::All_to_All) {
     wg = generator->generate_all_to_all(
@@ -789,7 +801,9 @@ void Layer::issue_weight_grad_comm(
     }
     if (generator->id == 0) {
       std::cout << "info: all-to-all weight grad collective issued for layer: "
-                << id << " with size: " << weight_grad_comm_size << std::endl;
+                << id << " with size: " << weight_grad_comm_size <<",";
+      print_involved_dimensions(weight_grad_comm_involved_dimensions);
+
     }
   } else if (weight_grad_comm_type == ComType::All_Gatehr) {
     wg = generator->generate_all_gather(
@@ -806,7 +820,8 @@ void Layer::issue_weight_grad_comm(
     }
     if (generator->id == 0) {
       std::cout << "info: all-gather weight grad collective issued for layer: "
-                << id << std::endl;
+                << id <<",";
+      print_involved_dimensions(weight_grad_comm_involved_dimensions);
     }
   } else if (weight_grad_comm_type == ComType::Reduce_Scatter) {
     wg = generator->generate_reduce_scatter(
@@ -824,7 +839,8 @@ void Layer::issue_weight_grad_comm(
     if (generator->id == 0) {
       std::cout
           << "info: reduce-scatter weight grad collective issued for layer: "
-          << id << std::endl;
+          << id <<",";
+      print_involved_dimensions(weight_grad_comm_involved_dimensions);
     }
   } else if (weight_grad_comm_type == ComType::None) {
     collective_counter--;

@@ -12,6 +12,10 @@ BasicLogicalTopology * GeneralComplexTopology::get_basic_topology_at_dimension(i
     return dimension_topology[dimension]->get_basic_topology_at_dimension(0,type);
 }
 int GeneralComplexTopology::get_num_of_nodes_in_dimension(int dimension) {
+    if(dimension>=dimension_topology.size()){
+        std::cout<<"dim: "<<dimension<<" requested! but max dim is: "<<dimension_topology.size()-1<<std::endl;
+    }
+    assert(dimension<dimension_topology.size());
     return dimension_topology[dimension]->get_num_of_nodes_in_dimension(0);
 }
 int GeneralComplexTopology::get_num_of_dimensions() {

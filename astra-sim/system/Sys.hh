@@ -90,6 +90,8 @@ class Sys : public Callable {
   int max_running;
   int concurrent_streams;
   int active_first_phase;
+  int dim_to_break;
+  std::vector<int> logical_broken_dims;
 
 
   int priority_counter;

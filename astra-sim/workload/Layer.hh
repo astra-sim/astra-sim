@@ -138,6 +138,7 @@ class Layer : public Callable, public StreamStat {
   void issue_weight_grad_comm(
       SchedulingPolicy pref_scheduling,
       CollectiveBarrier barrier);
+  void print_involved_dimensions(std::vector<bool> &involved_dimensions);
 };
 } // namespace AstraSim
 #endif

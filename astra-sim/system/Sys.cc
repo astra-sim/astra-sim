@@ -134,6 +134,7 @@ Sys::Sys(
   this->inter_dimension_scheduling=InterDimensionScheduling::Ascending;
   round_robin_inter_dimension_scheduler=0;
   this->last_scheduled_collective=0;
+  this->dim_to_break=-1;
 
   start_sim_time = std::chrono::high_resolution_clock::now();
   this->NI = NI;
@@ -368,6 +369,9 @@ int Sys::break_dimension(int model_parallel_npu_group) {
       logical_topologies["ReduceScatter"]=new GeneralComplexTopology(id,logical_dims,reduce_scatter_implementation_per_dimension);
       logical_topologies["AllGather"]=new GeneralComplexTopology(id,logical_dims,all_gather_implementation_per_dimension);
       logical_topologies["AllToAll"]=new GeneralComplexTopology(id,logical_dims,all_to_all_implementation_per_dimension);
+      this->logical_broken_dims=logical_dims;
+      this->dim_to_break=dimension_to_break;
+
       return dimension_to_break;
     }
     else if(all_npus*physical_dims[dimension_to_break]==model_parallel_npu_group){
