@@ -581,6 +581,7 @@ void Layer::issue_forward_pass_comm(
         pref_scheduling,
         layer_num);
     if(!fp->active){
+      collective_counter--;
       delete fp;
       if (barrier == CollectiveBarrier::Blocking) {
         workload->call(EventType::General, NULL);
@@ -599,6 +600,7 @@ void Layer::issue_forward_pass_comm(
         pref_scheduling,
         layer_num);
     if(!fp->active){
+      collective_counter--;
       delete fp;
       if (barrier == CollectiveBarrier::Blocking) {
         workload->call(EventType::General, NULL);
@@ -617,6 +619,7 @@ void Layer::issue_forward_pass_comm(
         pref_scheduling,
         layer_num);
     if(!fp->active){
+      collective_counter--;
       delete fp;
       if (barrier == CollectiveBarrier::Blocking) {
         workload->call(EventType::General, NULL);
@@ -635,6 +638,7 @@ void Layer::issue_forward_pass_comm(
         pref_scheduling,
         layer_num);
     if(!fp->active){
+      collective_counter--;
       delete fp;
       if (barrier == CollectiveBarrier::Blocking) {
         workload->call(EventType::General, NULL);
@@ -676,6 +680,7 @@ void Layer::issue_input_grad_comm(
         pref_scheduling,
         layer_num);
     if(!ig->active){
+      collective_counter--;
       delete ig;
       if (barrier == CollectiveBarrier::Blocking) {
         workload->call(EventType::General, NULL);
@@ -694,6 +699,7 @@ void Layer::issue_input_grad_comm(
         pref_scheduling,
         layer_num);
     if(!ig->active){
+      collective_counter--;
       delete ig;
       if (barrier == CollectiveBarrier::Blocking) {
         workload->call(EventType::General, NULL);
@@ -712,6 +718,7 @@ void Layer::issue_input_grad_comm(
         pref_scheduling,
         layer_num);
     if(!ig->active){
+      collective_counter--;
       delete ig;
       if (barrier == CollectiveBarrier::Blocking) {
         workload->call(EventType::General, NULL);
@@ -730,6 +737,7 @@ void Layer::issue_input_grad_comm(
         pref_scheduling,
         layer_num);
     if(!ig->active){
+      collective_counter--;
       delete ig;
       if (barrier == CollectiveBarrier::Blocking) {
         workload->call(EventType::General, NULL);
@@ -775,6 +783,7 @@ void Layer::issue_weight_grad_comm(
         pref_scheduling,
         layer_num);
     if(!wg->active){
+      collective_counter--;
       delete wg;
       if (barrier == CollectiveBarrier::Blocking) {
         workload->call(EventType::General, NULL);
@@ -793,6 +802,7 @@ void Layer::issue_weight_grad_comm(
         pref_scheduling,
         layer_num);
     if(!wg->active){
+      collective_counter--;
       delete wg;
       if (barrier == CollectiveBarrier::Blocking) {
         workload->call(EventType::General, NULL);
@@ -812,6 +822,7 @@ void Layer::issue_weight_grad_comm(
         pref_scheduling,
         layer_num);
     if(!wg->active){
+      collective_counter--;
       delete wg;
       if (barrier == CollectiveBarrier::Blocking) {
         workload->call(EventType::General, NULL);
@@ -830,6 +841,7 @@ void Layer::issue_weight_grad_comm(
         pref_scheduling,
         layer_num);
     if(!wg->active){
+      collective_counter--;
       delete wg;
       if (barrier == CollectiveBarrier::Blocking) {
         workload->call(EventType::General, NULL);

@@ -1020,11 +1020,11 @@ void Workload::iterate_hybrid_parallel_DLRM() {
     if (!layers[index]->is_weight_grad_comm_finished_blocking()) {
       // layers[index]->increment_waiting_for_wg();
       // waiting_for_comm++;
-      if (pass_counter == 1 && generator->id == 0 &&
-          generator->streams_finished == 106) {
+      //if (pass_counter == 1 && generator->id == 0 &&
+         //generator->streams_finished == 106) {
         // std::cout<<"still waiting for copleteness of layer:
         // "<<layers[index]->id<<std::endl;
-      }
+      //}
       // generator->register_event(this, EventType::General, NULL, 1);
       return;
     }
@@ -1105,6 +1105,9 @@ void Workload::iterate_hybrid_parallel_DLRM() {
       }
       pass_counter++;
       current_state = LoopState::Forward_Pass;
+      if(pass_counter == TOTAL_PASS){
+        layers[0]->is_weight_grad_comm_finished_blocking();
+      }
     } else {
       current_state = LoopState::Input_Gradient;
     }
