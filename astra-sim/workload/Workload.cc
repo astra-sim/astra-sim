@@ -153,6 +153,7 @@ void Workload::check_for_sim_end() {
         registered_for_finished_streams == false) {
       generator->register_for_finished_stream(this);
       registered_for_finished_streams = true;
+      layers[0]->is_weight_grad_comm_finished_blocking();
       // generator->register_event(this, EventType::General, NULL, 1);
       return;
     }
@@ -241,6 +242,9 @@ void Workload::iterate_data_parallel() {
       }
       pass_counter++;
       current_state = LoopState::Forward_Pass;
+      //if(pass_counter == TOTAL_PASS){
+      //  layers[0]->is_weight_grad_comm_finished_blocking();
+      //}
     } else {
       current_state = LoopState::Input_Gradient;
     }
@@ -813,9 +817,9 @@ void Workload::iterate_hybrid_parallel_Transformer() {
       }
       pass_counter++;
       current_state = LoopState::Forward_Pass;
-      if(pass_counter == TOTAL_PASS){
-          layers[0]->is_weight_grad_comm_finished_blocking();
-      }
+      //if(pass_counter == TOTAL_PASS){
+      //    layers[0]->is_weight_grad_comm_finished_blocking();
+      //}
     } else {
       current_state = LoopState::Input_Gradient;
     }
@@ -924,9 +928,9 @@ void Workload::iterate_hybrid_parallel_Transformer_fwd_in_bckwd() {
       }
       pass_counter++;
       current_state = LoopState::Forward_Pass;
-      if(pass_counter == TOTAL_PASS){
-          layers[0]->is_weight_grad_comm_finished_blocking();
-      }
+      //if(pass_counter == TOTAL_PASS){
+      //    layers[0]->is_weight_grad_comm_finished_blocking();
+      //}
     } else {
       current_state = LoopState::Input_Gradient;
     }
@@ -1105,9 +1109,9 @@ void Workload::iterate_hybrid_parallel_DLRM() {
       }
       pass_counter++;
       current_state = LoopState::Forward_Pass;
-      if(pass_counter == TOTAL_PASS){
-        layers[0]->is_weight_grad_comm_finished_blocking();
-      }
+      //if(pass_counter == TOTAL_PASS){
+      //  layers[0]->is_weight_grad_comm_finished_blocking();
+      //}
     } else {
       current_state = LoopState::Input_Gradient;
     }
@@ -1190,7 +1194,12 @@ std::map<std::string, std::vector<bool>> Workload::decode_involved_dimensions
                           false,false, false, false,false };
   std::vector<bool> all{ true, true, true,true, true,
                           true,true, true, true,true };
-  if(policy==ParallelismPolicy::Data || policy==ParallelismPolicy::DLRM ||
+  if(policy==ParallelismPolicy::All){
+    result["fwd"]=all;
+    result["ig"]=all;
+    result["wg"]=all;
+  }
+  else if(policy==ParallelismPolicy::Data || policy==ParallelismPolicy::DLRM ||
       policy==ParallelismPolicy::DLRMEnhanced ||
       policy==ParallelismPolicy::MicroBenchmark){
     result["fwd"]=none;
@@ -1409,7 +1418,7 @@ bool Workload::initialize_workload(std::string name) {
     if ((parallelismPolicy == ParallelismPolicy::DLRM ||
         parallelismPolicy == ParallelismPolicy::DLRMEnhanced) &&
         i==0) {
-      specific_policy = ParallelismPolicy::Model;
+      specific_policy = ParallelismPolicy::All;
     }
     if(specific_policy!=ParallelismPolicy::None){
       selected_involved_dimensions=decode_involved_dimensions(specific_policy,
