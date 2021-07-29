@@ -581,6 +581,10 @@ void Layer::issue_forward_pass_comm(
         pref_scheduling,
         layer_num);
     if(!fp->active){
+      if (generator->id == 0) {
+        std::cout << "info: all dims disabled, no forward pass collective for layer: " << id
+                  << std::endl;
+      }
       collective_counter--;
       delete fp;
       if (barrier == CollectiveBarrier::Blocking) {
@@ -600,6 +604,10 @@ void Layer::issue_forward_pass_comm(
         pref_scheduling,
         layer_num);
     if(!fp->active){
+      if (generator->id == 0) {
+        std::cout << "info: all dims disabled, no forward pass collective for layer: " << id
+                  << std::endl;
+      }
       collective_counter--;
       delete fp;
       if (barrier == CollectiveBarrier::Blocking) {
@@ -619,6 +627,10 @@ void Layer::issue_forward_pass_comm(
         pref_scheduling,
         layer_num);
     if(!fp->active){
+      if (generator->id == 0) {
+        std::cout << "info: all dims disabled, no forward pass collective for layer: " << id
+                  << std::endl;
+      }
       collective_counter--;
       delete fp;
       if (barrier == CollectiveBarrier::Blocking) {
@@ -638,6 +650,10 @@ void Layer::issue_forward_pass_comm(
         pref_scheduling,
         layer_num);
     if(!fp->active){
+      if (generator->id == 0) {
+        std::cout << "info: all dims disabled, no forward pass collective for layer: " << id
+                  << std::endl;
+      }
       collective_counter--;
       delete fp;
       if (barrier == CollectiveBarrier::Blocking) {
@@ -680,6 +696,10 @@ void Layer::issue_input_grad_comm(
         pref_scheduling,
         layer_num);
     if(!ig->active){
+      if (generator->id == 0) {
+        std::cout << "info: all dims disabled, no input grad collective for layer: " << id
+                  << std::endl;
+      }
       collective_counter--;
       delete ig;
       if (barrier == CollectiveBarrier::Blocking) {
@@ -699,6 +719,10 @@ void Layer::issue_input_grad_comm(
         pref_scheduling,
         layer_num);
     if(!ig->active){
+      if (generator->id == 0) {
+        std::cout << "info: all dims disabled, no input grad collective for layer: " << id
+                  << std::endl;
+      }
       collective_counter--;
       delete ig;
       if (barrier == CollectiveBarrier::Blocking) {
@@ -718,6 +742,10 @@ void Layer::issue_input_grad_comm(
         pref_scheduling,
         layer_num);
     if(!ig->active){
+      if (generator->id == 0) {
+        std::cout << "info: all dims disabled, no input grad collective for layer: " << id
+                  << std::endl;
+      }
       collective_counter--;
       delete ig;
       if (barrier == CollectiveBarrier::Blocking) {
@@ -737,6 +765,10 @@ void Layer::issue_input_grad_comm(
         pref_scheduling,
         layer_num);
     if(!ig->active){
+      if (generator->id == 0) {
+        std::cout << "info: all dims disabled, no input grad collective for layer: " << id
+                  << std::endl;
+      }
       collective_counter--;
       delete ig;
       if (barrier == CollectiveBarrier::Blocking) {
@@ -783,6 +815,10 @@ void Layer::issue_weight_grad_comm(
         pref_scheduling,
         layer_num);
     if(!wg->active){
+      if (generator->id == 0) {
+        std::cout << "info: all dims disabled, no weight grad collective for layer: " << id
+                  << std::endl;
+      }
       collective_counter--;
       delete wg;
       if (barrier == CollectiveBarrier::Blocking) {
@@ -802,6 +838,10 @@ void Layer::issue_weight_grad_comm(
         pref_scheduling,
         layer_num);
     if(!wg->active){
+      if (generator->id == 0) {
+        std::cout << "info: all dims disabled, no weight grad collective for layer: " << id
+                  << std::endl;
+      }
       collective_counter--;
       delete wg;
       if (barrier == CollectiveBarrier::Blocking) {
@@ -822,6 +862,10 @@ void Layer::issue_weight_grad_comm(
         pref_scheduling,
         layer_num);
     if(!wg->active){
+      if (generator->id == 0) {
+        std::cout << "info: all dims disabled, no weight grad collective for layer: " << id
+                  << std::endl;
+      }
       collective_counter--;
       delete wg;
       if (barrier == CollectiveBarrier::Blocking) {
@@ -841,6 +885,10 @@ void Layer::issue_weight_grad_comm(
         pref_scheduling,
         layer_num);
     if(!wg->active){
+      if (generator->id == 0) {
+        std::cout << "info: all dims disabled, no weight grad collective for layer: " << id
+                  << std::endl;
+      }
       collective_counter--;
       delete wg;
       if (barrier == CollectiveBarrier::Blocking) {

@@ -43,6 +43,7 @@ enum class ParallelismPolicy {
   HybridModelData,
   HybridCustomized,
   DistributedInference,
+  All,
   None
 };
 
