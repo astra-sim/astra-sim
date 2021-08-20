@@ -31,26 +31,23 @@ int Torus3D::get_num_of_dimensions() {
   return 3;
 }
 int Torus3D::get_num_of_nodes_in_dimension(int dimension) {
-  if(dimension==0){
+  if (dimension == 0) {
     return local_dimension->get_num_of_nodes_in_dimension(0);
-  }
-  else if(dimension==1){
+  } else if (dimension == 1) {
     return vertical_dimension->get_num_of_nodes_in_dimension(0);
-  }
-  else if(dimension==2){
+  } else if (dimension == 2) {
     return horizontal_dimension->get_num_of_nodes_in_dimension(0);
   }
   return -1;
 }
-BasicLogicalTopology * Torus3D::get_basic_topology_at_dimension(int dimension,
-                                                               ComType type) {
-  if(dimension==0){
+BasicLogicalTopology* Torus3D::get_basic_topology_at_dimension(
+    int dimension,
+    ComType type) {
+  if (dimension == 0) {
     return local_dimension;
-  }
-  else if(dimension==1){
+  } else if (dimension == 1) {
     return vertical_dimension;
-  }
-  else if(dimension==2){
+  } else if (dimension == 2) {
     return horizontal_dimension;
   }
   return NULL;

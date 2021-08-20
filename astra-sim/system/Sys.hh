@@ -23,9 +23,9 @@ LICENSE file in the root directory of this source tree.
 #include "Callable.hh"
 #include "CollectivePhase.hh"
 #include "Common.hh"
+#include "UsageTracker.hh"
 #include "astra-sim/system/topology/RingTopology.hh"
 #include "astra-sim/workload/Workload.hh"
-#include "UsageTracker.hh"
 
 namespace AstraSim {
 class MemBus;
@@ -53,7 +53,7 @@ class Sys : public Callable {
     std::vector<Tick> latency_per_dimension;
     std::vector<double> total_chunks_per_dimension;
     std::vector<uint64_t> total_active_chunks_per_dimension;
-    std::map<int,int> queue_id_to_dimension;
+    std::map<int, int> queue_id_to_dimension;
     std::vector<UsageTracker> usage;
 
     SchedulerUnit(
@@ -62,7 +62,7 @@ class Sys : public Callable {
         int max_running_streams,
         int ready_list_threshold,
         int queue_threshold);
-    void notify_stream_removed(int vnet,Tick running_time);
+    void notify_stream_removed(int vnet, Tick running_time);
     void notify_stream_added(int vnet);
     void notify_stream_added_into_ready_list();
     std::vector<double> get_average_latency_per_dimension();
@@ -74,10 +74,14 @@ class Sys : public Callable {
   int finished_workloads;
   int id;
 
-  std::vector<CollectiveImplementation*> all_reduce_implementation_per_dimension;
-  std::vector<CollectiveImplementation*> reduce_scatter_implementation_per_dimension;
-  std::vector<CollectiveImplementation*> all_gather_implementation_per_dimension;
-  std::vector<CollectiveImplementation*> all_to_all_implementation_per_dimension;
+  std::vector<CollectiveImplementation*>
+      all_reduce_implementation_per_dimension;
+  std::vector<CollectiveImplementation*>
+      reduce_scatter_implementation_per_dimension;
+  std::vector<CollectiveImplementation*>
+      all_gather_implementation_per_dimension;
+  std::vector<CollectiveImplementation*>
+      all_to_all_implementation_per_dimension;
   CollectiveOptimization collectiveOptimization;
 
   std::chrono::high_resolution_clock::time_point start_sim_time;
@@ -92,7 +96,6 @@ class Sys : public Callable {
   int active_first_phase;
   int dim_to_break;
   std::vector<int> logical_broken_dims;
-
 
   int priority_counter;
   bool boost_mode;
@@ -153,7 +156,7 @@ class Sys : public Callable {
   IntraDimensionScheduling intra_dimension_scheduling;
   InterDimensionScheduling inter_dimension_scheduling;
   int round_robin_inter_dimension_scheduler;
-  OfflineGreedy *offline_greedy;
+  OfflineGreedy* offline_greedy;
   Tick last_scheduled_collective;
 
   void register_for_finished_stream(Callable* callable);
@@ -210,7 +213,8 @@ class Sys : public Callable {
   std::string trim(const std::string& str, const std::string& whitespace);
   bool parse_var(std::string var, std::string value);
   bool post_process_inputs();
-  std::vector<CollectiveImplementation*> generate_collective_implementation_from_input(std::string input);
+  std::vector<CollectiveImplementation*>
+  generate_collective_implementation_from_input(std::string input);
   int break_dimension(int model_parallel_npu_group);
   int front_end_sim_send(
       Tick delay,
@@ -275,7 +279,7 @@ class Sys : public Callable {
   Tick mem_read(uint64_t bytes);
   Tick mem_write(uint64_t bytes);
   static int get_layer_numbers(std::string workload_input);
-  std::vector<std::string> split_string(std::string str,std::string sep);
+  std::vector<std::string> split_string(std::string str, std::string sep);
   DataSet* generate_all_reduce(
       uint64_t size,
       std::vector<bool> involved_dimensions,
@@ -296,23 +300,24 @@ class Sys : public Callable {
       std::vector<bool> involved_dimensions,
       SchedulingPolicy pref_scheduling,
       int layer);
-  DataSet * generate_collective(uint64_t size,
-                                int layer_num,
-                                LogicalTopology *topology,
-                                std::vector<CollectiveImplementation*> implementation_per_dimension,
-                                std::vector<bool> dimensions_involved,
-                                ComType collective_type,
-                                SchedulingPolicy pref_scheduling);
+  DataSet* generate_collective(
+      uint64_t size,
+      int layer_num,
+      LogicalTopology* topology,
+      std::vector<CollectiveImplementation*> implementation_per_dimension,
+      std::vector<bool> dimensions_involved,
+      ComType collective_type,
+      SchedulingPolicy pref_scheduling);
   CollectivePhase generate_collective_phase(
-          ComType collective_type,
-          int layer_num,
-          BasicLogicalTopology *topology,
-          uint64_t data_size,
-          int queue_id,
-          RingTopology::Direction direction,
-          InjectionPolicy injection_policy,
-          CollectiveImplementation *collective_implementation,
-          bool boost_mode);
+      ComType collective_type,
+      int layer_num,
+      BasicLogicalTopology* topology,
+      uint64_t data_size,
+      int queue_id,
+      RingTopology::Direction direction,
+      InjectionPolicy injection_policy,
+      CollectiveImplementation* collective_implementation,
+      bool boost_mode);
   void insert_stream(std::list<BaseStream*>* queue, BaseStream* baseStream);
   void proceed_to_next_vnet_baseline(StreamBaseline* stream);
   int determine_chunk_size(uint64_t size, ComType type);

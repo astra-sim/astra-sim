@@ -25,7 +25,7 @@ void StreamBaseline::init() {
   // std::cout<<"stream number: "<<stream_num<<"is inited in node:
   // "<<owner->id<<std::endl;
   initialized = true;
-  last_init=Sys::boostedTick();
+  last_init = Sys::boostedTick();
   if (!my_current_phase.enabled) {
     return;
   }
@@ -51,13 +51,13 @@ void StreamBaseline::call(EventType event, CallData* data) {
   }
 }
 void StreamBaseline::consume(RecvPacketEventHadndlerData* message) {
-    net_message_latency.back() +=
-        Sys::boostedTick() - message->ready_time; // not accurate
-    net_message_counter++;
-    /*if (owner->id == 0) {
-      std::cout<<"message received at time: "
-      <<owner->boostedTick()<<std::endl;
-    }*/
+  net_message_latency.back() +=
+      Sys::boostedTick() - message->ready_time; // not accurate
+  net_message_counter++;
+  /*if (owner->id == 0) {
+    std::cout<<"message received at time: "
+    <<owner->boostedTick()<<std::endl;
+  }*/
   my_current_phase.algorithm->run(EventType::PacketReceived, message);
 }
 } // namespace AstraSim

@@ -30,13 +30,11 @@ class DoubleBinaryTreeTopology : public ComplexLogicalTopology {
   LogicalTopology* get_topology() override;
   ~DoubleBinaryTreeTopology();
   int get_num_of_dimensions() override;
-  BasicLogicalTopology * get_basic_topology_at_dimension(int dimension, ComType type) override;
+  BasicLogicalTopology* get_basic_topology_at_dimension(
+      int dimension,
+      ComType type) override;
   int get_num_of_nodes_in_dimension(int dimension) override;
-  DoubleBinaryTreeTopology(
-      int id,
-      int total_tree_nodes,
-      int start,
-      int stride);
+  DoubleBinaryTreeTopology(int id, int total_tree_nodes, int start, int stride);
 };
 } // namespace AstraSim
 #endif

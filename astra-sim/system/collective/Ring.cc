@@ -58,7 +58,7 @@ Ring::Ring(
           this->parallel_reduce = 1;
           break;
         default:
-          this->parallel_reduce = 1 ;
+          this->parallel_reduce = 1;
           break;
       }
       break;

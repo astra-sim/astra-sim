@@ -20,22 +20,22 @@ LICENSE file in the root directory of this source tree.
 #include <vector>
 #include "Callable.hh"
 #include "Common.hh"
-#include "astra-sim/workload/CSVWriter.hh"
 #include "Usage.hh"
+#include "astra-sim/workload/CSVWriter.hh"
 
 namespace AstraSim {
-class UsageTracker{
-public:
-    int levels;
-    int current_level;
-    Tick last_tick;
-    std::list<Usage> usage;
-    UsageTracker(int levels);
-    void increase_usage();
-    void decrease_usage();
-    void set_usage(int level);
-    void report(CSVWriter *writer,int offset);
-    std::list <std::pair<uint64_t, double>>  report_percentage(uint64_t cycles);
+class UsageTracker {
+ public:
+  int levels;
+  int current_level;
+  Tick last_tick;
+  std::list<Usage> usage;
+  UsageTracker(int levels);
+  void increase_usage();
+  void decrease_usage();
+  void set_usage(int level);
+  void report(CSVWriter* writer, int offset);
+  std::list<std::pair<uint64_t, double>> report_percentage(uint64_t cycles);
 };
 } // namespace AstraSim
 #endif

@@ -26,18 +26,17 @@ AllToAll::AllToAll(
           boost_mode) {
   this->name = Name::AllToAll;
   this->enabled = true;
-  this->middle_point=nodes_in_ring - 1;
+  this->middle_point = nodes_in_ring - 1;
   if (boost_mode) {
     this->enabled = allToAllTopology->is_enabled();
   }
-  if(window==-1){
-      parallel_reduce = nodes_in_ring - 1;
+  if (window == -1) {
+    parallel_reduce = nodes_in_ring - 1;
+  } else {
+    parallel_reduce = (int)std::min(window, nodes_in_ring - 1);
   }
-  else{
-      parallel_reduce=(int)std::min(window,nodes_in_ring - 1);
-  }
-  if(type==ComType::All_to_All){
-      this->stream_count=nodes_in_ring-1;
+  if (type == ComType::All_to_All) {
+    this->stream_count = nodes_in_ring - 1;
   }
 }
 int AllToAll::get_non_zero_latency_packets() {
@@ -60,19 +59,18 @@ void AllToAll::process_max_count() {
     release_packets();
     remained_packets_per_max_count = 1;
 
+    current_receiver = ((RingTopology*)logicalTopology)
+                           ->get_receiver_node(current_receiver, direction);
+    if (current_receiver == id) {
       current_receiver = ((RingTopology*)logicalTopology)
                              ->get_receiver_node(current_receiver, direction);
-      if (current_receiver == id) {
-        current_receiver = ((RingTopology*)logicalTopology)
-                               ->get_receiver_node(current_receiver, direction);
-      }
+    }
+    current_sender = ((RingTopology*)logicalTopology)
+                         ->get_sender_node(current_sender, direction);
+    if (current_sender == id) {
       current_sender = ((RingTopology*)logicalTopology)
                            ->get_sender_node(current_sender, direction);
-      if (current_sender == id) {
-        current_sender = ((RingTopology*)logicalTopology)
-                             ->get_sender_node(current_sender, direction);
-      }
-
+    }
   }
 }
 void AllToAll::run(EventType event, CallData* data) {
@@ -93,7 +91,8 @@ void AllToAll::run(EventType event, CallData* data) {
   } else if (event == EventType::PacketReceived) {
     total_packets_received++;
     /*if(id==0){
-        std::cout<<"message received at time: "<<stream->owner->boostedTick()<<std::endl;
+        std::cout<<"message received at time:
+    "<<stream->owner->boostedTick()<<std::endl;
     }*/
     insert_packet(nullptr);
   } else if (event == EventType::StreamInit) {

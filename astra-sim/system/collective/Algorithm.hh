@@ -27,7 +27,7 @@ LICENSE file in the root directory of this source tree.
 namespace AstraSim {
 class Algorithm : public Callable {
  public:
-  enum class Name { Ring, DoubleBinaryTree, AllToAll,HalvingDoubling };
+  enum class Name { Ring, DoubleBinaryTree, AllToAll, HalvingDoubling };
   Name name;
   int id;
   BaseStream* stream;

@@ -92,11 +92,11 @@ uint64_t SimpleMemory::nic_mem_write(uint64_t size) {
   double delay = (size / nic_access_bw_GB);
   double offset = 0;
   if (time_ns + access_latency < last_write_request_serviced) {
-      offset = (last_write_request_serviced + delay) - time_ns;
-      last_write_request_serviced += delay;
+    offset = (last_write_request_serviced + delay) - time_ns;
+    last_write_request_serviced += delay;
   } else {
     offset = (time_ns + access_latency + delay) - time_ns;
-      last_write_request_serviced = time_ns + access_latency + delay;
+    last_write_request_serviced = time_ns + access_latency + delay;
   }
   // std::cout<<"nic write req, node id: "<<NI->sim_comm_get_rank()<<", bytes:
   // "<<size<<

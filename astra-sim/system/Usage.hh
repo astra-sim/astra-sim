@@ -21,12 +21,12 @@ LICENSE file in the root directory of this source tree.
 #include "Common.hh"
 
 namespace AstraSim {
-class Usage{
-public:
-    int level;
-    uint64_t start;
-    uint64_t end;
-    Usage(int level, uint64_t start, uint64_t end);
+class Usage {
+ public:
+  int level;
+  uint64_t start;
+  uint64_t end;
+  Usage(int level, uint64_t start, uint64_t end);
 };
 } // namespace AstraSim
 #endif
