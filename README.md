@@ -46,7 +46,7 @@ $ git submodule update
 3. The results of example script runs will be dumped inside `examples/results/` path.
 
 #### Instructions for compiling & running analytical backend as the network simulator
-1. Run `./build/astra_analytical/build.sh -c` to compile and integrate astra-sim with analytical backend (`-l` flag will clean the compilation). This will create a binary file where analytical backend is integrated with astra-sim. The analytical backend is hosted at https://github.com/astra-sim/analytical .
+1. Run `./build/astra_analytical/build.sh -c` to compile and integrate astra-sim with analytical backend (`-l` flag will clean the compilation). This will create a binary file where analytical backend is integrated with astra-sim. Please refer to [this page](https://github.com/astra-sim/astra-sim/tree/master/build/astra_analytical) for more details about compilation. The analytical backend is hosted at https://github.com/astra-sim/analytical .
 2. Run an example inside the `examples/` directory with the analytical model as a backend. Example: `examples/run_allreduce.sh -n analytical`. This command will run a single all-reduce collective on a Torus topology. 
 3. The results of example script runs will be dumped inside `examples/results/` path. 
 
