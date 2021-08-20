@@ -43,9 +43,9 @@ enum class ParallelismPolicy {
   HybridModelData,
   HybridCustomized,
   DistributedInference,
+  All,
   None
 };
-
 
 class Workload : Callable {
  public:
@@ -99,7 +99,9 @@ class Workload : Callable {
   void iterate_distributed_inference();
   bool initialize_workload(std::string name);
   void initialize_stat_files();
-  std::map<std::string,std::vector<bool>> decode_involved_dimensions(ParallelismPolicy policy,int model_parallel_npu_group);
+  std::map<std::string, std::vector<bool>> decode_involved_dimensions(
+      ParallelismPolicy policy,
+      int model_parallel_npu_group);
   void fire();
   void report();
   void check_for_sim_end();

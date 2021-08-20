@@ -14,7 +14,7 @@ DataSet::DataSet(int total_streams) {
   this->finished_streams = 0;
   this->finished = false;
   this->finish_tick = 0;
-  this->active=true;
+  this->active = true;
   this->creation_tick = Sys::boostedTick();
   this->notifier = nullptr;
 }

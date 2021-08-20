@@ -33,15 +33,17 @@ Layer::Layer(
   this->fwd_pass_compute_time = fwd_pass_compute_time;
   this->fwd_pass_comm_type = fwd_pass_comm_type;
   this->fwd_pass_comm_size = fwd_pass_comm_size;
-  this->fwd_pass_comm_involved_dimensions=fwd_pass_comm_involved_dimensions;
+  this->fwd_pass_comm_involved_dimensions = fwd_pass_comm_involved_dimensions;
   this->input_grad_compute_time = input_grad_compute_time;
   this->input_grad_comm_type = input_grad_comm_type;
   this->input_grad_comm_size = input_grad_comm_size;
-  this->input_grad_comm_involved_dimensions=input_grad_comm_involved_dimensions;
+  this->input_grad_comm_involved_dimensions =
+      input_grad_comm_involved_dimensions;
   this->weight_grad_compute_time = weight_grad_compute_time;
   this->weight_grad_comm_type = weight_grad_comm_type;
   this->weight_grad_comm_size = weight_grad_comm_size;
-  this->weight_grad_comm_involved_dimensions=weight_grad_comm_involved_dimensions;
+  this->weight_grad_comm_involved_dimensions =
+      weight_grad_comm_involved_dimensions;
   this->collective_counter = 0;
 
   this->weight_grad_update_time = weight_grad_update_time;
@@ -99,7 +101,7 @@ void Layer::call(EventType event, CallData* mdata) {
       std::cout << "***** info: weight gradient collective for layer: " << id
                 << " is finished************" << std::endl;
     }
-    weight_grad_datasets[data]->finish_tick+=weight_grad_update_time;
+    weight_grad_datasets[data]->finish_tick += weight_grad_update_time;
     total_weight_grad_comm += weight_grad_datasets[data]->finish_tick -
         weight_grad_datasets[data]->creation_tick;
     if (weight_grad_datasets.size() == 1 &&
@@ -139,7 +141,7 @@ void Layer::call(EventType event, CallData* mdata) {
       std::cout << "***** info: input gradient collective for layer: " << id
                 << " is finished************" << std::endl;
     }
-    input_grad_datasets[data]->finish_tick+=input_grad_update_time;
+    input_grad_datasets[data]->finish_tick += input_grad_update_time;
     total_input_grad_comm += input_grad_datasets[data]->finish_tick -
         input_grad_datasets[data]->creation_tick;
     if (input_grad_datasets.size() == 1 &&
@@ -179,7 +181,7 @@ void Layer::call(EventType event, CallData* mdata) {
       std::cout << "***** info: fwd pass comm collective for layer: " << id
                 << " is finished************" << std::endl;
     }
-    fwd_pass_datasets[data]->finish_tick+=fwd_update_time;
+    fwd_pass_datasets[data]->finish_tick += fwd_update_time;
     total_fwd_comm += fwd_pass_datasets[data]->finish_tick -
         fwd_pass_datasets[data]->creation_tick;
     if (fwd_pass_datasets.size() == 1 &&
@@ -253,7 +255,9 @@ bool Layer::is_fwd_pass_comm_finished_blocking() {
   if (fwd_pass_datasets.size() == 0) {
     return true;
   }
-  started_waiting_for_fwd_pass.push_back(Sys::boostedTick());
+  if (started_waiting_for_fwd_pass.size() == 0) {
+    started_waiting_for_fwd_pass.push_back(Sys::boostedTick());
+  }
   return false;
 }
 bool Layer::is_input_grad_comm_finished() {
@@ -268,7 +272,9 @@ bool Layer::is_input_grad_comm_finished_blocking() {
       0) { //&& Sys::boostedTick()-last_ig_finished>=input_grad_update_time
     return true;
   }
-  started_waiting_for_input_grad.push_back(Sys::boostedTick());
+  if (started_waiting_for_input_grad.size() == 0) {
+    started_waiting_for_input_grad.push_back(Sys::boostedTick());
+  }
   return false;
 }
 bool Layer::is_weight_grad_comm_finished() {
@@ -282,8 +288,21 @@ bool Layer::is_weight_grad_comm_finished_blocking() {
   if (weight_grad_datasets.size() == 0) {
     return true;
   }
-  this->started_waiting_for_weight_grad.push_back(Sys::boostedTick());
+  if (started_waiting_for_weight_grad.size() == 0) {
+    this->started_waiting_for_weight_grad.push_back(Sys::boostedTick());
+  }
   return false;
+}
+void Layer::print_involved_dimensions(std::vector<bool>& involved_dimensions) {
+  std::cout << " involved dimensions: ";
+  for (int i = 0; i < involved_dimensions.size(); i++) {
+    if (involved_dimensions[i] == true) {
+      std::cout << " 1,";
+    } else {
+      std::cout << " 0,";
+    }
+  }
+  std::cout << std::endl;
 }
 LayerData Layer::report(
     std::string run_name,
@@ -443,6 +462,7 @@ LayerData Layer::report(
         EndToEnd->write_cell(0, 12, "total comp");
         EndToEnd->write_cell(0, 13, "total exposed comm");
       }
+      total_exposed = (((double)Sys::boostedTick()) / FREQ) - total_compute;
       EndToEnd->write_cell(1 + stat_row, 12, std::to_string(total_compute));
       EndToEnd->write_cell(1 + stat_row, 13, std::to_string(total_exposed));
     }
@@ -527,25 +547,23 @@ LayerData Layer::report(
           std::to_string(ml / FREQ));
     }
     if (layer_num == workload->SIZE - 1) {
-        std::cout << "*************************  Chunk Stats Per Logical Dimension (for all layers) "
-                     "************************* "
-                  << id << std::endl;
-        i=1;
-        std::vector<double> avg_chunk_latency_per_dimension = generator->scheduler_unit->get_average_latency_per_dimension();
-        for (auto &cl : avg_chunk_latency_per_dimension) {
-            std::cout << " ,Average chunk latency for logical dimension  " << i++
-                      << " of topology: " << cl << std::endl;
-            if (stat_row == 0) {
-                detailed->write_cell(
-                        0, count, "avg chunk delay dimension " + std::to_string(i-1));
-            }
-            detailed->write_cell(
-                    1 + stat_row,
-                    count++,
-                    std::to_string(cl / FREQ));
+      std::cout
+          << "*************************  Chunk Stats Per Logical Dimension (for all layers) "
+             "************************* "
+          << id << std::endl;
+      i = 1;
+      std::vector<double> avg_chunk_latency_per_dimension =
+          generator->scheduler_unit->get_average_latency_per_dimension();
+      for (auto& cl : avg_chunk_latency_per_dimension) {
+        std::cout << " ,Average chunk latency for logical dimension  " << i++
+                  << " of topology: " << cl << std::endl;
+        if (stat_row == 0) {
+          detailed->write_cell(
+              0, count, "avg chunk delay dimension " + std::to_string(i - 1));
         }
+        detailed->write_cell(1 + stat_row, count++, std::to_string(cl / FREQ));
+      }
     }
-
   }
   return layerData;
 }
@@ -561,7 +579,13 @@ void Layer::issue_forward_pass_comm(
         fwd_pass_comm_involved_dimensions,
         pref_scheduling,
         layer_num);
-    if(!fp->active){
+    if (!fp->active) {
+      if (generator->id == 0) {
+        std::cout
+            << "info: all dims disabled, no forward pass collective for layer: "
+            << id << std::endl;
+      }
+      collective_counter--;
       delete fp;
       if (barrier == CollectiveBarrier::Blocking) {
         workload->call(EventType::General, NULL);
@@ -570,7 +594,8 @@ void Layer::issue_forward_pass_comm(
     }
     if (generator->id == 0) {
       std::cout << "info: all-reduce forward pass collective issued for layer: "
-                << id << std::endl;
+                << id << ",";
+      print_involved_dimensions(fwd_pass_comm_involved_dimensions);
     }
   } else if (fwd_pass_comm_type == ComType::All_to_All) {
     fp = generator->generate_all_to_all(
@@ -578,7 +603,13 @@ void Layer::issue_forward_pass_comm(
         fwd_pass_comm_involved_dimensions,
         pref_scheduling,
         layer_num);
-    if(!fp->active){
+    if (!fp->active) {
+      if (generator->id == 0) {
+        std::cout
+            << "info: all dims disabled, no forward pass collective for layer: "
+            << id << std::endl;
+      }
+      collective_counter--;
       delete fp;
       if (barrier == CollectiveBarrier::Blocking) {
         workload->call(EventType::General, NULL);
@@ -587,7 +618,8 @@ void Layer::issue_forward_pass_comm(
     }
     if (generator->id == 0) {
       std::cout << "info: all-to-all forward pass collective issued for layer: "
-                << id << std::endl;
+                << id << ",";
+      print_involved_dimensions(fwd_pass_comm_involved_dimensions);
     }
   } else if (fwd_pass_comm_type == ComType::All_Gatehr) {
     fp = generator->generate_all_gather(
@@ -595,7 +627,13 @@ void Layer::issue_forward_pass_comm(
         fwd_pass_comm_involved_dimensions,
         pref_scheduling,
         layer_num);
-    if(!fp->active){
+    if (!fp->active) {
+      if (generator->id == 0) {
+        std::cout
+            << "info: all dims disabled, no forward pass collective for layer: "
+            << id << std::endl;
+      }
+      collective_counter--;
       delete fp;
       if (barrier == CollectiveBarrier::Blocking) {
         workload->call(EventType::General, NULL);
@@ -604,7 +642,8 @@ void Layer::issue_forward_pass_comm(
     }
     if (generator->id == 0) {
       std::cout << "info: all-gather forward pass collective issued for layer: "
-                << id << std::endl;
+                << id << ",";
+      print_involved_dimensions(fwd_pass_comm_involved_dimensions);
     }
   } else if (fwd_pass_comm_type == ComType::Reduce_Scatter) {
     fp = generator->generate_reduce_scatter(
@@ -612,7 +651,13 @@ void Layer::issue_forward_pass_comm(
         fwd_pass_comm_involved_dimensions,
         pref_scheduling,
         layer_num);
-    if(!fp->active){
+    if (!fp->active) {
+      if (generator->id == 0) {
+        std::cout
+            << "info: all dims disabled, no forward pass collective for layer: "
+            << id << std::endl;
+      }
+      collective_counter--;
       delete fp;
       if (barrier == CollectiveBarrier::Blocking) {
         workload->call(EventType::General, NULL);
@@ -622,7 +667,8 @@ void Layer::issue_forward_pass_comm(
     if (generator->id == 0) {
       std::cout
           << "info: reduce-scatter forward pass collective issued for layer: "
-          << id << std::endl;
+          << id << ",";
+      print_involved_dimensions(fwd_pass_comm_involved_dimensions);
     }
   } else if (fwd_pass_comm_type == ComType::None) {
     collective_counter--;
@@ -652,7 +698,13 @@ void Layer::issue_input_grad_comm(
         input_grad_comm_involved_dimensions,
         pref_scheduling,
         layer_num);
-    if(!ig->active){
+    if (!ig->active) {
+      if (generator->id == 0) {
+        std::cout
+            << "info: all dims disabled, no input grad collective for layer: "
+            << id << std::endl;
+      }
+      collective_counter--;
       delete ig;
       if (barrier == CollectiveBarrier::Blocking) {
         workload->call(EventType::General, NULL);
@@ -661,7 +713,8 @@ void Layer::issue_input_grad_comm(
     }
     if (generator->id == 0) {
       std::cout << "info: all-reduce input grad collective issued for layer: "
-                << id << std::endl;
+                << id << ",";
+      print_involved_dimensions(input_grad_comm_involved_dimensions);
     }
   } else if (input_grad_comm_type == ComType::All_to_All) {
     ig = generator->generate_all_to_all(
@@ -669,7 +722,13 @@ void Layer::issue_input_grad_comm(
         input_grad_comm_involved_dimensions,
         pref_scheduling,
         layer_num);
-    if(!ig->active){
+    if (!ig->active) {
+      if (generator->id == 0) {
+        std::cout
+            << "info: all dims disabled, no input grad collective for layer: "
+            << id << std::endl;
+      }
+      collective_counter--;
       delete ig;
       if (barrier == CollectiveBarrier::Blocking) {
         workload->call(EventType::General, NULL);
@@ -678,7 +737,8 @@ void Layer::issue_input_grad_comm(
     }
     if (generator->id == 0) {
       std::cout << "info: all-to-all input grad collective issued for layer: "
-                << id << std::endl;
+                << id << ",";
+      print_involved_dimensions(input_grad_comm_involved_dimensions);
     }
   } else if (input_grad_comm_type == ComType::All_Gatehr) {
     ig = generator->generate_all_gather(
@@ -686,7 +746,13 @@ void Layer::issue_input_grad_comm(
         input_grad_comm_involved_dimensions,
         pref_scheduling,
         layer_num);
-    if(!ig->active){
+    if (!ig->active) {
+      if (generator->id == 0) {
+        std::cout
+            << "info: all dims disabled, no input grad collective for layer: "
+            << id << std::endl;
+      }
+      collective_counter--;
       delete ig;
       if (barrier == CollectiveBarrier::Blocking) {
         workload->call(EventType::General, NULL);
@@ -695,7 +761,8 @@ void Layer::issue_input_grad_comm(
     }
     if (generator->id == 0) {
       std::cout << "info: all-gather input grad collective issued for layer: "
-                << id << std::endl;
+                << id << ",";
+      print_involved_dimensions(input_grad_comm_involved_dimensions);
     }
   } else if (input_grad_comm_type == ComType::Reduce_Scatter) {
     ig = generator->generate_reduce_scatter(
@@ -703,7 +770,13 @@ void Layer::issue_input_grad_comm(
         input_grad_comm_involved_dimensions,
         pref_scheduling,
         layer_num);
-    if(!ig->active){
+    if (!ig->active) {
+      if (generator->id == 0) {
+        std::cout
+            << "info: all dims disabled, no input grad collective for layer: "
+            << id << std::endl;
+      }
+      collective_counter--;
       delete ig;
       if (barrier == CollectiveBarrier::Blocking) {
         workload->call(EventType::General, NULL);
@@ -713,7 +786,8 @@ void Layer::issue_input_grad_comm(
     if (generator->id == 0) {
       std::cout
           << "info: reduce-scatter input grad collective issued for layer: "
-          << id << std::endl;
+          << id << ",";
+      print_involved_dimensions(input_grad_comm_involved_dimensions);
     }
   } else if (input_grad_comm_type == ComType::None) {
     collective_counter--;
@@ -747,7 +821,13 @@ void Layer::issue_weight_grad_comm(
         weight_grad_comm_involved_dimensions,
         pref_scheduling,
         layer_num);
-    if(!wg->active){
+    if (!wg->active) {
+      if (generator->id == 0) {
+        std::cout
+            << "info: all dims disabled, no weight grad collective for layer: "
+            << id << std::endl;
+      }
+      collective_counter--;
       delete wg;
       if (barrier == CollectiveBarrier::Blocking) {
         workload->call(EventType::General, NULL);
@@ -755,8 +835,9 @@ void Layer::issue_weight_grad_comm(
       return;
     }
     if (generator->id == 0) {
-      std::cout << "info: allr-educe weight grad collective issued for layer: "
-                << id << " with size: " << weight_grad_comm_size << std::endl;
+      std::cout << "info: all-reduce weight grad collective issued for layer: "
+                << id << " with size: " << weight_grad_comm_size << ",";
+      print_involved_dimensions(weight_grad_comm_involved_dimensions);
     }
   } else if (weight_grad_comm_type == ComType::All_to_All) {
     wg = generator->generate_all_to_all(
@@ -764,7 +845,13 @@ void Layer::issue_weight_grad_comm(
         weight_grad_comm_involved_dimensions,
         pref_scheduling,
         layer_num);
-    if(!wg->active){
+    if (!wg->active) {
+      if (generator->id == 0) {
+        std::cout
+            << "info: all dims disabled, no weight grad collective for layer: "
+            << id << std::endl;
+      }
+      collective_counter--;
       delete wg;
       if (barrier == CollectiveBarrier::Blocking) {
         workload->call(EventType::General, NULL);
@@ -773,7 +860,8 @@ void Layer::issue_weight_grad_comm(
     }
     if (generator->id == 0) {
       std::cout << "info: all-to-all weight grad collective issued for layer: "
-                << id << " with size: " << weight_grad_comm_size << std::endl;
+                << id << " with size: " << weight_grad_comm_size << ",";
+      print_involved_dimensions(weight_grad_comm_involved_dimensions);
     }
   } else if (weight_grad_comm_type == ComType::All_Gatehr) {
     wg = generator->generate_all_gather(
@@ -781,7 +869,13 @@ void Layer::issue_weight_grad_comm(
         weight_grad_comm_involved_dimensions,
         pref_scheduling,
         layer_num);
-    if(!wg->active){
+    if (!wg->active) {
+      if (generator->id == 0) {
+        std::cout
+            << "info: all dims disabled, no weight grad collective for layer: "
+            << id << std::endl;
+      }
+      collective_counter--;
       delete wg;
       if (barrier == CollectiveBarrier::Blocking) {
         workload->call(EventType::General, NULL);
@@ -790,7 +884,8 @@ void Layer::issue_weight_grad_comm(
     }
     if (generator->id == 0) {
       std::cout << "info: all-gather weight grad collective issued for layer: "
-                << id << std::endl;
+                << id << ",";
+      print_involved_dimensions(weight_grad_comm_involved_dimensions);
     }
   } else if (weight_grad_comm_type == ComType::Reduce_Scatter) {
     wg = generator->generate_reduce_scatter(
@@ -798,7 +893,13 @@ void Layer::issue_weight_grad_comm(
         weight_grad_comm_involved_dimensions,
         pref_scheduling,
         layer_num);
-    if(!wg->active){
+    if (!wg->active) {
+      if (generator->id == 0) {
+        std::cout
+            << "info: all dims disabled, no weight grad collective for layer: "
+            << id << std::endl;
+      }
+      collective_counter--;
       delete wg;
       if (barrier == CollectiveBarrier::Blocking) {
         workload->call(EventType::General, NULL);
@@ -808,7 +909,8 @@ void Layer::issue_weight_grad_comm(
     if (generator->id == 0) {
       std::cout
           << "info: reduce-scatter weight grad collective issued for layer: "
-          << id << std::endl;
+          << id << ",";
+      print_involved_dimensions(weight_grad_comm_involved_dimensions);
     }
   } else if (weight_grad_comm_type == ComType::None) {
     collective_counter--;

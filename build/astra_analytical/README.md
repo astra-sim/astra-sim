@@ -25,11 +25,7 @@ After installing the required dependencies, you can compile both Astra-sim and A
 ```
 
 ## Run
-After a successful compilation, you can run the compiled binary by using the same build script file.
-```bash
-./build.sh -r
-```
-You can also configure the run by passing command-line arguments and/or changing the network configuration `.json` file.
+After a successful compilation, you can run the compiled binary.
 - Check [this page](https://github.com/astra-sim/astra-sim) for available Astra-sim configurations.
 - Check [this page](https://github.com/astra-sim/analytical) for Analytical Network configurations.
 
@@ -37,4 +33,9 @@ You can also configure the run by passing command-line arguments and/or changing
 For your convenience, the build script provides you sugar for easily removing compiled binary and related build files.
 ```bash
 ./AnalyticalBackend.sh -l
+```
+
+To remove both build files and run results, use `-lr` option.
+```bash
+./AnalyticalBackend.sh -lr
 ```

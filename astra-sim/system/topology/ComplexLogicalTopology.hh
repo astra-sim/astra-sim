@@ -28,9 +28,11 @@ class ComplexLogicalTopology : public LogicalTopology {
     this->complexity = LogicalTopology::Complexity::Complex;
   }
   virtual ~ComplexLogicalTopology() = default;
-  virtual int get_num_of_nodes_in_dimension(int dimension) override=0;
-  virtual int get_num_of_dimensions() override=0;
-  virtual BasicLogicalTopology * get_basic_topology_at_dimension(int dimension, ComType type) override=0;
+  virtual int get_num_of_nodes_in_dimension(int dimension) override = 0;
+  virtual int get_num_of_dimensions() override = 0;
+  virtual BasicLogicalTopology* get_basic_topology_at_dimension(
+      int dimension,
+      ComType type) override = 0;
 };
 } // namespace AstraSim
 #endif

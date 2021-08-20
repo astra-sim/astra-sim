@@ -14,20 +14,22 @@ DoubleBinaryTreeTopology::DoubleBinaryTreeTopology(
     int total_tree_nodes,
     int start,
     int stride) {
-  if(id==0){
-      std::cout << "Node 0: Double binary tree created with total nodes: "
-                << total_tree_nodes << " ,start: " << start
-                << " ,stride: " << stride << std::endl;
+  if (id == 0) {
+    std::cout << "Node 0: Double binary tree created with total nodes: "
+              << total_tree_nodes << " ,start: " << start
+              << " ,stride: " << stride << std::endl;
   }
-  DBMAX = new BinaryTree(id,BinaryTree::TreeType::RootMax,total_tree_nodes,start,stride);
-  DBMIN = new BinaryTree(id,BinaryTree::TreeType::RootMin,total_tree_nodes,start,stride);
+  DBMAX = new BinaryTree(
+      id, BinaryTree::TreeType::RootMax, total_tree_nodes, start, stride);
+  DBMIN = new BinaryTree(
+      id, BinaryTree::TreeType::RootMin, total_tree_nodes, start, stride);
   this->counter = 0;
 }
 LogicalTopology* DoubleBinaryTreeTopology::get_topology() {
   // return DBMIN;  //uncomment this and comment the rest lines of this funcion
   // if you want to run allreduce only on one logical tree
   BinaryTree* ans = nullptr;
-  if (counter%2 == 0) {
+  if (counter % 2 == 0) {
     ans = DBMAX;
   } else {
     ans = DBMIN;
@@ -36,18 +38,20 @@ LogicalTopology* DoubleBinaryTreeTopology::get_topology() {
 
   return ans;
 }
-int DoubleBinaryTreeTopology::get_num_of_dimensions(){
-    return 1;
+int DoubleBinaryTreeTopology::get_num_of_dimensions() {
+  return 1;
 }
-int DoubleBinaryTreeTopology::get_num_of_nodes_in_dimension(int dimension){
-    return DBMIN->get_num_of_nodes_in_dimension(0);
+int DoubleBinaryTreeTopology::get_num_of_nodes_in_dimension(int dimension) {
+  return DBMIN->get_num_of_nodes_in_dimension(0);
 }
-BasicLogicalTopology * DoubleBinaryTreeTopology::get_basic_topology_at_dimension(int dimension, ComType type){
-    if(dimension==0){
-        return ((BinaryTree *)get_topology())->get_basic_topology_at_dimension(0,type);
-    }
-    else{
-        return nullptr;
-    }
+BasicLogicalTopology* DoubleBinaryTreeTopology::get_basic_topology_at_dimension(
+    int dimension,
+    ComType type) {
+  if (dimension == 0) {
+    return ((BinaryTree*)get_topology())
+        ->get_basic_topology_at_dimension(0, type);
+  } else {
+    return nullptr;
+  }
 }
 } // namespace AstraSim

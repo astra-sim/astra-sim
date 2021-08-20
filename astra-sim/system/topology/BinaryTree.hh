@@ -34,8 +34,8 @@ class BinaryTree : public BasicLogicalTopology {
   Node* tree;
   virtual ~BinaryTree();
   std::map<int, Node*> node_list;
-  int get_num_of_nodes_in_dimension(int dimension) override{
-        return total_tree_nodes;
+  int get_num_of_nodes_in_dimension(int dimension) override {
+    return total_tree_nodes;
   }
   BinaryTree(
       int id,

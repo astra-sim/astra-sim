@@ -24,15 +24,16 @@ LICENSE file in the root directory of this source tree.
 namespace AstraSim {
 class GeneralComplexTopology : public ComplexLogicalTopology {
  public:
-    std::vector<LogicalTopology*> dimension_topology;
-    GeneralComplexTopology(
+  std::vector<LogicalTopology*> dimension_topology;
+  GeneralComplexTopology(
       int id,
       std::vector<int> dimension_size,
       std::vector<CollectiveImplementation*> collective_implementation);
   ~GeneralComplexTopology();
   int get_num_of_nodes_in_dimension(int dimension) override;
-  BasicLogicalTopology * get_basic_topology_at_dimension(int dimension,
-                                                         ComType type) override;
+  BasicLogicalTopology* get_basic_topology_at_dimension(
+      int dimension,
+      ComType type) override;
   int get_num_of_dimensions() override;
 };
 } // namespace AstraSim

@@ -40,12 +40,12 @@ class MetaData {
 
 class AstraNetworkAPI {
  public:
-  enum class BackendType{NotSpecified,Garnet,NS3,Analytical};
+  enum class BackendType { NotSpecified, Garnet, NS3, Analytical };
   bool enabled;
   int rank;
 
-  virtual BackendType get_backend_type(){
-      return BackendType::NotSpecified;
+  virtual BackendType get_backend_type() {
+    return BackendType::NotSpecified;
   };
   virtual int sim_comm_size(sim_comm comm, int* size) = 0;
   virtual int sim_comm_get_rank() {
@@ -86,7 +86,7 @@ class AstraNetworkAPI {
   };
 
   // get BW in GB/s for each physical dimension
-  virtual double get_BW_at_dimension(int dim){
+  virtual double get_BW_at_dimension(int dim) {
     return -1;
   };
   AstraNetworkAPI(int rank) {

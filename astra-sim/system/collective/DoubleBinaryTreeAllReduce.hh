@@ -8,6 +8,7 @@ LICENSE file in the root directory of this source tree.
 
 #include <assert.h>
 #include <math.h>
+#include <stdlib.h>
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
@@ -18,7 +19,6 @@ LICENSE file in the root directory of this source tree.
 #include <sstream>
 #include <tuple>
 #include <vector>
-#include <stdlib.h>
 #include "Algorithm.hh"
 #include "astra-sim/system/CallData.hh"
 #include "astra-sim/system/Common.hh"

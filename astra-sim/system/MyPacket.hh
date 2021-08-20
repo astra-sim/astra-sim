@@ -38,7 +38,11 @@ class MyPacket : public Callable {
   Tick ready_time;
   // MyPacket(int cycles_needed, FIFOMovement *fMovement, FIFO *dest);
   MyPacket(int preferred_vnet, int preferred_src, int preferred_dest);
-  MyPacket(uint64_t msg_size,int preferred_vnet, int preferred_src, int preferred_dest);
+  MyPacket(
+      uint64_t msg_size,
+      int preferred_vnet,
+      int preferred_src,
+      int preferred_dest);
   void set_notifier(Callable* c);
   void call(EventType event, CallData* data);
   //~MyPacket()= default;

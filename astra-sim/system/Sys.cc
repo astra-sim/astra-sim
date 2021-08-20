@@ -13,23 +13,23 @@ LICENSE file in the root directory of this source tree.
 #include "StreamBaseline.hh"
 #include "astra-sim/system/collective/AllToAll.hh"
 #include "astra-sim/system/collective/DoubleBinaryTreeAllReduce.hh"
-#include "astra-sim/system/collective/Ring.hh"
 #include "astra-sim/system/collective/HalvingDoubling.hh"
+#include "astra-sim/system/collective/Ring.hh"
 
+#include "astra-sim/system/scheduling/OfflineGreedy.hh"
 #include "astra-sim/system/topology/BasicLogicalTopology.hh"
 #include "astra-sim/system/topology/DoubleBinaryTreeTopology.hh"
+#include "astra-sim/system/topology/GeneralComplexTopology.hh"
 #include "astra-sim/system/topology/LocalRingGlobalBinaryTree.hh"
 #include "astra-sim/system/topology/LocalRingNodeA2AGlobalDBT.hh"
 #include "astra-sim/system/topology/Torus3D.hh"
-#include "astra-sim/system/topology/GeneralComplexTopology.hh"
-#include "astra-sim/system/scheduling/OfflineGreedy.hh"
 
 #include "RendezvousRecvData.hh"
 #include "RendezvousSendData.hh"
 
+#include <algorithm>
 #include <cmath>
 #include <numeric>
-#include <algorithm>
 
 namespace AstraSim {
 Tick Sys::offset = 0;
@@ -45,14 +45,14 @@ Sys::~Sys() {
         std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     std::cout << "*****" << std::endl
               << "Time to exit: " << ctime(&timenow)
-              << "all-reduce Collective implementation: " << inp_all_reduce_implementation
-              << std::endl
-              << "reduce-scatter Collective implementation: " << inp_reduce_scatter_implementation
-              << std::endl
-              << "all-gather Collective implementation: " << inp_all_gather_implementation
-              << std::endl
-              << "all-to-all Collective implementation: " << inp_all_to_all_implementation
-              << std::endl
+              << "all-reduce Collective implementation: "
+              << inp_all_reduce_implementation << std::endl
+              << "reduce-scatter Collective implementation: "
+              << inp_reduce_scatter_implementation << std::endl
+              << "all-gather Collective implementation: "
+              << inp_all_gather_implementation << std::endl
+              << "all-to-all Collective implementation: "
+              << inp_all_to_all_implementation << std::endl
               << "Collective optimization: " << inp_collective_optimization
               << std::endl
               << "Total sim duration: " << duration.count() / 60 << ":"
@@ -69,16 +69,16 @@ Sys::~Sys() {
     delete lt.second;
   }
   logical_topologies.clear();
-  for(auto ci : all_reduce_implementation_per_dimension){
-      delete ci;
+  for (auto ci : all_reduce_implementation_per_dimension) {
+    delete ci;
   }
-  for(auto ci : reduce_scatter_implementation_per_dimension){
-      delete ci;
+  for (auto ci : reduce_scatter_implementation_per_dimension) {
+    delete ci;
   }
-  for(auto ci : all_gather_implementation_per_dimension){
-      delete ci;
+  for (auto ci : all_gather_implementation_per_dimension) {
+    delete ci;
   }
-  for(auto ci : all_to_all_implementation_per_dimension){
+  for (auto ci : all_to_all_implementation_per_dimension) {
     delete ci;
   }
   if (scheduler_unit != nullptr)
@@ -128,12 +128,13 @@ Sys::Sys(
   vLevels = nullptr;
   memBus = nullptr;
   workload = nullptr;
-  offline_greedy= nullptr;
+  offline_greedy = nullptr;
   this->initialized = false;
-  this->intra_dimension_scheduling=IntraDimensionScheduling::FIFO;
-  this->inter_dimension_scheduling=InterDimensionScheduling::Ascending;
-  round_robin_inter_dimension_scheduler=0;
-  this->last_scheduled_collective=0;
+  this->intra_dimension_scheduling = IntraDimensionScheduling::FIFO;
+  this->inter_dimension_scheduling = InterDimensionScheduling::Ascending;
+  round_robin_inter_dimension_scheduler = 0;
+  this->last_scheduled_collective = 0;
+  this->dim_to_break = -1;
 
   start_sim_time = std::chrono::high_resolution_clock::now();
   this->NI = NI;
@@ -154,7 +155,7 @@ Sys::Sys(
   this->processing_latency = 10;
   this->communication_delay = 10;
   this->local_reduction_delay = 1;
-  this->active_chunks_per_dimension=1;
+  this->active_chunks_per_dimension = 1;
   this->seprate_log = seprate_log;
   this->rendezvous_enabled = rendezvous_enabled;
   if ((id + 1) > all_generators.size()) {
@@ -165,7 +166,8 @@ Sys::Sys(
   bool result = initialize_sys(my_sys);
 
   if (result == false) {
-    sys_panic("Unable to initialize the system layer because the file can not be openned");
+    sys_panic(
+        "Unable to initialize the system layer because the file can not be openned");
   }
 
   /*if (id == 0) {
@@ -181,49 +183,62 @@ Sys::Sys(
   this->pending_events = 0;
 
   int total_disabled = 0;
-  this->physical_dims=physical_dims;
-  this->queues_per_dim=queues_per_dim;
-  int element=0;
-  all_queues=0;
-  total_nodes=1;
-  for(int current_dim=0;current_dim<queues_per_dim.size();current_dim++){
-      all_queues += queues_per_dim[current_dim];
-      bool enabled = !boost_mode;
-      if(id%total_nodes==0 && id<total_nodes*physical_dims[current_dim]){
-          enabled=true;
-      }
-      if (!enabled) {
-          total_disabled+=queues_per_dim[current_dim];
-      }
-      if(physical_dims[current_dim]>=1){
-        total_nodes*=physical_dims[current_dim];
-      }
-      for(int j=0;j<queues_per_dim[current_dim];j++){
-          std::list<BaseStream*> temp;
-          active_Streams[element] = temp;
-          std::list<int> pri;
-          stream_priorities[element] = pri;
-          element++;
-      }
+  this->physical_dims = physical_dims;
+  this->queues_per_dim = queues_per_dim;
+  int element = 0;
+  all_queues = 0;
+  total_nodes = 1;
+  for (int current_dim = 0; current_dim < queues_per_dim.size();
+       current_dim++) {
+    all_queues += queues_per_dim[current_dim];
+    bool enabled = !boost_mode;
+    if (id % total_nodes == 0 &&
+        id < total_nodes * physical_dims[current_dim]) {
+      enabled = true;
+    }
+    if (!enabled) {
+      total_disabled += queues_per_dim[current_dim];
+    }
+    if (physical_dims[current_dim] >= 1) {
+      total_nodes *= physical_dims[current_dim];
+    }
+    for (int j = 0; j < queues_per_dim[current_dim]; j++) {
+      std::list<BaseStream*> temp;
+      active_Streams[element] = temp;
+      std::list<int> pri;
+      stream_priorities[element] = pri;
+      element++;
+    }
   }
   if (all_queues == total_disabled) {
     NI->enabled = false;
     std::cout << "Node " << id << " has been totally disabled" << std::endl;
   }
-  concurrent_streams = (int) std::ceil(((double)active_chunks_per_dimension)/queues_per_dim[0]);
+  concurrent_streams =
+      (int)std::ceil(((double)active_chunks_per_dimension) / queues_per_dim[0]);
   active_first_phase = 100000000;
-  if(id==0){
-      std::cout<<"The final active chunks per dimension after allocating to queues is: "<<active_first_phase<<std::endl;
+  if (id == 0) {
+    std::cout
+        << "The final active chunks per dimension after allocating to queues is: "
+        << active_first_phase << std::endl;
   }
-  max_running=100000000;
+  max_running = 100000000;
   scheduler_unit = new SchedulerUnit(
-      this, queues_per_dim, max_running, active_first_phase, concurrent_streams);
-  vLevels = new QueueLevels(queues_per_dim, 0,NI->get_backend_type());
+      this,
+      queues_per_dim,
+      max_running,
+      active_first_phase,
+      concurrent_streams);
+  vLevels = new QueueLevels(queues_per_dim, 0, NI->get_backend_type());
 
-  logical_topologies["AllReduce"]=new GeneralComplexTopology(id,physical_dims,all_reduce_implementation_per_dimension);
-  logical_topologies["ReduceScatter"]=new GeneralComplexTopology(id,physical_dims,reduce_scatter_implementation_per_dimension);
-  logical_topologies["AllGather"]=new GeneralComplexTopology(id,physical_dims,all_gather_implementation_per_dimension);
-  logical_topologies["AllToAll"]=new GeneralComplexTopology(id,physical_dims,all_to_all_implementation_per_dimension);
+  logical_topologies["AllReduce"] = new GeneralComplexTopology(
+      id, physical_dims, all_reduce_implementation_per_dimension);
+  logical_topologies["ReduceScatter"] = new GeneralComplexTopology(
+      id, physical_dims, reduce_scatter_implementation_per_dimension);
+  logical_topologies["AllGather"] = new GeneralComplexTopology(
+      id, physical_dims, all_gather_implementation_per_dimension);
+  logical_topologies["AllToAll"] = new GeneralComplexTopology(
+      id, physical_dims, all_to_all_implementation_per_dimension);
 
   stream_counter = 0;
 
@@ -259,26 +274,30 @@ Sys::Sys(
       path,
       this->seprate_log);
   if (workload->initialized == false) {
-    sys_panic("Unable to initialize the workload layer because it can not open the workload file");
+    sys_panic(
+        "Unable to initialize the workload layer because it can not open the workload file");
     return;
   }
-  if(inter_dimension_scheduling==InterDimensionScheduling::OfflineGreedy ||
-      inter_dimension_scheduling==InterDimensionScheduling::OfflineGreedyFlex){
-    offline_greedy=new OfflineGreedy(this);
+  if (inter_dimension_scheduling == InterDimensionScheduling::OfflineGreedy ||
+      inter_dimension_scheduling ==
+          InterDimensionScheduling::OfflineGreedyFlex) {
+    offline_greedy = new OfflineGreedy(this);
   }
   this->initialized = true;
 }
 int Sys::break_dimension(int model_parallel_npu_group) {
-  if(model_parallel_npu_group==1){
-      return -1;
+  if (model_parallel_npu_group == 1) {
+    return -1;
   }
-  int dimension_to_break=0;
-  int all_npus=1;
-  for(;dimension_to_break<physical_dims.size();dimension_to_break++){
-    if(all_npus*physical_dims[dimension_to_break]<model_parallel_npu_group){
-      all_npus*=physical_dims[dimension_to_break];
-    }
-    else if(all_npus*physical_dims[dimension_to_break]>model_parallel_npu_group){
+  int dimension_to_break = 0;
+  int all_npus = 1;
+  for (; dimension_to_break < physical_dims.size(); dimension_to_break++) {
+    if (all_npus * physical_dims[dimension_to_break] <
+        model_parallel_npu_group) {
+      all_npus *= physical_dims[dimension_to_break];
+    } else if (
+        all_npus * physical_dims[dimension_to_break] >
+        model_parallel_npu_group) {
       for (auto lt : logical_topologies) {
         delete lt.second;
       }
@@ -286,69 +305,68 @@ int Sys::break_dimension(int model_parallel_npu_group) {
 
       delete scheduler_unit;
       delete vLevels;
-      std::vector<int>::iterator levelIterator=queues_per_dim.begin();
-      std::advance(levelIterator,dimension_to_break);
-      queues_per_dim.insert(levelIterator,queues_per_dim[dimension_to_break]);
-      scheduler_unit=new SchedulerUnit(this,queues_per_dim,max_running,active_first_phase,concurrent_streams);
-      vLevels=new QueueLevels(queues_per_dim,0,NI->get_backend_type());
+      std::vector<int>::iterator levelIterator = queues_per_dim.begin();
+      std::advance(levelIterator, dimension_to_break);
+      queues_per_dim.insert(levelIterator, queues_per_dim[dimension_to_break]);
+      scheduler_unit = new SchedulerUnit(
+          this,
+          queues_per_dim,
+          max_running,
+          active_first_phase,
+          concurrent_streams);
+      vLevels = new QueueLevels(queues_per_dim, 0, NI->get_backend_type());
 
-      int first_subdim=model_parallel_npu_group/all_npus;
-      int second_subdim=physical_dims[dimension_to_break]/first_subdim;
+      int first_subdim = model_parallel_npu_group / all_npus;
+      int second_subdim = physical_dims[dimension_to_break] / first_subdim;
       std::vector<int> logical_dims;
 
-      for(int dim=0;dim<physical_dims.size();dim++){
-        if(dim!=dimension_to_break){
+      for (int dim = 0; dim < physical_dims.size(); dim++) {
+        if (dim != dimension_to_break) {
           logical_dims.push_back(physical_dims[dim]);
-        }
-        else{
+        } else {
           logical_dims.push_back(first_subdim);
           logical_dims.push_back(second_subdim);
         }
       }
 
-      std::vector<CollectiveImplementation*>::iterator it=
+      std::vector<CollectiveImplementation*>::iterator it =
           all_reduce_implementation_per_dimension.begin();
-      if(all_reduce_implementation_per_dimension.size()>dimension_to_break){
-        std::advance(it,dimension_to_break);
+      if (all_reduce_implementation_per_dimension.size() > dimension_to_break) {
+        std::advance(it, dimension_to_break);
+      } else {
+        std::advance(it, all_reduce_implementation_per_dimension.size());
       }
-      else{
-        std::advance(it,all_reduce_implementation_per_dimension.size());
-      }
-      CollectiveImplementation *replicate=(CollectiveImplementation *)(*it)->clone();
-      all_reduce_implementation_per_dimension.insert(it,replicate);
+      CollectiveImplementation* replicate =
+          (CollectiveImplementation*)(*it)->clone();
+      all_reduce_implementation_per_dimension.insert(it, replicate);
 
-      it=
-          reduce_scatter_implementation_per_dimension.begin();
-      if(reduce_scatter_implementation_per_dimension.size()>dimension_to_break){
-        std::advance(it,dimension_to_break);
+      it = reduce_scatter_implementation_per_dimension.begin();
+      if (reduce_scatter_implementation_per_dimension.size() >
+          dimension_to_break) {
+        std::advance(it, dimension_to_break);
+      } else {
+        std::advance(it, reduce_scatter_implementation_per_dimension.size());
       }
-      else{
-        std::advance(it,reduce_scatter_implementation_per_dimension.size());
-      }
-      replicate=(CollectiveImplementation *)(*it)->clone();
-      reduce_scatter_implementation_per_dimension.insert(it,replicate);
+      replicate = (CollectiveImplementation*)(*it)->clone();
+      reduce_scatter_implementation_per_dimension.insert(it, replicate);
 
-      it=
-          all_gather_implementation_per_dimension.begin();
-      if(all_gather_implementation_per_dimension.size()>dimension_to_break){
-        std::advance(it,dimension_to_break);
+      it = all_gather_implementation_per_dimension.begin();
+      if (all_gather_implementation_per_dimension.size() > dimension_to_break) {
+        std::advance(it, dimension_to_break);
+      } else {
+        std::advance(it, all_gather_implementation_per_dimension.size());
       }
-      else{
-        std::advance(it,all_gather_implementation_per_dimension.size());
-      }
-      replicate=(CollectiveImplementation *)(*it)->clone();
-      all_gather_implementation_per_dimension.insert(it,replicate);
+      replicate = (CollectiveImplementation*)(*it)->clone();
+      all_gather_implementation_per_dimension.insert(it, replicate);
 
-      it=
-          all_to_all_implementation_per_dimension.begin();
-      if(all_to_all_implementation_per_dimension.size()>dimension_to_break){
-        std::advance(it,dimension_to_break);
+      it = all_to_all_implementation_per_dimension.begin();
+      if (all_to_all_implementation_per_dimension.size() > dimension_to_break) {
+        std::advance(it, dimension_to_break);
+      } else {
+        std::advance(it, all_to_all_implementation_per_dimension.size());
       }
-      else{
-        std::advance(it,all_to_all_implementation_per_dimension.size());
-      }
-      replicate=(CollectiveImplementation *)(*it)->clone();
-      all_to_all_implementation_per_dimension.insert(it,replicate);
+      replicate = (CollectiveImplementation*)(*it)->clone();
+      all_to_all_implementation_per_dimension.insert(it, replicate);
       /*std::cout<<"logical dims: "<<std::endl;
       for(auto a:logical_dims){
         std::cout<<a<<", ";
@@ -363,14 +381,22 @@ int Sys::break_dimension(int model_parallel_npu_group) {
           std::cout<<"direct"<<", ";
         }
       }*/
-      std::cout<<std::endl;
-      logical_topologies["AllReduce"]=new GeneralComplexTopology(id,logical_dims,all_reduce_implementation_per_dimension);
-      logical_topologies["ReduceScatter"]=new GeneralComplexTopology(id,logical_dims,reduce_scatter_implementation_per_dimension);
-      logical_topologies["AllGather"]=new GeneralComplexTopology(id,logical_dims,all_gather_implementation_per_dimension);
-      logical_topologies["AllToAll"]=new GeneralComplexTopology(id,logical_dims,all_to_all_implementation_per_dimension);
+      std::cout << std::endl;
+      logical_topologies["AllReduce"] = new GeneralComplexTopology(
+          id, logical_dims, all_reduce_implementation_per_dimension);
+      logical_topologies["ReduceScatter"] = new GeneralComplexTopology(
+          id, logical_dims, reduce_scatter_implementation_per_dimension);
+      logical_topologies["AllGather"] = new GeneralComplexTopology(
+          id, logical_dims, all_gather_implementation_per_dimension);
+      logical_topologies["AllToAll"] = new GeneralComplexTopology(
+          id, logical_dims, all_to_all_implementation_per_dimension);
+      this->logical_broken_dims = logical_dims;
+      this->dim_to_break = dimension_to_break;
+
       return dimension_to_break;
-    }
-    else if(all_npus*physical_dims[dimension_to_break]==model_parallel_npu_group){
+    } else if (
+        all_npus * physical_dims[dimension_to_break] ==
+        model_parallel_npu_group) {
       return dimension_to_break;
     }
   }
@@ -552,7 +578,8 @@ int Sys::front_end_sim_recv(
     void (*msg_handler)(void* fun_arg),
     void* fun_arg) {
   /*if(count<=0){
-    std::cout<<"recv at: "<<id<<" expecting data from: "<<src<<" at time: "<<boostedTick()
+    std::cout<<"recv at: "<<id<<" expecting data from: "<<src<<" at time:
+  "<<boostedTick()
     <<" ,size: "<<count<<std::endl;
     sys_panic("below zero recv!");
   }*/
@@ -592,42 +619,44 @@ std::string Sys::trim(
 
   return str.substr(strBegin, strRange);
 }
-std::vector<CollectiveImplementation*> Sys::generate_collective_implementation_from_input(std::string input) {
-  std::vector<std::string> inputs_per_dimension=split_string(input,"_");
+std::vector<CollectiveImplementation*> Sys::
+    generate_collective_implementation_from_input(std::string input) {
+  std::vector<std::string> inputs_per_dimension = split_string(input, "_");
   std::vector<CollectiveImplementation*> result;
-  for(std::string dimension_input:inputs_per_dimension){
-    if(dimension_input=="ring"){
-      result.push_back(new CollectiveImplementation(CollectiveImplementationType::Ring));
-    }
-    else if(dimension_input=="oneRing"){
-      result.push_back(new CollectiveImplementation(CollectiveImplementationType::OneRing));
-    }
-    else if(dimension_input=="doubleBinaryTree"){
-      result.push_back(new CollectiveImplementation(CollectiveImplementationType::DoubleBinaryTree));
-    }
-    else if(dimension_input.rfind("direct", 0) == 0){
-      int window=-1;
-      if(dimension_input!="direct"){
-          window=std::stoi(dimension_input.substr(6,10));
+  for (std::string dimension_input : inputs_per_dimension) {
+    if (dimension_input == "ring") {
+      result.push_back(
+          new CollectiveImplementation(CollectiveImplementationType::Ring));
+    } else if (dimension_input == "oneRing") {
+      result.push_back(
+          new CollectiveImplementation(CollectiveImplementationType::OneRing));
+    } else if (dimension_input == "doubleBinaryTree") {
+      result.push_back(new CollectiveImplementation(
+          CollectiveImplementationType::DoubleBinaryTree));
+    } else if (dimension_input.rfind("direct", 0) == 0) {
+      int window = -1;
+      if (dimension_input != "direct") {
+        window = std::stoi(dimension_input.substr(6, 10));
       }
-      result.push_back(new DirectCollectiveImplementation(CollectiveImplementationType::Direct,window));
-    }
-    else if(dimension_input.rfind("oneDirect", 0) == 0){
-       int window=-1;
-       if(dimension_input!="oneDirect"){
-           window=std::stoi(dimension_input.substr(9,10));
-       }
-      result.push_back(new DirectCollectiveImplementation(CollectiveImplementationType::OneDirect, window));
-    }
-    else if(dimension_input=="halvingDoubling"){
-        result.push_back(new CollectiveImplementation(CollectiveImplementationType::HalvingDoubling));
-    }
-    else if(dimension_input=="oneHalvingDoubling"){
-        result.push_back(new CollectiveImplementation(CollectiveImplementationType::OneHalvingDoubling));
-    }
-    else{
-      sys_panic("Cannot interpret collective implementations. Please check the collective implementations in the sys"
-                "input file");
+      result.push_back(new DirectCollectiveImplementation(
+          CollectiveImplementationType::Direct, window));
+    } else if (dimension_input.rfind("oneDirect", 0) == 0) {
+      int window = -1;
+      if (dimension_input != "oneDirect") {
+        window = std::stoi(dimension_input.substr(9, 10));
+      }
+      result.push_back(new DirectCollectiveImplementation(
+          CollectiveImplementationType::OneDirect, window));
+    } else if (dimension_input == "halvingDoubling") {
+      result.push_back(new CollectiveImplementation(
+          CollectiveImplementationType::HalvingDoubling));
+    } else if (dimension_input == "oneHalvingDoubling") {
+      result.push_back(new CollectiveImplementation(
+          CollectiveImplementationType::OneHalvingDoubling));
+    } else {
+      sys_panic(
+          "Cannot interpret collective implementations. Please check the collective implementations in the sys"
+          "input file");
     }
   }
   return result;
@@ -664,7 +693,7 @@ bool Sys::parse_var(std::string var, std::string value) {
     mval >> local_reduction_delay;
   } else if (var == "active-chunks-per-dimension:") {
     std::stringstream mval(value);
-    mval >>  active_chunks_per_dimension;
+    mval >> active_chunks_per_dimension;
   } else if (var == "L:") {
     std::stringstream mval(value);
     mval >> inp_L;
@@ -686,43 +715,38 @@ bool Sys::parse_var(std::string var, std::string value) {
   } else if (var == "boost-mode:") {
     std::stringstream mval(value);
     mval >> inp_boost_mode;
-  } else if (var == "intra-dimension-scheduling:"){
-      std::stringstream mval(value);
-      std::string tmp;
-      mval >> tmp;
-      if(tmp=="FIFO"){
-          intra_dimension_scheduling=IntraDimensionScheduling::FIFO;
-      }
-      else if(tmp=="RG"){
-          intra_dimension_scheduling=IntraDimensionScheduling::RG;
-      }
-      else if(tmp=="smallestFirst"){
-        intra_dimension_scheduling=IntraDimensionScheduling::SmallestFirst;
-      }
-      else if(tmp=="lessRemainingPhaseFirst"){
-        intra_dimension_scheduling=IntraDimensionScheduling::LessRemainingPhaseFirst;
-      }
-      else{
-          sys_panic("unknown value for intra-dimension-scheduling  in sys input file");
-      }
-  } else if (var == "inter-dimension-scheduling:"){
+  } else if (var == "intra-dimension-scheduling:") {
     std::stringstream mval(value);
     std::string tmp;
     mval >> tmp;
-    if(tmp=="ascending"){
-      inter_dimension_scheduling=InterDimensionScheduling::Ascending;
+    if (tmp == "FIFO") {
+      intra_dimension_scheduling = IntraDimensionScheduling::FIFO;
+    } else if (tmp == "RG") {
+      intra_dimension_scheduling = IntraDimensionScheduling::RG;
+    } else if (tmp == "smallestFirst") {
+      intra_dimension_scheduling = IntraDimensionScheduling::SmallestFirst;
+    } else if (tmp == "lessRemainingPhaseFirst") {
+      intra_dimension_scheduling =
+          IntraDimensionScheduling::LessRemainingPhaseFirst;
+    } else {
+      sys_panic(
+          "unknown value for intra-dimension-scheduling  in sys input file");
     }
-    else if(tmp=="offlineGreedy"){
-      inter_dimension_scheduling=InterDimensionScheduling::OfflineGreedy;
-    }
-    else if(tmp=="offlineGreedyFlex"){
-      inter_dimension_scheduling=InterDimensionScheduling::OfflineGreedyFlex;
-    }
-    else if(tmp=="roundRobin"){
-      inter_dimension_scheduling=InterDimensionScheduling::RoundRobin;
-    }
-    else{
-      sys_panic("unknown value for inter-dimension-scheduling  in sys input file");
+  } else if (var == "inter-dimension-scheduling:") {
+    std::stringstream mval(value);
+    std::string tmp;
+    mval >> tmp;
+    if (tmp == "ascending") {
+      inter_dimension_scheduling = InterDimensionScheduling::Ascending;
+    } else if (tmp == "offlineGreedy") {
+      inter_dimension_scheduling = InterDimensionScheduling::OfflineGreedy;
+    } else if (tmp == "offlineGreedyFlex") {
+      inter_dimension_scheduling = InterDimensionScheduling::OfflineGreedyFlex;
+    } else if (tmp == "roundRobin") {
+      inter_dimension_scheduling = InterDimensionScheduling::RoundRobin;
+    } else {
+      sys_panic(
+          "unknown value for inter-dimension-scheduling  in sys input file");
     }
   } else if (var == "seprate-log:") {
     std::stringstream mval(value);
@@ -734,39 +758,45 @@ bool Sys::parse_var(std::string var, std::string value) {
       this->seprate_log = true;
     }
   } else if (var != "") {
-    std::cerr << "######### Exiting because " << var
-    << " is an unknown variable. Check your system input file. #########"
-    << std::endl;
+    std::cerr
+        << "######### Exiting because " << var
+        << " is an unknown variable. Check your system input file. #########"
+        << std::endl;
     exit(1);
   }
   return true;
 }
 bool Sys::post_process_inputs() {
-  all_reduce_implementation_per_dimension=
-      generate_collective_implementation_from_input(inp_all_reduce_implementation);
-  if(all_reduce_implementation_per_dimension.size()==0){
+  all_reduce_implementation_per_dimension =
+      generate_collective_implementation_from_input(
+          inp_all_reduce_implementation);
+  if (all_reduce_implementation_per_dimension.size() == 0) {
     sys_panic("unknown value for all-reduce-implementation in sys input file");
   }
-  reduce_scatter_implementation_per_dimension=
-      generate_collective_implementation_from_input(inp_reduce_scatter_implementation);
-  if(reduce_scatter_implementation_per_dimension.size()==0){
-    sys_panic("unknown value for reduce-scatter-implementation in sys input file");
+  reduce_scatter_implementation_per_dimension =
+      generate_collective_implementation_from_input(
+          inp_reduce_scatter_implementation);
+  if (reduce_scatter_implementation_per_dimension.size() == 0) {
+    sys_panic(
+        "unknown value for reduce-scatter-implementation in sys input file");
   }
-  all_gather_implementation_per_dimension=
-      generate_collective_implementation_from_input(inp_all_gather_implementation);
-  if(all_gather_implementation_per_dimension.size()==0){
+  all_gather_implementation_per_dimension =
+      generate_collective_implementation_from_input(
+          inp_all_gather_implementation);
+  if (all_gather_implementation_per_dimension.size() == 0) {
     sys_panic("unknown value for all-gather-implementation in sys input file");
   }
-  all_to_all_implementation_per_dimension=
-      generate_collective_implementation_from_input(inp_all_to_all_implementation);
-  if(all_to_all_implementation_per_dimension.size()==0){
+  all_to_all_implementation_per_dimension =
+      generate_collective_implementation_from_input(
+          inp_all_to_all_implementation);
+  if (all_to_all_implementation_per_dimension.size() == 0) {
     sys_panic("unknown value for all-to-all-implementation in sys input file");
   }
   if (inp_collective_optimization == "baseline") {
     collectiveOptimization = CollectiveOptimization::Baseline;
   } else if (inp_collective_optimization == "localBWAware") {
     collectiveOptimization = CollectiveOptimization::LocalBWAware;
-  } else{
+  } else {
     sys_panic("unknown value for collective optimization in sys input file");
   }
 
@@ -779,7 +809,7 @@ bool Sys::post_process_inputs() {
     this->scheduling_policy = SchedulingPolicy::LIFO;
   } else if (inp_scheduling_policy == "FIFO") {
     this->scheduling_policy = SchedulingPolicy::FIFO;
-  } else{
+  } else {
     sys_panic("unknown value for scheduling policy in sys input file");
   }
   if (inp_model_shared_bus == 1) {
@@ -798,7 +828,8 @@ bool Sys::initialize_sys(std::string name) {
       std::cerr << "############ Exiting because unable to open the system "
                    "input file ############"
                 << std::endl;
-      std::cerr << "This error is fatal. Please check your path and filename." << std::endl;
+      std::cerr << "This error is fatal. Please check your path and filename."
+                << std::endl;
     }
     exit(1);
   } else {
@@ -834,18 +865,18 @@ Sys::SchedulerUnit::SchedulerUnit(
   this->queue_threshold = queue_threshold;
   this->max_running_streams = max_running_streams;
 
-  this->latency_per_dimension.resize(queues.size(),0);
-  this->total_chunks_per_dimension.resize(queues.size(),0);
-  this->total_active_chunks_per_dimension.resize(queues.size(),0);
+  this->latency_per_dimension.resize(queues.size(), 0);
+  this->total_chunks_per_dimension.resize(queues.size(), 0);
+  this->total_active_chunks_per_dimension.resize(queues.size(), 0);
 
   int base = 0;
-  int dimension=0;
+  int dimension = 0;
   for (auto q : queues) {
     for (int i = 0; i < q; i++) {
       this->running_streams[base] = 0;
       std::list<BaseStream*>::iterator it;
       this->stream_pointer[base] = it;
-      this->queue_id_to_dimension[base]=dimension;
+      this->queue_id_to_dimension[base] = dimension;
       base++;
     }
     dimension++;
@@ -865,11 +896,13 @@ void Sys::SchedulerUnit::notify_stream_added_into_ready_list() {
   return;
 }
 void Sys::SchedulerUnit::notify_stream_added(int vnet) {
-  if(sys->id==0 && ++total_active_chunks_per_dimension[queue_id_to_dimension[vnet]]==1){
-      usage[queue_id_to_dimension[vnet]].increase_usage();
+  if (sys->id == 0 &&
+      ++total_active_chunks_per_dimension[queue_id_to_dimension[vnet]] == 1) {
+    usage[queue_id_to_dimension[vnet]].increase_usage();
   }
   /*if(sys->id==0){
-    std::cout<<"dim"<<queue_id_to_dimension[vnet]<<" chunk added at: "<<Sys::boostedTick()
+    std::cout<<"dim"<<queue_id_to_dimension[vnet]<<" chunk added at:
+  "<<Sys::boostedTick()
              <<" ,current active: "<<
         total_active_chunks_per_dimension[queue_id_to_dimension[vnet]]<<std::endl;
   }*/
@@ -882,20 +915,22 @@ void Sys::SchedulerUnit::notify_stream_added(int vnet) {
     std::advance(stream_pointer[vnet], 1);
   }
 }
-void Sys::SchedulerUnit::notify_stream_removed(int vnet,Tick running_time) {
+void Sys::SchedulerUnit::notify_stream_removed(int vnet, Tick running_time) {
   // std::cout<<"hello1, vnet: "<<vnet<<std::endl;
-    if(sys->id==0 && --total_active_chunks_per_dimension[queue_id_to_dimension[vnet]]==0){
-        usage[queue_id_to_dimension[vnet]].decrease_usage();
-    }
-    /*if(sys->id==0){
-      std::cout<<"dim"<<queue_id_to_dimension[vnet]<<" chunk removed at: "<<Sys::boostedTick()
-               <<" ,current active: "<<
-               total_active_chunks_per_dimension[queue_id_to_dimension[vnet]]<<std::endl;
-    }*/
+  if (sys->id == 0 &&
+      --total_active_chunks_per_dimension[queue_id_to_dimension[vnet]] == 0) {
+    usage[queue_id_to_dimension[vnet]].decrease_usage();
+  }
+  /*if(sys->id==0){
+    std::cout<<"dim"<<queue_id_to_dimension[vnet]<<" chunk removed at:
+  "<<Sys::boostedTick()
+             <<" ,current active: "<<
+             total_active_chunks_per_dimension[queue_id_to_dimension[vnet]]<<std::endl;
+  }*/
   running_streams[vnet]--;
 
-  int dimension=this->queue_id_to_dimension[vnet];
-  latency_per_dimension[dimension]+=running_time;
+  int dimension = this->queue_id_to_dimension[vnet];
+  latency_per_dimension[dimension] += running_time;
   total_chunks_per_dimension[dimension]++;
 
   if (this->sys->first_phase_streams < ready_list_threshold &&
@@ -918,12 +953,12 @@ void Sys::SchedulerUnit::notify_stream_removed(int vnet,Tick running_time) {
   }
 }
 std::vector<double> Sys::SchedulerUnit::get_average_latency_per_dimension() {
-    std::vector<double> result;
-    result.resize(latency_per_dimension.size(),-1);
-    for(int i=0;i<result.size();i++){
-        result[i]=latency_per_dimension[i]/total_chunks_per_dimension[i];
-    }
-    return result;
+  std::vector<double> result;
+  result.resize(latency_per_dimension.size(), -1);
+  for (int i = 0; i < result.size(); i++) {
+    result[i] = latency_per_dimension[i] / total_chunks_per_dimension[i];
+  }
+  return result;
 }
 int Sys::nextPowerOf2(int n) {
   int count = 0;
@@ -944,14 +979,14 @@ void Sys::sys_panic(std::string msg) {
 void Sys::iterate() {
   call_events();
 }
-std::vector<std::string> Sys::split_string(std::string str,std::string sep){
-  char* cstr=const_cast<char*>(str.c_str());
+std::vector<std::string> Sys::split_string(std::string str, std::string sep) {
+  char* cstr = const_cast<char*>(str.c_str());
   char* current;
   std::vector<std::string> arr;
-  current=strtok(cstr,sep.c_str());
-  while(current!=nullptr){
+  current = strtok(cstr, sep.c_str());
+  while (current != nullptr) {
     arr.push_back(current);
-    current=strtok(nullptr,sep.c_str());
+    current = strtok(nullptr, sep.c_str());
   }
   return arr;
 }
@@ -964,259 +999,248 @@ DataSet* Sys::generate_all_reduce(
     std::vector<bool> involved_dimensions,
     SchedulingPolicy pref_scheduling,
     int layer) {
-    return generate_collective(size,layer,logical_topologies["AllReduce"],
-                             all_reduce_implementation_per_dimension,
-                             involved_dimensions,ComType::All_Reduce,pref_scheduling);
+  return generate_collective(
+      size,
+      layer,
+      logical_topologies["AllReduce"],
+      all_reduce_implementation_per_dimension,
+      involved_dimensions,
+      ComType::All_Reduce,
+      pref_scheduling);
 }
 DataSet* Sys::generate_all_gather(
     uint64_t size,
     std::vector<bool> involved_dimensions,
     SchedulingPolicy pref_scheduling,
     int layer) {
-  return generate_collective(size,layer,logical_topologies["AllGather"],
-                             all_gather_implementation_per_dimension,
-                             involved_dimensions,ComType::All_Gatehr,pref_scheduling);
+  return generate_collective(
+      size,
+      layer,
+      logical_topologies["AllGather"],
+      all_gather_implementation_per_dimension,
+      involved_dimensions,
+      ComType::All_Gatehr,
+      pref_scheduling);
 }
 DataSet* Sys::generate_reduce_scatter(
     uint64_t size,
     std::vector<bool> involved_dimensions,
     SchedulingPolicy pref_scheduling,
     int layer) {
-  return generate_collective(size,layer,logical_topologies["ReduceScatter"],
-                             reduce_scatter_implementation_per_dimension,
-                             involved_dimensions,ComType::Reduce_Scatter,pref_scheduling);
+  return generate_collective(
+      size,
+      layer,
+      logical_topologies["ReduceScatter"],
+      reduce_scatter_implementation_per_dimension,
+      involved_dimensions,
+      ComType::Reduce_Scatter,
+      pref_scheduling);
 }
 DataSet* Sys::generate_all_to_all(
     uint64_t size,
     std::vector<bool> involved_dimensions,
     SchedulingPolicy pref_scheduling,
     int layer) {
-  return generate_collective(size,layer,logical_topologies["AllToAll"],
-                             all_to_all_implementation_per_dimension,
-                             involved_dimensions,ComType::All_to_All,pref_scheduling);
+  return generate_collective(
+      size,
+      layer,
+      logical_topologies["AllToAll"],
+      all_to_all_implementation_per_dimension,
+      involved_dimensions,
+      ComType::All_to_All,
+      pref_scheduling);
 }
 CollectivePhase Sys::generate_collective_phase(
     ComType collective_type,
     int layer_num,
-    BasicLogicalTopology *topology,
+    BasicLogicalTopology* topology,
     uint64_t data_size,
     int queue_id,
     RingTopology::Direction direction,
     InjectionPolicy injection_policy,
-    CollectiveImplementation *collective_implementation,
-   bool boost_mode) {
-    if(collective_implementation->type==CollectiveImplementationType::Ring
-      || collective_implementation->type==CollectiveImplementationType::OneRing){
-        CollectivePhase vn(
-                this,
-                queue_id,
-                new Ring(
-                    collective_type,
-                    id,
-                    layer_num,
-                    (RingTopology*) topology,
-                    data_size,
-                    direction,
-                    injection_policy,
-                    boost_mode)
-        );
-        return vn;
-    }
-    else if(collective_implementation->type==CollectiveImplementationType::Direct
-           || collective_implementation->type==CollectiveImplementationType::OneDirect){
-        CollectivePhase vn(
-                this,
-                queue_id,
-                new AllToAll(
-                        collective_type,
-                        ((DirectCollectiveImplementation*)collective_implementation)->direct_collective_window,
-                        id,
-                        layer_num,
-                        (RingTopology*) topology,
-                        data_size,
-                        direction,
-                        InjectionPolicy::Normal,
-                        boost_mode));
-        return vn;
-    }
-    else if(collective_implementation->type==CollectiveImplementationType::DoubleBinaryTree){
-        CollectivePhase vn(
-                this,
-                queue_id,
-                new DoubleBinaryTreeAllReduce(
-                        id,
-                        layer_num,
-                        (BinaryTree*) topology,
-                        data_size,
-                        boost_mode));
-        return vn;
-    }
-    else if(collective_implementation->type==CollectiveImplementationType::HalvingDoubling
-       || collective_implementation->type==CollectiveImplementationType::OneHalvingDoubling){
-        CollectivePhase vn(
-                this,
-                queue_id,
-                new HalvingDoubling(
-                        collective_type,
-                        id,
-                        layer_num,
-                        (RingTopology*) topology,
-                        data_size,
-                        boost_mode)
-        );
-        return vn;
-    }
-    else{
-        std::cerr
+    CollectiveImplementation* collective_implementation,
+    bool boost_mode) {
+  if (collective_implementation->type == CollectiveImplementationType::Ring ||
+      collective_implementation->type ==
+          CollectiveImplementationType::OneRing) {
+    CollectivePhase vn(
+        this,
+        queue_id,
+        new Ring(
+            collective_type,
+            id,
+            layer_num,
+            (RingTopology*)topology,
+            data_size,
+            direction,
+            injection_policy,
+            boost_mode));
+    return vn;
+  } else if (
+      collective_implementation->type == CollectiveImplementationType::Direct ||
+      collective_implementation->type ==
+          CollectiveImplementationType::OneDirect) {
+    CollectivePhase vn(
+        this,
+        queue_id,
+        new AllToAll(
+            collective_type,
+            ((DirectCollectiveImplementation*)collective_implementation)
+                ->direct_collective_window,
+            id,
+            layer_num,
+            (RingTopology*)topology,
+            data_size,
+            direction,
+            InjectionPolicy::Normal,
+            boost_mode));
+    return vn;
+  } else if (
+      collective_implementation->type ==
+      CollectiveImplementationType::DoubleBinaryTree) {
+    CollectivePhase vn(
+        this,
+        queue_id,
+        new DoubleBinaryTreeAllReduce(
+            id, layer_num, (BinaryTree*)topology, data_size, boost_mode));
+    return vn;
+  } else if (
+      collective_implementation->type ==
+          CollectiveImplementationType::HalvingDoubling ||
+      collective_implementation->type ==
+          CollectiveImplementationType::OneHalvingDoubling) {
+    CollectivePhase vn(
+        this,
+        queue_id,
+        new HalvingDoubling(
+            collective_type,
+            id,
+            layer_num,
+            (RingTopology*)topology,
+            data_size,
+            boost_mode));
+    return vn;
+  } else {
+    std::cerr
         << "Error: No known collective implementation for collective phase"
         << std::endl;
-        exit(1);
-    }
+    exit(1);
+  }
 }
-DataSet * Sys::generate_collective(uint64_t size,
-                                   int layer_num,
-                                   LogicalTopology *topology,
-                                   std::vector<CollectiveImplementation*> implementation_per_dimension,
-                                   std::vector<bool> dimensions_involved,
-                                   ComType collective_type,
-                                   SchedulingPolicy pref_scheduling) {
-
+DataSet* Sys::generate_collective(
+    uint64_t size,
+    int layer_num,
+    LogicalTopology* topology,
+    std::vector<CollectiveImplementation*> implementation_per_dimension,
+    std::vector<bool> dimensions_involved,
+    ComType collective_type,
+    SchedulingPolicy pref_scheduling) {
   uint64_t chunk_size = determine_chunk_size(size, collective_type);
-  uint64_t recommended_chunk_size=chunk_size;
+  uint64_t recommended_chunk_size = chunk_size;
   int streams = ceil(((double)size) / chunk_size);
   int tmp;
   DataSet* dataset = new DataSet(streams);
   int pri = get_priority(pref_scheduling);
-  int count=0;
-  if(id==0 && (inter_dimension_scheduling==InterDimensionScheduling::OfflineGreedy ||
-      inter_dimension_scheduling==InterDimensionScheduling::OfflineGreedyFlex)){
-    if(last_scheduled_collective!=Sys::boostedTick()){
-        offline_greedy->reset_loads();
-        last_scheduled_collective=Sys::boostedTick();
+  int count = 0;
+  if (id == 0 &&
+      (inter_dimension_scheduling == InterDimensionScheduling::OfflineGreedy ||
+       inter_dimension_scheduling ==
+           InterDimensionScheduling::OfflineGreedyFlex)) {
+    if (last_scheduled_collective != Sys::boostedTick()) {
+      offline_greedy->reset_loads();
+      last_scheduled_collective = Sys::boostedTick();
     }
   }
-  while (size>0) {
+
+  while (size > 0) {
     count++;
-    std::vector<int> dim_mapper(topology->get_num_of_dimensions()) ;
-    std::iota (std::begin(dim_mapper), std::end(dim_mapper), 0);
-    if(collective_type==ComType::All_Gatehr){
-      std::reverse(dim_mapper.begin(),dim_mapper.end());
+
+    std::vector<int> dim_mapper(topology->get_num_of_dimensions());
+    std::iota(std::begin(dim_mapper), std::end(dim_mapper), 0);
+    if (collective_type == ComType::All_Gatehr) {
+      std::reverse(dim_mapper.begin(), dim_mapper.end());
     }
 
-    if(inter_dimension_scheduling==InterDimensionScheduling::RoundRobin){
-      std::rotate(dim_mapper.begin(),dim_mapper.begin()+round_robin_inter_dimension_scheduler,dim_mapper.end());
-      //std::rotate(dimensions_involved.begin(),dimensions_involved.begin()+round_robin_inter_dimension_scheduler,
-                  //dimensions_involved.begin()+topology->get_num_of_dimensions());
+    if (inter_dimension_scheduling == InterDimensionScheduling::RoundRobin) {
+      std::rotate(
+          dim_mapper.begin(),
+          dim_mapper.begin() + round_robin_inter_dimension_scheduler,
+          dim_mapper.end());
+      // std::rotate(dimensions_involved.begin(),dimensions_involved.begin()+round_robin_inter_dimension_scheduler,
+      // dimensions_involved.begin()+topology->get_num_of_dimensions());
       round_robin_inter_dimension_scheduler++;
-      if(round_robin_inter_dimension_scheduler==topology->get_num_of_dimensions()){
-        round_robin_inter_dimension_scheduler=0;
+      if (round_robin_inter_dimension_scheduler ==
+          topology->get_num_of_dimensions()) {
+        round_robin_inter_dimension_scheduler = 0;
       }
-    }
-    else if(collective_type!=ComType::All_to_All && (inter_dimension_scheduling==InterDimensionScheduling::OfflineGreedy ||
-        inter_dimension_scheduling==InterDimensionScheduling::OfflineGreedyFlex)){
-      uint64_t prev_size=size;
-      dim_mapper=offline_greedy->get_chunk_scheduling(stream_counter,size,recommended_chunk_size,
-                                                        dimensions_involved,
-                                                        inter_dimension_scheduling,
-                                                        collective_type);
-      chunk_size=prev_size-size;
+    } else if (
+        collective_type != ComType::All_to_All &&
+        (inter_dimension_scheduling ==
+             InterDimensionScheduling::OfflineGreedy ||
+         inter_dimension_scheduling ==
+             InterDimensionScheduling::OfflineGreedyFlex)) {
+      uint64_t prev_size = size;
+      dim_mapper = offline_greedy->get_chunk_scheduling(
+          stream_counter,
+          size,
+          recommended_chunk_size,
+          dimensions_involved,
+          inter_dimension_scheduling,
+          collective_type);
+      chunk_size = prev_size - size;
     }
 
-    if(collective_type==ComType::All_to_All || (inter_dimension_scheduling!=InterDimensionScheduling::OfflineGreedy &&
-        inter_dimension_scheduling!=InterDimensionScheduling::OfflineGreedyFlex)){
-      size-=chunk_size;
+    if (collective_type == ComType::All_to_All ||
+        (inter_dimension_scheduling !=
+             InterDimensionScheduling::OfflineGreedy &&
+         inter_dimension_scheduling !=
+             InterDimensionScheduling::OfflineGreedyFlex)) {
+      size -= chunk_size;
     }
-
     tmp = chunk_size;
     std::list<CollectivePhase> vect;
-    if(collective_type!=ComType::All_Reduce || collectiveOptimization==CollectiveOptimization::Baseline){
-        for(int dim=0;dim<topology->get_num_of_dimensions();dim++){
-          if(topology->get_num_of_nodes_in_dimension(dim_mapper[dim])==1 || !dimensions_involved[dim_mapper[dim]]){
-            continue;
-          }
-          std::pair<int, RingTopology::Direction> queue = vLevels->get_next_queue_at_level(dim_mapper[dim]);
-        CollectivePhase phase=generate_collective_phase(collective_type,
-                                                        layer_num,
-                                                        topology->get_basic_topology_at_dimension(dim_mapper[dim],collective_type),
-                                                        tmp,
-                                                        queue.first,
-                                                        queue.second,
-                                                        InjectionPolicy::Normal,
-                                                        implementation_per_dimension[dim_mapper[dim]],
-                                                        boost_mode);
-        vect.push_back(phase);
-        tmp = phase.final_data_size;
-      }
-    }
-    else if(inter_dimension_scheduling==InterDimensionScheduling::OfflineGreedy ||
-        inter_dimension_scheduling==InterDimensionScheduling::OfflineGreedyFlex ||
-        inter_dimension_scheduling==InterDimensionScheduling::OnlineGreedy){
-        int dim=0;
-        for(dim=0;dim<topology->get_num_of_dimensions();dim++){
-            if(topology->get_num_of_nodes_in_dimension(dim_mapper[dim])==1 || !dimensions_involved[dim_mapper[dim]]){
-                continue;
-            }
-            std::pair<int, RingTopology::Direction> queue = vLevels->get_next_queue_at_level(dim_mapper[dim]);
-            CollectivePhase phase=generate_collective_phase(ComType::Reduce_Scatter,
-                                                            layer_num,
-                                                            topology->get_basic_topology_at_dimension(dim_mapper[dim],ComType::Reduce_Scatter),
-                                                            tmp,
-                                                            queue.first,
-                                                            queue.second,
-                                                            InjectionPolicy::Normal,
-                                                            implementation_per_dimension[dim_mapper[dim]],
-                                                            boost_mode);
-            vect.push_back(phase);
-            tmp = phase.final_data_size;
-        }
-        dim--;
-        for(;dim>=0;dim--){
-            if(topology->get_num_of_nodes_in_dimension(dim_mapper[dim])==1 || !dimensions_involved[dim_mapper[dim]]){
-                continue;
-            }
-            std::pair<int, RingTopology::Direction> queue = vLevels->get_next_queue_at_level(dim_mapper[dim]);
-            CollectivePhase phase=generate_collective_phase(ComType::All_Gatehr,
-                                                            layer_num,
-                                                            topology->get_basic_topology_at_dimension(dim_mapper[dim],ComType::All_Gatehr),
-                                                            tmp,
-                                                            queue.first,
-                                                            queue.second,
-                                                            InjectionPolicy::Normal,
-                                                            implementation_per_dimension[dim_mapper[dim]],
-                                                            boost_mode);
-            vect.push_back(phase);
-            tmp = phase.final_data_size;
-        }
-    }
-    else{
-      int dim=0;
-      for(dim=0;dim<topology->get_num_of_dimensions()-1;dim++){
-        if(topology->get_num_of_nodes_in_dimension(dim_mapper[dim])==1 || !dimensions_involved[dim_mapper[dim]]){
+
+    if (collective_type != ComType::All_Reduce ||
+        collectiveOptimization == CollectiveOptimization::Baseline) {
+      for (int dim = 0; dim < topology->get_num_of_dimensions(); dim++) {
+        if (topology->get_num_of_nodes_in_dimension(dim_mapper[dim]) == 1 ||
+            !dimensions_involved[dim_mapper[dim]]) {
           continue;
         }
-        std::pair<int, RingTopology::Direction> queue = vLevels->get_next_queue_at_level(dim_mapper[dim]);
-        CollectivePhase phase=generate_collective_phase(ComType::Reduce_Scatter,
-                                                        layer_num,
-                                                        topology->get_basic_topology_at_dimension(dim_mapper[dim],ComType::Reduce_Scatter),
-                                                        tmp,
-                                                        queue.first,
-                                                        queue.second,
-                                                        InjectionPolicy::Normal,
-                                                        implementation_per_dimension[dim_mapper[dim]],
-                                                        boost_mode);
-        vect.push_back(phase);
-        tmp = phase.final_data_size;
-      }
-      while(dim>0 && (dimensions_involved[dim_mapper[dim]]==false || topology->get_num_of_nodes_in_dimension(dim_mapper[dim])==1)){
-        dim--;
-      }
-      if(dimensions_involved[dim_mapper[dim]] && topology->get_num_of_nodes_in_dimension(dim_mapper[dim])>1) {
         std::pair<int, RingTopology::Direction> queue =
             vLevels->get_next_queue_at_level(dim_mapper[dim]);
         CollectivePhase phase = generate_collective_phase(
-            ComType::All_Reduce,
+            collective_type,
             layer_num,
-            topology->get_basic_topology_at_dimension(dim_mapper[dim], ComType::All_Reduce),
+            topology->get_basic_topology_at_dimension(
+                dim_mapper[dim], collective_type),
+            tmp,
+            queue.first,
+            queue.second,
+            InjectionPolicy::Normal,
+            implementation_per_dimension[dim_mapper[dim]],
+            boost_mode);
+        vect.push_back(phase);
+        tmp = phase.final_data_size;
+      }
+    } else if (
+        inter_dimension_scheduling == InterDimensionScheduling::OfflineGreedy ||
+        inter_dimension_scheduling ==
+            InterDimensionScheduling::OfflineGreedyFlex ||
+        inter_dimension_scheduling == InterDimensionScheduling::OnlineGreedy) {
+      int dim = 0;
+      for (dim = 0; dim < topology->get_num_of_dimensions(); dim++) {
+        if (topology->get_num_of_nodes_in_dimension(dim_mapper[dim]) == 1 ||
+            !dimensions_involved[dim_mapper[dim]]) {
+          continue;
+        }
+        std::pair<int, RingTopology::Direction> queue =
+            vLevels->get_next_queue_at_level(dim_mapper[dim]);
+        CollectivePhase phase = generate_collective_phase(
+            ComType::Reduce_Scatter,
+            layer_num,
+            topology->get_basic_topology_at_dimension(
+                dim_mapper[dim], ComType::Reduce_Scatter),
             tmp,
             queue.first,
             queue.second,
@@ -1227,38 +1251,116 @@ DataSet * Sys::generate_collective(uint64_t size,
         tmp = phase.final_data_size;
       }
       dim--;
-      for(;dim>=0;dim--){
-        if(topology->get_num_of_nodes_in_dimension(dim_mapper[dim])==1 || !dimensions_involved[dim_mapper[dim]]){
+      for (; dim >= 0; dim--) {
+        if (topology->get_num_of_nodes_in_dimension(dim_mapper[dim]) == 1 ||
+            !dimensions_involved[dim_mapper[dim]]) {
           continue;
         }
-        std::pair<int, RingTopology::Direction> queue = vLevels->get_next_queue_at_level(dim_mapper[dim]);
-        CollectivePhase phase=generate_collective_phase(ComType::All_Gatehr,
-                                                        layer_num,
-                                                        topology->get_basic_topology_at_dimension(dim_mapper[dim],ComType::All_Gatehr),
-                                                        tmp,
-                                                        queue.first,
-                                                        queue.second,
-                                                        InjectionPolicy::Normal,
-                                                        implementation_per_dimension[dim_mapper[dim]],
-                                                        boost_mode);
+        std::pair<int, RingTopology::Direction> queue =
+            vLevels->get_next_queue_at_level(dim_mapper[dim]);
+        CollectivePhase phase = generate_collective_phase(
+            ComType::All_Gatehr,
+            layer_num,
+            topology->get_basic_topology_at_dimension(
+                dim_mapper[dim], ComType::All_Gatehr),
+            tmp,
+            queue.first,
+            queue.second,
+            InjectionPolicy::Normal,
+            implementation_per_dimension[dim_mapper[dim]],
+            boost_mode);
+        vect.push_back(phase);
+        tmp = phase.final_data_size;
+      }
+    } else {
+      int dim = 0;
+      int last_active_dim = 0;
+      for (dim = 0; dim < topology->get_num_of_dimensions(); dim++) {
+        if (topology->get_num_of_nodes_in_dimension(dim_mapper[dim]) != 1 &&
+            dimensions_involved[dim_mapper[dim]]) {
+          last_active_dim = dim;
+        }
+      }
+      for (dim = 0; dim < last_active_dim; dim++) {
+        if (topology->get_num_of_nodes_in_dimension(dim_mapper[dim]) == 1 ||
+            !dimensions_involved[dim_mapper[dim]]) {
+          continue;
+        }
+        std::pair<int, RingTopology::Direction> queue =
+            vLevels->get_next_queue_at_level(dim_mapper[dim]);
+        CollectivePhase phase = generate_collective_phase(
+            ComType::Reduce_Scatter,
+            layer_num,
+            topology->get_basic_topology_at_dimension(
+                dim_mapper[dim], ComType::Reduce_Scatter),
+            tmp,
+            queue.first,
+            queue.second,
+            InjectionPolicy::Normal,
+            implementation_per_dimension[dim_mapper[dim]],
+            boost_mode);
+        vect.push_back(phase);
+        tmp = phase.final_data_size;
+      }
+      while (dim > 0 &&
+             (dimensions_involved[dim_mapper[dim]] == false ||
+              topology->get_num_of_nodes_in_dimension(dim_mapper[dim]) == 1)) {
+        dim--;
+      }
+      if (dimensions_involved[dim_mapper[dim]] &&
+          topology->get_num_of_nodes_in_dimension(dim_mapper[dim]) > 1) {
+        std::pair<int, RingTopology::Direction> queue =
+            vLevels->get_next_queue_at_level(dim_mapper[dim]);
+        CollectivePhase phase = generate_collective_phase(
+            ComType::All_Reduce,
+            layer_num,
+            topology->get_basic_topology_at_dimension(
+                dim_mapper[dim], ComType::All_Reduce),
+            tmp,
+            queue.first,
+            queue.second,
+            InjectionPolicy::Normal,
+            implementation_per_dimension[dim_mapper[dim]],
+            boost_mode);
+        vect.push_back(phase);
+        tmp = phase.final_data_size;
+      }
+      dim--;
+      for (; dim >= 0; dim--) {
+        if (topology->get_num_of_nodes_in_dimension(dim_mapper[dim]) == 1 ||
+            !dimensions_involved[dim_mapper[dim]]) {
+          continue;
+        }
+        std::pair<int, RingTopology::Direction> queue =
+            vLevels->get_next_queue_at_level(dim_mapper[dim]);
+        CollectivePhase phase = generate_collective_phase(
+            ComType::All_Gatehr,
+            layer_num,
+            topology->get_basic_topology_at_dimension(
+                dim_mapper[dim], ComType::All_Gatehr),
+            tmp,
+            queue.first,
+            queue.second,
+            InjectionPolicy::Normal,
+            implementation_per_dimension[dim_mapper[dim]],
+            boost_mode);
         vect.push_back(phase);
         tmp = phase.final_data_size;
       }
     }
-    if(vect.size()>0){
+    if (vect.size() > 0) {
       StreamBaseline* newStream =
           new StreamBaseline(this, dataset, stream_counter++, vect, pri);
       newStream->current_queue_id = -1;
       insert_into_ready_list(newStream);
-    }
-    else{
-      dataset->active= false;
+    } else {
+      dataset->active = false;
       break;
     }
   }
-  if(dataset->active){
+  if (dataset->active) {
     streams_injected += count;
-    dataset->total_streams=count;
+    dataset->total_streams = count;
   }
   return dataset;
 }
@@ -1356,7 +1458,8 @@ void Sys::proceed_to_next_vnet_baseline(StreamBaseline* stream) {
   if (stream->phases_to_go.size() == 0) {
     total_running_streams--;
     if (previous_vnet >= 0) {
-      scheduler_unit->notify_stream_removed(previous_vnet,Sys::boostedTick()-stream->last_init);
+      scheduler_unit->notify_stream_removed(
+          previous_vnet, Sys::boostedTick() - stream->last_init);
     }
     delete stream;
     return;
@@ -1390,7 +1493,7 @@ void Sys::proceed_to_next_vnet_baseline(StreamBaseline* stream) {
               << " ,pri: " << stream->priority << std::endl;
   }*/
   if (stream->my_current_phase.enabled) {
-      insert_stream(&active_Streams[stream->current_queue_id], stream);
+    insert_stream(&active_Streams[stream->current_queue_id], stream);
   }
 
   stream->state = StreamState::Ready;
@@ -1400,73 +1503,81 @@ void Sys::proceed_to_next_vnet_baseline(StreamBaseline* stream) {
     stream->suspend_ready();
   }
   if (previous_vnet >= 0) {
-    scheduler_unit->notify_stream_removed(previous_vnet,Sys::boostedTick()-stream->last_init);
+    scheduler_unit->notify_stream_removed(
+        previous_vnet, Sys::boostedTick() - stream->last_init);
   }
   scheduler_unit->notify_stream_added(stream->current_queue_id);
   /*if(!stream->my_current_phase.enabled){
-      std::cout<<"I am node: "<<id<<"and the current chunk: "<<stream->stream_num
-              <<"is disabled on me for phase "<<stream->steps_finished<<std::endl;
+      std::cout<<"I am node: "<<id<<"and the current chunk:
+  "<<stream->stream_num
+              <<"is disabled on me for phase
+  "<<stream->steps_finished<<std::endl;
   }*/
 }
 void Sys::exiting() {}
 void Sys::insert_stream(std::list<BaseStream*>* queue, BaseStream* baseStream) {
   std::list<BaseStream*>::iterator it = queue->begin();
-  if(intra_dimension_scheduling==IntraDimensionScheduling::FIFO ||
-          baseStream->current_queue_id<0 ||
-          baseStream->current_com_type==ComType::All_to_All ||
-          baseStream->current_com_type==ComType::All_Reduce){
-      while (it != queue->end()) {
-        if ((*it)->initialized == true) {
-          std::advance(it, 1);
-          continue;
-        } else if ((*it)->priority >= baseStream->priority) {
-          std::advance(it, 1);
-          continue;
-        } else {
-          break;
-        }
-      }
-  }
-  else if(intra_dimension_scheduling==IntraDimensionScheduling::RG){
-      ComType one_to_last=ComType::None;
-      ComType last=ComType::None;
-      while (it != queue->end()) {
-          one_to_last=last;
-          last=(*it)->current_com_type;
-          if ((*it)->initialized == true) {
-              std::advance(it, 1);
-              if(it != queue->end() && (*it)->initialized==false){
-                  one_to_last=last;
-                  last=(*it)->current_com_type;
-                  std::advance(it, 1);
-              }
-              continue;
-          } else if ((*it)->priority > baseStream->priority) {
-              std::advance(it, 1);
-              continue;
-          } else if ((last==ComType::Reduce_Scatter && one_to_last==ComType::All_Gatehr) ||
-                  (last==ComType::All_Gatehr && one_to_last==ComType::Reduce_Scatter)) {
-              std::advance(it, 1);
-              continue;
-          } else {
-              break;
-          }
-      }
-  }
-  else if(intra_dimension_scheduling==IntraDimensionScheduling::SmallestFirst){
+  if (intra_dimension_scheduling == IntraDimensionScheduling::FIFO ||
+      baseStream->current_queue_id < 0 ||
+      baseStream->current_com_type == ComType::All_to_All ||
+      baseStream->current_com_type == ComType::All_Reduce) {
     while (it != queue->end()) {
       if ((*it)->initialized == true) {
         std::advance(it, 1);
         continue;
-      } else if ((*it)->my_current_phase.initial_data_size < baseStream->my_current_phase.initial_data_size) {
+      } else if ((*it)->priority >= baseStream->priority) {
         std::advance(it, 1);
         continue;
       } else {
         break;
       }
     }
-  }
-  else if(intra_dimension_scheduling==IntraDimensionScheduling::LessRemainingPhaseFirst){
+  } else if (intra_dimension_scheduling == IntraDimensionScheduling::RG) {
+    ComType one_to_last = ComType::None;
+    ComType last = ComType::None;
+    while (it != queue->end()) {
+      one_to_last = last;
+      last = (*it)->current_com_type;
+      if ((*it)->initialized == true) {
+        std::advance(it, 1);
+        if (it != queue->end() && (*it)->initialized == false) {
+          one_to_last = last;
+          last = (*it)->current_com_type;
+          std::advance(it, 1);
+        }
+        continue;
+      } else if ((*it)->priority > baseStream->priority) {
+        std::advance(it, 1);
+        continue;
+      } else if (
+          (last == ComType::Reduce_Scatter &&
+           one_to_last == ComType::All_Gatehr) ||
+          (last == ComType::All_Gatehr &&
+           one_to_last == ComType::Reduce_Scatter)) {
+        std::advance(it, 1);
+        continue;
+      } else {
+        break;
+      }
+    }
+  } else if (
+      intra_dimension_scheduling == IntraDimensionScheduling::SmallestFirst) {
+    while (it != queue->end()) {
+      if ((*it)->initialized == true) {
+        std::advance(it, 1);
+        continue;
+      } else if (
+          (*it)->my_current_phase.initial_data_size <
+          baseStream->my_current_phase.initial_data_size) {
+        std::advance(it, 1);
+        continue;
+      } else {
+        break;
+      }
+    }
+  } else if (
+      intra_dimension_scheduling ==
+      IntraDimensionScheduling::LessRemainingPhaseFirst) {
     while (it != queue->end()) {
       if ((*it)->initialized == true) {
         std::advance(it, 1);
