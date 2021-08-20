@@ -1,6 +1,6 @@
 {
   "topology-name": "Hierarchical",
-  "topologies-per-dim": ["Ring", "AllToAll", "Ring"],
+  "topologies-per-dim": ["Ring", "FullyConnected", "Switch"],
   "dimension-type": ["N", "N", "P"],
   "dimensions-count": 3,
   "units-count": [2, 8, 2],
