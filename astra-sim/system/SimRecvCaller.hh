@@ -18,9 +18,9 @@ LICENSE file in the root directory of this source tree.
 #include <sstream>
 #include <tuple>
 #include <vector>
-#include "CallData.hh"
-#include "Callable.hh"
-#include "Common.hh"
+#include "ns3/CallData.hh"
+#include "ns3/Callable.hh"
+#include "ns3/Common.hh"
 
 namespace AstraSim {
 class Sys;

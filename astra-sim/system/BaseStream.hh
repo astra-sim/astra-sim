@@ -18,13 +18,13 @@ LICENSE file in the root directory of this source tree.
 #include <sstream>
 #include <tuple>
 #include <vector>
-#include "Callable.hh"
-#include "CollectivePhase.hh"
-#include "Common.hh"
-#include "DataSet.hh"
-#include "StreamStat.hh"
-#include "Sys.hh"
-#include "astra-sim/system/topology/LogicalTopology.hh"
+#include "ns3/Callable.hh"
+#include "ns3/CollectivePhase.hh"
+#include "ns3/Common.hh"
+#include "ns3/DataSet.hh"
+#include "ns3/StreamStat.hh"
+#include "ns3/Sys.hh"
+#include "ns3/LogicalTopology.hh"
 
 namespace AstraSim {
 class RecvPacketEventHadndlerData;
