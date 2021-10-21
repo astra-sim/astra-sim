@@ -8,4 +8,3 @@ all-gather-implementation: ring_ring_ring
 reduce-scatter-implementation: ring_ring_ring
 all-to-all-implementation: oneDirect
 collective-optimization: localBWAware
-direct-collective-window: 2
