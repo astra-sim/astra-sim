@@ -8,4 +8,3 @@ all-gather-implementation: halvingDoubling
 reduce-scatter-implementation: halvingDoubling
 all-to-all-implementation: direct
 collective-optimization: localBWAware
-direct-collective-window: 2

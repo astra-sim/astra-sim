@@ -44,11 +44,6 @@
 	reduce-scatters on all dimensions from dim1 to dimN-1, followed by all-reduce on dimN, and then
 	series of all-gathers starting from dimN-1 to dim1. This optimization is used to reduce the
 	chunk size as it goes to the next network dimensions.
-* **direct-collective-window**: (int)
-	* This parameter tells NPU how many simultaneous messages it should send in parallel (for each chunk)
-	to its peers for direct algorithm (if selected). Each NPU simultaneously sends messages up to this value
-	and waits for receives of messages before it further sends more messages. If -1 is set, then it sends to
-	all peers at the same time before waiting for any received messages.
 	
 *NOTE: The default clock cycle period is 1ns (1 Ghz feq). This value is defined inside Sys.hh.
 One can change it to any number. It will be a configurable command line parameter in the later
