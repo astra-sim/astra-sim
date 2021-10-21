@@ -636,16 +636,14 @@ std::vector<CollectiveImplementation*> Sys::
     } else if (dimension_input.rfind("direct", 0) == 0) {
       int window = -1;
       if (dimension_input != "direct") {
-        window = std::stoi(
-            dimension_input.substr(6, dimension_input.size()));
+        window = std::stoi(dimension_input.substr(6, dimension_input.size()));
       }
       result.push_back(new DirectCollectiveImplementation(
           CollectiveImplementationType::Direct, window));
     } else if (dimension_input.rfind("oneDirect", 0) == 0) {
       int window = -1;
       if (dimension_input != "oneDirect") {
-        window = std::stoi(dimension_input.substr(
-            9, dimension_input.size()));
+        window = std::stoi(dimension_input.substr(9, dimension_input.siz()));
       }
       result.push_back(new DirectCollectiveImplementation(
           CollectiveImplementationType::OneDirect, window));
