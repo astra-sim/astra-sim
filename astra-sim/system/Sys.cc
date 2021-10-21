@@ -636,6 +636,7 @@ std::vector<CollectiveImplementation*> Sys::
     } else if (dimension_input.rfind("direct", 0) == 0) {
       int window = -1;
       if (dimension_input != "direct") {
+        // finding direct collective window
         window = std::stoi(dimension_input.substr(6, 5));
       }
       result.push_back(new DirectCollectiveImplementation(
@@ -643,6 +644,7 @@ std::vector<CollectiveImplementation*> Sys::
     } else if (dimension_input.rfind("oneDirect", 0) == 0) {
       int window = -1;
       if (dimension_input != "oneDirect") {
+        // finding direct collective window
         window = std::stoi(dimension_input.substr(9, 5));
       }
       result.push_back(new DirectCollectiveImplementation(
