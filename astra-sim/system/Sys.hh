@@ -23,6 +23,7 @@ LICENSE file in the root directory of this source tree.
 #include "Callable.hh"
 #include "CollectivePhase.hh"
 #include "Common.hh"
+#include "SendPacketEventHandlerData.hh"
 #include "UsageTracker.hh"
 #include "astra-sim/system/topology/RingTopology.hh"
 #include "astra-sim/workload/Workload.hh"
@@ -189,6 +190,11 @@ class Sys : public Callable {
   static void sys_panic(std::string msg);
   void exitSimLoop(std::string msg);
   bool seprate_log;
+
+  static std::vector<std::map<std::pair<int, int>, std::list<SimSendCaller*>>>
+      pending_sends;
+  static std::vector<std::map<std::pair<int, int>, bool>>
+      is_there_pending_sends;
 
   Sys(AstraNetworkAPI* NI,
       AstraMemoryAPI* MEM,

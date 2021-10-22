@@ -35,6 +35,9 @@ namespace AstraSim {
 Tick Sys::offset = 0;
 uint8_t* Sys::dummy_data = new uint8_t[2];
 std::vector<Sys*> Sys::all_generators;
+std::vector<std::map<std::pair<int, int>, std::list<SimSendCaller*>>>
+    Sys::pending_sends;
+std::vector<std::map<std::pair<int, int>, bool>> Sys::is_there_pending_sends;
 
 Sys::~Sys() {
   end_sim_time = std::chrono::high_resolution_clock::now();
@@ -241,7 +244,6 @@ Sys::Sys(
       id, physical_dims, all_to_all_implementation_per_dimension);
 
   stream_counter = 0;
-
   if (id == 0) {
     std::atexit(exiting);
     std::cout << "total nodes: " << total_nodes << std::endl;
@@ -252,6 +254,10 @@ Sys::Sys(
               << " , fourth dim: " << fifth_dim << std::endl;*/
   }
   // NI->sim_init(); CHANGED BY PALLAVI**
+  if (id == 0) {
+    pending_sends.resize(total_nodes);
+    is_there_pending_sends.resize(total_nodes);
+  }
   NI->sim_init(MEM);
   memBus = new MemBus(
       "NPU",
@@ -463,8 +469,39 @@ int Sys::sim_send(
     sim_request* request,
     void (*msg_handler)(void* fun_arg),
     void* fun_arg) {
+  if (fun_arg == nullptr) {
+    SendPacketEventHandlerData* fun_arg_tmp =
+        new SendPacketEventHandlerData(NI->rank, dst, tag);
+    fun_arg = (void*)fun_arg_tmp;
+
+    if (is_there_pending_sends[NI->rank].find(std::make_pair(dst, tag)) ==
+            is_there_pending_sends[NI->rank].end() ||
+        is_there_pending_sends[NI->rank][std::make_pair(dst, tag)] == false) {
+      is_there_pending_sends[NI->rank][std::make_pair(dst, tag)] = true;
+    } else {
+      if (pending_sends[NI->rank].find(std::make_pair(dst, tag)) ==
+          pending_sends[NI->rank].end()) {
+        std::list<SimSendCaller*> tmp;
+        pending_sends[NI->rank][std::make_pair(dst, tag)] = tmp;
+      }
+      pending_sends[NI->rank][std::make_pair(dst, tag)].push_back(
+          new SimSendCaller(
+              this,
+              buffer,
+              count,
+              type,
+              dst,
+              tag,
+              *request,
+              msg_handler,
+              fun_arg));
+      return 1;
+    }
+  }
   if (delay == 0) {
+    // std::cout<<"sim_send started"<<std::endl;
     NI->sim_send(buffer, count, type, dst, tag, request, msg_handler, fun_arg);
+    // std::cout<<"sim_send ended"<<std::endl;
   } else {
     try_register_event(
         new SimSendCaller(
@@ -1746,6 +1783,33 @@ void Sys::handleEvent(void* arg) {
     //"<<rcehd->owner->stream_num<<std::endl;
     rcehd->owner->consume(rcehd);
     delete rcehd;
+  } else if (event == EventType::PacketSent) {
+    SendPacketEventHandlerData* sendhd = (SendPacketEventHandlerData*)ehd;
+    // std::cout<<"****************************handle event triggered for sent
+    // packets! at node: "
+    //<<sendhd->nodeId<<" at time: "<<Sys::boostedTick()<<" ,Tag:
+    //"<<sendhd->tag<<std::endl;
+    int rank = sendhd->nodeId;
+    if (pending_sends[rank][std::make_pair(sendhd->receiverNodeId, sendhd->tag)]
+            .size() == 0) {
+      is_there_pending_sends[rank][std::make_pair(
+          sendhd->receiverNodeId, sendhd->tag)] = false;
+    } else {
+      // std::cout<<"here:
+      // "<<pending_sends[rank][std::make_pair(sendhd->receiverNodeId,sendhd->tag)].size()<<std::endl;
+      SimSendCaller* simSendCaller =
+          pending_sends[rank]
+                       [std::make_pair(sendhd->receiverNodeId, sendhd->tag)]
+                           .front();
+      pending_sends[rank][std::make_pair(sendhd->receiverNodeId, sendhd->tag)]
+          .pop_front();
+      // std::cout<<"hello"<<std::endl;
+      simSendCaller->call(EventType::General, nullptr);
+      // std::cout<<"hi"<<std::endl;
+    }
+    std::cout << "handle finished" << std::endl;
+    delete sendhd;
+    std::cout << "handle deleted" << std::endl;
   }
 }
 timespec_t Sys::generate_time(int cycles) {

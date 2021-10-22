@@ -73,6 +73,7 @@ enum class EventType {
   RendezvousRecv,
   CallEvents,
   PacketReceived,
+  PacketSent,
   WaitForVnetTurn,
   General,
   TX_DMA,
