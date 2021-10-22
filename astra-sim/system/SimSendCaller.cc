@@ -27,7 +27,8 @@ SimSendCaller::SimSendCaller(
   this->fun_arg = fun_arg;
 }
 void SimSendCaller::call(EventType type, CallData* data) {
-  generator->NI->sim_send(
+  generator->sim_send(
+      0,
       this->buffer,
       this->count,
       this->type,

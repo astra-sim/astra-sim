@@ -18,8 +18,8 @@ LICENSE file in the root directory of this source tree.
 #include <sstream>
 #include <tuple>
 #include <vector>
-#include "ns3/BaseStream.hh"
-#include "ns3/BasicEventHandlerData.hh"
+#include "BaseStream.hh"
+#include "BasicEventHandlerData.hh"
 
 namespace AstraSim {
 class RecvPacketEventHadndlerData : public BasicEventHandlerData,

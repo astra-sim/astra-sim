@@ -18,8 +18,8 @@ LICENSE file in the root directory of this source tree.
 #include <sstream>
 #include <tuple>
 #include <vector>
-#include "ns3/ComplexLogicalTopology.hh"
-#include "ns3/Common.hh"
+#include "ComplexLogicalTopology.hh"
+#include "astra-sim/system/Common.hh"
 
 namespace AstraSim {
 class GeneralComplexTopology : public ComplexLogicalTopology {

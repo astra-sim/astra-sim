@@ -18,11 +18,11 @@ LICENSE file in the root directory of this source tree.
 #include <sstream>
 #include <tuple>
 #include <vector>
-#include "ns3/BaseStream.hh"
-#include "ns3/Callable.hh"
-#include "ns3/Common.hh"
-#include "ns3/MemBus.hh"
-#include "ns3/MyPacket.hh"
+#include "BaseStream.hh"
+#include "Callable.hh"
+#include "Common.hh"
+#include "MemBus.hh"
+#include "MyPacket.hh"
 
 namespace AstraSim {
 class Sys;

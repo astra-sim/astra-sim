@@ -18,9 +18,9 @@ LICENSE file in the root directory of this source tree.
 #include <sstream>
 #include <tuple>
 #include <vector>
-#include "ns3/BasicLogicalTopology.hh"
-#include "ns3/Node.hh"
-#include "ns3/Common.hh"
+#include "BasicLogicalTopology.hh"
+#include "Node.hh"
+#include "astra-sim/system/Common.hh"
 
 namespace AstraSim {
 class BinaryTree : public BasicLogicalTopology {

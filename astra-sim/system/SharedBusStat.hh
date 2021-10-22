@@ -18,7 +18,7 @@ LICENSE file in the root directory of this source tree.
 #include <sstream>
 #include <tuple>
 #include <vector>
-#include "ns3/CallData.hh"
+#include "CallData.hh"
 
 namespace AstraSim {
 class SharedBusStat : public CallData {

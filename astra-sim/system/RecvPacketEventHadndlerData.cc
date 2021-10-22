@@ -17,7 +17,5 @@ RecvPacketEventHadndlerData::RecvPacketEventHadndlerData(
   this->stream_num = stream_num;
   this->message_end = true;
   ready_time = Sys::boostedTick();
-  // std::cout<<"################## instantiated with nodeID:
-  // "<<this->nodeId<<std::endl;
 }
 } // namespace AstraSim

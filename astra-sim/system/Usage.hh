@@ -18,7 +18,7 @@ LICENSE file in the root directory of this source tree.
 #include <sstream>
 #include <tuple>
 #include <vector>
-#include "ns3/Common.hh"
+#include "Common.hh"
 
 namespace AstraSim {
 class Usage {

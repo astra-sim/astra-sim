@@ -18,8 +18,8 @@ LICENSE file in the root directory of this source tree.
 #include <sstream>
 #include <tuple>
 #include <vector>
-#include "ns3/CallData.hh"
-#include "ns3/Common.hh"
+#include "CallData.hh"
+#include "Common.hh"
 
 namespace AstraSim {
 class BasicEventHandlerData : public CallData {

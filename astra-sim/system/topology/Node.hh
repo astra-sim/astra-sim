@@ -18,8 +18,8 @@ LICENSE file in the root directory of this source tree.
 #include <sstream>
 #include <tuple>
 #include <vector>
-#include "ns3/ComputeNode.hh"
-#include "ns3/Common.hh"
+#include "ComputeNode.hh"
+#include "astra-sim/system/Common.hh"
 
 namespace AstraSim {
 class Node : public ComputeNode {

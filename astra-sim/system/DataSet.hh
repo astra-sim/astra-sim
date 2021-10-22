@@ -18,10 +18,10 @@ LICENSE file in the root directory of this source tree.
 #include <sstream>
 #include <tuple>
 #include <vector>
-#include "ns3/CallData.hh"
-#include "ns3/Callable.hh"
-#include "ns3/Common.hh"
-#include "ns3/StreamStat.hh"
+#include "CallData.hh"
+#include "Callable.hh"
+#include "Common.hh"
+#include "StreamStat.hh"
 
 namespace AstraSim {
 class DataSet : public Callable, public StreamStat {

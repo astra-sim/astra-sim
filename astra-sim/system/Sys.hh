@@ -18,14 +18,15 @@ LICENSE file in the root directory of this source tree.
 #include <sstream>
 #include <tuple>
 #include <vector>
-#include "ns3/AstraMemoryAPI.hh"
-#include "ns3/AstraNetworkAPI.hh"
-#include "ns3/Callable.hh"
-#include "ns3/CollectivePhase.hh"
-#include "ns3/Common.hh"
-#include "ns3/UsageTracker.hh"
-#include "ns3/RingTopology.hh"
-#include "ns3/Workload.hh"
+#include "AstraMemoryAPI.hh"
+#include "AstraNetworkAPI.hh"
+#include "Callable.hh"
+#include "CollectivePhase.hh"
+#include "Common.hh"
+#include "SendPacketEventHandlerData.hh"
+#include "UsageTracker.hh"
+#include "astra-sim/system/topology/RingTopology.hh"
+#include "astra-sim/workload/Workload.hh"
 
 namespace AstraSim {
 class MemBus;
@@ -189,6 +190,11 @@ class Sys : public Callable {
   static void sys_panic(std::string msg);
   void exitSimLoop(std::string msg);
   bool seprate_log;
+
+  static std::vector<std::map<std::pair<int, int>, std::list<SimSendCaller*>>>
+      pending_sends;
+  static std::vector<std::map<std::pair<int, int>, bool>>
+      is_there_pending_sends;
 
   Sys(AstraNetworkAPI* NI,
       AstraMemoryAPI* MEM,
