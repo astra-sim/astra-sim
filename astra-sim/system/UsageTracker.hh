@@ -18,10 +18,10 @@ LICENSE file in the root directory of this source tree.
 #include <sstream>
 #include <tuple>
 #include <vector>
-#include "Callable.hh"
-#include "Common.hh"
-#include "Usage.hh"
-#include "astra-sim/workload/CSVWriter.hh"
+#include "ns3/Callable.hh"
+#include "ns3/Common.hh"
+#include "ns3/Usage.hh"
+#include "ns3/CSVWriter.hh"
 
 namespace AstraSim {
 class UsageTracker {

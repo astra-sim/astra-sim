@@ -17,10 +17,10 @@ LICENSE file in the root directory of this source tree.
 #include <iostream>
 #include <map>
 #include <tuple>
-#include "CSVWriter.hh"
-#include "Workload.hh"
-#include "astra-sim/system/StreamStat.hh"
-#include "astra-sim/system/Sys.hh"
+#include "ns3/CSVWriter.hh"
+#include "ns3/Workload.hh"
+#include "ns3/StreamStat.hh"
+#include "ns3/Sys.hh"
 
 namespace AstraSim {
 class DataSet;
