@@ -29,12 +29,12 @@ function cleanup_result {
 }
 function compile {
     cp "${ASTRA_SIM_DIR}"/network_frontend/ns3/*.cc "${NS3_DIR}"/simulation/scratch/
-    cp "${ASTRA_SIM_DIR}"/network_frontend/ns3/*.c "${NS3_DIR}"/simulation/scratch/
-    cp "${ASTRA_SIM_DIR}"/network_frontend/ns3/*.hh "${NS3_DIR}"/simulation/scratch/
+    # cp "${ASTRA_SIM_DIR}"/network_frontend/ns3/*.c "${NS3_DIR}"/simulation/scratch/
+    # cp "${ASTRA_SIM_DIR}"/network_frontend/ns3/*.hh "${NS3_DIR}"/simulation/scratch/
     cp "${ASTRA_SIM_DIR}"/network_frontend/ns3/*.h "${NS3_DIR}"/simulation/scratch/
     cp "${ASTRA_SIM_DIR}"/network_frontend/ns3/wscript "${NS3_DIR}"/simulation/src/applications
-    cd "${NS3_DIR}"
-    ./waf --configure 
+    cd "${NS3_DIR}/simulation"
+    ./waf configure 
     ./waf --run 'scratch/AstraSimNetwork'
     cd "${SCRIPT_DIR:?}"
 }
