@@ -32,7 +32,7 @@ using namespace ns3;
 //   double time_val;
 // };
 // extern int global_variable;
-const int num_gpus = 64;
+std::vector<int> physical_dims{ 64 };
 queue<struct task1> workerQueue;
 // map<pair<int,int>, struct task1> expeRecvHash;
 struct sim_event {
@@ -300,6 +300,20 @@ Ptr<SimpleUdpApplication>* sim_init(int n){
 
 
 int main (int argc, char *argv[]){
+    int num_gpus=1;
+    for(auto &a:physical_dims){
+	num_gpus*=a;
+    }
+    std::string system_input;
+    if(physical_dims.size()==1){
+	system_input="sample_1D_switch_sys.txt";	
+    }
+    else if(physical_dims.size()==2){
+        system_input="sample_2D_switch_sys.txt";
+    }
+    else if(physical_dims.size()==3){
+        system_input="sample_3D_switch_sys.txt";
+    }
     LogComponentEnable ("SimpleUdpApplication", LOG_LEVEL_INFO);
     //cout << "Hello world!\n";
     // LogComponentEnable("myTCPMultiple",LOG_LEVEL_INFO);
@@ -309,8 +323,8 @@ int main (int argc, char *argv[]){
     //ASTRASimNetwork network1 = ASTRASimNetwork(1);
     std::vector<ASTRASimNetwork*> networks(num_gpus,nullptr);
     std::vector<AstraSim::Sys*> systems(num_gpus,nullptr);
-    std::vector<int> physical_dims(1,num_gpus);
-    std::vector<int> queues_per_dim(1,1);
+    //std::vector<int> physical_dims(1,num_gpus);
+    std::vector<int> queues_per_dim(physical_dims.size(),1);
     for(int i=0;i<num_gpus;i++){
 	networks[i]=new ASTRASimNetwork(i);	
 	systems[i] = new AstraSim::Sys(
@@ -320,7 +334,7 @@ int main (int argc, char *argv[]){
         	1, // num_passes
         	physical_dims, // dimensions
         	queues_per_dim, // queues per corresponding dimension
-        	"../../../../../astra-sim/inputs/system/sample_a2a_sys.txt", // system configuration
+        	"../../../../../astra-sim/inputs/system/"+system_input, // system configuration
         	"../../../../../astra-sim/inputs/workload/microAllReduce.txt", // workload configuration
         	1, // communication scale
         	1, // computation scale
