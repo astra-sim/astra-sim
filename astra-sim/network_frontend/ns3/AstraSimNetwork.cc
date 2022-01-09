@@ -32,7 +32,7 @@ using namespace ns3;
 //   double time_val;
 // };
 // extern int global_variable;
-std::vector<int> physical_dims{ 64 };
+std::vector<int> physical_dims{ 512 };
 queue<struct task1> workerQueue;
 // map<pair<int,int>, struct task1> expeRecvHash;
 struct sim_event {
@@ -123,8 +123,12 @@ class ASTRASimNetwork:public AstraSim::AstraNetworkAPI{
                 // workerQueue.push(t); 
                 // udp[t.src]->SendPacket(t.dest, t.fun_arg, t.msg_handler, t.count, tag);
 		////cout<<"COUNT and PACKET is "<<count<<" "<<maxPacketCount<<"\n";
-                //cout<<"COUNT IN SEND IS "<<count<<"\n";
-		sentHash[make_pair(tag,make_pair(t.src,t.dest))] = t;
+                //cout<<"COUNT IN SEND IS "<<count<<" src: "<<rank<<", dst: "<<dst<<"\n";
+		static int totalSends=0;
+                totalSends++;
+                cout<<"total sends: "<<totalSends<<endl;
+
+                sentHash[make_pair(tag,make_pair(t.src,t.dest))] = t;
                 SendFlow(rank, dst , count, msg_handler, fun_arg,tag);
 	        //cout<<"event at sender pushed "<<t.src<<" "<<" "<<t.dest<<" "<<tag<<"\n";
                 return 0;
