@@ -406,15 +406,13 @@ int Sys::get_layer_numbers(std::string workload_input) {
   return Workload::get_layer_numbers(workload_input);
 }
 int Sys::get_priority(SchedulingPolicy pref_scheduling) {
-  if (pref_scheduling == SchedulingPolicy::None) {
-    if (scheduling_policy == SchedulingPolicy::LIFO) {
-      return priority_counter++;
-    } else {
-      return priority_counter--;
-    }
+  if (pref_scheduling == SchedulingPolicy::LIFO) {
+    return priority_counter++;
+  } else if (pref_scheduling == SchedulingPolicy::FIFO) {
+    return priority_counter--;
   } else if (pref_scheduling == SchedulingPolicy::HIGHEST) {
     return 100000000;
-  } else {
+  } else if (pref_scheduling == SchedulingPolicy::None) {
     if (scheduling_policy == SchedulingPolicy::LIFO) {
       return priority_counter++;
     } else {
