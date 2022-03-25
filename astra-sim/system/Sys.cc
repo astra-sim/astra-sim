@@ -1787,7 +1787,7 @@ void Sys::handleEvent(void* arg) {
     
     static int acks=0;
     acks++;
-    std::cout<<"total send acks: "<<acks<<std::endl;
+    //std::cout<<"total send acks: "<<acks<<std::endl;
  
     SendPacketEventHandlerData* sendhd = (SendPacketEventHandlerData*)ehd;
     // std::cout<<"****************************handle event triggered for sent
