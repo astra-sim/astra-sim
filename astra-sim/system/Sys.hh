@@ -106,9 +106,9 @@ class Sys : public Callable {
   int communication_delay;
 
   int preferred_dataset_splits;
-  float compute_scale;
-  float comm_scale;
-  float injection_scale;
+  double compute_scale;
+  double comm_scale;
+  double injection_scale;
   int local_reduction_delay;
   uint64_t pending_events;
   std::string method;
@@ -198,9 +198,9 @@ class Sys : public Callable {
       std::vector<int> queues_per_dim,
       std::string my_sys,
       std::string my_workload,
-      float comm_scale,
-      float compute_scale,
-      float injection_scale,
+      double comm_scale,
+      double compute_scale,
+      double injection_scale,
       int total_stat_rows,
       int stat_row,
       std::string path,
