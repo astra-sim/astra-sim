@@ -115,9 +115,9 @@ Sys::Sys(
     std::vector<int> queues_per_dim,
     std::string my_sys,
     std::string my_workload,
-    float comm_scale,
-    float compute_scale,
-    float injection_scale,
+    double comm_scale,
+    double compute_scale,
+    double injection_scale,
     int total_stat_rows,
     int stat_row,
     std::string path,
@@ -418,6 +418,10 @@ int Sys::get_priority(SchedulingPolicy pref_scheduling) {
     } else {
       return priority_counter--;
     }
+  }
+  else{
+    sys_panic("comm priority is unknown!");
+    return -1;
   }
 }
 int Sys::rendezvous_sim_send(
@@ -1562,13 +1566,16 @@ void Sys::insert_stream(std::list<BaseStream*>* queue, BaseStream* baseStream) {
     }
   } else if (
       intra_dimension_scheduling == IntraDimensionScheduling::SmallestFirst) {
+    if(baseStream->phases_to_go.size()==1){
+      it = queue->end();
+    }
     while (it != queue->end()) {
       if ((*it)->initialized == true) {
         std::advance(it, 1);
         continue;
       } else if (
-          (*it)->my_current_phase.initial_data_size <
-          baseStream->my_current_phase.initial_data_size) {
+          std::max((*it)->my_current_phase.initial_data_size,(*it)->my_current_phase.final_data_size) <
+          std::max(baseStream->my_current_phase.initial_data_size,baseStream->my_current_phase.final_data_size)) {
         std::advance(it, 1);
         continue;
       } else {
