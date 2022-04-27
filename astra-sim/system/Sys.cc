@@ -418,8 +418,7 @@ int Sys::get_priority(SchedulingPolicy pref_scheduling) {
     } else {
       return priority_counter--;
     }
-  }
-  else{
+  } else {
     sys_panic("comm priority is unknown!");
     return -1;
   }
@@ -1566,7 +1565,7 @@ void Sys::insert_stream(std::list<BaseStream*>* queue, BaseStream* baseStream) {
     }
   } else if (
       intra_dimension_scheduling == IntraDimensionScheduling::SmallestFirst) {
-    if(baseStream->phases_to_go.size()==1){
+    if (baseStream->phases_to_go.size() == 1) {
       it = queue->end();
     }
     while (it != queue->end()) {
@@ -1574,8 +1573,12 @@ void Sys::insert_stream(std::list<BaseStream*>* queue, BaseStream* baseStream) {
         std::advance(it, 1);
         continue;
       } else if (
-          std::max((*it)->my_current_phase.initial_data_size,(*it)->my_current_phase.final_data_size) <
-          std::max(baseStream->my_current_phase.initial_data_size,baseStream->my_current_phase.final_data_size)) {
+          std::max(
+              (*it)->my_current_phase.initial_data_size,
+              (*it)->my_current_phase.final_data_size) <
+          std::max(
+              baseStream->my_current_phase.initial_data_size,
+              baseStream->my_current_phase.final_data_size)) {
         std::advance(it, 1);
         continue;
       } else {
