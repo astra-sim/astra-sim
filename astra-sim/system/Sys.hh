@@ -323,7 +323,7 @@ class Sys : public Callable {
   int determine_chunk_size(uint64_t size, ComType type);
   int get_priority(SchedulingPolicy pref_scheduling);
   static void handleEvent(void* arg);
-  timespec_t generate_time(int cycles);
+  timespec_t generate_time(Tick cycles);
 };
 } // namespace AstraSim
 #endif

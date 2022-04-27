@@ -1753,7 +1753,7 @@ void Sys::handleEvent(void* arg) {
     delete rcehd;
   }
 }
-timespec_t Sys::generate_time(int cycles) {
+timespec_t Sys::generate_time(Tick cycles) {
   timespec_t tmp = NI->sim_get_time();
   double addition = cycles * ((double)CLOCK_PERIOD);
   tmp.time_val = addition;
