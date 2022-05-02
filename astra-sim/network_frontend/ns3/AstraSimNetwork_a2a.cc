@@ -38,6 +38,7 @@ queue<struct task1> workerQueue;
 unsigned long long tempcnt = 999;
 unsigned long long  cnt = 0;
 int num_gpus=1;
+class ASTRASimNetwork;
 std::vector<ASTRASimNetwork*> networks;
 int collective_counter=0;
 struct sim_event {
@@ -382,7 +383,7 @@ class A2AUnoptimized{
                 }
             }
             for(int i=start_GPU;i<=end_GPU;i++){
-                HandlerData handlerData=new HandlerData(this,i);
+                HandlerData *handlerData=new HandlerData(this,i);
                 (*networks)[i]->sim_send(nullptr, //not yet used
                                       msg_size, //number of bytes to be send
                                       0,//not yet used
@@ -390,7 +391,7 @@ class A2AUnoptimized{
                                       collective_comm_id, //not yet used
                                       nullptr,//not yet used
                                       &send_handler,
-                                      &handlerData);
+                                      handlerData);
             }
         }
         void send_finished(int gpu_id){
@@ -398,8 +399,8 @@ class A2AUnoptimized{
             if(A2A_counter[gpu_id]==gpu_id){
                 A2A_counter[gpu_id]++;
             }
-            if(A2A_counter[gpu_id]<end_GPU){
-                HandlerData handlerData=new HandlerData(this,gpu_id);
+            if(A2A_counter[gpu_id]<=end_GPU){
+                HandlerData *handlerData=new HandlerData(this,gpu_id);
                 (*networks)[gpu_id]->sim_send(nullptr, //not yet used
                                          msg_size, //number of bytes to be send
                                          0,//not yet used
@@ -407,7 +408,7 @@ class A2AUnoptimized{
                                          collective_comm_id, //not yet used
                                          nullptr,//not yet used
                                          &send_handler,
-                                         &handlerData);
+                                         handlerData);
             }
         }
 
@@ -489,8 +490,8 @@ int main (int argc, char *argv[]){
     std::cout<<"nano sec "<<Simulator::Now().GetNanoSeconds()<<"\n";
 
     //sample generation of A2A collectives: A2AUnoptimized(reference to network instances,start_gpu_id,end_gpu_id,A2A_size)
-    A2AUnoptimized collective1=new A2AUnoptimized(&networks,0,31,32*1024*1024);
-    A2AUnoptimized collective2=new A2AUnoptimized(&networks,32,63,32*1024*1024);
+    A2AUnoptimized collective1(&networks,0,3,1024*1024);
+    A2AUnoptimized collective2(&networks,4,7,1024*1024);
     collective1.execute();
     collective2.execute();
 
