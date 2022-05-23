@@ -1624,7 +1624,7 @@ void Sys::register_event(
     Callable* callable,
     EventType event,
     CallData* callData,
-    int cycles) {
+    Tick cycles) {
   Tick mycycles = cycles;
   try_register_event(callable, event, callData, mycycles);
   return;

@@ -165,7 +165,7 @@ class Sys : public Callable {
       Callable* callable,
       EventType event,
       CallData* callData,
-      int cycles);
+      Tick cycles);
   void insert_into_ready_list(BaseStream* stream);
   void ask_for_schedule(int max);
   void schedule(int num);
