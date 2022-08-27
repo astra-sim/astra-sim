@@ -21,6 +21,7 @@ LICENSE file in the root directory of this source tree.
 #include "ns3/CallData.hh"
 #include "ns3/Common.hh"
 
+class Sys;
 namespace AstraSim {
 class BasicEventHandlerData : public CallData {
  public:
