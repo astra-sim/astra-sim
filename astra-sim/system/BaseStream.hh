@@ -65,12 +65,12 @@ class BaseStream : public Callable, public StreamStat {
       int stream_num,
       Sys* owner,
       std::list<CollectivePhase> phases_to_go);
-  void declare_ready();
-  bool is_ready();
-  void consume_ready();
-  void suspend_ready();
-  void resume_ready(int st_num);
-  void destruct_ready();
+  //void declare_ready();
+  //bool is_ready();
+  //void consume_ready();
+  //void suspend_ready();
+  //void resume_ready(int st_num);
+  //void destruct_ready();
 };
 } // namespace AstraSim
 #endif

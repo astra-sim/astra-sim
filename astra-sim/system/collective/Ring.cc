@@ -312,7 +312,6 @@ void Ring::exit() {
   if (locked_packets.size() != 0) {
     locked_packets.clear();
   }
-  stream->declare_ready();
   stream->owner->proceed_to_next_vnet_baseline((StreamBaseline*)stream);
   // delete this;
   return;

@@ -18,7 +18,6 @@ void Algorithm::call(EventType event, CallData* data) {
 }
 void Algorithm::exit() {
   // std::cout<<"exiting collective in node: "<<stream->owner->id<<std::endl;
-  stream->declare_ready();
   stream->owner->proceed_to_next_vnet_baseline((StreamBaseline*)stream);
   // delete this;
   return;

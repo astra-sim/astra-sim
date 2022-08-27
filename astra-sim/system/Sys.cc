@@ -975,7 +975,6 @@ void Sys::SchedulerUnit::notify_stream_removed(int vnet, Tick running_time) {
     if (max > max_running_streams - this->sys->total_running_streams) {
       max = max_running_streams - this->sys->total_running_streams;
     }
-    // sys->ask_for_schedule(max);
     sys->schedule(max);
   }
   // tmp
@@ -1450,11 +1449,6 @@ void Sys::proceed_to_next_vnet_baseline(StreamBaseline* stream) {
               << " ,available synchronizer: "
               << stream->synchronizer[stream->stream_num] << std::endl;
   }*/
-  if (!stream->is_ready()) {
-    stream->suspend_ready();
-    return;
-  }
-  stream->consume_ready();
   int previous_vnet = stream->current_queue_id;
   if (stream->steps_finished == 1) {
     first_phase_streams--;
@@ -1534,10 +1528,6 @@ void Sys::proceed_to_next_vnet_baseline(StreamBaseline* stream) {
 
   stream->state = StreamState::Ready;
 
-  if (!stream->my_current_phase.enabled) {
-    stream->declare_ready();
-    stream->suspend_ready();
-  }
   if (previous_vnet >= 0) {
     scheduler_unit->notify_stream_removed(
         previous_vnet, Sys::boostedTick() - stream->last_init);
@@ -1686,36 +1676,6 @@ void Sys::try_register_event(
 void Sys::insert_into_ready_list(BaseStream* stream) {
   insert_stream(&ready_list, stream);
   scheduler_unit->notify_stream_added_into_ready_list();
-}
-void Sys::ask_for_schedule(int max) {
-  if (ready_list.size() == 0 ||
-      ready_list.front()->synchronizer[ready_list.front()->stream_num] <
-          all_generators.size()) {
-    return;
-  }
-  int top = ready_list.front()->stream_num;
-  int min = ready_list.size();
-  if (min > max) {
-    min = max;
-  }
-  // std::cout<<"ask for schedule checkpoint 1, all gen size:
-  // "<<all_generators.size()<<std::endl;
-  for (auto& gen : all_generators) {
-    if (gen->ready_list.size() == 0 ||
-        gen->ready_list.front()->stream_num != top) {
-      // std::cout<<"ask for schedule checkpoint 2.1"<<std::endl;
-      return;
-    }
-    if (gen->ready_list.size() < min) {
-      // std::cout<<"ask for schedule checkpoint 2.2"<<std::endl;
-      min = gen->ready_list.size();
-    }
-  }
-  // std::cout<<"ask for schedule checkpoint 3"<<std::endl;
-  for (auto& gen : all_generators) {
-    gen->schedule(min);
-  }
-  return;
 }
 void Sys::schedule(int num) {
   int ready_list_size = ready_list.size();

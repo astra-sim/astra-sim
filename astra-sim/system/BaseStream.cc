@@ -39,7 +39,7 @@ BaseStream::BaseStream(
   current_queue_id = -1;
   priority = 0;
 }
-void BaseStream::declare_ready() {
+/*void BaseStream::declare_ready() {
   ready_counter[stream_num]++;
   if (ready_counter[stream_num] == owner->total_nodes) {
     synchronizer[stream_num] = owner->total_nodes;
@@ -85,5 +85,5 @@ void BaseStream::destruct_ready() {
   synchronizer.erase(it);
   ready_counter.erase(stream_num);
   suspended_streams.erase(stream_num);
-}
+}*/
 } // namespace AstraSim
