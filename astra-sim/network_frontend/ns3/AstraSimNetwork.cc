@@ -34,7 +34,7 @@ using namespace ns3;
 // extern int global_variable;
 std::vector<string> workloads {
   "microAllReduce.txt",
-  "microAllReduce.txt"
+  "microAllToAll.txt"
 };
 std::vector<std::vector<int>> physical_dims {
   { 8, 4 },
