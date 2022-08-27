@@ -6,10 +6,10 @@ LICENSE file in the root directory of this source tree.
 #include "SendPacketEventHandlerData.hh"
 namespace AstraSim {
 SendPacketEventHandlerData::SendPacketEventHandlerData(
-    int senderNodeId,
+    Sys* node,
     int receiverNodeId,
     int tag)
-    : BasicEventHandlerData(senderNodeId, EventType::PacketSent) {
+    : BasicEventHandlerData(node, EventType::PacketSent) {
   this->receiverNodeId = receiverNodeId;
   this->tag = tag;
 }

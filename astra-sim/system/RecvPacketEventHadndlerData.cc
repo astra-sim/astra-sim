@@ -11,7 +11,7 @@ RecvPacketEventHadndlerData::RecvPacketEventHadndlerData(
     EventType event,
     int vnet,
     int stream_num)
-    : BasicEventHandlerData(nodeId, event) {
+    : BasicEventHandlerData(owner->owner, event) {
   this->owner = owner;
   this->vnet = vnet;
   this->stream_num = stream_num;

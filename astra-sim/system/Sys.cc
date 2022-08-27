@@ -35,9 +35,9 @@ namespace AstraSim {
 Tick Sys::offset = 0;
 uint8_t* Sys::dummy_data = new uint8_t[2];
 std::vector<Sys*> Sys::all_generators;
-std::vector<std::map<std::pair<int, int>, std::list<SimSendCaller*>>>
-    Sys::pending_sends;
-std::vector<std::map<std::pair<int, int>, bool>> Sys::is_there_pending_sends;
+//std::vector<std::map<std::pair<int, int>, std::list<SimSendCaller*>>>
+//    Sys::pending_sends;
+//std::vector<std::map<std::pair<int, int>, bool>> Sys::is_there_pending_sends;
 
 Sys::~Sys() {
   end_sim_time = std::chrono::high_resolution_clock::now();
@@ -67,7 +67,7 @@ Sys::~Sys() {
               << std::endl
               << "*****" << std::endl;
   }
-  all_generators[id] = nullptr;
+  all_generators[id + npu_offset] = nullptr;
   for (auto lt : logical_topologies) {
     delete lt.second;
   }
@@ -113,6 +113,7 @@ Sys::Sys(
     AstraNetworkAPI* NI,
     AstraMemoryAPI* MEM,
     int id,
+    int npu_offset,
     int num_passes,
     std::vector<int> physical_dims,
     std::vector<int> queues_per_dim,
@@ -143,6 +144,7 @@ Sys::Sys(
   this->NI = NI;
   this->MEM = MEM;
   this->id = id;
+  this->npu_offset=npu_offset;
   this->method = "baseline";
   this->finished_workloads = 0;
   this->streams_finished = 0;
@@ -161,10 +163,10 @@ Sys::Sys(
   this->active_chunks_per_dimension = 1;
   this->seprate_log = seprate_log;
   this->rendezvous_enabled = rendezvous_enabled;
-  if ((id + 1) > all_generators.size()) {
-    all_generators.resize(id + 1);
+  if ((id + npu_offset + 1) > all_generators.size()) {
+    all_generators.resize(id + npu_offset + 1);
   }
-  all_generators[id] = this;
+  all_generators[id+npu_offset] = this;
 
   bool result = initialize_sys(my_sys);
 
@@ -471,22 +473,21 @@ int Sys::sim_send(
     void* fun_arg) {
   if (delay == 0 && fun_arg == nullptr) {
     SendPacketEventHandlerData* fun_arg_tmp =
-        new SendPacketEventHandlerData(NI->rank, dst, tag);
+        new SendPacketEventHandlerData(this, dst, tag);
     fun_arg = (void*)fun_arg_tmp;
-    if (is_there_pending_sends[NI->rank].find(std::make_pair(dst, tag)) ==
-            is_there_pending_sends[NI->rank].end() ||
-        is_there_pending_sends[NI->rank][std::make_pair(dst, tag)] == false) {
-      is_there_pending_sends[NI->rank][std::make_pair(dst, tag)] = true;
+    if (is_there_pending_sends.find(std::make_pair(dst, tag)) == is_there_pending_sends.end() ||
+    is_there_pending_sends[std::make_pair(dst, tag)] == false) {
+      is_there_pending_sends[std::make_pair(dst, tag)] = true;
     } else {
-      if (pending_sends[NI->rank].find(std::make_pair(dst, tag)) ==
-          pending_sends[NI->rank].end()) {
+      if (pending_sends.find(std::make_pair(dst, tag)) ==
+          pending_sends.end()) {
         std::list<SimSendCaller*> tmp;
-        pending_sends[NI->rank][std::make_pair(dst, tag)] = tmp;
+        pending_sends[std::make_pair(dst, tag)] = tmp;
       }
       // std::cout<<"id "<<id<<" can not send to id: "<<dst<<" because of
       // pending send, tag: "
       //<<tag<<" at time: "<<Sys::boostedTick()<<std::endl;
-      pending_sends[NI->rank][std::make_pair(dst, tag)].push_back(
+      pending_sends[std::make_pair(dst, tag)].push_back(
           new SimSendCaller(
               this,
               buffer,
@@ -1666,7 +1667,7 @@ void Sys::try_register_event(
   if (should_schedule) {
     timespec_t tmp = generate_time(cycles);
     BasicEventHandlerData* data =
-        new BasicEventHandlerData(id, EventType::CallEvents);
+        new BasicEventHandlerData(this, EventType::CallEvents);
     NI->sim_schedule(tmp, &Sys::handleEvent, data);
   }
   cycles = 0;
@@ -1712,13 +1713,13 @@ void Sys::handleEvent(void* arg) {
     return;
   }
   BasicEventHandlerData* ehd = (BasicEventHandlerData*)arg;
-  int id = ehd->nodeId;
+  Sys* node = ehd->node;
   EventType event = ehd->event;
 
   if (event == EventType::CallEvents) {
     // std::cout<<"handle event triggered at node: "<<id<<" for call events! at
     // time: "<<Sys::boostedTick()<<std::endl;
-    all_generators[id]->iterate();
+    node->iterate();
     delete ehd;
   } else if (event == EventType::RendezvousSend) {
     // std::cout<<"rendevouz send handle event triggered at node: "<<id<<" for
@@ -1745,8 +1746,8 @@ void Sys::handleEvent(void* arg) {
     delete rcehd;
   } else if (event == EventType::PacketSent) {
     
-    static int acks=0;
-    acks++;
+    //static int acks=0;
+    //acks++;
     //std::cout<<"total send acks: "<<acks<<std::endl;
  
     SendPacketEventHandlerData* sendhd = (SendPacketEventHandlerData*)ehd;
@@ -1754,13 +1755,12 @@ void Sys::handleEvent(void* arg) {
     // packets! at node: "
     //<<sendhd->nodeId<<" at time: "<<Sys::boostedTick()<<" ,Tag:
     //"<<sendhd->tag<<std::endl;
-    int rank = sendhd->nodeId;
-    if (pending_sends[rank].find(
+    if (node->pending_sends.find(
             std::make_pair(sendhd->receiverNodeId, sendhd->tag)) ==
-            pending_sends[rank].end() ||
-        pending_sends[rank][std::make_pair(sendhd->receiverNodeId, sendhd->tag)]
+            node->pending_sends.end() ||
+            node->pending_sends[std::make_pair(sendhd->receiverNodeId, sendhd->tag)]
                 .size() == 0) {
-      is_there_pending_sends[rank][std::make_pair(
+      node->is_there_pending_sends[std::make_pair(
           sendhd->receiverNodeId, sendhd->tag)] = false;
       /*if(rank==1) {
         std::cout << "snet request serviced without any pending at node: "
@@ -1772,10 +1772,9 @@ void Sys::handleEvent(void* arg) {
       " to node "<<sendhd->receiverNodeId<<" tag: "<<sendhd->tag
                 <<" at time: "<<Sys::boostedTick()<<std::endl;*/
       SimSendCaller* simSendCaller =
-          pending_sends[rank]
-                       [std::make_pair(sendhd->receiverNodeId, sendhd->tag)]
+          node->pending_sends[std::make_pair(sendhd->receiverNodeId, sendhd->tag)]
                            .front();
-      pending_sends[rank][std::make_pair(sendhd->receiverNodeId, sendhd->tag)]
+      node->pending_sends[std::make_pair(sendhd->receiverNodeId, sendhd->tag)]
           .pop_front();
       simSendCaller->call(EventType::General, nullptr);
     }

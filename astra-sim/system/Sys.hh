@@ -74,6 +74,7 @@ class Sys : public Callable {
   AstraMemoryAPI* MEM;
   int finished_workloads;
   int id;
+  int npu_offset;
 
   std::vector<CollectiveImplementation*>
       all_reduce_implementation_per_dimension;
@@ -190,14 +191,13 @@ class Sys : public Callable {
   void exitSimLoop(std::string msg);
   bool seprate_log;
 
-  static std::vector<std::map<std::pair<int, int>, std::list<SimSendCaller*>>>
-      pending_sends;
-  static std::vector<std::map<std::pair<int, int>, bool>>
-      is_there_pending_sends;
+  std::map<std::pair<int, int>, std::list<SimSendCaller*>> pending_sends;
+  std::map<std::pair<int, int>, bool> is_there_pending_sends;
 
   Sys(AstraNetworkAPI* NI,
       AstraMemoryAPI* MEM,
       int id,
+      int npu_offset,
       int num_passes,
       std::vector<int> physical_dims,
       std::vector<int> queues_per_dim,

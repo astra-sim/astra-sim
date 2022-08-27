@@ -5,8 +5,8 @@ LICENSE file in the root directory of this source tree.
 
 #include "BasicEventHandlerData.hh"
 namespace AstraSim {
-BasicEventHandlerData::BasicEventHandlerData(int nodeId, EventType event) {
-  this->nodeId = nodeId;
+BasicEventHandlerData::BasicEventHandlerData(Sys* node, EventType event) {
+  this->node = node;
   this->event = event;
 }
 } // namespace AstraSim

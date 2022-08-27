@@ -364,6 +364,7 @@ int main (int argc, char *argv[]){
         	networks[i], // AstraNetworkAPI
         	nullptr, // AstraMemoryAPI
         	i, // id
+                0, // npu ofsset in a multi-job scenario
         	1, // num_passes
         	physical_dims, // dimensions
         	queues_per_dim, // queues per corresponding dimension

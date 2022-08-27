@@ -42,7 +42,6 @@ class AstraNetworkAPI {
  public:
   enum class BackendType { NotSpecified, Garnet, NS3, Analytical };
   bool enabled;
-  int rank;
 
   virtual BackendType get_backend_type() {
     return BackendType::NotSpecified;
@@ -94,6 +93,9 @@ class AstraNetworkAPI {
     enabled = true;
   };
   virtual ~AstraNetworkAPI(){}; // ADDED BY PALLAVI
+
+  protected:
+    int rank;
 };
 } // namespace AstraSim
 #endif
