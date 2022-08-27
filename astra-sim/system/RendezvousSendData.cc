@@ -17,7 +17,7 @@ RendezvousSendData::RendezvousSendData(
     sim_request request,
     void (*msg_handler)(void* fun_arg),
     void* fun_arg)
-    : BasicEventHandlerData(nodeId, EventType::RendezvousSend) {
+    : BasicEventHandlerData(generator, EventType::RendezvousSend) {
   this->send = new SimSendCaller(
       generator, buffer, count, type, dst, tag, request, msg_handler, fun_arg);
 }
