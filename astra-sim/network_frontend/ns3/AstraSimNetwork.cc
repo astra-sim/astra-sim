@@ -224,8 +224,8 @@ std::cout << cnt <<"at time "<<std::ctime(&now_c)<<"\n";//std::put_time(std::loc
 		//cout<<"send times is "<<cnt<<"\n";
 	}
 	int fun_arg=1;
-    ASTRASimNetwork network0 = ASTRASimNetwork(0);
-    ASTRASimNetwork network1 = ASTRASimNetwork(1);
+    ASTRASimNetwork network0 = ASTRASimNetwork(0,0);
+    ASTRASimNetwork network1 = ASTRASimNetwork(1,0);
     task1 t;
     t.src = 0;
     t.dest = 1;
