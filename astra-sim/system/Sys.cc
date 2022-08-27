@@ -256,10 +256,6 @@ Sys::Sys(
               << " , fourth dim: " << fifth_dim << std::endl;*/
   }
   // NI->sim_init(); CHANGED BY PALLAVI**
-  if (id == 0) {
-    pending_sends.resize(total_nodes);
-    is_there_pending_sends.resize(total_nodes);
-  }
   NI->sim_init(MEM);
   memBus = new MemBus(
       "NPU",
