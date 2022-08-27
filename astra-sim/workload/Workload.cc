@@ -63,10 +63,10 @@ Workload::Workload(
   if (generator->id == 0 && seprate_log) {
     std::cout << "stat path: " << path << " ,total rows: " << total_rows
               << " ,stat row: " << stat_row << std::endl;
-    detailed = new CSVWriter(path, "detailed.csv");
-    end_to_end = new CSVWriter(path, "EndToEnd.csv");
+    detailed = new CSVWriter(path, "detailed_"+std::to_string(generator->npu_offset)+".csv");
+    end_to_end = new CSVWriter(path, "EndToEnd_"+std::to_string(generator->npu_offset)+".csv");
     dimension_utilization =
-        new CSVWriter(path, run_name + "_dimension_utilization.csv");
+        new CSVWriter(path, run_name + "_dimension_utilization_"+std::to_string(generator->npu_offset)+".csv");
     if (stat_row == 0) {
       initialize_stat_files();
     }
