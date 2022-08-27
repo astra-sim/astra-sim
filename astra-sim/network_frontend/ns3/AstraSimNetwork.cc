@@ -343,7 +343,7 @@ Ptr<SimpleUdpApplication>* sim_init(int n){
 
 
 int main (int argc, char *argv[]){
-    assert(workloads.isze()==physical_dims;size());
+    assert(workloads.size()==physical_dims.size());
     int num_gpus=0;
     for(auto &a:physical_dims){
       int job_npus=1;
