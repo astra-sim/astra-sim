@@ -33,10 +33,12 @@ using namespace ns3;
 // };
 // extern int global_variable;
 std::vector<string> workloads {
+  "microAllReduce.txt",
   "microAllReduce.txt"
 };
 std::vector<std::vector<int>> physical_dims {
-  { 8, 8 }
+  { 8, 4 },
+  { 8, 4 }
 };
 
 queue<struct task1> workerQueue;
