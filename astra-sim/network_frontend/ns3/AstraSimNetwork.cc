@@ -399,7 +399,7 @@ int main (int argc, char *argv[]){
             1,
             0, // total_stat_rows and stat_row
             "scratch/results/", // stat file path
-            "test1", // run name
+            "test1+"+std::to_string(i), // run name
             true, // separate_log
             false  // randezvous protocol
             );

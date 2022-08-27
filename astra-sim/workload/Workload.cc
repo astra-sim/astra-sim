@@ -116,6 +116,8 @@ void Workload::report() {
   AstraSimDataAPI astraSimDataAPI;
   astraSimDataAPI.run_name = run_name;
   astraSimDataAPI.workload_finished_time = ((double)Sys::boostedTick()) / FREQ;
+  std::cout<<std::endl<<"workload stats for the job scheduled at NPU offset: "
+            <<generator->npu_offset<<std::endl;
   for (int i = 0; i < SIZE; i++) {
     astraSimDataAPI.layers_stats.push_back(layers[i]->report(
         run_name,
