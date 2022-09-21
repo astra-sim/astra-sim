@@ -13,9 +13,6 @@ Saeed Rashidi, Srinivas Sridharan, Sudarshan Srinivasan, and Tushar Krishna,
 *In Proc of the IEEE International Symposium on Performance Analysis of Systems and Software (ISPASS), Apr 2020*
 [[pdf]](https://sites.gatech.edu/ece-synergy/files/2020/08/astrasim_ispass2020.pdf)[[slides]](https://cpb-us-w2.wpmucdn.com/sites.gatech.edu/dist/c/332/files/2020/08/ISPASS2020-ASTRA-SIM_talk.pdf)[[video]](https://www.youtube.com/watch?v=S-HE9yBv8_I&list=PLHJB2bhmgB7crXM7wBKIDi7OEa0UTZtrR&index=10)
 
-ASTRA-SIM tutorials can be found here:
-https://astra-sim.github.io/ 
-
 **Bibtex**
 
     @inproceedings{astrasim,
@@ -56,7 +53,7 @@ $ git submodule update
 #### Instructions for compiling & running NS3 as the network simulator
 Coming Soon!
 
-NOTE: The on-screen reported delays (no matter what backend is used) after the end of simulation are in cycles (by default each cycle is 1 nanosecond) while the delays inside the csv files are in terms of microseconds.
+NOTE: The on-screen reported delays (no matter what backend is used) after the end of simulation are in cycles while the delays inside the csv files are in terms of microseconds.
 
 #### ASTRA-SIM Binary Command Line Options
 When running the binary file (no matter what backend is used), the following options may be passed to the binary file (see example scripts):

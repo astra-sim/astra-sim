@@ -115,9 +115,9 @@ Sys::Sys(
     std::vector<int> queues_per_dim,
     std::string my_sys,
     std::string my_workload,
-    double comm_scale,
-    double compute_scale,
-    double injection_scale,
+    float comm_scale,
+    float compute_scale,
+    float injection_scale,
     int total_stat_rows,
     int stat_row,
     std::string path,
@@ -162,6 +162,8 @@ Sys::Sys(
     all_generators.resize(id + 1);
   }
   all_generators[id] = this;
+
+  this->gap_denominator = 16;
 
   bool result = initialize_sys(my_sys);
 
@@ -406,21 +408,20 @@ int Sys::get_layer_numbers(std::string workload_input) {
   return Workload::get_layer_numbers(workload_input);
 }
 int Sys::get_priority(SchedulingPolicy pref_scheduling) {
-  if (pref_scheduling == SchedulingPolicy::LIFO) {
-    return priority_counter++;
-  } else if (pref_scheduling == SchedulingPolicy::FIFO) {
-    return priority_counter--;
-  } else if (pref_scheduling == SchedulingPolicy::HIGHEST) {
-    return 100000000;
-  } else if (pref_scheduling == SchedulingPolicy::None) {
+  if (pref_scheduling == SchedulingPolicy::None) {
     if (scheduling_policy == SchedulingPolicy::LIFO) {
       return priority_counter++;
     } else {
       return priority_counter--;
     }
+  } else if (pref_scheduling == SchedulingPolicy::HIGHEST) {
+    return 100000000;
   } else {
-    sys_panic("comm priority is unknown!");
-    return -1;
+    if (scheduling_policy == SchedulingPolicy::LIFO) {
+      return priority_counter++;
+    } else {
+      return priority_counter--;
+    }
   }
 }
 int Sys::rendezvous_sim_send(
@@ -637,16 +638,14 @@ std::vector<CollectiveImplementation*> Sys::
     } else if (dimension_input.rfind("direct", 0) == 0) {
       int window = -1;
       if (dimension_input != "direct") {
-        // finding direct collective window
-        window = std::stoi(dimension_input.substr(6, 5));
+        window = std::stoi(dimension_input.substr(6, 10));
       }
       result.push_back(new DirectCollectiveImplementation(
           CollectiveImplementationType::Direct, window));
     } else if (dimension_input.rfind("oneDirect", 0) == 0) {
       int window = -1;
       if (dimension_input != "oneDirect") {
-        // finding direct collective window
-        window = std::stoi(dimension_input.substr(9, 5));
+        window = std::stoi(dimension_input.substr(9, 10));
       }
       result.push_back(new DirectCollectiveImplementation(
           CollectiveImplementationType::OneDirect, window));
@@ -760,6 +759,9 @@ bool Sys::parse_var(std::string var, std::string value) {
     } else {
       this->seprate_log = true;
     }
+  } else if (var == "gap-denominator:") {
+    std::stringstream mval(value);
+    mval >> gap_denominator;
   } else if (var != "") {
     std::cerr
         << "######### Exiting because " << var
@@ -1565,20 +1567,13 @@ void Sys::insert_stream(std::list<BaseStream*>* queue, BaseStream* baseStream) {
     }
   } else if (
       intra_dimension_scheduling == IntraDimensionScheduling::SmallestFirst) {
-    if (baseStream->phases_to_go.size() == 1) {
-      it = queue->end();
-    }
     while (it != queue->end()) {
       if ((*it)->initialized == true) {
         std::advance(it, 1);
         continue;
       } else if (
-          std::max(
-              (*it)->my_current_phase.initial_data_size,
-              (*it)->my_current_phase.final_data_size) <
-          std::max(
-              baseStream->my_current_phase.initial_data_size,
-              baseStream->my_current_phase.final_data_size)) {
+          (*it)->my_current_phase.initial_data_size <
+          baseStream->my_current_phase.initial_data_size) {
         std::advance(it, 1);
         continue;
       } else {
@@ -1624,7 +1619,7 @@ void Sys::register_event(
     Callable* callable,
     EventType event,
     CallData* callData,
-    Tick cycles) {
+    int cycles) {
   Tick mycycles = cycles;
   try_register_event(callable, event, callData, mycycles);
   return;
@@ -1756,7 +1751,7 @@ void Sys::handleEvent(void* arg) {
     delete rcehd;
   }
 }
-timespec_t Sys::generate_time(Tick cycles) {
+timespec_t Sys::generate_time(int cycles) {
   timespec_t tmp = NI->sim_get_time();
   double addition = cycles * ((double)CLOCK_PERIOD);
   tmp.time_val = addition;

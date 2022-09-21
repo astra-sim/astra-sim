@@ -826,8 +826,8 @@ void Workload::iterate_hybrid_parallel_Transformer() {
     if (!collective_issued) {
       collective_issued = true;
       layers[index]->issue_input_grad_comm(
-          SchedulingPolicy::LIFO, CollectiveBarrier::Non_Blocking);
-      //return;
+          SchedulingPolicy::LIFO, CollectiveBarrier::Blocking);
+      return;
     }
     collective_issued = false;
     delay_loaded = false;
@@ -949,8 +949,8 @@ void Workload::iterate_hybrid_parallel_Transformer_fwd_in_bckwd() {
     if (!collective_issued) {
       collective_issued = true;
       layers[index]->issue_input_grad_comm(
-          SchedulingPolicy::LIFO, CollectiveBarrier::Non_Blocking);
-      //return;
+          SchedulingPolicy::LIFO, CollectiveBarrier::Blocking);
+      return;
     }
     checkpoint_initiated = false;
     collective_issued = false;

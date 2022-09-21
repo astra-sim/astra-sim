@@ -106,12 +106,15 @@ class Sys : public Callable {
   int communication_delay;
 
   int preferred_dataset_splits;
-  double compute_scale;
-  double comm_scale;
-  double injection_scale;
+  float compute_scale;
+  float comm_scale;
+  float injection_scale;
   int local_reduction_delay;
   uint64_t pending_events;
   std::string method;
+
+  // Themis scheduler gap denominator
+  int gap_denominator;
 
   // for test
   Workload* workload;
@@ -165,7 +168,7 @@ class Sys : public Callable {
       Callable* callable,
       EventType event,
       CallData* callData,
-      Tick cycles);
+      int cycles);
   void insert_into_ready_list(BaseStream* stream);
   void ask_for_schedule(int max);
   void schedule(int num);
@@ -198,9 +201,9 @@ class Sys : public Callable {
       std::vector<int> queues_per_dim,
       std::string my_sys,
       std::string my_workload,
-      double comm_scale,
-      double compute_scale,
-      double injection_scale,
+      float comm_scale,
+      float compute_scale,
+      float injection_scale,
       int total_stat_rows,
       int stat_row,
       std::string path,
@@ -323,7 +326,7 @@ class Sys : public Callable {
   int determine_chunk_size(uint64_t size, ComType type);
   int get_priority(SchedulingPolicy pref_scheduling);
   static void handleEvent(void* arg);
-  timespec_t generate_time(Tick cycles);
+  timespec_t generate_time(int cycles);
 };
 } // namespace AstraSim
 #endif

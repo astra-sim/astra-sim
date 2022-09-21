@@ -250,7 +250,7 @@ std::vector<int> OfflineGreedy::get_chunk_scheduling(
           }
           // std::cout<<"hello"<<std::endl;
         }
-        if (diff_size < (recommended_chunk_size / 16)) {
+        if (diff_size < (recommended_chunk_size / sys->gap_denominator)) {
           // std::cout<<std::endl<<std::endl<<"load diff across dims is low,
           // going with default scheduling!"<<" diff: "<<diff_size<<"dim max: "
           //<<dim_elapsed_time.back().dim_num<<" ,dim min:
