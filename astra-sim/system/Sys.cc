@@ -1157,7 +1157,7 @@ DataSet* Sys::generate_collective(
 
   while (size > 0) {
     count++;
-
+    chunk_size=std::min(chunk_size,size); // checking for underflow in corner cases
     std::vector<int> dim_mapper(topology->get_num_of_dimensions());
     std::iota(std::begin(dim_mapper), std::end(dim_mapper), 0);
     if (collective_type == ComType::All_Gatehr) {
