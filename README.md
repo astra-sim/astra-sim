@@ -51,8 +51,8 @@ $ git submodule update
 3. The results of example script runs will be dumped inside `examples/results/` path. 
 
 #### Instructions for compiling & running NS3 as the network simulator
-1. Check-out to the **ns3_interface_tmp2** branch by running `git checkout ns3_interface_tmp2` 
-2. Update the submodules by typing `git submodule init & git submodule update`
+1. Check-out to the **ns3_interface_tmp2** branch by running `git checkout ns3_interface_tmp2` .
+2. Update the submodules by typing `git submodule init & git submodule update`. The analytical backend is hosted at https://github.com/DartingMelody/ns3-interface.
 3. Go to the ns3 directory: `cd extern/network_backend/ns3-interface/simulation/` and run `./waf configure` (only required once)
 4. Now go back to the root directory of ASTRA-SIM and run "./build/astra_ns3/build.sh -c". This will first copy the ASTRA-SIM/ns3 glue code (stored in the `astra-sim/network_frontend/ns3` directory and contains the main file), and then build and run the ns3 main file. Please refer to the `astra-sim/network_frontend/ns3` for more information about the glue code.
 5. The stat files are written into `extern/network_backend/ns3-interface/simulation/scratch/results/` address. Note that this version supports multi-workload cases, meaning that for example, with the total of P NPUs, NPUs 0 : N can be allocated for one workload, and NPUs N+1 : P-1 for another workload. If multiple workloads are used, then each worklaod produces its own set of stat files. The stat file names are appended by number, showing the index of first NPU assigned for that workload.
