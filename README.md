@@ -51,7 +51,7 @@ $ git submodule update
 3. The results of example script runs will be dumped inside `examples/results/` path. 
 
 #### Instructions for compiling & running NS3 as the network simulator
-1. Check-out to the ns3_interface_tmp2 branch by running `git checkout ns3_interface_tmp2` 
+1. Check-out to the **ns3_interface_tmp2** branch by running `git checkout ns3_interface_tmp2` 
 2. Update the submodules by typing `git submodule init & git submodule update`
 3. Go to the ns3 directory: `cd extern/network_backend/ns3-interface/simulation/` and run `./waf configure` (only required once)
 4. Now go back to the root directory of ASTRA-SIM and run "./build/astra_ns3/build.sh -c". This will first copy the ASTRA-SIM/ns3 glue code (stored in the `astra-sim/network_frontend/` directory and contains the main file), and then build and run the ns3 main file. Please refer to the `astra-sim/network_frontend/` for more information about the glue code.
