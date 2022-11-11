@@ -3,8 +3,8 @@ endpoint-delay: 10
 active-chunks-per-dimension: 1
 preferred-dataset-splits: 4
 boost-mode: 0
-all-reduce-implementation: halvingDoubling
-all-gather-implementation: halvingDoubling
-reduce-scatter-implementation: halvingDoubling
+all-reduce-implementation: ring
+all-gather-implementation: ring
+reduce-scatter-implementation: ring
 all-to-all-implementation: direct
 collective-optimization: localBWAware
