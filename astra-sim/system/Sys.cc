@@ -1168,7 +1168,6 @@ DataSet* Sys::generate_collective(
     ComType collective_type,
     SchedulingPolicy pref_scheduling) {
   uint64_t chunk_size = determine_chunk_size(size, collective_type);
-  chunk_size=std::min(chunk_size,size); // checking for underflow in corner cases
   uint64_t recommended_chunk_size = chunk_size;
   int streams = ceil(((double)size) / chunk_size);
   int tmp;
@@ -1187,7 +1186,7 @@ DataSet* Sys::generate_collective(
 
   while (size > 0) {
     count++;
-
+    chunk_size=std::min(chunk_size,size); // checking for underflow in corner cases
     std::vector<int> dim_mapper(topology->get_num_of_dimensions());
     std::iota(std::begin(dim_mapper), std::end(dim_mapper), 0);
     if (collective_type == ComType::All_Gatehr) {
