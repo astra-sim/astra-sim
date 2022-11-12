@@ -1,5 +1,5 @@
 #include "ns3/AstraNetworkAPI.hh"
-#include<iostream>
+#include <iostream>
 #include <stdio.h>
 #include <execinfo.h>
 #include <queue>
@@ -62,6 +62,7 @@ class ASTRASimNetwork:public AstraSim::AstraNetworkAPI{
                     cout<<"All data received by node "<<p.first<<" is "<<it->second<<"\n";
                 }
             }
+	    exit(0);
             return 0;
         }
         double sim_time_resolution(){
