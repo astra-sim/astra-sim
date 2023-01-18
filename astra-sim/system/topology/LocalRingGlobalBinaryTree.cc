@@ -3,8 +3,10 @@ This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
-#include "LocalRingGlobalBinaryTree.hh"
-namespace AstraSim {
+#include "astra-sim/system/topology/LocalRingGlobalBinaryTree.hh"
+
+using namespace AstraSim;
+
 LocalRingGlobalBinaryTree::LocalRingGlobalBinaryTree(
     int id,
     int local_dim,
@@ -23,11 +25,17 @@ LocalRingGlobalBinaryTree::LocalRingGlobalBinaryTree(
       id / local_dim,
       local_dim);
 }
+
 LocalRingGlobalBinaryTree::~LocalRingGlobalBinaryTree() {
   delete local_dimension;
   delete global_dimension_all_reduce;
   delete global_dimension_other;
 }
+
+int LocalRingGlobalBinaryTree::get_num_of_dimensions() {
+  return 3;
+}
+
 int LocalRingGlobalBinaryTree::get_num_of_nodes_in_dimension(int dimension) {
   if (dimension == 0) {
     return local_dimension->get_num_of_nodes_in_dimension(0);
@@ -39,9 +47,7 @@ int LocalRingGlobalBinaryTree::get_num_of_nodes_in_dimension(int dimension) {
     return -1;
   }
 }
-int LocalRingGlobalBinaryTree::get_num_of_dimensions() {
-  return 3;
-}
+
 BasicLogicalTopology* LocalRingGlobalBinaryTree::
     get_basic_topology_at_dimension(int dimension, ComType type) {
   if (dimension == 0) {
@@ -57,4 +63,3 @@ BasicLogicalTopology* LocalRingGlobalBinaryTree::
     return nullptr;
   }
 }
-} // namespace AstraSim

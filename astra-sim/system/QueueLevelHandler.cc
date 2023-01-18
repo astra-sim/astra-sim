@@ -3,8 +3,10 @@ This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
-#include "QueueLevelHandler.hh"
-namespace AstraSim {
+#include "astra-sim/system/QueueLevelHandler.hh"
+
+using namespace AstraSim;
+
 QueueLevelHandler::QueueLevelHandler(
     int level,
     int start,
@@ -19,6 +21,7 @@ QueueLevelHandler::QueueLevelHandler(
   this->level = level;
   this->backend = backend;
 }
+
 std::pair<int, RingTopology::Direction> QueueLevelHandler::get_next_queue_id() {
   RingTopology::Direction dir;
   if ((backend != AstraNetworkAPI::BackendType::Garnet || level > 0) &&
@@ -36,6 +39,7 @@ std::pair<int, RingTopology::Direction> QueueLevelHandler::get_next_queue_id() {
   }
   return std::make_pair(tmp, dir);
 }
+
 std::pair<int, RingTopology::Direction> QueueLevelHandler::
     get_next_queue_id_first() {
   RingTopology::Direction dir;
@@ -49,6 +53,7 @@ std::pair<int, RingTopology::Direction> QueueLevelHandler::
   }
   return std::make_pair(tmp, dir);
 }
+
 std::pair<int, RingTopology::Direction> QueueLevelHandler::
     get_next_queue_id_last() {
   RingTopology::Direction dir;
@@ -62,4 +67,3 @@ std::pair<int, RingTopology::Direction> QueueLevelHandler::
   }
   return std::make_pair(tmp, dir);
 }
-} // namespace AstraSim

@@ -6,22 +6,11 @@ LICENSE file in the root directory of this source tree.
 #ifndef __NODE_HH__
 #define __NODE_HH__
 
-#include <assert.h>
-#include <math.h>
-#include <algorithm>
-#include <chrono>
-#include <cstdint>
-#include <ctime>
-#include <fstream>
-#include <list>
-#include <map>
-#include <sstream>
-#include <tuple>
-#include <vector>
-#include "ComputeNode.hh"
+#include "astra-sim/system/topology/ComputeNode.hh"
 #include "astra-sim/system/Common.hh"
 
 namespace AstraSim {
+
 class Node : public ComputeNode {
  public:
   int id;
@@ -30,5 +19,7 @@ class Node : public ComputeNode {
   Node* right_child;
   Node(int id, Node* parent, Node* left_child, Node* right_child);
 };
+
 } // namespace AstraSim
-#endif
+
+#endif /* __NODE_HH__ */

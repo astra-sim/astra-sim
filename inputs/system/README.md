@@ -9,11 +9,6 @@
 	each logical dimesnion of topology.
 *  **preferred-dataset-splits**: (int)
 	* The number of chunks we divide each collective into.
-*  **boost-mode**: (0/1)
-	* 0 means all nodes are simulated. 1 means that only the nodes
-	directly engaged with node 0 (node 0 collects all of the stats)
-	are simulated. It is a technique to reduce the simulation time
-	by trading some (minor) accuracy.
 * **all-reduce-implementation:**: (Dimension0Collective_Dimension1Collective_...\_DimensionNCollective)
 	* Here we can create a multiphase colective all-reduce algorithm and directly specify
 	the collective algorithm type for each logical dimension. The available options (algorithms) are:

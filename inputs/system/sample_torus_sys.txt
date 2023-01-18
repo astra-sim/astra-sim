@@ -1,10 +1,11 @@
-scheduling-policy: LIFO 
-endpoint-delay: 1
-active-chunks-per-dimension: 1
-preferred-dataset-splits: 4
-boost-mode: 0
-all-reduce-implementation: ring_ring_ring
-all-gather-implementation: ring_ring_ring
-reduce-scatter-implementation: ring_ring_ring
-all-to-all-implementation: ring_ring_ring
-collective-optimization: localBWAware
+{
+  "scheduling-policy": "LIFO",
+  "endpoint-delay": 1,
+  "active-chunks-per-dimension": 1,
+  "preferred-dataset-splits": 4,
+  "all-reduce-implementation": ["ring", "ring", "ring"],
+  "all-gather-implementation": ["ring", "ring", "ring"],
+  "reduce-scatter-implementation": ["ring", "ring", "ring"],
+  "all-to-all-implementation": ["ring", "ring", "ring"],
+  "collective-optimization": "localBWAware"
+}

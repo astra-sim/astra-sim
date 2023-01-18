@@ -3,27 +3,15 @@ This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
-#ifndef __SIMSENDCALLER_HH__
-#define __SIMSENDCALLER_HH__
+#ifndef __SIM_SEND_CALLER_HH__
+#define __SIM_SEND_CALLER_HH__
 
-#include <assert.h>
-#include <math.h>
-#include <algorithm>
-#include <chrono>
-#include <cstdint>
-#include <ctime>
-#include <fstream>
-#include <list>
-#include <map>
-#include <sstream>
-#include <tuple>
-#include <vector>
-#include "CallData.hh"
-#include "Callable.hh"
-#include "Common.hh"
+#include "astra-sim/system/CallData.hh"
+#include "astra-sim/system/Callable.hh"
+#include "astra-sim/system/Sys.hh"
 
 namespace AstraSim {
-class Sys;
+
 class SimSendCaller : public Callable {
  public:
   void* buffer;
@@ -35,9 +23,9 @@ class SimSendCaller : public Callable {
   void (*msg_handler)(void* fun_arg);
   void* fun_arg;
   void call(EventType type, CallData* data);
-  Sys* generator;
+  Sys* sys;
   SimSendCaller(
-      Sys* generator,
+      Sys* sys,
       void* buffer,
       int count,
       int type,
@@ -47,5 +35,7 @@ class SimSendCaller : public Callable {
       void (*msg_handler)(void* fun_arg),
       void* fun_arg);
 };
+
 } // namespace AstraSim
-#endif
+
+#endif /* __SIM_SEND_CALLER_HH__ */

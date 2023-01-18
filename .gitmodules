@@ -10,3 +10,6 @@
 [submodule "extern/compute/SCALE-Sim"]
 	path = extern/compute/SCALE-Sim
 	url = https://github.com/scalesim-project/scale-sim-v2.git
+[submodule "extern/graph_frontend/chakra"]
+	path = extern/graph_frontend/chakra
+	url = git@github.com:chakra-eg/chakra.git

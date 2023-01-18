@@ -3,18 +3,18 @@ This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
-#include "MemBus.hh"
-#include "LogGP.hh"
-#include "Sys.hh"
-namespace AstraSim {
-MemBus::~MemBus() {
-  delete NPU_side;
-  delete MA_side;
-}
+#include "astra-sim/system/MemBus.hh"
+
+#include "astra-sim/system/LogGP.hh"
+#include "astra-sim/system/Sys.hh"
+
+using namespace std;
+using namespace AstraSim;
+
 MemBus::MemBus(
-    std::string side1,
-    std::string side2,
-    Sys* generator,
+    string side1,
+    string side2,
+    Sys* sys,
     Tick L,
     Tick o,
     Tick g,
@@ -22,26 +22,24 @@ MemBus::MemBus(
     bool model_shared_bus,
     int communication_delay,
     bool attach) {
-  NPU_side = new LogGP(side1, generator, L, o, g, G, EventType::MA_to_NPU);
-  MA_side = new LogGP(side2, generator, L, o, g, G, EventType::NPU_to_MA);
+  NPU_side = new LogGP(side1, sys, L, o, g, G, EventType::MA_to_NPU);
+  MA_side = new LogGP(side2, sys, L, o, g, G, EventType::NPU_to_MA);
   NPU_side->partner = MA_side;
   MA_side->partner = NPU_side;
-  this->generator = generator;
+  this->sys = sys;
   this->model_shared_bus = model_shared_bus;
   this->communication_delay = communication_delay;
   if (attach) {
     NPU_side->attach_mem_bus(
-        generator, L, o, g, 0.0038, model_shared_bus, communication_delay);
-  }
-  if (generator->id == 0) {
-    std::cout << "Shared bus modeling enabled? " << std::boolalpha
-              << model_shared_bus << std::endl;
-    std::cout << "LogGP model, the L is:" << L << " ,o is: " << o
-              << " ,g is: " << g << " ,G is: " << G << std::endl;
-    std::cout << "communication delay (in the case of disabled shared bus): "
-              << communication_delay << std::endl;
+        sys, L, o, g, 0.0038, model_shared_bus, communication_delay);
   }
 }
+
+MemBus::~MemBus() {
+  delete NPU_side;
+  delete MA_side;
+}
+
 void MemBus::send_from_NPU_to_MA(
     MemBus::Transmition transmition,
     int bytes,
@@ -52,20 +50,27 @@ void MemBus::send_from_NPU_to_MA(
     NPU_side->request_read(bytes, processed, send_back, callable);
   } else {
     if (transmition == Transmition::Fast) {
-      generator->register_event(
+      SharedBusStat* ss = new SharedBusStat(BusType::Shared, 0, 10, 0, 0);
+      ss->sys_id = sys->id;
+      ss->event = EventType::NPU_to_MA;
+      sys->register_event(
           callable,
           EventType::NPU_to_MA,
-          new SharedBusStat(BusType::Shared, 0, 10, 0, 0),
+          ss,
           10);
     } else {
-      generator->register_event(
+      SharedBusStat* ss = new SharedBusStat(BusType::Shared, 0, communication_delay, 0, 0);
+      ss->sys_id = sys->id;
+      ss->event = EventType::NPU_to_MA;
+      sys->register_event(
           callable,
           EventType::NPU_to_MA,
-          new SharedBusStat(BusType::Shared, 0, communication_delay, 0, 0),
+          ss,
           communication_delay);
     }
   }
 }
+
 void MemBus::send_from_MA_to_NPU(
     MemBus::Transmition transmition,
     int bytes,
@@ -76,18 +81,23 @@ void MemBus::send_from_MA_to_NPU(
     MA_side->request_read(bytes, processed, send_back, callable);
   } else {
     if (transmition == Transmition::Fast) {
-      generator->register_event(
+      SharedBusStat* ss = new SharedBusStat(BusType::Shared, 0, 10, 0, 0);
+      ss->sys_id = sys->id;
+      ss->event = EventType::MA_to_NPU;
+      sys->register_event(
           callable,
           EventType::MA_to_NPU,
-          new SharedBusStat(BusType::Shared, 0, 10, 0, 0),
+          ss,
           10);
     } else {
-      generator->register_event(
+      SharedBusStat* ss = new SharedBusStat(BusType::Shared, 0, communication_delay, 0, 0);
+      ss->sys_id = sys->id;
+      ss->event = EventType::MA_to_NPU;
+      sys->register_event(
           callable,
           EventType::MA_to_NPU,
-          new SharedBusStat(BusType::Shared, 0, communication_delay, 0, 0),
+          ss,
           communication_delay);
     }
   }
 }
-} // namespace AstraSim

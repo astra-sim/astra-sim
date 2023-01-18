@@ -6,26 +6,21 @@ LICENSE file in the root directory of this source tree.
 #ifndef __DATASET_HH__
 #define __DATASET_HH__
 
-#include <assert.h>
-#include <math.h>
-#include <algorithm>
-#include <chrono>
-#include <cstdint>
-#include <ctime>
-#include <fstream>
-#include <list>
-#include <map>
-#include <sstream>
-#include <tuple>
-#include <vector>
-#include "CallData.hh"
-#include "Callable.hh"
-#include "Common.hh"
-#include "StreamStat.hh"
+#include "astra-sim/system/CallData.hh"
+#include "astra-sim/system/Callable.hh"
+#include "astra-sim/system/Common.hh"
+#include "astra-sim/system/StreamStat.hh"
 
 namespace AstraSim {
+
 class DataSet : public Callable, public StreamStat {
  public:
+  DataSet(int total_streams);
+  void set_notifier(Callable* layer, EventType event);
+  void notify_stream_finished(StreamStat* data);
+  void call(EventType event, CallData* data);
+  bool is_finished();
+
   static int id_auto_increment;
   int my_id;
   int total_streams;
@@ -35,13 +30,8 @@ class DataSet : public Callable, public StreamStat {
   Tick finish_tick;
   Tick creation_tick;
   std::pair<Callable*, EventType>* notifier;
-
-  DataSet(int total_streams);
-  void set_notifier(Callable* layer, EventType event);
-  void notify_stream_finished(StreamStat* data);
-  void call(EventType event, CallData* data);
-  bool is_finished();
-  //~DataSet()= default;
 };
+
 } // namespace AstraSim
-#endif
+
+#endif /* __DATASET_HH__ */

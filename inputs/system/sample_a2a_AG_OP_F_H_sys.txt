@@ -1,10 +1,11 @@
-scheduling-policy: LIFO
-endpoint-delay: 10
-active-chunks-per-dimension: 1
-preferred-dataset-splits: 32
-boost-mode: 0
-all-reduce-implementation: direct_doubleBinaryTree
-all-gather-implementation: ring_ring
-reduce-scatter-implementation: ring_ring
-all-to-all-implementation: direct_direct
-collective-optimization: localBWAware
+{
+  "scheduling-policy": "LIFO",
+  "endpoint-delay": 10,
+  "active-chunks-per-dimension": 1,
+  "preferred-dataset-splits": 32,
+  "all-reduce-implementation": ["direct", "doubleBinaryTree"],
+  "all-gather-implementation": ["ring", "ring"],
+  "reduce-scatter-implementation": ["ring", "ring"],
+  "all-to-all-implementation": ["direct", "direct"],
+  "collective-optimization": "localBWAware"
+}

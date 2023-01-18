@@ -3,8 +3,10 @@ This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
-#include "LocalRingNodeA2AGlobalDBT.hh"
-namespace AstraSim {
+#include "astra-sim/system/topology/LocalRingNodeA2AGlobalDBT.hh"
+
+using namespace AstraSim;
+
 LocalRingNodeA2AGlobalDBT::LocalRingNodeA2AGlobalDBT(
     int id,
     int local_dim,
@@ -29,12 +31,29 @@ LocalRingNodeA2AGlobalDBT::LocalRingNodeA2AGlobalDBT(
       (id % (local_dim * node_dim)) / local_dim,
       local_dim);
 }
+
 LocalRingNodeA2AGlobalDBT::~LocalRingNodeA2AGlobalDBT() {
   delete global_dimension_all_reduce;
   delete local_dimension;
   delete node_dimension;
   delete global_dimension_other;
 }
+
+int LocalRingNodeA2AGlobalDBT::get_num_of_dimensions() {
+  return 3;
+}
+
+int LocalRingNodeA2AGlobalDBT::get_num_of_nodes_in_dimension(int dimension) {
+  if (dimension == 0) {
+    return local_dimension->get_num_of_nodes_in_dimension(0);
+  } else if (dimension == 1) {
+    return node_dimension->get_num_of_nodes_in_dimension(0);
+  } else if (dimension == 2) {
+    return global_dimension_other->get_num_of_nodes_in_dimension(0);
+  }
+  return -1;
+}
+
 BasicLogicalTopology* LocalRingNodeA2AGlobalDBT ::
     get_basic_topology_at_dimension(int dimension, ComType type) {
   if (dimension == 0) {
@@ -51,17 +70,3 @@ BasicLogicalTopology* LocalRingNodeA2AGlobalDBT ::
   }
   return nullptr;
 }
-int LocalRingNodeA2AGlobalDBT::get_num_of_nodes_in_dimension(int dimension) {
-  if (dimension == 0) {
-    return local_dimension->get_num_of_nodes_in_dimension(0);
-  } else if (dimension == 1) {
-    return node_dimension->get_num_of_nodes_in_dimension(0);
-  } else if (dimension == 2) {
-    return global_dimension_other->get_num_of_nodes_in_dimension(0);
-  }
-  return -1;
-}
-int LocalRingNodeA2AGlobalDBT::get_num_of_dimensions() {
-  return 3;
-}
-} // namespace AstraSim

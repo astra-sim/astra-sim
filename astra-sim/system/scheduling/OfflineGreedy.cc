@@ -3,12 +3,16 @@ This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
-#include "OfflineGreedy.hh"
-#include <math.h>
-#include <numeric>
-namespace AstraSim {
+#include "astra-sim/system/scheduling/OfflineGreedy.hh"
 
-std::map<long long, std::vector<int>> OfflineGreedy::chunk_schedule;
+#include <algorithm>
+#include <cmath>
+#include <iostream>
+#include <numeric>
+
+using namespace AstraSim;
+
+std::map<long long, std::vector<int> > OfflineGreedy::chunk_schedule;
 std::map<long long, int> OfflineGreedy::schedule_consumer;
 std::map<long long, uint64_t> OfflineGreedy::global_chunk_size;
 
@@ -22,7 +26,7 @@ OfflineGreedy::OfflineGreedy(Sys* sys) {
     this->dim_size = sys->physical_dims;
     this->dim_BW.resize(this->dim_size.size());
     for (int i = 0; i < this->dim_size.size(); i++) {
-      this->dim_BW[i] = sys->NI->get_BW_at_dimension(i);
+      this->dim_BW[i] = sys->comm_NI->get_BW_at_dimension(i);
       this->dim_elapsed_time.push_back(DimElapsedTime(i));
     }
   } else {
@@ -30,9 +34,9 @@ OfflineGreedy::OfflineGreedy(Sys* sys) {
     this->dim_BW.resize(this->dim_size.size());
     for (int i = 0; i < this->dim_size.size(); i++) {
       if (i > sys->dim_to_break) {
-        this->dim_BW[i] = sys->NI->get_BW_at_dimension(i - 1);
+        this->dim_BW[i] = sys->comm_NI->get_BW_at_dimension(i - 1);
       } else {
-        this->dim_BW[i] = sys->NI->get_BW_at_dimension(i);
+        this->dim_BW[i] = sys->comm_NI->get_BW_at_dimension(i);
       }
       this->dim_elapsed_time.push_back(DimElapsedTime(i));
     }
@@ -86,7 +90,7 @@ std::vector<int> OfflineGreedy::get_chunk_scheduling(
     ComType comm_type) {
   if (chunk_schedule.find(chunk_id) != chunk_schedule.end()) {
     schedule_consumer[chunk_id]++;
-    if (schedule_consumer[chunk_id] == sys->all_generators.size()) {
+    if (schedule_consumer[chunk_id] == sys->all_sys.size()) {
       std::vector<int> res = chunk_schedule[chunk_id];
       remaining_data_size -= global_chunk_size[chunk_id];
       chunk_schedule.erase(chunk_id);
@@ -98,7 +102,7 @@ std::vector<int> OfflineGreedy::get_chunk_scheduling(
     return chunk_schedule[chunk_id];
   }
   if (sys->id != 0) {
-    return sys->all_generators[0]->offline_greedy->get_chunk_scheduling(
+    return sys->all_sys[0]->offline_greedy->get_chunk_scheduling(
         chunk_id,
         remaining_data_size,
         recommended_chunk_size,
@@ -110,22 +114,13 @@ std::vector<int> OfflineGreedy::get_chunk_scheduling(
       comm_type = ComType::Reduce_Scatter;
     }
     std::sort(dim_elapsed_time.begin(), dim_elapsed_time.end());
-    if (comm_type == ComType::All_Gatehr) {
+    if (comm_type == ComType::All_Gather) {
       std::reverse(dim_elapsed_time.begin(), dim_elapsed_time.end());
     }
     std::vector<int> result;
-    uint64_t chunk_size =
-        recommended_chunk_size; //*(dim_BW[dim_elapsed_time.front().dim_num]/dim_BW[0]);
+    uint64_t chunk_size = recommended_chunk_size;
     bool chunk_size_calculated = false;
     if (inter_dim_scheduling == InterDimensionScheduling::OfflineGreedy) {
-      // test
-      // double
-      // l_difference=fabs(dim_elapsed_time.back().elapsed_time-dim_elapsed_time.front().elapsed_time);
-      // uint64_t
-      // diff=get_chunk_size_from_elapsed_time(l_difference,dim_elapsed_time.front(),ComType::comm_type);
-      // std::cout<<std::endl<<std::endl<<"Different size: "<<diff<<" , dim to
-      // test: "<<dim_elapsed_time.front().dim_num<<" , diff:
-      // "<<l_difference<<std::endl<<std::endl; end test
       global_chunk_size[chunk_id] = std::min(remaining_data_size, chunk_size);
       remaining_data_size -= std::min(remaining_data_size, chunk_size);
     }
@@ -155,9 +150,8 @@ std::vector<int> OfflineGreedy::get_chunk_scheduling(
           chunk_size = get_chunk_size_from_elapsed_time(
               load_difference,
               dim_elapsed_time[lastIndex],
-              ComType::All_Gatehr);
+              ComType::All_Gather);
           lastIndex--;
-          // std::cout<<"hi"<<std::endl;
           while (dim_elapsed_time_pointer <= lastIndex) {
             if (dimensions_involved[dim_elapsed_time[lastIndex].dim_num] &&
                 dim_size[dim_elapsed_time[lastIndex].dim_num] > 1) {
@@ -165,7 +159,6 @@ std::vector<int> OfflineGreedy::get_chunk_scheduling(
             }
             lastIndex--;
           }
-          // std::cout<<"hello"<<std::endl;
         }
         if (chunk_size < (recommended_chunk_size)) {
           result.resize(dim_elapsed_time.size());
@@ -189,7 +182,7 @@ std::vector<int> OfflineGreedy::get_chunk_scheduling(
             }
           }
           dim_elapsed_time = myReordered;
-          if (comm_type == ComType::All_Gatehr) {
+          if (comm_type == ComType::All_Gather) {
             std::reverse(dim_elapsed_time.begin(), dim_elapsed_time.end());
           }
           for (int myDim = 0; myDim < dim_elapsed_time.size(); myDim++) {
@@ -238,9 +231,8 @@ std::vector<int> OfflineGreedy::get_chunk_scheduling(
           diff_size = get_chunk_size_from_elapsed_time(
               load_difference,
               dim_elapsed_time[lastIndex],
-              ComType::All_Gatehr);
+              ComType::All_Gather);
           lastIndex--;
-          // std::cout<<"hi"<<std::endl;
           while (dim_elapsed_time_pointer <= lastIndex) {
             if (dimensions_involved[dim_elapsed_time[lastIndex].dim_num] &&
                 dim_size[dim_elapsed_time[lastIndex].dim_num] > 1) {
@@ -248,13 +240,8 @@ std::vector<int> OfflineGreedy::get_chunk_scheduling(
             }
             lastIndex--;
           }
-          // std::cout<<"hello"<<std::endl;
         }
         if (diff_size < (recommended_chunk_size / 16)) {
-          // std::cout<<std::endl<<std::endl<<"load diff across dims is low,
-          // going with default scheduling!"<<" diff: "<<diff_size<<"dim max: "
-          //<<dim_elapsed_time.back().dim_num<<" ,dim min:
-          //"<<dim.dim_num<<std::endl<<std::endl;
           result.resize(dim_elapsed_time.size());
           std::iota(std::begin(result), std::end(result), 0);
           chunk_schedule[chunk_id] = result;
@@ -271,7 +258,7 @@ std::vector<int> OfflineGreedy::get_chunk_scheduling(
             }
           }
           dim_elapsed_time = myReordered;
-          if (comm_type == ComType::All_Gatehr) {
+          if (comm_type == ComType::All_Gather) {
             std::reverse(dim_elapsed_time.begin(), dim_elapsed_time.end());
           }
           for (int myDim = 0; myDim < dim_elapsed_time.size(); myDim++) {
@@ -312,12 +299,6 @@ std::vector<int> OfflineGreedy::get_chunk_scheduling(
     }
     chunk_schedule[chunk_id] = result;
     schedule_consumer[chunk_id] = 1;
-    /*std::cout<<"scheduling for chunk: "<<chunk_id<<" is: ";
-    for(auto a:result){
-      std::cout<<a<<" ,";
-    }
-    std::cout<<std::endl;*/
     return result;
   }
 }
-} // namespace AstraSim

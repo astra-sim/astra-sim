@@ -5,26 +5,66 @@ LICENSE file in the root directory of this source tree.
 
 #ifndef __COMMON_HH__
 #define __COMMON_HH__
-#include <stdio.h>
-#include <string.h>
-#include <string>
-#include <vector>
-#include "AstraNetworkAPI.hh"
+
+#include <cstdint>
+
 namespace AstraSim {
-#define CLOCK_PERIOD 1
-#define FREQ (1000.0 / CLOCK_PERIOD)
+
 typedef unsigned long long Tick;
+
+constexpr uint64_t CLOCK_PERIOD = 1;
+constexpr uint64_t FREQ = 1275 * 1000 * 1000;
+
+enum time_type_e {
+  SE = 0,
+  MS,
+  US,
+  NS,
+  FS
+};
+
+enum req_type_e {
+  UINT8 = 0,
+  BFLOAT16,
+  FP32
+};
+
+struct timespec_t {
+  time_type_e time_res;
+  double time_val;
+};
+
+struct sim_request {
+  uint32_t srcRank;
+  uint32_t dstRank;
+  uint32_t tag;
+  req_type_e reqType;
+  uint64_t reqCount;
+  uint32_t vnet;
+  uint32_t layerNum;
+};
+
+class MetaData {
+ public:
+  timespec_t timestamp;
+};
+
 enum class ComType {
-  None,
+  None = 0,
   Reduce_Scatter,
-  All_Gatehr,
+  All_Gather,
   All_Reduce,
   All_to_All,
   All_Reduce_All_to_All
 };
-enum class CollectiveOptimization { Baseline, LocalBWAware };
-enum class CollectiveImplementationType {
-  Ring,
+
+enum class CollectiveOptimization {
+  Baseline = 0,
+  LocalBWAware
+};
+
+enum class CollectiveImplType {
+  Ring = 0,
   OneRing,
   Direct,
   OneDirect,
@@ -36,101 +76,118 @@ enum class CollectiveImplementationType {
   HalvingDoubling,
   OneHalvingDoubling,
 };
-enum class CollectiveBarrier { Blocking, Non_Blocking };
-enum class SchedulingPolicy { LIFO, FIFO, HIGHEST, None };
-enum class IntraDimensionScheduling {
+
+enum class CollectiveBarrier {
+  Blocking = 0,
+  Non_Blocking
+};
+
+enum class SchedulingPolicy {
+  LIFO = 0,
   FIFO,
+  EXPLICIT,
+  None
+};
+
+enum class IntraDimensionScheduling {
+  FIFO = 0,
   RG,
   SmallestFirst,
   LessRemainingPhaseFirst
 };
+
 enum class InterDimensionScheduling {
-  Ascending,
+  Ascending = 0,
   OnlineGreedy,
   RoundRobin,
   OfflineGreedy,
   OfflineGreedyFlex
 };
+
 enum class InjectionPolicy {
-  Infinite,
+  Infinite = 0,
   Aggressive,
   SemiAggressive,
   ExtraAggressive,
   Normal
 };
-enum class PacketRouting { Hardware, Software };
-enum class BusType { Both, Shared, Mem };
+
+enum class PacketRouting {
+  Hardware = 0,
+  Software
+};
+
+enum class BusType {
+  Both = 0,
+  Shared,
+  Mem
+};
+
 enum class StreamState {
-  Created,
+  Created = 0,
   Transferring,
   Ready,
   Executing,
   Zombie,
   Dead
 };
+
 enum class EventType {
+  CallEvents = 0,
+  General,
   RendezvousSend,
   RendezvousRecv,
-  CallEvents,
   PacketReceived,
-  WaitForVnetTurn,
-  General,
-  TX_DMA,
-  RX_DMA,
-  Wight_Grad_Comm_Finished,
-  Input_Grad_Comm_Finished,
-  Fwd_Comm_Finished,
-  Wight_Grad_Comm_Finished_After_Delay,
-  Input_Grad_Comm_Finished_After_Delay,
-  Fwd_Comm_Finished_After_Delay,
-  Workload_Wait,
-  Reduction_Ready,
+  PacketSent,
   Rec_Finished,
   Send_Finished,
   Processing_Finished,
-  Delivered,
   NPU_to_MA,
   MA_to_NPU,
-  Read_Port_Free,
-  Write_Port_Free,
-  Apply_Boost,
-  Stream_Transfer_Started,
-  Stream_Ready,
   Consider_Process,
   Consider_Retire,
   Consider_Send_Back,
   StreamInit,
-  StreamsFinishedIncrease,
   CommProcessingFinished,
-  NotInitialized
+  CollectiveCommunicationFinished,
+  CompFinished,
+  MemLoadFinished,
+  MemStoreFinished
 };
+
 class CloneInterface {
  public:
   virtual CloneInterface* clone() const = 0;
   virtual ~CloneInterface() = default;
 };
-class CollectiveImplementation : public CloneInterface {
+
+class CollectiveImpl : public CloneInterface {
  public:
-  CollectiveImplementationType type;
-  CollectiveImplementation(CollectiveImplementationType type) {
+  CollectiveImpl(CollectiveImplType type) {
     this->type = type;
   };
   virtual CloneInterface* clone() const {
-    return new CollectiveImplementation(*this);
+    return new CollectiveImpl(*this);
   }
+
+  CollectiveImplType type;
 };
-class DirectCollectiveImplementation : public CollectiveImplementation {
+
+class DirectCollectiveImpl : public CollectiveImpl {
  public:
-  int direct_collective_window;
   CloneInterface* clone() const {
-    return new DirectCollectiveImplementation(*this);
+    return new DirectCollectiveImpl(*this);
   };
-  DirectCollectiveImplementation(
-      CollectiveImplementationType type,
+  DirectCollectiveImpl(
+      CollectiveImplType type,
       int direct_collective_window)
-      : CollectiveImplementation(type) {
+      : CollectiveImpl(type) {
     this->direct_collective_window = direct_collective_window;
   }
+
+  int direct_collective_window;
 };
+
 } // namespace AstraSim
-#endif
+
+#endif /* __COMMON_HH__ */

@@ -3,11 +3,15 @@ This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
-#include "DataSet.hh"
-#include "IntData.hh"
-#include "Sys.hh"
-namespace AstraSim {
+#include "astra-sim/system/DataSet.hh"
+
+#include "astra-sim/system/IntData.hh"
+#include "astra-sim/system/Sys.hh"
+
+using namespace AstraSim;
+
 int DataSet::id_auto_increment = 0;
+
 DataSet::DataSet(int total_streams) {
   this->my_id = id_auto_increment++;
   this->total_streams = total_streams;
@@ -18,9 +22,11 @@ DataSet::DataSet(int total_streams) {
   this->creation_tick = Sys::boostedTick();
   this->notifier = nullptr;
 }
-void DataSet::set_notifier(Callable* layer, EventType event) {
-  notifier = new std::pair<Callable*, EventType>(layer, event);
+
+void DataSet::set_notifier(Callable* callable, EventType event) {
+  notifier = new std::pair<Callable*, EventType>(callable, event);
 }
+
 void DataSet::notify_stream_finished(StreamStat* data) {
   finished_streams++;
   if (data != nullptr) {
@@ -28,7 +34,6 @@ void DataSet::notify_stream_finished(StreamStat* data) {
   }
   if (finished_streams == total_streams) {
     finished = true;
-    // std::cout<<"********************************Dataset finished"<<std::endl;
     finish_tick = Sys::boostedTick();
     if (notifier != nullptr) {
       take_stream_stats_average();
@@ -39,10 +44,11 @@ void DataSet::notify_stream_finished(StreamStat* data) {
     }
   }
 }
+
 void DataSet::call(EventType event, CallData* data) {
   notify_stream_finished(((StreamStat*)data));
 }
+
 bool DataSet::is_finished() {
   return finished;
 }
-} // namespace AstraSim
