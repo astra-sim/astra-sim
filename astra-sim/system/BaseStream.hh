@@ -3,38 +3,39 @@ This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
-#ifndef __BASESTREAM_HH__
-#define __BASESTREAM_HH__
+#ifndef __BASE_STREAM_HH__
+#define __BASE_STREAM_HH__
 
-#include <assert.h>
-#include <math.h>
-#include <algorithm>
-#include <chrono>
-#include <cstdint>
-#include <ctime>
-#include <fstream>
-#include <list>
 #include <map>
-#include <sstream>
-#include <tuple>
-#include <vector>
-#include "Callable.hh"
-#include "CollectivePhase.hh"
-#include "Common.hh"
-#include "DataSet.hh"
-#include "StreamStat.hh"
-#include "Sys.hh"
+#include <list>
+
+#include "astra-sim/system/Callable.hh"
+#include "astra-sim/system/CollectivePhase.hh"
+#include "astra-sim/system/Common.hh"
+#include "astra-sim/system/DataSet.hh"
+#include "astra-sim/system/StreamStat.hh"
+#include "astra-sim/system/Sys.hh"
 #include "astra-sim/system/topology/LogicalTopology.hh"
 
 namespace AstraSim {
-class RecvPacketEventHadndlerData;
+
+class RecvPacketEventHandlerData;
 class BaseStream : public Callable, public StreamStat {
  public:
+  BaseStream(
+      int stream_id,
+      Sys* owner,
+      std::list<CollectivePhase> phases_to_go);
+  virtual ~BaseStream() = default;
+
+  void changeState(StreamState state);
+  virtual void consume(RecvPacketEventHandlerData* message) = 0;
+  virtual void init() = 0;
+
   static std::map<int, int> synchronizer;
   static std::map<int, int> ready_counter;
-  static std::map<int, std::list<BaseStream*>> suspended_streams;
-  virtual ~BaseStream() = default;
-  int stream_num;
+  static std::map<int, std::list<BaseStream*> > suspended_streams;
+  int stream_id;
   int total_packets_sent;
   SchedulingPolicy preferred_scheduling;
   std::list<CollectivePhase> phases_to_go;
@@ -57,20 +58,8 @@ class BaseStream : public Callable, public StreamStat {
   int test2;
   uint64_t phase_latencies[10];
 
-  void changeState(StreamState state);
-  virtual void consume(RecvPacketEventHadndlerData* message) = 0;
-  virtual void init() = 0;
-
-  BaseStream(
-      int stream_num,
-      Sys* owner,
-      std::list<CollectivePhase> phases_to_go);
-  void declare_ready();
-  bool is_ready();
-  void consume_ready();
-  void suspend_ready();
-  void resume_ready(int st_num);
-  void destruct_ready();
 };
+
 } // namespace AstraSim
-#endif
+
+#endif /* __BASE_STREAM_HH__ */

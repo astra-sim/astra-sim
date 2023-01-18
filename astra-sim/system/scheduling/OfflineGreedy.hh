@@ -3,12 +3,16 @@ This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
-#ifndef __OFFLINEGREEDY_HH__
-#define __OFFLINEGREEDY_HH__
+#ifndef __OFFLINE_GREEDY_HH__
+#define __OFFLINE_GREEDY_HH__
+
+#include <vector>
+
 #include "astra-sim/system/Common.hh"
 #include "astra-sim/system/Sys.hh"
-#include "vector"
+
 namespace AstraSim {
+
 class DimElapsedTime {
  public:
   int dim_num;
@@ -41,5 +45,7 @@ class OfflineGreedy {
   static std::map<long long, int> schedule_consumer;
   static std::map<long long, uint64_t> global_chunk_size;
 };
+
 } // namespace AstraSim
-#endif
+
+#endif /* __OFFLINE_GREEDY_HH__ */

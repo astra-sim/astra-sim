@@ -3,14 +3,18 @@ This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
-#include "UsageTracker.hh"
-#include "Sys.hh"
-namespace AstraSim {
+#include "astra-sim/system/UsageTracker.hh"
+
+#include "astra-sim/system/Sys.hh"
+
+using namespace AstraSim;
+
 UsageTracker::UsageTracker(int levels) {
   this->levels = levels;
   this->current_level = 0;
   this->last_tick = 0;
 }
+
 void UsageTracker::increase_usage() {
   if (current_level < levels - 1) {
     Usage u(current_level, last_tick, Sys::boostedTick());
@@ -19,6 +23,7 @@ void UsageTracker::increase_usage() {
     last_tick = Sys::boostedTick();
   }
 }
+
 void UsageTracker::decrease_usage() {
   if (current_level > 0) {
     Usage u(current_level, last_tick, Sys::boostedTick());
@@ -27,6 +32,7 @@ void UsageTracker::decrease_usage() {
     last_tick = Sys::boostedTick();
   }
 }
+
 void UsageTracker::set_usage(int level) {
   if (current_level != level) {
     Usage u(current_level, last_tick, Sys::boostedTick());
@@ -35,6 +41,7 @@ void UsageTracker::set_usage(int level) {
     last_tick = Sys::boostedTick();
   }
 }
+
 void UsageTracker::report(CSVWriter* writer, int offset) {
   uint64_t col = offset * 3;
   uint64_t row = 1;
@@ -42,24 +49,19 @@ void UsageTracker::report(CSVWriter* writer, int offset) {
     writer->write_cell(row, col, std::to_string(a.start));
     writer->write_cell(row++, col + 1, std::to_string(a.level));
   }
-  // writer->close_file_cont();
   return;
 }
-std::list<std::pair<uint64_t, double>> UsageTracker::report_percentage(
+
+std::list<std::pair<uint64_t, double> > UsageTracker::report_percentage(
     uint64_t cycles) {
   decrease_usage();
   increase_usage();
-  /*std::cout<<"usage tracker entries: "<<usage.size()<<std::endl;
-  for(Usage u:usage){
-    std::cout<<"start: "<<u.start<<" ,end: "<<u.end<<" ,level:
-  "<<u.level<<std::endl;
-  }*/
   Tick total_activity_possible = (this->levels - 1) * cycles;
   std::list<Usage>::iterator usage_pointer = this->usage.begin();
   Tick current_activity = 0;
   Tick period_start = 0;
   Tick period_end = cycles;
-  std::list<std::pair<uint64_t, double>> result;
+  std::list<std::pair<uint64_t, double> > result;
   while (usage_pointer != this->usage.end()) {
     Usage current_usage = *usage_pointer;
     uint64_t begin =
@@ -81,4 +83,3 @@ std::list<std::pair<uint64_t, double>> UsageTracker::report_percentage(
   }
   return result;
 }
-} // namespace AstraSim

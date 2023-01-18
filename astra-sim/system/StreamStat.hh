@@ -3,34 +3,23 @@ This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
-#ifndef __STREAMSTAT_HH__
-#define __STREAMSTAT_HH__
+#ifndef __STREAM_STAT_HH__
+#define __STREAM_STAT_HH__
 
-#include <assert.h>
-#include <math.h>
-#include <algorithm>
-#include <chrono>
-#include <cstdint>
-#include <ctime>
-#include <fstream>
 #include <list>
-#include <map>
-#include <sstream>
-#include <tuple>
-#include <vector>
-#include "Common.hh"
-#include "NetworkStat.hh"
-#include "SharedBusStat.hh"
+
+#include "astra-sim/system/Common.hh"
+#include "astra-sim/system/NetworkStat.hh"
+#include "astra-sim/system/SharedBusStat.hh"
 
 namespace AstraSim {
+
 class StreamStat : public SharedBusStat, public NetworkStat {
  public:
-  std::list<double> queuing_delay;
-  int stream_stat_counter;
-  //~StreamStat()= default;
   StreamStat() : SharedBusStat(BusType::Shared, 0, 0, 0, 0) {
     stream_stat_counter = 0;
   }
+
   void update_stream_stats(StreamStat* streamStat) {
     update_bus_stats(BusType::Both, streamStat);
     update_network_stat(streamStat);
@@ -47,6 +36,7 @@ class StreamStat : public SharedBusStat, public NetworkStat {
     }
     stream_stat_counter++;
   }
+
   void take_stream_stats_average() {
     take_bus_stats_average();
     take_network_stat_average();
@@ -54,6 +44,11 @@ class StreamStat : public SharedBusStat, public NetworkStat {
       tick /= stream_stat_counter;
     }
   }
+
+  std::list<double> queuing_delay;
+  int stream_stat_counter;
 };
+
 } // namespace AstraSim
-#endif
+
+#endif /* __STREAM_STAT_HH__ */

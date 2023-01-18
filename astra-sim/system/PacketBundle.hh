@@ -3,41 +3,22 @@ This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
-#ifndef __PACKETBUNDLE_HH__
-#define __PACKETBUNDLE_HH__
+#ifndef __PACKET_BUNDLE_HH__
+#define __PACKET_BUNDLE_HH__
 
-#include <assert.h>
-#include <math.h>
-#include <algorithm>
-#include <chrono>
-#include <cstdint>
-#include <ctime>
-#include <fstream>
-#include <list>
-#include <map>
-#include <sstream>
-#include <tuple>
-#include <vector>
-#include "BaseStream.hh"
-#include "Callable.hh"
-#include "Common.hh"
-#include "MemBus.hh"
-#include "MyPacket.hh"
+#include "astra-sim/system/BaseStream.hh"
+#include "astra-sim/system/Callable.hh"
+#include "astra-sim/system/Common.hh"
+#include "astra-sim/system/MemBus.hh"
+#include "astra-sim/system/MyPacket.hh"
 
 namespace AstraSim {
+
 class Sys;
 class PacketBundle : public Callable {
  public:
-  std::list<MyPacket*> locked_packets;
-  bool needs_processing;
-  bool send_back;
-  int size;
-  Sys* generator;
-  BaseStream* stream;
-  Tick creation_time;
-  MemBus::Transmition transmition;
   PacketBundle(
-      Sys* generator,
+      Sys* sys,
       BaseStream* stream,
       std::list<MyPacket*> locked_packets,
       bool needs_processing,
@@ -45,7 +26,7 @@ class PacketBundle : public Callable {
       int size,
       MemBus::Transmition transmition);
   PacketBundle(
-      Sys* generator,
+      Sys* sys,
       BaseStream* stream,
       bool needs_processing,
       bool send_back,
@@ -53,9 +34,19 @@ class PacketBundle : public Callable {
       MemBus::Transmition transmition);
   void send_to_MA();
   void send_to_NPU();
-  Tick delay;
   void call(EventType event, CallData* data);
-  //~PacketBundle()= default;
+
+  Sys* sys;
+  std::list<MyPacket*> locked_packets;
+  bool needs_processing;
+  bool send_back;
+  int size;
+  BaseStream* stream;
+  MemBus::Transmition transmition;
+  Tick delay;
+  Tick creation_time;
 };
+
 } // namespace AstraSim
-#endif
+
+#endif /* __PACKET_BUNDLE_HH__ */

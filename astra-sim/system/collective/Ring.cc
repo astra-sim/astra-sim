@@ -3,29 +3,29 @@ This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
-#include "Ring.hh"
+#include "astra-sim/system/collective/Ring.hh"
+
 #include "astra-sim/system/PacketBundle.hh"
-#include "astra-sim/system/RecvPacketEventHadndlerData.hh"
-namespace AstraSim {
+#include "astra-sim/system/RecvPacketEventHandlerData.hh"
+
+using namespace AstraSim;
+
 Ring::Ring(
     ComType type,
     int id,
-    int layer_num,
     RingTopology* ring_topology,
     uint64_t data_size,
     RingTopology::Direction direction,
-    InjectionPolicy injection_policy,
-    bool boost_mode)
-    : Algorithm(layer_num) {
-  // std::cout<<"Ring checkmark 0"<<std::endl;
+    InjectionPolicy injection_policy)
+    : Algorithm() {
   this->comType = type;
   this->id = id;
-  this->logicalTopology = ring_topology;
+  this->logical_topo = ring_topology;
   this->data_size = data_size;
   this->direction = direction;
   this->nodes_in_ring = ring_topology->get_nodes_in_ring();
-  this->current_receiver = ring_topology->get_receiver_node(id, direction);
-  this->current_sender = ring_topology->get_sender_node(id, direction);
+  this->curr_receiver = ring_topology->get_receiver(id, direction);
+  this->curr_sender = ring_topology->get_sender(id, direction);
   this->parallel_reduce = 1;
   this->injection_policy = injection_policy;
   this->total_packets_sent = 0;
@@ -35,11 +35,7 @@ Ring::Ring(
   this->non_zero_latency_packets = 0;
   this->toggle = false;
   this->name = Name::Ring;
-  this->enabled = true;
-  if (boost_mode) {
-    this->enabled = ring_topology->is_enabled();
-  }
-  if (ring_topology->dimension == RingTopology::Dimension::Local) {
+  if (ring_topology->get_dimension() == RingTopology::Dimension::Local) {
     transmition = MemBus::Transmition::Fast;
   } else {
     transmition = MemBus::Transmition::Usual;
@@ -65,7 +61,7 @@ Ring::Ring(
     default:
       stream_count = nodes_in_ring - 1;
   }
-  if (type == ComType::All_to_All || type == ComType::All_Gatehr) {
+  if (type == ComType::All_to_All || type == ComType::All_Gather) {
     max_count = 0;
   } else {
     max_count = nodes_in_ring - 1;
@@ -77,10 +73,8 @@ Ring::Ring(
       this->final_data_size = data_size;
       this->msg_size = data_size / nodes_in_ring;
       break;
-    case ComType::All_Gatehr:
+    case ComType::All_Gather:
       this->final_data_size = data_size * nodes_in_ring;
-      // std::cout<<"heeeey! here! final data size: "<<this->final_data_size<<"
-      // ,nodes in ring: "<<nodes_in_ring<<std::endl;
       this->msg_size = data_size;
       break;
     case ComType::Reduce_Scatter:
@@ -93,13 +87,12 @@ Ring::Ring(
       break;
     default:;
   }
-  // std::cout<<"ring allreduce is configured at node: "<<id<<" ,with sender:
-  // "<<current_sender<<" ,and receiver: "<<current_receiver<<" and enable
-  // status is: "<<this->enabled<<std::endl;
 }
+
 int Ring::get_non_zero_latency_packets() {
   return (nodes_in_ring - 1) * parallel_reduce * 1;
 }
+
 void Ring::run(EventType event, CallData* data) {
   if (event == EventType::General) {
     free_packets += 1;
@@ -114,6 +107,7 @@ void Ring::run(EventType event, CallData* data) {
     }
   }
 }
+
 void Ring::release_packets() {
   for (auto packet : locked_packets) {
     packet->set_notifier(this);
@@ -141,6 +135,7 @@ void Ring::release_packets() {
   }
   locked_packets.clear();
 }
+
 void Ring::process_stream_count() {
   if (remained_packets_per_message > 0) {
     remained_packets_per_message--;
@@ -156,36 +151,26 @@ void Ring::process_stream_count() {
   if (remained_packets_per_message == 0 && stream_count == 0 &&
       stream->state != StreamState::Dead) {
     stream->changeState(StreamState::Zombie);
-    if (id == 0) {
-      // std::cout<<"stream "<<stream_num<<" changed state to
-      // zombie"<<std::endl;
-    }
-  }
-  if (id == 0) {
-    // std::cout<<"for stream: "<<stream_num<<" ,total stream count left:
-    // "<<stream_count<<std::endl;
   }
 }
+
 void Ring::process_max_count() {
   if (remained_packets_per_max_count > 0)
     remained_packets_per_max_count--;
   if (remained_packets_per_max_count == 0) {
     max_count--;
-    if (id == 0) {
-      // std::cout<<"max count is now: "<<max_count<<"stream count is:
-      // "<<stream_count<<" , free_packets: "<<free_packets<<std::endl;
-    }
     release_packets();
     remained_packets_per_max_count = 1;
   }
 }
+
 void Ring::reduce() {
   process_stream_count();
   packets.pop_front();
   free_packets--;
   total_packets_sent++;
-  // not_delivered++;
 }
+
 bool Ring::iteratable() {
   if (stream_count == 0 &&
       free_packets == (parallel_reduce * 1)) { // && not_delivered==0
@@ -194,10 +179,8 @@ bool Ring::iteratable() {
   }
   return true;
 }
+
 void Ring::insert_packet(Callable* sender) {
-  if (!enabled) {
-    return;
-  }
   if (zero_latency_packets == 0 && non_zero_latency_packets == 0) {
     zero_latency_packets = parallel_reduce * 1;
     non_zero_latency_packets =
@@ -207,8 +190,8 @@ void Ring::insert_packet(Callable* sender) {
   if (zero_latency_packets > 0) {
     packets.push_back(MyPacket(
         stream->current_queue_id,
-        current_sender,
-        current_receiver)); // vnet Must be changed for alltoall topology
+        curr_sender,
+        curr_receiver)); // vnet Must be changed for alltoall topology
     packets.back().sender = sender;
     locked_packets.push_back(&packets.back());
     processed = false;
@@ -220,8 +203,8 @@ void Ring::insert_packet(Callable* sender) {
   } else if (non_zero_latency_packets > 0) {
     packets.push_back(MyPacket(
         stream->current_queue_id,
-        current_sender,
-        current_receiver)); // vnet Must be changed for alltoall topology
+        curr_sender,
+        curr_receiver)); // vnet Must be changed for alltoall topology
     packets.back().sender = sender;
     locked_packets.push_back(&packets.back());
     if (comType == ComType::Reduce_Scatter ||
@@ -240,18 +223,15 @@ void Ring::insert_packet(Callable* sender) {
     non_zero_latency_packets--;
     return;
   }
-  // std::cout<<"insert packet called"<<std::endl;
   Sys::sys_panic("should not inject nothing!");
-  //}
 }
+
 bool Ring::ready() {
-  // std::cout<<"ready called"<<std::endl;
   if (stream->state == StreamState::Created ||
       stream->state == StreamState::Ready) {
     stream->changeState(StreamState::Executing);
-    // init(); //should be replaced
   }
-  if (!enabled || packets.size() == 0 || stream_count == 0 ||
+  if (packets.size() == 0 || stream_count == 0 ||
       free_packets == 0) {
     return false;
   }
@@ -259,62 +239,48 @@ bool Ring::ready() {
   sim_request snd_req;
   snd_req.srcRank = id;
   snd_req.dstRank = packet.preferred_dest;
-  snd_req.tag = stream->stream_num;
+  snd_req.tag = stream->stream_id;
   snd_req.reqType = UINT8;
   snd_req.vnet = this->stream->current_queue_id;
-  snd_req.layerNum = layer_num;
   stream->owner->front_end_sim_send(
       0,
       Sys::dummy_data,
       msg_size,
       UINT8,
       packet.preferred_dest,
-      stream->stream_num,
+      stream->stream_id,
       &snd_req,
       &Sys::handleEvent,
-      nullptr); // stream_num+(packet.preferred_dest*50)
+      nullptr); // stream_id+(packet.preferred_dest*50)
   sim_request rcv_req;
   rcv_req.vnet = this->stream->current_queue_id;
-  rcv_req.layerNum = layer_num;
-  RecvPacketEventHadndlerData* ehd = new RecvPacketEventHadndlerData(
+  RecvPacketEventHandlerData* ehd = new RecvPacketEventHandlerData(
       stream,
       stream->owner->id,
       EventType::PacketReceived,
       packet.preferred_vnet,
-      packet.stream_num);
+      packet.stream_id);
   stream->owner->front_end_sim_recv(
       0,
       Sys::dummy_data,
       msg_size,
       UINT8,
       packet.preferred_src,
-      stream->stream_num,
+      stream->stream_id,
       &rcv_req,
       &Sys::handleEvent,
-      ehd); // stream_num+(owner->id*50)
+      ehd); // stream_id+(owner->id*50)
   reduce();
-  if (true) {
-    // std::cout<<"I am node: "<<owner->id<<" and I sent: "<<++test2<<" packets
-    // so far, finished steps: "<< steps_finished<<" ,for stream:
-    // "<<stream_num<<" ,total received: "<<test
-    //<<" at time: "<<Sys::boostedTick()<<" vnet is:
-    //"<<my_current_phase.queue_id<<" ,remained: "<<stream_count<<" ,current
-    // dest is: "<<packet.preferred_dest
-    //<<" ,waiting for packet from: "<<packet.preferred_src<<std::endl;
-  }
   return true;
 }
+
 void Ring::exit() {
-  // std::cout<<"exiting collective in node: "<<stream->owner->id<<std::endl;
   if (packets.size() != 0) {
     packets.clear();
   }
   if (locked_packets.size() != 0) {
     locked_packets.clear();
   }
-  stream->declare_ready();
   stream->owner->proceed_to_next_vnet_baseline((StreamBaseline*)stream);
-  // delete this;
   return;
 }
-} // namespace AstraSim

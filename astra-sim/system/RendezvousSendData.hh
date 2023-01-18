@@ -3,33 +3,21 @@ This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
-#ifndef __RENDEZVOUSSENDDATA_HH__
-#define __RENDEZVOUSSENDDATA_HH__
+#ifndef __RENDEZVOUS_SEND_DATA_HH__
+#define __RENDEZVOUS_SEND_DATA_HH__
 
-#include <assert.h>
-#include <math.h>
-#include <algorithm>
-#include <chrono>
-#include <cstdint>
-#include <ctime>
-#include <fstream>
-#include <list>
-#include <map>
-#include <sstream>
-#include <tuple>
-#include <vector>
-#include "BasicEventHandlerData.hh"
-#include "Common.hh"
-#include "SimSendCaller.hh"
+#include "astra-sim/system/BasicEventHandlerData.hh"
+#include "astra-sim/system/Common.hh"
+#include "astra-sim/system/SimSendCaller.hh"
+#include "astra-sim/system/Sys.hh"
 
 namespace AstraSim {
-class Sys;
+
 class RendezvousSendData : public BasicEventHandlerData, public MetaData {
  public:
-  SimSendCaller* send;
   RendezvousSendData(
-      int nodeId,
-      Sys* generator,
+      int sys_id,
+      Sys* sys,
       void* buffer,
       uint64_t count,
       int type,
@@ -38,6 +26,9 @@ class RendezvousSendData : public BasicEventHandlerData, public MetaData {
       sim_request request,
       void (*msg_handler)(void* fun_arg),
       void* fun_arg);
+  SimSendCaller* send;
 };
+
 } // namespace AstraSim
-#endif
+
+#endif /* __RENDEZVOUS_SEND_DATA_HH__ */

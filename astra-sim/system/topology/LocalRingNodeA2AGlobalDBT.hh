@@ -3,33 +3,17 @@ This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
-#ifndef __LOCALRINGNODEA2AGLOBALDBT_HH__
-#define __LOCALRINGNODEA2AGLOBALDBT_HH__
+#ifndef __LOCAL_RING_NODE_A2A_GLOBAL_DBT_HH__
+#define __LOCAL_RING_NODE_A2A_GLOBAL_DBT_HH__
 
-#include <assert.h>
-#include <math.h>
-#include <algorithm>
-#include <chrono>
-#include <cstdint>
-#include <ctime>
-#include <fstream>
-#include <list>
-#include <map>
-#include <sstream>
-#include <tuple>
-#include <vector>
-#include "ComplexLogicalTopology.hh"
-#include "DoubleBinaryTreeTopology.hh"
-#include "RingTopology.hh"
-#include "astra-sim/system/Common.hh"
+#include "astra-sim/system/topology/ComplexLogicalTopology.hh"
+#include "astra-sim/system/topology/DoubleBinaryTreeTopology.hh"
+#include "astra-sim/system/topology/RingTopology.hh"
 
 namespace AstraSim {
+
 class LocalRingNodeA2AGlobalDBT : public ComplexLogicalTopology {
  public:
-  DoubleBinaryTreeTopology* global_dimension_all_reduce;
-  RingTopology* global_dimension_other;
-  RingTopology* local_dimension;
-  RingTopology* node_dimension;
   LocalRingNodeA2AGlobalDBT(
       int id,
       int local_dim,
@@ -43,6 +27,13 @@ class LocalRingNodeA2AGlobalDBT : public ComplexLogicalTopology {
       int dimension,
       ComType type) override;
   int get_num_of_dimensions() override;
+
+  DoubleBinaryTreeTopology* global_dimension_all_reduce;
+  RingTopology* global_dimension_other;
+  RingTopology* local_dimension;
+  RingTopology* node_dimension;
 };
+
 } // namespace AstraSim
-#endif
+
+#endif /* __LOCAL_RING_NODE_A2A_GLOBAL_DBT_HH__ */

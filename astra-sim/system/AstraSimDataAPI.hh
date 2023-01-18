@@ -3,12 +3,14 @@ This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
-#ifndef __ASTRASIMDATAAPI_HH__
-#define __ASTRASIMDATAAPI_HH__
-#include <iostream>
+#ifndef __ASTRA_SIM_DATA_API_HH__
+#define __ASTRA_SIM_DATA_API_HH__
+
 #include <list>
 #include <vector>
+
 namespace AstraSim {
+
 class LayerData {
  public:
   std::string layer_name;
@@ -21,11 +23,10 @@ class LayerData {
   double total_fwd_comm;
   double total_weight_grad_comm;
   double total_input_grad_comm;
-  std::list<std::pair<int, double>>
-      avg_queuing_delay; // int is phase #, double is latency
-  std::list<std::pair<int, double>>
-      avg_network_message_dealy; // int is phase #, double is latency
+  std::list<std::pair<int, double> > avg_queuing_delay; // int is phase #, double is latency
+  std::list<std::pair<int, double> > avg_network_message_dealy; // int is phase #, double is latency
 };
+
 class AstraSimDataAPI {
  public:
   std::string run_name;
@@ -35,5 +36,7 @@ class AstraSimDataAPI {
   double total_compute;
   double total_exposed_comm;
 };
+
 } // namespace AstraSim
-#endif
+
+#endif /* __ASTRA_SIM_DATA_API_HH__ */

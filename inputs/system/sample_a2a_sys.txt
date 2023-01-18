@@ -1,10 +1,11 @@
-scheduling-policy: LIFO
-endpoint-delay: 10
-active-chunks-per-dimension: 1
-preferred-dataset-splits: 4
-boost-mode: 0
-all-reduce-implementation: doubleBinaryTree
-all-gather-implementation: halvingDoubling
-reduce-scatter-implementation: halvingDoubling
-all-to-all-implementation: direct
-collective-optimization: localBWAware
+{
+  "scheduling-policy": "LIFO",
+  "endpoint-delay": 10,
+  "active-chunks-per-dimension": 1,
+  "preferred-dataset-splits": 4,
+  "all-reduce-implementation": ["doubleBinaryTree"],
+  "all-gather-implementation": ["halvingDoubling"],
+  "reduce-scatter-implementation": ["halvingDoubling"],
+  "all-to-all-implementation": ["direct"],
+  "collective-optimization": "localBWAware"
+}

@@ -3,40 +3,32 @@ This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
-#ifndef __STREAMBASELINE_HH__
-#define __STREAMBASELINE_HH__
+#ifndef __STREAM_BASELINE_HH__
+#define __STREAM_BASELINE_HH__
 
-#include <assert.h>
-#include <math.h>
-#include <algorithm>
-#include <chrono>
-#include <cstdint>
-#include <ctime>
-#include <fstream>
 #include <list>
-#include <map>
-#include <sstream>
-#include <tuple>
-#include <vector>
-#include "BaseStream.hh"
-#include "CollectivePhase.hh"
-#include "Common.hh"
-#include "RecvPacketEventHadndlerData.hh"
+
+#include "astra-sim/system/BaseStream.hh"
+#include "astra-sim/system/CollectivePhase.hh"
+#include "astra-sim/system/RecvPacketEventHandlerData.hh"
 
 namespace AstraSim {
+
 class Sys;
 class StreamBaseline : public BaseStream {
  public:
   StreamBaseline(
       Sys* owner,
       DataSet* dataset,
-      int stream_num,
+      int stream_id,
       std::list<CollectivePhase> phases_to_go,
       int priority);
+
   void init();
   void call(EventType event, CallData* data);
-  void consume(RecvPacketEventHadndlerData* message);
-  //~StreamBaseline()= default;
+  void consume(RecvPacketEventHandlerData* message);
 };
+
 } // namespace AstraSim
-#endif
+
+#endif /* __STREAM_BASELINE_HH__ */
