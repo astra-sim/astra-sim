@@ -10,6 +10,11 @@ namespace AstraSim {
 
 class CallData {
  public:
+  /*enum class Type{BaseStream, BasicEventHandlerData, DataSet,};
+  Type data_type;
+  CallData(Type data_type){
+    this->data_type;
+  }*/
   ~CallData() = default;
 };
 

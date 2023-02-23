@@ -17,6 +17,7 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/UsageTracker.hh"
 #include "astra-sim/system/MemBus.hh"
 #include "astra-sim/system/topology/RingTopology.hh"
+#include "astra-sim/system/topology/Switch.hh"
 
 namespace AstraSim {
 

@@ -25,6 +25,7 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/collective/DoubleBinaryTreeAllReduce.hh"
 #include "astra-sim/system/collective/HalvingDoubling.hh"
 #include "astra-sim/system/collective/Ring.hh"
+#include "astra-sim/system/collective/InSwitch.hh"
 #include "astra-sim/system/scheduling/OfflineGreedy.hh"
 #include "astra-sim/system/topology/BasicLogicalTopology.hh"
 #include "astra-sim/system/topology/GeneralComplexTopology.hh"
@@ -1027,6 +1028,14 @@ CollectivePhase Sys::generate_collective_phase(
             (RingTopology*)topology,
             data_size));
     return vn;
+  } else if (
+      collective_impl->type ==
+      CollectiveImplType::InSwitch) {
+    CollectivePhase vn(
+        this,
+        queue_id,
+        new InSwitch(id, (Switch*)topology, data_size, collective_type));
+    return vn;
   } else {
     cerr
         << "Error: No known collective implementation for collective phase"
@@ -1381,6 +1390,7 @@ int Sys::front_end_sim_send(
     sim_request* request,
     void (*msg_handler)(void* fun_arg),
     void* fun_arg) {
+  //std::cout<<"send size: "<<count<<" from src: "<<id<<" to dst: "<<dst<<" time: "<<Sys::boostedTick()<<std::endl;
   if (rendezvous_enabled) {
     return rendezvous_sim_send(
         delay, buffer, count, type, dst, tag, request, msg_handler, fun_arg);
@@ -1400,6 +1410,7 @@ int Sys::front_end_sim_recv(
     sim_request* request,
     void (*msg_handler)(void* fun_arg),
     void* fun_arg) {
+  //std::cout<<"recv size: "<<count<<" from src: "<<src<<" to dst: "<<id<<" time: "<<Sys::boostedTick()<<std::endl;
   if (rendezvous_enabled) {
     return rendezvous_sim_recv(
         delay, buffer, count, type, src, tag, request, msg_handler, fun_arg);

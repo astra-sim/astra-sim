@@ -11,6 +11,7 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/RecvPacketEventHandlerData.hh"
 #include "astra-sim/system/SendPacketEventHandlerData.hh"
 #include "astra-sim/system/WorkloadLayerHandlerData.hh"
+#include <fstream>
 
 #include <iostream>
 
@@ -26,19 +27,24 @@ Workload::Workload(
     Sys* sys,
     string eg_filename,
     string comm_group_filename) {
+  this->sys = sys;
+  if(!file_exists(eg_filename + "." + to_string(sys->id) + ".eg")){
+    report();
+    this->is_finished = true;
+    this->eg_feeder= nullptr;
+    return;
+  }
   this->eg_feeder =
-    new EGFeeder(eg_filename + "." + to_string(sys->id) + ".eg");
-  this->comm_group = nullptr;
+        new EGFeeder(eg_filename + "." + to_string(sys->id) + ".eg");
   // TODO: parametrize the number of available hardware resources
   this->hw_resource = new HardwareResource(1);
-  this->sys = sys;
   initialize_comm_group(comm_group_filename);
   this->is_finished = false;
 }
 
 Workload::~Workload() {
-  if (this->comm_group != nullptr)
-    delete this->comm_group;
+  for (auto &cg:comm_groups)
+    delete cg.second;
   if (this->eg_feeder != nullptr)
     delete this->eg_feeder;
 }
@@ -47,7 +53,6 @@ void Workload::initialize_comm_group(string comm_group_filename)
 {
   // communicator group input file is not given
   if (comm_group_filename.find("empty") != std::string::npos) {
-    comm_group = nullptr;
     return;
   }
 
@@ -70,10 +75,17 @@ void Workload::initialize_comm_group(string comm_group_filename)
       for (auto id: it.value()) {
         involved_NPUs.push_back(id);
       }
-      comm_group = new CommunicatorGroup(1, involved_NPUs, sys);
+      int comm_group_id=std::atoi(it.key().c_str());
+      comm_groups[comm_group_id] = new CommunicatorGroup(comm_group_id, involved_NPUs, true, sys);
       // Note: All NPUs should create comm group with identical ids if they want to communicate with each other
     }
   }
+}
+CommunicatorGroup* Workload::get_comm_group(int id){
+  if(comm_groups.find(id)==comm_groups.end()){
+    return nullptr;
+  }
+  return comm_groups[id];
 }
 
 void Workload::issue_dep_free_nodes() {
@@ -152,7 +164,7 @@ void Workload::issue_comm(shared_ptr<Chakra::EGFeederNode> node) {
       DataSet *fp = sys->generate_all_reduce(
           node->getChakraNode()->comm_size(),
           involved_dim,
-          comm_group,
+          get_comm_group(1),
           node->getChakraNode()->comm_priority());
       collective_comm_node_id_map[fp->my_id] = node->getChakraNode()->id();
       fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
@@ -161,7 +173,7 @@ void Workload::issue_comm(shared_ptr<Chakra::EGFeederNode> node) {
       DataSet *fp = sys->generate_all_to_all(
           node->getChakraNode()->comm_size(),
           involved_dim,
-          comm_group,
+          get_comm_group(1),
           node->getChakraNode()->comm_priority());
       collective_comm_node_id_map[fp->my_id] = node->getChakraNode()->id();
       fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
@@ -170,7 +182,7 @@ void Workload::issue_comm(shared_ptr<Chakra::EGFeederNode> node) {
       DataSet *fp = sys->generate_all_gather(
           node->getChakraNode()->comm_size(),
           involved_dim,
-          comm_group,
+          get_comm_group(1),
           node->getChakraNode()->comm_priority());
       collective_comm_node_id_map[fp->my_id] = node->getChakraNode()->id();
       fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
@@ -179,7 +191,7 @@ void Workload::issue_comm(shared_ptr<Chakra::EGFeederNode> node) {
       DataSet *fp = sys->generate_reduce_scatter(
           node->getChakraNode()->comm_size(),
           involved_dim,
-          comm_group,
+          get_comm_group(1),
           node->getChakraNode()->comm_priority());
       collective_comm_node_id_map[fp->my_id] = node->getChakraNode()->id();
       fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
@@ -294,5 +306,9 @@ void Workload::fire() {
 
 void Workload::report() {
   Tick curr_tick = Sys::boostedTick();
-  cout << "sys[" << sys->id << "] finished, " << curr_tick << " cycles" << endl;
+  cout << "workload[" << sys->id << "] finished, " << curr_tick << " cycles" << endl;
+}
+bool Workload::file_exists(const std::string& name){
+  ifstream f(name.c_str());
+  return f.good();
 }

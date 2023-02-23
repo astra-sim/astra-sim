@@ -75,6 +75,7 @@ enum class CollectiveImplType {
   DoubleBinaryTree,
   HalvingDoubling,
   OneHalvingDoubling,
+  InSwitch
 };
 
 enum class CollectiveBarrier {
@@ -142,6 +143,7 @@ enum class EventType {
   Rec_Finished,
   Send_Finished,
   Processing_Finished,
+  Switch_Processing,
   NPU_to_MA,
   MA_to_NPU,
   Consider_Process,
