@@ -19,6 +19,7 @@ class CollectivePlan;
 class CommunicatorGroup {
  public:
   CommunicatorGroup(int id, std::vector<int> involved_NPUs, Sys *generator);
+  CommunicatorGroup(int id, std::vector<int> involved_NPUs, bool inSwitch,  Sys *generator);
   CollectivePlan* get_collective_plan(ComType comm_type);
   void set_id(int id);
   ~CommunicatorGroup();
@@ -29,6 +30,7 @@ class CommunicatorGroup {
  private:
   int id;
   Sys *generator;
+  bool in_switch;
   std::map<ComType,CollectivePlan*> comm_plans;
 };
 

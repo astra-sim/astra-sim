@@ -19,6 +19,19 @@ CommunicatorGroup::CommunicatorGroup(
   set_id(id);
   this->involved_NPUs = involved_NPUs;
   this->generator = generator;
+  this->in_switch=false;
+  std::sort(involved_NPUs.begin(), involved_NPUs.end());
+  assert(std::find(involved_NPUs.begin(), involved_NPUs.end(), generator->id) != involved_NPUs.end());
+}
+CommunicatorGroup::CommunicatorGroup(
+    int id,
+    std::vector<int> involved_NPUs,
+    bool inSwitch,
+    Sys *generator) {
+  set_id(id);
+  this->involved_NPUs = involved_NPUs;
+  this->generator = generator;
+  this->in_switch=inSwitch;
   std::sort(involved_NPUs.begin(), involved_NPUs.end());
   assert(std::find(involved_NPUs.begin(), involved_NPUs.end(), generator->id) != involved_NPUs.end());
 }
@@ -40,8 +53,23 @@ void CommunicatorGroup::set_id(int id){
 CollectivePlan* CommunicatorGroup::get_collective_plan(ComType comm_type) {
   if (comm_plans.find(comm_type) != comm_plans.end())
     return comm_plans[comm_type];
-
-  if (generator->total_nodes == involved_NPUs.size()) {
+  if(in_switch){
+    assert(generator->total_nodes-1 == involved_NPUs.size());
+    std::vector<Sys *> attached_NPUs;
+    for(auto npu_id:involved_NPUs){
+      attached_NPUs.push_back(generator->all_sys[npu_id]);
+    }
+    std::vector<Switch *> empty;
+    LogicalTopology *logical_topology = new Switch(generator->all_sys[involved_NPUs.size()],attached_NPUs , empty, empty);
+    std::vector<CollectiveImpl*> collective_implementation{new CollectiveImpl(CollectiveImplType::InSwitch)};
+    std::vector<bool> dimensions_involved(1,true);
+    bool should_be_removed = true;
+    comm_plans[comm_type] =
+        new CollectivePlan(logical_topology, collective_implementation,
+                           dimensions_involved, should_be_removed);
+    return comm_plans[comm_type];
+  }
+  else if (generator->total_nodes == involved_NPUs.size()) {
     LogicalTopology *logical_topology = generator->get_logical_topology(comm_type);
     std::vector<CollectiveImpl*> collective_implementation
       = generator->get_collective_implementation(comm_type);
