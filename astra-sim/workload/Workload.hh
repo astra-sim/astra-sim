@@ -18,6 +18,7 @@ LICENSE file in the root directory of this source tree.
 namespace AstraSim {
 
 class Sys;
+class CommunicatorGroupManager;
 
 class Workload : Callable {
  public:
@@ -26,10 +27,6 @@ class Workload : Callable {
       std::string eg_filename,
       std::string comm_group_filename);
   ~Workload();
-
-  // communicator groups
-  void initialize_comm_group(std::string comm_group_filename);
-  CommunicatorGroup* get_comm_group(int id);
 
   // event-based simulation
   void issue_dep_free_nodes();
@@ -44,8 +41,7 @@ class Workload : Callable {
   void report();
   bool file_exists (const std::string& name);
   Chakra::EGFeeder* eg_feeder;
-  //CommunicatorGroup* comm_group;
-  std::unordered_map<int,CommunicatorGroup*> comm_groups;
+  CommunicatorGroupManager *comm_group_manager;
   HardwareResource* hw_resource;
   Sys* sys;
   std::map<int, uint64_t> collective_comm_node_id_map;

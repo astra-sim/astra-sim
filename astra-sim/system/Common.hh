@@ -139,6 +139,7 @@ enum class EventType {
   RendezvousSend,
   RendezvousRecv,
   PacketReceived,
+  SwitchPacketReceived,
   PacketSent,
   Rec_Finished,
   Send_Finished,

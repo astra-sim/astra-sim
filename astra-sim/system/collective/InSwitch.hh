@@ -13,7 +13,7 @@ namespace AstraSim {
 
 class InSwitch: public Algorithm{
  public:
-  enum class State{npu_sending,npu_receiving,switch_receiving,switch_processing};
+  enum class State{npu_sending,npu_receiving,switch_receiving,switch_processing,switch_npu_receiving};
     int id;
     Switch *sw;
     State state;
@@ -22,6 +22,11 @@ class InSwitch: public Algorithm{
     ComType type;
     InSwitch(int id, Switch *sw, uint64_t size, ComType type);
     void run(EventType event, CallData* data);
+    void run_all_reduce(EventType event, CallData* data);
+    void run_reduce_scatter(EventType event, CallData* data);
+    void run_all_gather(EventType event, CallData* data);
+    void run_all_to_all(EventType event, CallData* data);
+
 };
 
 }

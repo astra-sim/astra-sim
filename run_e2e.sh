@@ -1,0 +1,15 @@
+#!/bin/bash
+
+SCRIPT_DIR=$(dirname "$(realpath $0)")
+BINARY="${SCRIPT_DIR:?}"/build/astra_analytical/build/AnalyticalAstra/bin/AnalyticalAstra
+WORKLOAD="${SCRIPT_DIR:?}"/extern/graph_frontend/chakra/eg_generator/oneCommNodeAllReduceE2EBased
+SYSTEM="${SCRIPT_DIR:?}"/inputs/system/sample_fully_connected_sys.txt
+NETWORK="${SCRIPT_DIR:?}"/inputs/network/analytical/sample_Switch.json
+COMMGROUP="${SCRIPT_DIR:?}"/inputs/comm_group/comm_group.txt
+
+"${BINARY}" \
+  --workload-configuration="${WORKLOAD}" \
+  --system-configuration="${SYSTEM}" \
+  --network-configuration="${NETWORK}" \
+  --comm-group-configuration="${COMMGROUP}" \
+  --comm-scale=1

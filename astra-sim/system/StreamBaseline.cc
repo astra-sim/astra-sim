@@ -54,5 +54,5 @@ void StreamBaseline::call(EventType event, CallData* data) {
 void StreamBaseline::consume(RecvPacketEventHandlerData* message) {
   net_message_latency.back() += Sys::boostedTick() - message->ready_time; // not accurate
   net_message_counter++;
-  my_current_phase.algorithm->run(EventType::PacketReceived, message);
+  my_current_phase.algorithm->run(message->event, message);
 }
