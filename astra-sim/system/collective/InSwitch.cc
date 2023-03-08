@@ -281,26 +281,24 @@ InSwitch::InSwitch(int id, Switch* sw, uint64_t data_size, ComType type) {
           &Sys::handleEvent,
           nullptr);
       // receiving
-      for(int i=0;i<sw->attached_NPUs.size();i++){
-        sim_request rcv_req;
-        rcv_req.vnet = this->stream->current_queue_id;
-        RecvPacketEventHandlerData* ehd = new RecvPacketEventHandlerData(
-            stream,
-            stream->owner->id,
-            EventType::PacketReceived,
-            stream->current_queue_id,
-            stream->stream_id);
-        stream->owner->front_end_sim_recv(
-            0,
-            Sys::dummy_data,
-            data_size,
-            UINT8,
-            sw->sw->id,
-            stream->stream_id,
-            &rcv_req,
-            &Sys::handleEvent,
-            ehd);
-      }
+      sim_request rcv_req;
+      rcv_req.vnet = this->stream->current_queue_id;
+      RecvPacketEventHandlerData* ehd = new RecvPacketEventHandlerData(
+          stream,
+          stream->owner->id,
+          EventType::PacketReceived,
+          stream->current_queue_id,
+          stream->stream_id);
+      stream->owner->front_end_sim_recv(
+          0,
+          Sys::dummy_data,
+          data_size * sw->attached_NPUs.size(),
+          UINT8,
+          sw->sw->id,
+          stream->stream_id,
+          &rcv_req,
+          &Sys::handleEvent,
+          ehd);
     }
     if(stream->owner->id!=sw->attached_NPUs[0]->id){
       if(state==State::npu_sending){
@@ -308,13 +306,11 @@ InSwitch::InSwitch(int id, Switch* sw, uint64_t data_size, ComType type) {
       }
       else{
         assert(event==EventType::PacketReceived);
-        num_msg_received++;
-        if(num_msg_received==sw->attached_NPUs.size())
-          exit();
+        exit();
         return;
       }
     }
-    else {
+    else{
       if(state==State::npu_sending){
         // switch receiving
         for(int i=0;i<sw->attached_NPUs.size();i++){
@@ -323,7 +319,7 @@ InSwitch::InSwitch(int id, Switch* sw, uint64_t data_size, ComType type) {
           RecvPacketEventHandlerData* ehd = new RecvPacketEventHandlerData(
               stream,
               stream->owner->id,
-              EventType::SwitchPacketReceived,
+              EventType::PacketReceived,
               stream->current_queue_id,
               stream->stream_id);
           sw->sw->front_end_sim_recv(
@@ -337,17 +333,124 @@ InSwitch::InSwitch(int id, Switch* sw, uint64_t data_size, ComType type) {
               &Sys::handleEvent,
               ehd);
         }
-        state=State::switch_npu_receiving;
+        state=State::switch_receiving;
       }
-      else if(state==State::switch_npu_receiving){
-        assert(event==EventType::PacketReceived || event==EventType::SwitchPacketReceived);
-        if(event==EventType::PacketReceived){
-          num_msg_received++;
-          if(num_msg_received==sw->attached_NPUs.size())
-            exit();
-          return;
+      else if(state==State::switch_receiving){
+        assert(event==EventType::PacketReceived);
+        num_msg_received++;
+        if(num_msg_received==sw->attached_NPUs.size()){
+          state=State::npu_receiving;
+          //switch sending
+          for(int i=0;i<sw->attached_NPUs.size();i++){
+            sim_request snd_req;
+            snd_req.srcRank = stream->owner->id;
+            snd_req.dstRank = sw->sw->id;
+            snd_req.tag = stream->stream_id;
+            snd_req.reqType = UINT8;
+            snd_req.vnet = this->stream->current_queue_id;
+            sw->sw->front_end_sim_send(
+                0,
+                Sys::dummy_data,
+                data_size * sw->attached_NPUs.size(),
+                UINT8,
+                sw->attached_NPUs[i]->id,
+                stream->stream_id,
+                &snd_req,
+                &Sys::handleEvent,
+                nullptr);
+          }
+          state=State::npu_receiving;
         }
-        else{
+      }
+      else if(state==State::npu_receiving){
+        assert(event==EventType::PacketReceived);
+        exit();
+        return;
+      }
+      else{
+        assert(false);
+      }
+    }
+  }
+  void InSwitch::run_all_to_all(EventType event, CallData* data) {
+    if(state==State::npu_sending){
+      //sending
+      sim_request snd_req;
+      snd_req.srcRank = stream->owner->id;
+      snd_req.dstRank = sw->sw->id;
+      snd_req.tag = stream->stream_id;
+      snd_req.reqType = UINT8;
+      snd_req.vnet = this->stream->current_queue_id;
+      stream->owner->front_end_sim_send(
+          0,
+          Sys::dummy_data,
+          data_size,
+          UINT8,
+          sw->sw->id,
+          stream->stream_id,
+          &snd_req,
+          &Sys::handleEvent,
+          nullptr);
+      // receiving
+      sim_request rcv_req;
+      rcv_req.vnet = this->stream->current_queue_id;
+      RecvPacketEventHandlerData* ehd = new RecvPacketEventHandlerData(
+          stream,
+          stream->owner->id,
+          EventType::PacketReceived,
+          stream->current_queue_id,
+          stream->stream_id);
+      stream->owner->front_end_sim_recv(
+          0,
+          Sys::dummy_data,
+          data_size,
+          UINT8,
+          sw->sw->id,
+          stream->stream_id,
+          &rcv_req,
+          &Sys::handleEvent,
+          ehd);
+    }
+    if(stream->owner->id!=sw->attached_NPUs[0]->id){
+      if(state==State::npu_sending){
+        state=State::npu_receiving;
+      }
+      else{
+        assert(event==EventType::PacketReceived);
+        exit();
+        return;
+      }
+    }
+    else{
+      if(state==State::npu_sending){
+        // switch receiving
+        for(int i=0;i<sw->attached_NPUs.size();i++){
+          sim_request rcv_req;
+          rcv_req.vnet = this->stream->current_queue_id;
+          RecvPacketEventHandlerData* ehd = new RecvPacketEventHandlerData(
+              stream,
+              stream->owner->id,
+              EventType::PacketReceived,
+              stream->current_queue_id,
+              stream->stream_id);
+          sw->sw->front_end_sim_recv(
+              0,
+              Sys::dummy_data,
+              data_size,
+              UINT8,
+              sw->attached_NPUs[i]->id,
+              stream->stream_id,
+              &rcv_req,
+              &Sys::handleEvent,
+              ehd);
+        }
+        state=State::switch_receiving;
+      }
+      else if(state==State::switch_receiving){
+        assert(event==EventType::PacketReceived);
+        num_msg_received++;
+        if(num_msg_received==sw->attached_NPUs.size()){
+          state=State::npu_receiving;
           //switch sending
           for(int i=0;i<sw->attached_NPUs.size();i++){
             sim_request snd_req;
@@ -367,13 +470,18 @@ InSwitch::InSwitch(int id, Switch* sw, uint64_t data_size, ComType type) {
                 &Sys::handleEvent,
                 nullptr);
           }
+          state=State::npu_receiving;
         }
       }
+      else if(state==State::npu_receiving){
+        assert(event==EventType::PacketReceived);
+        exit();
+        return;
+      }
+      else{
+        assert(false);
+      }
     }
-
-  }
-  void InSwitch::run_all_to_all(EventType event, CallData* data) {
-
   }
 }
 
