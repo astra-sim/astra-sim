@@ -11,6 +11,7 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/RecvPacketEventHandlerData.hh"
 #include "astra-sim/system/SendPacketEventHandlerData.hh"
 #include "astra-sim/system/WorkloadLayerHandlerData.hh"
+#include "astra-sim/workload/CommunicatorGroupManager.hh"
 #include <fstream>
 
 #include <iostream>
@@ -38,54 +39,14 @@ Workload::Workload(
         new EGFeeder(eg_filename + "." + to_string(sys->id) + ".eg");
   // TODO: parametrize the number of available hardware resources
   this->hw_resource = new HardwareResource(1);
-  initialize_comm_group(comm_group_filename);
   this->is_finished = false;
+  this->comm_group_manager=new CommunicatorGroupManager(this);
 }
 
 Workload::~Workload() {
-  for (auto &cg:comm_groups)
-    delete cg.second;
   if (this->eg_feeder != nullptr)
     delete this->eg_feeder;
-}
-
-void Workload::initialize_comm_group(string comm_group_filename)
-{
-  // communicator group input file is not given
-  if (comm_group_filename.find("empty") != std::string::npos) {
-    return;
-  }
-
-  ifstream inFile;
-  json j;
-  inFile.open(comm_group_filename);
-  inFile >> j;
-
-  for (json::iterator it = j.begin(); it != j.end(); ++it) {
-    bool in_comm_group = false;
-
-    for (auto id: it.value()) {
-      if (id == sys->id) {
-        in_comm_group = true;
-      }
-    }
-
-    if (in_comm_group) {
-      std::vector<int> involved_NPUs;
-      for (auto id: it.value()) {
-        involved_NPUs.push_back(id);
-      }
-      int comm_group_id=std::atoi(it.key().c_str());
-      comm_groups[comm_group_id] = new CommunicatorGroup(comm_group_id, involved_NPUs, true, sys);
-      // Note: All NPUs should create comm group with identical ids if they want to communicate with each other
-    }
-  }
-}
-CommunicatorGroup* Workload::get_comm_group(int id){
-  if(comm_groups.find(id)==comm_groups.end()){
-    return nullptr;
-  }
-  return comm_groups[id];
+  delete comm_group_manager;
 }
 
 void Workload::issue_dep_free_nodes() {
@@ -158,40 +119,45 @@ void Workload::issue_comm(shared_ptr<Chakra::EGFeederNode> node) {
   for (int i = 0; i < node->getChakraNode()->involved_dim_size(); i++) {
     involved_dim.push_back(node->getChakraNode()->involved_dim(i));
   }
+  vector<int> involved_npus;
+  for (int i = 0; i < node->getChakraNode()->involved_npus_size(); i++) {
+    involved_npus.push_back(node->getChakraNode()->involved_npus(i));
+  }
+  CommunicatorGroup *cg=comm_group_manager->get_comm_group(involved_npus,node->getChakraNode()->in_switch());
 
   if (node->getChakraNode()->node_type() == ChakraNodeType::COMM_COLL_NODE) {
     if (node->getChakraNode()->comm_type() == ChakraCollectiveCommType::ALL_REDUCE) {
       DataSet *fp = sys->generate_all_reduce(
-          node->getChakraNode()->comm_size(),
+          node->getChakraNode()->comm_size() * sys->comm_scale,
           involved_dim,
-          get_comm_group(1),
+          cg,
           node->getChakraNode()->comm_priority());
       collective_comm_node_id_map[fp->my_id] = node->getChakraNode()->id();
       fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
 
     } else if (node->getChakraNode()->comm_type() == ChakraCollectiveCommType::ALL_TO_ALL) {
       DataSet *fp = sys->generate_all_to_all(
-          node->getChakraNode()->comm_size(),
+          node->getChakraNode()->comm_size() * sys->comm_scale,
           involved_dim,
-          get_comm_group(1),
+          cg,
           node->getChakraNode()->comm_priority());
       collective_comm_node_id_map[fp->my_id] = node->getChakraNode()->id();
       fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
 
     } else if (node->getChakraNode()->comm_type() == ChakraCollectiveCommType::ALL_GATHER) {
       DataSet *fp = sys->generate_all_gather(
-          node->getChakraNode()->comm_size(),
+          node->getChakraNode()->comm_size() * sys->comm_scale,
           involved_dim,
-          get_comm_group(1),
+          cg,
           node->getChakraNode()->comm_priority());
       collective_comm_node_id_map[fp->my_id] = node->getChakraNode()->id();
       fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
 
     } else if (node->getChakraNode()->comm_type() == ChakraCollectiveCommType::REDUCE_SCATTER) {
       DataSet *fp = sys->generate_reduce_scatter(
-          node->getChakraNode()->comm_size(),
+          node->getChakraNode()->comm_size() * sys->comm_scale,
           involved_dim,
-          get_comm_group(1),
+          cg,
           node->getChakraNode()->comm_priority());
       collective_comm_node_id_map[fp->my_id] = node->getChakraNode()->id();
       fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
@@ -210,7 +176,7 @@ void Workload::issue_comm(shared_ptr<Chakra::EGFeederNode> node) {
     sys->front_end_sim_send(
             0,
             Sys::dummy_data,
-            node->getChakraNode()->comm_size(),
+            node->getChakraNode()->comm_size() * sys->comm_scale,
             UINT8,
             node->getChakraNode()->comm_dst(),
             node->getChakraNode()->comm_tag(),
@@ -227,7 +193,7 @@ void Workload::issue_comm(shared_ptr<Chakra::EGFeederNode> node) {
     sys->front_end_sim_recv(
             0,
             Sys::dummy_data,
-            node->getChakraNode()->comm_size(),
+            node->getChakraNode()->comm_size() * sys->comm_scale,
             UINT8,
             node->getChakraNode()->comm_src(),
             node->getChakraNode()->comm_tag(),

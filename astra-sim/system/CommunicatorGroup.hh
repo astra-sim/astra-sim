@@ -11,6 +11,7 @@ LICENSE file in the root directory of this source tree.
 #include <map>
 
 #include "astra-sim/system/Common.hh"
+#define COMM_GROUP_OFFSET 10000
 
 namespace AstraSim {
 
@@ -22,6 +23,8 @@ class CommunicatorGroup {
   CommunicatorGroup(int id, std::vector<int> involved_NPUs, bool inSwitch,  Sys *generator);
   CollectivePlan* get_collective_plan(ComType comm_type);
   void set_id(int id);
+  int get_id();
+  void change_id(int new_id);
   ~CommunicatorGroup();
 
   std::vector<int> involved_NPUs;
