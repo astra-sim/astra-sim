@@ -41,6 +41,6 @@ case "$1" in
     setup
     compile;;
 -h|--help|*)
-    echo "AnalyticalAstra build script."
+    echo "AstraCongestion build script."
     echo "Run $0 -c to compile.";;
 esac

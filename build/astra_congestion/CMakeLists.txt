@@ -14,10 +14,10 @@ endif ()
 
 
 # Setup project
-project(AstraSim_Analytical)
+project(AstraSim_Congestion)
 
 # Compile AstraSim library
 add_subdirectory("${PROJECT_SOURCE_DIR}/../../" AstraSim)
 
 # Compile AnalyticalBackend binary
-add_subdirectory("${PROJECT_SOURCE_DIR}/../../extern/network_backend/analytical/analytical" AnalyticalAstra)
+add_subdirectory("${PROJECT_SOURCE_DIR}/../../extern/network_backend/analytical/congestion" AstraCongestion)
