@@ -727,6 +727,7 @@ bool Sys::parse_var(std::string var, std::string value) {
     } else if (tmp == "RG") {
       intra_dimension_scheduling = IntraDimensionScheduling::RG;
     } else if (tmp == "SCF" || tmp == "smallestFirst") {
+      // SCF scheduling is introduced in the ISCA 2022 paper: https://dl.acm.org/doi/abs/10.1145/3470496.3527382
       intra_dimension_scheduling = IntraDimensionScheduling::SmallestFirst;
     } else if (tmp == "lessRemainingPhaseFirst") {
       intra_dimension_scheduling =
@@ -739,9 +740,10 @@ bool Sys::parse_var(std::string var, std::string value) {
     std::stringstream mval(value);
     std::string tmp;
     mval >> tmp;
-    if (tmp == "ascending") {
+    if (tmp == "baseline" || tmp == "ascending") {
       inter_dimension_scheduling = InterDimensionScheduling::Ascending;
     } else if (tmp == "themis" || tmp == "offlineGreedy") {
+      // Themis scheduling is introduced in the ISCA 2022 paper: https://dl.acm.org/doi/abs/10.1145/3470496.3527382
       inter_dimension_scheduling = InterDimensionScheduling::OfflineGreedy;
     } else if (tmp == "themisFlex" || tmp == "offlineGreedyFlex") {
       inter_dimension_scheduling = InterDimensionScheduling::OfflineGreedyFlex;
