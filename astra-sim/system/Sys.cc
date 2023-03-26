@@ -725,7 +725,8 @@ bool Sys::parse_var(std::string var, std::string value) {
       intra_dimension_scheduling = IntraDimensionScheduling::FIFO;
     } else if (tmp == "RG") {
       intra_dimension_scheduling = IntraDimensionScheduling::RG;
-    } else if (tmp == "smallestFirst") {
+    } else if (tmp == "SCF" || tmp == "smallestFirst") {
+      // SCF scheduling is introduced in the ISCA 2022 paper: https://dl.acm.org/doi/abs/10.1145/3470496.3527382
       intra_dimension_scheduling = IntraDimensionScheduling::SmallestFirst;
     } else if (tmp == "lessRemainingPhaseFirst") {
       intra_dimension_scheduling =
@@ -738,11 +739,12 @@ bool Sys::parse_var(std::string var, std::string value) {
     std::stringstream mval(value);
     std::string tmp;
     mval >> tmp;
-    if (tmp == "ascending") {
+    if (tmp == "baseline" || tmp == "ascending") {
       inter_dimension_scheduling = InterDimensionScheduling::Ascending;
-    } else if (tmp == "offlineGreedy") {
+    } else if (tmp == "themis" || tmp == "offlineGreedy") {
+      // Themis scheduling is introduced in the ISCA 2022 paper: https://dl.acm.org/doi/abs/10.1145/3470496.3527382
       inter_dimension_scheduling = InterDimensionScheduling::OfflineGreedy;
-    } else if (tmp == "offlineGreedyFlex") {
+    } else if (tmp == "themisFlex" || tmp == "offlineGreedyFlex") {
       inter_dimension_scheduling = InterDimensionScheduling::OfflineGreedyFlex;
     } else if (tmp == "roundRobin") {
       inter_dimension_scheduling = InterDimensionScheduling::RoundRobin;
@@ -995,7 +997,7 @@ std::vector<std::string> Sys::split_string(std::string str, std::string sep) {
   }
   return arr;
 }
-int Sys::determine_chunk_size(uint64_t size, ComType type) {
+uint64_t Sys::determine_chunk_size(uint64_t size, ComType type) {
   uint64_t chunk_size = size / preferred_dataset_splits;
   return chunk_size;
 }
@@ -1159,7 +1161,7 @@ DataSet* Sys::generate_collective(
 
   while (size > 0) {
     count++;
-
+    chunk_size=std::min(chunk_size,size); // checking for underflow in corner cases
     std::vector<int> dim_mapper(topology->get_num_of_dimensions());
     std::iota(std::begin(dim_mapper), std::end(dim_mapper), 0);
     if (collective_type == ComType::All_Gatehr) {

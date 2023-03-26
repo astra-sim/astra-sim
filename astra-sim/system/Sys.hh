@@ -323,7 +323,7 @@ class Sys : public Callable {
       bool boost_mode);
   void insert_stream(std::list<BaseStream*>* queue, BaseStream* baseStream);
   void proceed_to_next_vnet_baseline(StreamBaseline* stream);
-  int determine_chunk_size(uint64_t size, ComType type);
+  uint64_t determine_chunk_size(uint64_t size, ComType type);
   int get_priority(SchedulingPolicy pref_scheduling);
   static void handleEvent(void* arg);
   timespec_t generate_time(int cycles);
