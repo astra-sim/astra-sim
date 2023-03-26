@@ -726,7 +726,7 @@ bool Sys::parse_var(std::string var, std::string value) {
       intra_dimension_scheduling = IntraDimensionScheduling::FIFO;
     } else if (tmp == "RG") {
       intra_dimension_scheduling = IntraDimensionScheduling::RG;
-    } else if (tmp == "smallestFirst") {
+    } else if (tmp == "SCF" || tmp == "smallestFirst") {
       intra_dimension_scheduling = IntraDimensionScheduling::SmallestFirst;
     } else if (tmp == "lessRemainingPhaseFirst") {
       intra_dimension_scheduling =
@@ -741,9 +741,9 @@ bool Sys::parse_var(std::string var, std::string value) {
     mval >> tmp;
     if (tmp == "ascending") {
       inter_dimension_scheduling = InterDimensionScheduling::Ascending;
-    } else if (tmp == "offlineGreedy") {
+    } else if (tmp == "themis" || tmp == "offlineGreedy") {
       inter_dimension_scheduling = InterDimensionScheduling::OfflineGreedy;
-    } else if (tmp == "offlineGreedyFlex") {
+    } else if (tmp == "themisFlex" || tmp == "offlineGreedyFlex") {
       inter_dimension_scheduling = InterDimensionScheduling::OfflineGreedyFlex;
     } else if (tmp == "roundRobin") {
       inter_dimension_scheduling = InterDimensionScheduling::RoundRobin;
