@@ -529,7 +529,7 @@ void Sys::try_register_event(
     timespec_t tmp;
     tmp.time_val = Sys::boostedTick() + cycles;
     BasicEventHandlerData* data =
-      new BasicEventHandlerData(id, EventType::CallEvents);
+      new BasicEventHandlerData(id,EventType::CallEvents);
     data->sys_id = id;
     comm_NI->schedule(tmp, &Sys::handleEvent, data);
   }

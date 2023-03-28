@@ -7,6 +7,8 @@ LICENSE file in the root directory of this source tree.
 #define __ASTRA_NETWORK_API_HH__
 
 #include "astra-sim/system/Common.hh"
+#include "astra-sim/system/AstraMemoryAPI.hh"
+#include "astra-sim/system/AstraSimDataAPI.hh"
 
 namespace AstraSim {
 
@@ -41,15 +43,29 @@ class AstraNetworkAPI {
       void (*msg_handler)(void* fun_arg),
       void* fun_arg) = 0;
 
-  virtual void schedule(
+  virtual void sim_schedule(
       timespec_t delta,
       void (*fun_ptr)(void* fun_arg),
       void* fun_arg) = 0;
 
+  void schedule(
+      timespec_t delta,
+      void (*fun_ptr)(void* fun_arg),
+      void* fun_arg){
+    delta.time_res=time_type_e::NS;
+    sim_schedule(delta,fun_ptr,fun_arg);
+  }
+
   virtual BackendType get_backend_type() {
     return BackendType::NotSpecified;
   };
-
+  virtual int sim_comm_size(sim_comm comm, int* size) = 0;
+  virtual int sim_init(AstraMemoryAPI* MEM) = 0;
+  virtual double sim_time_resolution() = 0;
+  virtual int sim_finish() = 0;
+  virtual void pass_front_end_report(AstraSimDataAPI astraSimDataAPI) {
+    return;
+  };
   virtual int sim_comm_get_rank() {
     return rank;
   };
