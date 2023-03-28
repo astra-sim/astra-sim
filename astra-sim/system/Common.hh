@@ -7,13 +7,18 @@ LICENSE file in the root directory of this source tree.
 #define __COMMON_HH__
 
 #include <cstdint>
+#include <string>
 
 namespace AstraSim {
 
 typedef unsigned long long Tick;
 
 constexpr uint64_t CLOCK_PERIOD = 1;
-constexpr uint64_t FREQ = 1275 * 1000 * 1000;
+constexpr uint64_t FREQ = (1000.0 / CLOCK_PERIOD);
+
+struct sim_comm {
+  std::string comm_name;
+};
 
 enum time_type_e {
   SE = 0,

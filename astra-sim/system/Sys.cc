@@ -527,9 +527,9 @@ void Sys::try_register_event(
       make_tuple(callable, event, callData));
   if (should_schedule) {
     timespec_t tmp;
-    tmp.time_val = Sys::boostedTick() + cycles;
+    tmp.time_val = cycles * ((double)CLOCK_PERIOD);
     BasicEventHandlerData* data =
-      new BasicEventHandlerData(id, EventType::CallEvents);
+      new BasicEventHandlerData(id,EventType::CallEvents);
     data->sys_id = id;
     comm_NI->schedule(tmp, &Sys::handleEvent, data);
   }
