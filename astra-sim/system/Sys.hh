@@ -183,7 +183,6 @@ class Sys : public Callable {
   void call_events();
   void workload_finished() {
     finished_workloads++;
-    iterate();
   };
   static Tick boostedTick();
   static void exiting();
