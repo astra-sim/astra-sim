@@ -1748,12 +1748,14 @@ void Sys::handleEvent(void* arg) {
     //acks++;
     //std::cout<<"total send acks: "<<acks<<std::endl;
  
-    SendPacketEventHandlerData* sendhd = (SendPacketEventHandlerData*)ehd;
-    // std::cout<<"****************************handle event triggered for sent
-    // packets! at node: "
+    //SendPacketEventHandlerData* sendhd = (SendPacketEventHandlerData*)ehd;
+     //std::cout<<"****************************handle event triggered for sent
+     //packets! at node: "
     //<<sendhd->nodeId<<" at time: "<<Sys::boostedTick()<<" ,Tag:
     //"<<sendhd->tag<<std::endl;
-    if (all_generators[sendhd->senderNodeId]!= nullptr && node->pending_sends.find(
+    if(all_generators[sendhd->senderNodeId]== nullptr)
+      goto SEND_HANDLER_END;
+    if (node->pending_sends.find(
             std::make_pair(sendhd->receiverNodeId, sendhd->tag)) ==
             node->pending_sends.end() ||
             node->pending_sends[std::make_pair(sendhd->receiverNodeId, sendhd->tag)]
@@ -1776,7 +1778,7 @@ void Sys::handleEvent(void* arg) {
           .pop_front();
       simSendCaller->call(EventType::General, nullptr);
     }
-    delete sendhd;
+    SEND_HANDLER_END: delete sendhd;
   }
 }
 timespec_t Sys::generate_time(int cycles) {
