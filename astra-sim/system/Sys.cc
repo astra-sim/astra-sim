@@ -1748,7 +1748,7 @@ void Sys::handleEvent(void* arg) {
     //acks++;
     //std::cout<<"total send acks: "<<acks<<std::endl;
  
-    //SendPacketEventHandlerData* sendhd = (SendPacketEventHandlerData*)ehd;
+    SendPacketEventHandlerData* sendhd = (SendPacketEventHandlerData*)ehd;
      //std::cout<<"****************************handle event triggered for sent
      //packets! at node: "
     //<<sendhd->nodeId<<" at time: "<<Sys::boostedTick()<<" ,Tag:
