@@ -29,9 +29,10 @@ namespace AstraSim {
 class SendPacketEventHandlerData : public BasicEventHandlerData,
                                    public MetaData {
  public:
+  int senderNodeId;
   int receiverNodeId;
   int tag;
-  SendPacketEventHandlerData(Sys *node, int receiverNodeId, int tag);
+  SendPacketEventHandlerData(Sys *node, int senderNodeId, int receiverNodeId, int tag);
 };
 } // namespace AstraSim
 #endif // ASTRA_SIM_SENDPACKETEVENTHANDLERDATA_H

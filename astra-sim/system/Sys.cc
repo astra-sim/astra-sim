@@ -469,7 +469,7 @@ int Sys::sim_send(
     void* fun_arg) {
   if (delay == 0 && fun_arg == nullptr) {
     SendPacketEventHandlerData* fun_arg_tmp =
-        new SendPacketEventHandlerData(this, dst, tag);
+        new SendPacketEventHandlerData(this, id+npu_offset, dst, tag);
     fun_arg = (void*)fun_arg_tmp;
     if (is_there_pending_sends.find(std::make_pair(dst, tag)) == is_there_pending_sends.end() ||
     is_there_pending_sends[std::make_pair(dst, tag)] == false) {
@@ -1397,6 +1397,8 @@ DataSet* Sys::generate_collective(
   return dataset;
 }
 void Sys::call_events() {
+  if(event_queue.find(Sys::boostedTick())==event_queue.end())
+    goto FINISH_CHECK;
   for (auto& callable : event_queue[Sys::boostedTick()]) {
     try {
       pending_events--;
@@ -1410,7 +1412,7 @@ void Sys::call_events() {
     event_queue[Sys::boostedTick()].clear();
   }
   event_queue.erase(Sys::boostedTick());
-  if ((finished_workloads == 1 && event_queue.size() == 0) ||
+  FINISH_CHECK: if ((finished_workloads == 1 && event_queue.size() == 0) ||
       initialized == false) {
     delete this;
   }
@@ -1751,7 +1753,7 @@ void Sys::handleEvent(void* arg) {
     // packets! at node: "
     //<<sendhd->nodeId<<" at time: "<<Sys::boostedTick()<<" ,Tag:
     //"<<sendhd->tag<<std::endl;
-    if (node->pending_sends.find(
+    if (all_generators[sendhd->senderNodeId]!= nullptr && node->pending_sends.find(
             std::make_pair(sendhd->receiverNodeId, sendhd->tag)) ==
             node->pending_sends.end() ||
             node->pending_sends[std::make_pair(sendhd->receiverNodeId, sendhd->tag)]
