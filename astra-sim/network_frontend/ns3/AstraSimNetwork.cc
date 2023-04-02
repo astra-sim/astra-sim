@@ -20,8 +20,6 @@
 using namespace std;
 using namespace ns3;
 
-float comm_scale = 1;
-
 std::vector<string> workloads {
   "microAllReduce.txt",
   "microAllToAll.txt"
@@ -166,8 +164,9 @@ class ASTRASimNetwork:public AstraSim::AstraNetworkAPI{
 };
 
 int main (int argc, char *argv[]){
+    float comm_scale = 1;
 
-    CommandLine cmd();
+    CommandLine cmd;
     cmd.AddValue("commscale", "Communication Scale", comm_scale);
     cmd.Parse(argc, argv);
 
@@ -218,7 +217,7 @@ int main (int argc, char *argv[]){
             queues_per_dim, // queues per corresponding dimension
             "../../../../../astra-sim/inputs/system/"+system_input, // system configuration
             "../../../../../astra-sim/inputs/workload/"+workloads[i], //DLRM_HybridParallel.txt, // Resnet50_DataParallel.txt, // workload configuration
-            1, // communication scale
+            comm_scale, // communication scale
             1, // computation scale
             1, // injection scale
             1,
