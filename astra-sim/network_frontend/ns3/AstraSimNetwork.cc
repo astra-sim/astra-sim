@@ -167,7 +167,7 @@ class ASTRASimNetwork:public AstraSim::AstraNetworkAPI{
 
 int main (int argc, char *argv[]){
 
-    CommandLine cmd(__FILE__);
+    CommandLine cmd();
     cmd.AddValue("commscale", "Communication Scale", comm_scale);
     cmd.Parse(argc, argv);
 
