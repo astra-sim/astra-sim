@@ -15,9 +15,12 @@
 #include "ns3/internet-module.h"
 #include "ns3/csma-module.h"
 #include "ns3/Sys.hh"
+#include <fstream>
 
 using namespace std;
 using namespace ns3;
+
+float comm_scale = 1;
 
 std::vector<string> workloads {
   "microAllReduce.txt",
@@ -163,6 +166,11 @@ class ASTRASimNetwork:public AstraSim::AstraNetworkAPI{
 };
 
 int main (int argc, char *argv[]){
+
+    CommandLine cmd(__FILE__);
+    cmd.AddValue("commscale", "Communication Scale", comm_scale);
+    cmd.Parse(argc, argv);
+
     assert(workloads.size()==physical_dims.size());
     int num_gpus=0;
     for(auto &a:physical_dims){
