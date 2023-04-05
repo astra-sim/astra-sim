@@ -292,7 +292,7 @@ InSwitch::InSwitch(int id, Switch* sw, uint64_t data_size, ComType type) {
       stream->owner->front_end_sim_recv(
           0,
           Sys::dummy_data,
-          data_size * sw->attached_NPUs.size(),
+          (sw->attached_NPUs.size()-1)*data_size,
           UINT8,
           sw->sw->id,
           stream->stream_id,
@@ -351,7 +351,7 @@ InSwitch::InSwitch(int id, Switch* sw, uint64_t data_size, ComType type) {
             sw->sw->front_end_sim_send(
                 0,
                 Sys::dummy_data,
-                data_size * sw->attached_NPUs.size(),
+                (sw->attached_NPUs.size()-1)*data_size,
                 UINT8,
                 sw->attached_NPUs[i]->id,
                 stream->stream_id,
@@ -384,7 +384,7 @@ InSwitch::InSwitch(int id, Switch* sw, uint64_t data_size, ComType type) {
       stream->owner->front_end_sim_send(
           0,
           Sys::dummy_data,
-          data_size,
+          (sw->attached_NPUs.size()-1)*(data_size/sw->attached_NPUs.size()),
           UINT8,
           sw->sw->id,
           stream->stream_id,
@@ -403,7 +403,7 @@ InSwitch::InSwitch(int id, Switch* sw, uint64_t data_size, ComType type) {
       stream->owner->front_end_sim_recv(
           0,
           Sys::dummy_data,
-          data_size,
+          (sw->attached_NPUs.size()-1)*(data_size/sw->attached_NPUs.size()),
           UINT8,
           sw->sw->id,
           stream->stream_id,
@@ -436,7 +436,7 @@ InSwitch::InSwitch(int id, Switch* sw, uint64_t data_size, ComType type) {
           sw->sw->front_end_sim_recv(
               0,
               Sys::dummy_data,
-              data_size,
+              (sw->attached_NPUs.size()-1)*(data_size/sw->attached_NPUs.size()),
               UINT8,
               sw->attached_NPUs[i]->id,
               stream->stream_id,
@@ -462,7 +462,7 @@ InSwitch::InSwitch(int id, Switch* sw, uint64_t data_size, ComType type) {
             sw->sw->front_end_sim_send(
                 0,
                 Sys::dummy_data,
-                data_size,
+                (sw->attached_NPUs.size()-1)*(data_size/sw->attached_NPUs.size()),
                 UINT8,
                 sw->attached_NPUs[i]->id,
                 stream->stream_id,
