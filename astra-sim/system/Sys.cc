@@ -156,7 +156,12 @@ Sys::Sys(
 
   this->workload = nullptr;
 
+  this->roofline_enabled = false;
+  this->peak_perf = 0;
+  this->roofline = nullptr;
+
   this->mem = mem;
+  this->local_mem_bw = 0;
 
   this->memBus = nullptr;
   this->inp_L = 0;
@@ -270,6 +275,10 @@ Sys::Sys(
 }
 
 Sys::~Sys() {
+  if (roofline_enabled) {
+    delete this->roofline;
+  }
+
   all_sys[id] = nullptr;
 
   for (auto lt : logical_topologies) {
@@ -415,6 +424,20 @@ bool Sys::initialize_sys(string name) {
   }
   if (j.contains("preferred-dataset-splits")) {
     preferred_dataset_splits = j["preferred-dataset-splits"];
+  }
+  if (j.contains("peak-perf")) {
+    peak_perf = j["peak-perf"];
+    peak_perf = peak_perf * 1000000000000; // TFLOPS
+  }
+  if (j.contains("local-mem-bw")) {
+    local_mem_bw = j["local-mem-bw"];
+    local_mem_bw = local_mem_bw * 1000000000; // GB/sec
+  }
+  if (j.contains("roofline-enabled")) {
+    if (j["roofline-enabled"] != 0) {
+      roofline_enabled = true;
+      roofline = new Roofline(local_mem_bw, peak_perf);
+    }
   }
   this->trace_enabled = false;
   if (j.contains("trace-enabled")) {

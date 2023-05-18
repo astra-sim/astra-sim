@@ -97,7 +97,8 @@ void Workload::issue_dep_free_nodes() {
 
 void Workload::issue(shared_ptr<Chakra::EGFeederNode> node) {
   if (node->getChakraNode()->node_type() == ChakraNodeType::COMP_NODE) {
-    if (node->getChakraNode()->simulated_run_time() == 0) {
+    if ((node->getChakraNode()->simulated_run_time() == 0)
+        && (node->getChakraNode()->num_ops() == 0)) {
       skip_invalid(node);
     } else {
       if (sys->trace_enabled) {
@@ -127,14 +128,32 @@ void Workload::issue_comp(shared_ptr<Chakra::EGFeederNode> node) {
   assert(node->getChakraNode()->node_type() == ChakraNodeType::COMP_NODE);
   hw_resource->occupy(node);
 
-  WorkloadLayerHandlerData* wlhd = new WorkloadLayerHandlerData;
-  wlhd->node_id = node->getChakraNode()->id();
+  if (sys->roofline_enabled) {
+    WorkloadLayerHandlerData* wlhd = new WorkloadLayerHandlerData;
+    wlhd->node_id = node->getChakraNode()->id();
 
-  sys->register_event(
-      this,
-      EventType::General,
-      wlhd,
-      node->getChakraNode()->simulated_run_time());
+    double operational_intensity =
+      static_cast<double>(node->getChakraNode()->num_ops())
+      / static_cast<double>(node->getChakraNode()->tensor_size());
+    double perf = sys->roofline->get_perf(operational_intensity);
+    double elapsed_time = static_cast<double>(node->getChakraNode()->num_ops()) / perf;
+    uint64_t simulated_run_time = static_cast<uint64_t>(
+        elapsed_time * static_cast<double>(FREQ));
+    sys->register_event(
+        this,
+        EventType::General,
+        wlhd,
+        simulated_run_time);
+  } else {
+    WorkloadLayerHandlerData* wlhd = new WorkloadLayerHandlerData;
+    wlhd->node_id = node->getChakraNode()->id();
+
+    sys->register_event(
+        this,
+        EventType::General,
+        wlhd,
+        node->getChakraNode()->simulated_run_time());
+  }
 }
 
 void Workload::issue_comm(shared_ptr<Chakra::EGFeederNode> node) {

@@ -14,6 +14,7 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/Callable.hh"
 #include "astra-sim/system/CollectivePhase.hh"
 #include "astra-sim/system/CommunicatorGroup.hh"
+#include "astra-sim/system/Roofline.hh"
 #include "astra-sim/system/UsageTracker.hh"
 #include "astra-sim/system/MemBus.hh"
 #include "astra-sim/system/topology/RingTopology.hh"
@@ -240,8 +241,14 @@ class Sys : public Callable {
   // workload
   Workload* workload;
 
+  // roofline model
+  bool roofline_enabled;
+  double peak_perf;
+  Roofline* roofline;
+
   // memory
   AstraMemoryAPI* mem;
+  double local_mem_bw;
 
   // memory bus
   MemBus* memBus;
