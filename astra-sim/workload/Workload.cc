@@ -26,8 +26,8 @@ Workload::Workload(
     Sys* sys,
     string eg_filename,
     string comm_group_filename) {
-  this->eg_feeder =
-    new EGFeeder(eg_filename + "." + to_string(sys->id) + ".eg");
+  this->et_feeder =
+    new ETFeeder(eg_filename + "." + to_string(sys->id) + ".eg");
   this->comm_group = nullptr;
   // TODO: parametrize the number of available hardware resources
   this->hw_resource = new HardwareResource(1);
@@ -39,8 +39,8 @@ Workload::Workload(
 Workload::~Workload() {
   if (this->comm_group != nullptr)
     delete this->comm_group;
-  if (this->eg_feeder != nullptr)
-    delete this->eg_feeder;
+  if (this->et_feeder != nullptr)
+    delete this->et_feeder;
 }
 
 void Workload::initialize_comm_group(string comm_group_filename)
@@ -77,25 +77,25 @@ void Workload::initialize_comm_group(string comm_group_filename)
 }
 
 void Workload::issue_dep_free_nodes() {
-  std::queue<shared_ptr<Chakra::EGFeederNode>> push_back_queue;
-  shared_ptr<Chakra::EGFeederNode> node = eg_feeder->getNextIssuableNode();
+  std::queue<shared_ptr<Chakra::ETFeederNode>> push_back_queue;
+  shared_ptr<Chakra::ETFeederNode> node = et_feeder->getNextIssuableNode();
   while (node != nullptr) {
     if (hw_resource->is_available(node)) {
       issue(node);
     } else {
       push_back_queue.push(node);
     }
-    node = eg_feeder->getNextIssuableNode();
+    node = et_feeder->getNextIssuableNode();
   }
 
   while (!push_back_queue.empty()) {
-    shared_ptr<Chakra::EGFeederNode> node = push_back_queue.front();
-    eg_feeder->pushBackIssuableNode(node->getChakraNode()->id());
+    shared_ptr<Chakra::ETFeederNode> node = push_back_queue.front();
+    et_feeder->pushBackIssuableNode(node->getChakraNode()->id());
     push_back_queue.pop();
   }
 }
 
-void Workload::issue(shared_ptr<Chakra::EGFeederNode> node) {
+void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
   if (node->getChakraNode()->node_type() == ChakraNodeType::COMP_NODE) {
     if ((node->getChakraNode()->simulated_run_time() == 0)
         && (node->getChakraNode()->num_ops() == 0)) {
@@ -124,7 +124,7 @@ void Workload::issue(shared_ptr<Chakra::EGFeederNode> node) {
   }
 }
 
-void Workload::issue_comp(shared_ptr<Chakra::EGFeederNode> node) {
+void Workload::issue_comp(shared_ptr<Chakra::ETFeederNode> node) {
   assert(node->getChakraNode()->node_type() == ChakraNodeType::COMP_NODE);
   hw_resource->occupy(node);
 
@@ -156,7 +156,7 @@ void Workload::issue_comp(shared_ptr<Chakra::EGFeederNode> node) {
   }
 }
 
-void Workload::issue_comm(shared_ptr<Chakra::EGFeederNode> node) {
+void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
   int src, dst;
 
   hw_resource->occupy(node);
@@ -244,9 +244,9 @@ void Workload::issue_comm(shared_ptr<Chakra::EGFeederNode> node) {
   }
 }
 
-void Workload::skip_invalid(shared_ptr<Chakra::EGFeederNode> node) {
-  eg_feeder->freeChildrenNodes(node->getChakraNode()->id());
-  eg_feeder->removeNode(node->getChakraNode()->id());
+void Workload::skip_invalid(shared_ptr<Chakra::ETFeederNode> node) {
+  et_feeder->freeChildrenNodes(node->getChakraNode()->id());
+  et_feeder->removeNode(node->getChakraNode()->id());
 }
 
 void Workload::call(EventType event, CallData* data) {
@@ -257,7 +257,7 @@ void Workload::call(EventType event, CallData* data) {
   if (event == EventType::CollectiveCommunicationFinished) {
     IntData* int_data = (IntData*)data;
     uint64_t node_id = collective_comm_node_id_map[int_data->data];
-    shared_ptr<Chakra::EGFeederNode> node = eg_feeder->lookupNode(node_id);
+    shared_ptr<Chakra::ETFeederNode> node = et_feeder->lookupNode(node_id);
 
     if (sys->trace_enabled) {
       cout << "callback,sys->id=" << sys->id
@@ -268,18 +268,18 @@ void Workload::call(EventType event, CallData* data) {
 
     hw_resource->release(node);
 
-    eg_feeder->freeChildrenNodes(node_id);
+    et_feeder->freeChildrenNodes(node_id);
 
     issue_dep_free_nodes();
 
-    eg_feeder->removeNode(node_id);
+    et_feeder->removeNode(node_id);
 
   } else {
     if (data == nullptr) {
       issue_dep_free_nodes();
     } else {
       WorkloadLayerHandlerData *wlhd = (WorkloadLayerHandlerData *)data;
-      shared_ptr<Chakra::EGFeederNode> node = eg_feeder->lookupNode(wlhd->node_id);
+      shared_ptr<Chakra::ETFeederNode> node = et_feeder->lookupNode(wlhd->node_id);
 
       if (sys->trace_enabled) {
         cout << "callback,sys->id=" << sys->id
@@ -290,16 +290,16 @@ void Workload::call(EventType event, CallData* data) {
 
       hw_resource->release(node);
 
-      eg_feeder->freeChildrenNodes(node->getChakraNode()->id());
+      et_feeder->freeChildrenNodes(node->getChakraNode()->id());
 
       issue_dep_free_nodes();
 
-      eg_feeder->removeNode(wlhd->node_id);
+      et_feeder->removeNode(wlhd->node_id);
       delete wlhd;
     }
   }
 
-  if (!eg_feeder->hasNodesToIssue()
+  if (!et_feeder->hasNodesToIssue()
       && (hw_resource->num_in_flight_comps == 0)
       && (hw_resource->num_in_flight_comms == 0)) {
     report();

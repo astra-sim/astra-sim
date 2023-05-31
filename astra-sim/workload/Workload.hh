@@ -12,7 +12,7 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/Callable.hh"
 #include "astra-sim/system/CommunicatorGroup.hh"
 #include "astra-sim/workload/HardwareResource.hh"
-#include "extern/graph_frontend/chakra/eg_feeder/eg_feeder.h"
+#include "extern/graph_frontend/chakra/et_feeder/et_feeder.h"
 
 namespace AstraSim {
 
@@ -31,17 +31,17 @@ class Workload : Callable {
 
   // event-based simulation
   void issue_dep_free_nodes();
-  void issue(std::shared_ptr<Chakra::EGFeederNode> node);
-  void issue_comp(std::shared_ptr<Chakra::EGFeederNode> node);
-  void issue_comm(std::shared_ptr<Chakra::EGFeederNode> node);
-  void skip_invalid(std::shared_ptr<Chakra::EGFeederNode> node);
+  void issue(std::shared_ptr<Chakra::ETFeederNode> node);
+  void issue_comp(std::shared_ptr<Chakra::ETFeederNode> node);
+  void issue_comm(std::shared_ptr<Chakra::ETFeederNode> node);
+  void skip_invalid(std::shared_ptr<Chakra::ETFeederNode> node);
   void call(EventType event, CallData* data);
   void fire();
 
   // stats
   void report();
 
-  Chakra::EGFeeder* eg_feeder;
+  Chakra::ETFeeder* et_feeder;
   CommunicatorGroup* comm_group;
   HardwareResource* hw_resource;
   Sys* sys;

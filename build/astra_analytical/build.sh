@@ -7,9 +7,9 @@ BINARY="./AnalyticalAstra"
 
 function setup {
     echo ${SCRIPT_DIR}
-    protoc eg_def.proto\
-        --proto_path ${SCRIPT_DIR}/../../extern/graph_frontend/chakra/eg_def/\
-        --cpp_out ${SCRIPT_DIR}/../../extern/graph_frontend/chakra/eg_def/
+    protoc et_def.proto\
+        --proto_path ${SCRIPT_DIR}/../../extern/graph_frontend/chakra/et_def/\
+        --cpp_out ${SCRIPT_DIR}/../../extern/graph_frontend/chakra/et_def/
     mkdir -p "${BUILD_DIR}"
 }
 

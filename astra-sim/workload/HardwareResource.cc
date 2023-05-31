@@ -17,7 +17,7 @@ HardwareResource::HardwareResource(uint32_t num_npus)
   num_in_flight_comms(0) {
 }
 
-void HardwareResource::occupy(const std::shared_ptr<Chakra::EGFeederNode> node) {
+void HardwareResource::occupy(const std::shared_ptr<Chakra::ETFeederNode> node) {
   if (node->getChakraNode()->node_type() == ChakraNodeType::COMP_NODE) {
     ++num_in_flight_comps;
   } else if ((node->getChakraNode()->node_type() == ChakraNodeType::COMM_SEND_NODE)
@@ -27,7 +27,7 @@ void HardwareResource::occupy(const std::shared_ptr<Chakra::EGFeederNode> node) 
   }
 }
 
-void HardwareResource::release(const std::shared_ptr<Chakra::EGFeederNode> node) {
+void HardwareResource::release(const std::shared_ptr<Chakra::ETFeederNode> node) {
   if (node->getChakraNode()->node_type() == ChakraNodeType::COMP_NODE) {
     --num_in_flight_comps;
   } else if ((node->getChakraNode()->node_type() == ChakraNodeType::COMM_SEND_NODE)
@@ -37,7 +37,7 @@ void HardwareResource::release(const std::shared_ptr<Chakra::EGFeederNode> node)
   }
 }
 
-bool HardwareResource::is_available(const std::shared_ptr<Chakra::EGFeederNode> node) const {
+bool HardwareResource::is_available(const std::shared_ptr<Chakra::ETFeederNode> node) const {
   if ((node->getChakraNode()->node_type() == ChakraNodeType::COMP_NODE)
       && (num_in_flight_comps >= num_npus)) {
     return false;
