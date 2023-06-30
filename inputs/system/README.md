@@ -2,6 +2,12 @@
 	* The order we proritize collectives according based on their time of arrival.
         LIFO means that most recently created collectives have higher priority. While
 	FIFO is the reverse.
+*  **intra-dimension-scheduling**: (FIFO/SCF)
+	* The order we proritize collective chunks inside each dimension. 
+		FIFO means that the least recently created collectives have higher priority. While SCF means that the smallest chunk have higher priority.
+*  **inter-dimension-scheduling**: (baseline/themis)
+	* The order we proritize collective chunks across multiple dimensions.
+		baseline means that the scheduling always uses a constant schedule for all chunks. While themis means that the scheduling issues chunks to the dimension with least load.
 *   **endpoint-delay**: (int)
 	* The time NPU spends processing a message after receiving it in terms of cycles.
 *  **active-chunks-per-dimension:**: (int)
@@ -29,9 +35,6 @@
 * **reduce-scatter-implementation:**: (Dimension0CollectiveAlg_Dimension1CollectiveAlg_...\_DimensionNCollectiveAlg)
 	* The same as "all-reduce-implementation:" but for reduce-scatter collective. 
 	The available options (algorithms) are: ring, direct, oneRing, oneDirect.
-* **reduce-scatter-implementation:**: (Dimension0CollectiveAlg_Dimension1CollectiveAlg_...\_DimensionNCollectiveAlg)
-	* The same as "all-reduce-implementation:" but for reduce-scatter collective. 
-	The available options are: ring, direct, oneRing, oneDirect.
 * **all-gather-implementation:**: (Dimension0CollectiveAlg_Dimension1CollectiveAlg_...\_DimensionNCollectiveAlg)
 	* The same as "all-reduce-implementation:" but for all-gather collective. 
 	The available options (algorithms) are: ring, direct, oneRing, oneDirect.
