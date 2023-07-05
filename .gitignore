@@ -2,17 +2,5 @@
 .DS_Store
 ._*
 
-# CMake
-cmake-build-debug/
-compile_commands.json
-
-# Analytical Model build and result files
+# Build files
 build/astra_analytical/build/
-build/astra_analytical/result/
-
-# Example results file
-examples/results/
-!examples/results/README.md
-
-# JetBrains
-.idea/
