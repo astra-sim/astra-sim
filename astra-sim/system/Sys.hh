@@ -62,9 +62,9 @@ class Sys : public Callable {
 
   // Constructor / Destructor -------------------------------------------------
   Sys(int id,
-      std::string my_workload,
-      std::string my_comm_group,
-      std::string my_sys,
+      std::string workload_configuration,
+      std::string comm_group_configuration,
+      std::string system_configuration,
       AstraMemoryAPI* mem,
       AstraNetworkAPI* comm_NI,
       std::vector<int> physical_dims,

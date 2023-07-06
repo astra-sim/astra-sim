@@ -136,9 +136,9 @@ vector<double> Sys::SchedulerUnit::get_average_latency_per_dimension() {
 
 Sys::Sys(
     int id,
-    string my_workload,
-    string my_comm_group,
-    string my_sys,
+    string workload_configuration,
+    string comm_group_configuration,
+    string system_configuration,
     AstraMemoryAPI* mem,
     AstraNetworkAPI* comm_NI,
     vector<int> physical_dims,
@@ -196,7 +196,7 @@ Sys::Sys(
   this->communication_delay = 10;
   this->local_reduction_delay = 1;
 
-  if (initialize_sys(my_sys) == false) {
+  if (initialize_sys(system_configuration) == false) {
     sys_panic("Unable to initialize the system layer because the file can not be openned");
   }
 
@@ -260,8 +260,8 @@ Sys::Sys(
 
   workload = new Workload(
       this,
-      my_workload,
-      my_comm_group);
+      workload_configuration,
+      comm_group_configuration);
 
   if (inter_dimension_scheduling == InterDimensionScheduling::OfflineGreedy ||
       inter_dimension_scheduling == InterDimensionScheduling::OfflineGreedyFlex) {
