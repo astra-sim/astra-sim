@@ -64,7 +64,7 @@ $ cmake CMakeLists.txt && make -j$(nproc)
 $ ./et_generator --num_npus 64 --num_dims 1
 ```
 
-To run one of the example traces (`twoCompNodesDependent`), execute the following command
+To run one of the example traces (`twoCompNodesDependent`), execute the following command.
 ```bash
 $ ./build/astra_analytical/build/AnalyticalAstra/bin/AnalyticalAstra \
   --workload-configuration=./extern/graph_frontend/chakra/et_generator/twoCompNodesDependent \
