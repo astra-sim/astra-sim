@@ -126,8 +126,4 @@ This project is a collaboration of dedicated professionals. Each core developer 
 * Jiayi Huang (University of California, Santa Barbara)
 * Apurve Chawde (Georgia Tech)
 * Santosh Kumar Elangoven (Georgia Tech)
-* William Won (Georgia Tech)
-* Tushar Krishna (Georgia Tech)
 * Greg Steinbrecher (Facebook)
-* Taekyung Heo (Georgia Tech)
-* Changhai Man (Georgia Tech)
