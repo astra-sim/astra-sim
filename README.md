@@ -52,15 +52,26 @@ The following configurations are mandatory:
 * --system-configuration: Path to the system configuration. Example system configurations can be found at `inputs/system/`.
 * --network-configuration: Path to the network configuration Example network configurations can be found at `inputs/network/`.
 
-Here is a sample command to run ASTRA-sim:
+Execution traces can be created using Chakra tools. You have the option of using either [the execution trace generator (et_generator)](https://github.com/chakra-et/chakra#execution-trace-generator-et_generator)
+or [the execution trace converter (et_converter)](https://github.com/chakra-et/chakra#execution-trace-generator-et_generator).
+The et_generator can be used to define and generate any execution traces, functioning as a test case generator. Meanwhile, the et_converter is a trace schema conversion tool, supporting PyTorch and FlexFlow execution traces, as well as ASTRA-sim 1.0 input files.
+
+You can generate execution traces with et_generator with the following commands.
 ```bash
-./build/astra_analytical/build/AnalyticalAstra/bin/AnalyticalAstra \
-  --workload-configuration=./extern/graph_frontend/chakra/eg_generator/twoCompNodesDependent \
+$ cd extern/graph_frontend/chakra/et_generator
+$ cmake CMakeLists.txt && make -j$(nproc)
+$ ./et_generator
+```
+
+To run one of the example traces (`twoCompNodesDependent`), execute the following command
+```bash
+$ ./build/astra_analytical/build/AnalyticalAstra/bin/AnalyticalAstra \
+  --workload-configuration=./extern/graph_frontend/chakra/et_generator/twoCompNodesDependent \
   --system-configuration=./inputs/system/sample_fully_connected_sys.txt \
   --network-configuration=./inputs/network/analytical/fully_connected.json
 ```
 
-After the simulation, ASTRA-sim will display the number of cycles required to run the simulation.
+Upon completion, ASTRA-sim will display the number of cycles it took to run the simulation.
 
 ## Contact Us
 For any inquiries or questions, please feel free to reach out to:
@@ -80,3 +91,4 @@ For any inquiries or questions, please feel free to reach out to:
 * Tushar Krishna (Georgia Tech)
 * Greg Steinbrecher (Facebook)
 * Taekyung Heo (Georgia Tech)
+* Changhai Man (Georgia Tech)
