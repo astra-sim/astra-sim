@@ -36,12 +36,6 @@ Depending on your target network backend, run the appropriate build script:
 ```bash
 # For the analytical network backend
 $ ./build/astra_analytical/build.sh -c
-
-# For the garnet network backend (currently unsupported)
-$ ./build/astra_garnet/build.sh -c
-
-# For the NS3 network backend (currently unsupported)
-$ ./build/astra_ns3/build.sh -c
 ```
 
 ## Running ASTRA-sim
