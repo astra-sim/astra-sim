@@ -113,14 +113,14 @@ sys[63] finished, 187442108 cycles
 ```
 
 ## Contact Us
-For any inquiries or questions, please feel free to reach out to:
-* Saeed Rashidi (rashidi1saeid@gmail.com)
-* Srinivas Sridharan (ssrinivas@fb.com)
-* Tushar Krishna (tushar@ece.gatech.edu)
-
-## Core Developers
-* Saeed Rashidi (Hewlett Packard Labs)
-* Srinivas Sridharan (Meta)
+This project is a collaboration of dedicated professionals. Each core developer and contributor plays a unique role in the project. For any inquiries or questions, feel free to reach out to the corresponding developer based on their expertise. 
+| Developer | Organization | Responsibility | Contact |
+|-----------|--------------|----------------|---------|
+| Saeed Rashidi | Hewlett Packard Labs | ASTRA-sim 1.0, system layer, communicator groups, in-switch collective communication | rashidi1saeid@gmail.com |
+| Taekyung Heo | Georgia Tech | Chakra, workload layer, graph execution engine, memory API | taekyung@gatech.edu |
+| William Won | Georgia Tech | Network layer | william.won@gatech.edu |
+| Srinivas Sridharan | Meta | Chakra, General inquiries | ssrinivas@fb.com |
+| Tushar Krishna | Georgia Tech | General inquiries | tushar@ece.gatech.edu |
 
 ## Additional Contributors
 * Jiayi Huang (University of California, Santa Barbara)
