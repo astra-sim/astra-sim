@@ -42,7 +42,7 @@ $ ./build/astra_analytical/build.sh -c
 Once ASTRA-sim is built, conduct experiments by passing the required configurations.
 You might need to provide additional configurations based on the network backend.
 The following configurations are mandatory:
-* --workload-configuration: Path prefix to the execution trace.
+* --workload-configuration: Path prefix to the execution trace. The naming rule for execution traces follows the format `{path prefix}.{npu_id}.eg`. This argument provides the path prefix.
 * --system-configuration: Path to the system configuration. Example system configurations can be found at `inputs/system/`.
 * --network-configuration: Path to the network configuration Example network configurations can be found at `inputs/network/`.
 
