@@ -56,11 +56,12 @@ Execution traces can be created using Chakra tools. You have the option of using
 or [the execution trace converter (et_converter)](https://github.com/chakra-et/chakra#execution-trace-converter-et_converter).
 The et_generator can be used to define and generate any execution traces, functioning as a test case generator. Meanwhile, the et_converter is a trace schema conversion tool, supporting PyTorch and FlexFlow execution traces, as well as ASTRA-sim 1.0 input files.
 
+### Using the Execution Trace Generator
 You can generate execution traces with et_generator with the following commands.
 ```bash
 $ cd extern/graph_frontend/chakra/et_generator
 $ cmake CMakeLists.txt && make -j$(nproc)
-$ ./et_generator
+$ ./et_generator --num_npus 64 --num_dims 1
 ```
 
 To run one of the example traces (`twoCompNodesDependent`), execute the following command
@@ -72,6 +73,44 @@ $ ./build/astra_analytical/build/AnalyticalAstra/bin/AnalyticalAstra \
 ```
 
 Upon completion, ASTRA-sim will display the number of cycles it took to run the simulation.
+```bash
+sys[0] finished, 10 cycles
+sys[1] finished, 10 cycles
+...
+sys[62] finished, 10 cycles
+sys[63] finished, 10 cycles
+```
+
+### Using the Execution Trace Converter
+You can convert ASTRA-sim 1.0 text input files into Chakra traces with the following commands.
+```bash
+$ cd extern/graph_frontend/chakra/
+$ python setup.py install
+$ python -m et_converter.et_converter\
+    --input_type Text\
+    --input_filename ../../../inputs/workload/ASTRA-sim-1.0/Resnet50_DataParallel.txt\
+    --output_filename ../../../inputs/workload/ASTRA-sim-2.0/Resnet50_DataParallel\
+    --num_npus 64\
+    --num_dims 1\
+    --num_passes 1
+```
+
+Run the following command.
+```bash
+$ ./build/astra_analytical/build/AnalyticalAstra/bin/AnalyticalAstra \
+  --workload-configuration=./inputs/workload/ASTRA-sim-2.0/Resnet50_DataParallel \
+  --system-configuration=./inputs/system/sample_fully_connected_sys.txt \
+  --network-configuration=./inputs/network/analytical/fully_connected.json
+```
+
+Upon completion, ASTRA-sim will display the number of cycles it took to run the simulation.
+```bash
+sys[62] finished, 187442108 cycles
+sys[61] finished, 187442108 cycles
+...
+sys[0] finished, 187442108 cycles
+sys[63] finished, 187442108 cycles
+```
 
 ## Contact Us
 For any inquiries or questions, please feel free to reach out to:
