@@ -126,4 +126,4 @@ This project is a collaboration of dedicated professionals. Each core developer 
 * Jiayi Huang (University of California, Santa Barbara)
 * Apurve Chawde (Georgia Tech)
 * Santosh Kumar Elangoven (Georgia Tech)
-* Greg Steinbrecher (Facebook)
+* Greg Steinbrecher (Meta)
