@@ -106,6 +106,18 @@ sys[0] finished, 187442108 cycles
 sys[63] finished, 187442108 cycles
 ```
 
+## Features Under Active Development
+We are constantly working to improve ASTRA-sim and expand its capabilities. Here are some of the features that are currently under active development:
+
+* Memory API
+* Congestion-aware Analytical Network Backend
+* NS3 Network Backend
+* Garnet Network Backend
+* Detailed Statistics Report (Network Utilization)
+  
+Please note that these features are under active development and, while we aim to have them available as soon as possible, the completion timeline can vary. Check back regularly for updates on the progress of these and other features. We appreciate your interest and support in ASTRA-sim!
+
+
 ## Contact Us
 This project is a collaboration of dedicated professionals. Each core developer and contributor plays a unique role in the project. For any inquiries or questions, feel free to reach out to the corresponding developer based on their expertise. 
 | Developer | Organization | Responsibility | Contact |
@@ -122,14 +134,3 @@ This project is a collaboration of dedicated professionals. Each core developer 
 * Santosh Kumar Elangoven (Georgia Tech)
 * Greg Steinbrecher (Meta)
 * Changhai Man (Georgia Tech)
-
-## Features Under Active Development
-We are constantly working to improve ASTRA-sim and expand its capabilities. Here are some of the features that are currently under active development:
-
-* Memory API
-* Congestion-aware Analytical Network Backend
-* NS3 Network Backend
-* Garnet Network Backend
-* Detailed Statistics Report (Network Utilization)
-  
-Please note that these features are under active development and, while we aim to have them available as soon as possible, the completion timeline can vary. Check back regularly for updates on the progress of these and other features. We appreciate your interest and support in ASTRA-sim!
