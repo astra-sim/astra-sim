@@ -121,3 +121,4 @@ This project is a collaboration of dedicated professionals. Each core developer 
 * Apurve Chawde (Georgia Tech)
 * Santosh Kumar Elangoven (Georgia Tech)
 * Greg Steinbrecher (Meta)
+* Changhai Man (Georgia Tech)
