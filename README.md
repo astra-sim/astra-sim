@@ -53,7 +53,7 @@ The following configurations are mandatory:
 * --network-configuration: Path to the network configuration Example network configurations can be found at `inputs/network/`.
 
 Execution traces can be created using Chakra tools. You have the option of using either [the execution trace generator (et_generator)](https://github.com/chakra-et/chakra#execution-trace-generator-et_generator)
-or [the execution trace converter (et_converter)](https://github.com/chakra-et/chakra#execution-trace-generator-et_generator).
+or [the execution trace converter (et_converter)](https://github.com/chakra-et/chakra#execution-trace-converter-et_converter).
 The et_generator can be used to define and generate any execution traces, functioning as a test case generator. Meanwhile, the et_converter is a trace schema conversion tool, supporting PyTorch and FlexFlow execution traces, as well as ASTRA-sim 1.0 input files.
 
 You can generate execution traces with et_generator with the following commands.
