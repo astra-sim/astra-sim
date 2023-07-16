@@ -33,13 +33,13 @@ The following steps will guide you through both methods.
 To build ASTRA-sim without using Docker, you first need to install the necessary packages.
 This can be done using the following commands:
 ```bash
-$ apt-get -y update
-$ apt-get -y install\
+$ sudo apt-get -y update
+$ sudo apt-get -y install\
     gcc g++ make cmake\
     libboost-dev libboost-program-options-dev\
     libprotobuf-dev protobuf-compiler\
-    python3 python3-pip git
-$ pip3 install protobuf==3.6.1 pydot
+    python3 python3-pip git\
+    python3-protobuf python3-pydot
 ```
 
 Once the packages are installed, you will need to clone this repository onto your local machine using the following command:
@@ -98,6 +98,7 @@ $ ./et_generator --num_npus 64 --num_dims 1
 
 To run one of the example traces (`twoCompNodesDependent`), execute the following command.
 ```bash
+# at astrasim root
 $ ./build/astra_analytical/build/AnalyticalAstra/bin/AnalyticalAstra \
   --workload-configuration=./extern/graph_frontend/chakra/et_generator/twoCompNodesDependent \
   --system-configuration=./inputs/system/sample_fully_connected_sys.txt \
@@ -117,7 +118,7 @@ sys[63] finished, 10 cycles
 You can convert ASTRA-sim 1.0 text input files into Chakra traces with the following commands.
 ```bash
 $ cd extern/graph_frontend/chakra/
-$ python3 setup.py install
+$ python3 setup.py install --user
 $ python3 -m et_converter.et_converter\
     --input_type Text\
     --input_filename ../../../inputs/workload/ASTRA-sim-1.0/Resnet50_DataParallel.txt\
@@ -129,6 +130,7 @@ $ python3 -m et_converter.et_converter\
 
 Run the following command.
 ```bash
+# at astrasim root
 $ ./build/astra_analytical/build/AnalyticalAstra/bin/AnalyticalAstra \
   --workload-configuration=./inputs/workload/ASTRA-sim-2.0/Resnet50_DataParallel \
   --system-configuration=./inputs/system/sample_fully_connected_sys.txt \
