@@ -45,6 +45,7 @@ $ sudo pip3 install protobuf==3.6.1 pydot
 Once the packages are installed, you will need to clone this repository onto your local machine using the following command:
 ```bash
 $ git clone --recurse-submodules git@github.com:astra-sim/astra-sim.git
+$ cd astra-sim
 ```
 
 Then, based on your target network backend, execute the corresponding build script:
@@ -58,6 +59,7 @@ Alternatively, you can build ASTRA-sim within a Docker container.
 Start by cloning this repository to your local machine using the same command as above:
 ```bash
 $ git clone --recurse-submodules git@github.com:astra-sim/astra-sim.git
+$ cd astra-sim
 ```
 
 Next, create a Docker image using the following command:
