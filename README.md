@@ -118,7 +118,7 @@ sys[63] finished, 10 cycles
 You can convert ASTRA-sim 1.0 text input files into Chakra traces with the following commands.
 ```bash
 $ cd extern/graph_frontend/chakra/
-$ python3 setup.py install
+$ python3 setup.py install --user
 $ python3 -m et_converter.et_converter\
     --input_type Text\
     --input_filename ../../../inputs/workload/ASTRA-sim-1.0/Resnet50_DataParallel.txt\
