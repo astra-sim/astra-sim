@@ -38,9 +38,8 @@ $ sudo apt-get -y install\
     gcc g++ make cmake\
     libboost-dev libboost-program-options-dev\
     libprotobuf-dev protobuf-compiler\
-    python3 python3-pip git
-$ sudo pip3 install protobuf==3.6.1 pydot
-```
+    python3 python3-pip git\
+    python3-protobuf python3-pydot
 
 Once the packages are installed, you will need to clone this repository onto your local machine using the following command:
 ```bash
