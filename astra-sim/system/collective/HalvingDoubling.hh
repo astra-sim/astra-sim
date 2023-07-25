@@ -8,9 +8,9 @@ LICENSE file in the root directory of this source tree.
 
 #include <list>
 
-#include "astra-sim/system/collective/Algorithm.hh"
 #include "astra-sim/system/MemBus.hh"
 #include "astra-sim/system/MyPacket.hh"
+#include "astra-sim/system/collective/Algorithm.hh"
 #include "astra-sim/system/topology/RingTopology.hh"
 
 namespace AstraSim {
@@ -18,8 +18,10 @@ namespace AstraSim {
 class HalvingDoubling : public Algorithm {
  public:
   HalvingDoubling(
-      ComType type, int id,
-      RingTopology* ring_topology, uint64_t data_size);
+      ComType type,
+      int id,
+      RingTopology* ring_topology,
+      uint64_t data_size);
   virtual void run(EventType event, CallData* data);
   RingTopology::Direction specify_direction();
   void process_stream_count();

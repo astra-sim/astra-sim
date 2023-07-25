@@ -18,12 +18,13 @@ class CollectivePlan {
   std::vector<CollectiveImpl*> implementation_per_dimension;
   std::vector<bool> dimensions_involved;
   bool should_be_removed;
-  CollectivePlan(LogicalTopology* topology,
-                 std::vector<CollectiveImpl*> implementation_per_dimension,
-                 std::vector<bool> dimensions_involved,
-                 bool should_be_removed);
+  CollectivePlan(
+      LogicalTopology* topology,
+      std::vector<CollectiveImpl*> implementation_per_dimension,
+      std::vector<bool> dimensions_involved,
+      bool should_be_removed);
   ~CollectivePlan();
 };
 
-}
+} // namespace AstraSim
 #endif /* __COLLECTIVE_PLAN_H__ */

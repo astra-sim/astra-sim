@@ -6,8 +6,8 @@ LICENSE file in the root directory of this source tree.
 #ifndef __DOUBLE_BINARY_TREE_ALL_REDUCE_HH__
 #define __DOUBLE_BINARY_TREE_ALL_REDUCE_HH__
 
-#include "astra-sim/system/collective/Algorithm.hh"
 #include "astra-sim/system/CallData.hh"
+#include "astra-sim/system/collective/Algorithm.hh"
 #include "astra-sim/system/topology/BinaryTree.hh"
 
 namespace AstraSim {
@@ -24,8 +24,7 @@ class DoubleBinaryTreeAllReduce : public Algorithm {
     End
   };
 
-  DoubleBinaryTreeAllReduce(
-      int id, BinaryTree* tree, uint64_t data_size);
+  DoubleBinaryTreeAllReduce(int id, BinaryTree* tree, uint64_t data_size);
   void run(EventType event, CallData* data);
 
   BinaryTree::Type type;

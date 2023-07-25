@@ -11,7 +11,9 @@ LICENSE file in the root directory of this source tree.
 using namespace AstraSim;
 
 DoubleBinaryTreeAllReduce::DoubleBinaryTreeAllReduce(
-    int id, BinaryTree* tree, uint64_t data_size)
+    int id,
+    BinaryTree* tree,
+    uint64_t data_size)
     : Algorithm() {
   this->id = id;
   this->logical_topo = tree;
@@ -263,7 +265,8 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData* data) {
     exit();
     return;
 
-  } else if (state == State::Begin && type == BinaryTree::Type::Root) { // root.1
+  } else if (
+      state == State::Begin && type == BinaryTree::Type::Root) { // root.1
     int only_child_id = left_child >= 0 ? left_child : right_child;
     sim_request rcv_req;
     rcv_req.vnet = this->stream->current_queue_id;

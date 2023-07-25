@@ -8,10 +8,10 @@ LICENSE file in the root directory of this source tree.
 
 #include <cstdint>
 
+#include "astra-sim/system/CSVWriter.hh"
 #include "astra-sim/system/Callable.hh"
 #include "astra-sim/system/Common.hh"
 #include "astra-sim/system/Usage.hh"
-#include "astra-sim/system/CSVWriter.hh"
 
 namespace AstraSim {
 
@@ -22,7 +22,7 @@ class UsageTracker {
   void decrease_usage();
   void set_usage(int level);
   void report(CSVWriter* writer, int offset);
-  std::list<std::pair<uint64_t, double> > report_percentage(uint64_t cycles);
+  std::list<std::pair<uint64_t, double>> report_percentage(uint64_t cycles);
 
   int levels;
   int current_level;
