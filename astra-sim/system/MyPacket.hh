@@ -13,10 +13,7 @@ namespace AstraSim {
 
 class MyPacket : public Callable {
  public:
-  MyPacket(
-      int preferred_vnet,
-      int preferred_src,
-      int preferred_dest);
+  MyPacket(int preferred_vnet, int preferred_src, int preferred_dest);
   MyPacket(
       uint64_t msg_size,
       int preferred_vnet,

@@ -6,8 +6,8 @@ LICENSE file in the root directory of this source tree.
 #ifndef __BASE_STREAM_HH__
 #define __BASE_STREAM_HH__
 
-#include <map>
 #include <list>
+#include <map>
 
 #include "astra-sim/system/Callable.hh"
 #include "astra-sim/system/CollectivePhase.hh"
@@ -34,7 +34,7 @@ class BaseStream : public Callable, public StreamStat {
 
   static std::map<int, int> synchronizer;
   static std::map<int, int> ready_counter;
-  static std::map<int, std::list<BaseStream*> > suspended_streams;
+  static std::map<int, std::list<BaseStream*>> suspended_streams;
   int stream_id;
   int total_packets_sent;
   SchedulingPolicy preferred_scheduling;
@@ -57,7 +57,6 @@ class BaseStream : public Callable, public StreamStat {
   int test;
   int test2;
   uint64_t phase_latencies[10];
-
 };
 
 } // namespace AstraSim

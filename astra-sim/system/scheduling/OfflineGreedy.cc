@@ -12,7 +12,7 @@ LICENSE file in the root directory of this source tree.
 
 using namespace AstraSim;
 
-std::map<long long, std::vector<int> > OfflineGreedy::chunk_schedule;
+std::map<long long, std::vector<int>> OfflineGreedy::chunk_schedule;
 std::map<long long, int> OfflineGreedy::schedule_consumer;
 std::map<long long, uint64_t> OfflineGreedy::global_chunk_size;
 

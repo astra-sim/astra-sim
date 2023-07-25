@@ -13,7 +13,7 @@ namespace AstraSim {
 class Workload;
 class WorkloadLayerHandlerData;
 
-class MemEventHandlerData : public BasicEventHandlerData{
+class MemEventHandlerData : public BasicEventHandlerData {
  public:
   MemEventHandlerData();
   Workload* workload;

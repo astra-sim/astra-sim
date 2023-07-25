@@ -6,9 +6,9 @@ LICENSE file in the root directory of this source tree.
 #ifndef __RING_HH__
 #define __RING_HH__
 
-#include "astra-sim/system/collective/Algorithm.hh"
 #include "astra-sim/system/MemBus.hh"
 #include "astra-sim/system/MyPacket.hh"
+#include "astra-sim/system/collective/Algorithm.hh"
 #include "astra-sim/system/topology/RingTopology.hh"
 
 namespace AstraSim {

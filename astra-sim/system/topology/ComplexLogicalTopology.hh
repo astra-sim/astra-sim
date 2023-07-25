@@ -12,13 +12,14 @@ namespace AstraSim {
 
 class ComplexLogicalTopology : public LogicalTopology {
  public:
-  ComplexLogicalTopology() { }
+  ComplexLogicalTopology() {}
   virtual ~ComplexLogicalTopology() = default;
 
   virtual int get_num_of_dimensions() override = 0;
   virtual int get_num_of_nodes_in_dimension(int dimension) override = 0;
   virtual BasicLogicalTopology* get_basic_topology_at_dimension(
-      int dimension, ComType type) override = 0;
+      int dimension,
+      ComType type) override = 0;
 };
 
 } // namespace AstraSim

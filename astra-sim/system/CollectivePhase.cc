@@ -9,10 +9,7 @@ LICENSE file in the root directory of this source tree.
 
 using namespace AstraSim;
 
-CollectivePhase::CollectivePhase(
-    Sys* sys,
-    int queue_id,
-    Algorithm* algorithm) {
+CollectivePhase::CollectivePhase(Sys* sys, int queue_id, Algorithm* algorithm) {
   this->sys = sys;
   this->queue_id = queue_id;
   this->algorithm = algorithm;

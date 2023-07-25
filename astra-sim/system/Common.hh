@@ -15,19 +15,9 @@ typedef unsigned long long Tick;
 constexpr uint64_t CLOCK_PERIOD = 1;
 constexpr uint64_t FREQ = 1275 * 1000 * 1000;
 
-enum time_type_e {
-  SE = 0,
-  MS,
-  US,
-  NS,
-  FS
-};
+enum time_type_e { SE = 0, MS, US, NS, FS };
 
-enum req_type_e {
-  UINT8 = 0,
-  BFLOAT16,
-  FP32
-};
+enum req_type_e { UINT8 = 0, BFLOAT16, FP32 };
 
 struct timespec_t {
   time_type_e time_res;
@@ -58,10 +48,7 @@ enum class ComType {
   All_Reduce_All_to_All
 };
 
-enum class CollectiveOptimization {
-  Baseline = 0,
-  LocalBWAware
-};
+enum class CollectiveOptimization { Baseline = 0, LocalBWAware };
 
 enum class CollectiveImplType {
   Ring = 0,
@@ -77,17 +64,9 @@ enum class CollectiveImplType {
   OneHalvingDoubling,
 };
 
-enum class CollectiveBarrier {
-  Blocking = 0,
-  Non_Blocking
-};
+enum class CollectiveBarrier { Blocking = 0, Non_Blocking };
 
-enum class SchedulingPolicy {
-  LIFO = 0,
-  FIFO,
-  EXPLICIT,
-  None
-};
+enum class SchedulingPolicy { LIFO = 0, FIFO, EXPLICIT, None };
 
 enum class IntraDimensionScheduling {
   FIFO = 0,
@@ -112,16 +91,9 @@ enum class InjectionPolicy {
   Normal
 };
 
-enum class PacketRouting {
-  Hardware = 0,
-  Software
-};
+enum class PacketRouting { Hardware = 0, Software };
 
-enum class BusType {
-  Both = 0,
-  Shared,
-  Mem
-};
+enum class BusType { Both = 0, Shared, Mem };
 
 enum class StreamState {
   Created = 0,
@@ -178,9 +150,7 @@ class DirectCollectiveImpl : public CollectiveImpl {
   CloneInterface* clone() const {
     return new DirectCollectiveImpl(*this);
   };
-  DirectCollectiveImpl(
-      CollectiveImplType type,
-      int direct_collective_window)
+  DirectCollectiveImpl(CollectiveImplType type, int direct_collective_window)
       : CollectiveImpl(type) {
     this->direct_collective_window = direct_collective_window;
   }

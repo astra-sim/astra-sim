@@ -8,16 +8,16 @@ LICENSE file in the root directory of this source tree.
 
 #include <chrono>
 
-#include "astra-sim/workload/Workload.hh"
 #include "astra-sim/system/AstraMemoryAPI.hh"
 #include "astra-sim/system/AstraNetworkAPI.hh"
 #include "astra-sim/system/Callable.hh"
 #include "astra-sim/system/CollectivePhase.hh"
 #include "astra-sim/system/CommunicatorGroup.hh"
+#include "astra-sim/system/MemBus.hh"
 #include "astra-sim/system/Roofline.hh"
 #include "astra-sim/system/UsageTracker.hh"
-#include "astra-sim/system/MemBus.hh"
 #include "astra-sim/system/topology/RingTopology.hh"
+#include "astra-sim/workload/Workload.hh"
 
 namespace AstraSim {
 
@@ -77,7 +77,8 @@ class Sys : public Callable {
 
   // Intialization ------------------------------------------------------------
   bool initialize_sys(std::string name);
-  CollectiveImpl* generate_collective_impl_from_input(std::string collective_impl_str);
+  CollectiveImpl* generate_collective_impl_from_input(
+      std::string collective_impl_str);
   //---------------------------------------------------------------------------
 
   // Helper Functions ---------------------------------------------------------
@@ -119,22 +120,22 @@ class Sys : public Callable {
   DataSet* generate_all_reduce(
       uint64_t size,
       std::vector<bool> involved_dimensions,
-      CommunicatorGroup *communicator_group,
+      CommunicatorGroup* communicator_group,
       int explicit_priority);
   DataSet* generate_all_to_all(
       uint64_t size,
       std::vector<bool> involved_dimensions,
-      CommunicatorGroup *communicator_group,
+      CommunicatorGroup* communicator_group,
       int explicit_priority);
   DataSet* generate_all_gather(
       uint64_t size,
       std::vector<bool> involved_dimensions,
-      CommunicatorGroup *communicator_group,
+      CommunicatorGroup* communicator_group,
       int explicit_priority);
   DataSet* generate_reduce_scatter(
       uint64_t size,
       std::vector<bool> involved_dimensions,
-      CommunicatorGroup *communicator_group,
+      CommunicatorGroup* communicator_group,
       int explicit_priority);
   DataSet* generate_collective(
       uint64_t size,
@@ -143,7 +144,7 @@ class Sys : public Callable {
       std::vector<bool> dimensions_involved,
       ComType collective_type,
       int explicit_priority,
-      CommunicatorGroup *communicator_group);
+      CommunicatorGroup* communicator_group);
   CollectivePhase generate_collective_phase(
       ComType collective_type,
       BasicLogicalTopology* topology,
@@ -286,10 +287,11 @@ class Sys : public Callable {
   SchedulingPolicy scheduling_policy;
   int first_phase_streams;
   int total_running_streams;
-  std::map<int, std::list<BaseStream*> > active_Streams;
-  std::map<int, std::list<int> > stream_priorities;
+  std::map<int, std::list<BaseStream*>> active_Streams;
+  std::map<int, std::list<int>> stream_priorities;
 
-  std::map<Tick, std::list<std::tuple<Callable*, EventType, CallData*> > > event_queue;
+  std::map<Tick, std::list<std::tuple<Callable*, EventType, CallData*>>>
+      event_queue;
   int total_nodes;
   int dim_to_break;
   std::vector<int> logical_broken_dims;

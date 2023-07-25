@@ -7,10 +7,10 @@ LICENSE file in the root directory of this source tree.
 
 #include "astra-sim/system/Common.hh"
 
-#include <cmath>
 #include <fcntl.h>
 #include <unistd.h>
 #include <cassert>
+#include <cmath>
 #include <iostream>
 #include <utility>
 #include <vector>

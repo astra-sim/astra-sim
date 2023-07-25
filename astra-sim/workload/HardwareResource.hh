@@ -12,9 +12,8 @@ LICENSE file in the root directory of this source tree.
 
 namespace AstraSim {
 
-class HardwareResource
-{
-public:
+class HardwareResource {
+ public:
   HardwareResource(uint32_t num_npus);
   void occupy(const std::shared_ptr<Chakra::ETFeederNode> node);
   void release(const std::shared_ptr<Chakra::ETFeederNode> node);
@@ -25,6 +24,6 @@ public:
   uint32_t num_in_flight_comms;
 };
 
-}
+} // namespace AstraSim
 
 #endif /* __HARDWARE_RESOURCE_HH__ */

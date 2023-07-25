@@ -8,11 +8,7 @@ LICENSE file in the root directory of this source tree.
 using namespace std;
 using namespace AstraSim;
 
-Torus3D::Torus3D(
-    int id,
-    int total_nodes,
-    int local_dim,
-    int vertical_dim) {
+Torus3D::Torus3D(int id, int total_nodes, int local_dim, int vertical_dim) {
   int horizontal_dim = total_nodes / (vertical_dim * local_dim);
   local_dimension = new RingTopology(
       RingTopology::Dimension::Local, id, local_dim, id % local_dim, 1);
@@ -28,7 +24,6 @@ Torus3D::Torus3D(
       horizontal_dim,
       (id / local_dim) % horizontal_dim,
       local_dim);
-
 }
 
 Torus3D::~Torus3D() {
@@ -53,7 +48,8 @@ int Torus3D::get_num_of_nodes_in_dimension(int dimension) {
 }
 
 BasicLogicalTopology* Torus3D::get_basic_topology_at_dimension(
-    int dimension, ComType type) {
+    int dimension,
+    ComType type) {
   if (dimension == 0) {
     return local_dimension;
   } else if (dimension == 1) {

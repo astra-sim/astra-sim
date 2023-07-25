@@ -8,8 +8,8 @@ LICENSE file in the root directory of this source tree.
 
 #include <list>
 
-#include "astra-sim/system/Common.hh"
 #include "astra-sim/system/Callable.hh"
+#include "astra-sim/system/Common.hh"
 #include "astra-sim/system/MemBus.hh"
 #include "astra-sim/system/MemMovRequest.hh"
 
