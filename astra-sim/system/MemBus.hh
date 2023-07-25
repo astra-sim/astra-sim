@@ -8,8 +8,8 @@ LICENSE file in the root directory of this source tree.
 
 #include <string>
 
-#include "astra-sim/system/Common.hh"
 #include "astra-sim/system/Callable.hh"
+#include "astra-sim/system/Common.hh"
 
 namespace AstraSim {
 
