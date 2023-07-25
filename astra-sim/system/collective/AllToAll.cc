@@ -8,8 +8,13 @@ LICENSE file in the root directory of this source tree.
 using namespace AstraSim;
 
 AllToAll::AllToAll(
-    ComType type, int window, int id, RingTopology* allToAllTopology,
-    uint64_t data_size, RingTopology::Direction direction, InjectionPolicy injection_policy)
+    ComType type,
+    int window,
+    int id,
+    RingTopology* allToAllTopology,
+    uint64_t data_size,
+    RingTopology::Direction direction,
+    InjectionPolicy injection_policy)
     : Ring(type, id, allToAllTopology, data_size, direction, injection_policy) {
   this->name = Name::AllToAll;
   this->middle_point = nodes_in_ring - 1;
@@ -59,20 +64,25 @@ void AllToAll::process_max_count() {
     release_packets();
     remained_packets_per_max_count = 1;
 
-    curr_receiver = ((RingTopology*)logical_topo)->get_receiver(curr_receiver, direction);
+    curr_receiver =
+        ((RingTopology*)logical_topo)->get_receiver(curr_receiver, direction);
     if (curr_receiver == id) {
-      curr_receiver = ((RingTopology*)logical_topo)->get_receiver(curr_receiver, direction);
+      curr_receiver =
+          ((RingTopology*)logical_topo)->get_receiver(curr_receiver, direction);
     }
 
-    curr_sender = ((RingTopology*)logical_topo)->get_sender(curr_sender, direction);
+    curr_sender =
+        ((RingTopology*)logical_topo)->get_sender(curr_sender, direction);
     if (curr_sender == id) {
-      curr_sender = ((RingTopology*)logical_topo)->get_sender(curr_sender, direction);
+      curr_sender =
+          ((RingTopology*)logical_topo)->get_sender(curr_sender, direction);
     }
   }
 }
 
 int AllToAll::get_non_zero_latency_packets() {
-  if (((RingTopology*)logical_topo)->get_dimension() != RingTopology::Dimension::Local) {
+  if (((RingTopology*)logical_topo)->get_dimension() !=
+      RingTopology::Dimension::Local) {
     return parallel_reduce * 1;
   } else {
     return (nodes_in_ring - 1) * parallel_reduce * 1;

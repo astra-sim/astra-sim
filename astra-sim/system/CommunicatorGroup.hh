@@ -7,8 +7,8 @@ LICENSE file in the root directory of this source tree.
 #define __COMMUNICATOR_GROUP_HH__
 
 #include <assert.h>
-#include <vector>
 #include <map>
+#include <vector>
 
 #include "astra-sim/system/Common.hh"
 
@@ -18,7 +18,7 @@ class Sys;
 class CollectivePlan;
 class CommunicatorGroup {
  public:
-  CommunicatorGroup(int id, std::vector<int> involved_NPUs, Sys *generator);
+  CommunicatorGroup(int id, std::vector<int> involved_NPUs, Sys* generator);
   CollectivePlan* get_collective_plan(ComType comm_type);
   void set_id(int id);
   ~CommunicatorGroup();
@@ -28,8 +28,8 @@ class CommunicatorGroup {
 
  private:
   int id;
-  Sys *generator;
-  std::map<ComType,CollectivePlan*> comm_plans;
+  Sys* generator;
+  std::map<ComType, CollectivePlan*> comm_plans;
 };
 
 } // namespace AstraSim

@@ -11,11 +11,8 @@ LICENSE file in the root directory of this source tree.
 using namespace std;
 using namespace AstraSim;
 
-RingTopology::RingTopology(
-    Dimension dimension,
-    int id,
-    std::vector<int> NPUs)
-    : BasicLogicalTopology(BasicLogicalTopology::BasicTopology::Ring){
+RingTopology::RingTopology(Dimension dimension, int id, std::vector<int> NPUs)
+    : BasicLogicalTopology(BasicLogicalTopology::BasicTopology::Ring) {
   name = "local";
   if (dimension == Dimension::Vertical) {
     name = "vertical";
@@ -24,25 +21,24 @@ RingTopology::RingTopology(
   }
   this->id = id;
   this->total_nodes_in_ring = NPUs.size();
-  this->dimension=dimension;
-  this->offset=-1;
-  this->index_in_ring=-1;
-  for(int i=0;i<total_nodes_in_ring;i++){
-    id_to_index[NPUs[i]]=i;
-    index_to_id[i]=NPUs[i];
-    if(id==NPUs[i]){
-      index_in_ring=i;
+  this->dimension = dimension;
+  this->offset = -1;
+  this->index_in_ring = -1;
+  for (int i = 0; i < total_nodes_in_ring; i++) {
+    id_to_index[NPUs[i]] = i;
+    index_to_id[i] = NPUs[i];
+    if (id == NPUs[i]) {
+      index_in_ring = i;
     }
   }
 
-    cout << "custom ring, "
-    << "id: " << id << " dimension: " << name
-    << " total nodes in ring: " << total_nodes_in_ring
-    << " index in ring: " << index_in_ring
-    << "total nodes in ring: " << total_nodes_in_ring << endl;
+  cout << "custom ring, "
+       << "id: " << id << " dimension: " << name
+       << " total nodes in ring: " << total_nodes_in_ring
+       << " index in ring: " << index_in_ring
+       << "total nodes in ring: " << total_nodes_in_ring << endl;
 
-  assert(index_in_ring>=0);
-
+  assert(index_in_ring >= 0);
 }
 RingTopology::RingTopology(
     Dimension dimension,
@@ -59,26 +55,30 @@ RingTopology::RingTopology(
   }
   if (id == 0) {
     cout << "ring of node 0, "
-              << "id: " << id << " dimension: " << name
-              << " total nodes in ring: " << total_nodes_in_ring
-              << " index in ring: " << index_in_ring << " offset: " << offset
-              << "total nodes in ring: " << total_nodes_in_ring << endl;
+         << "id: " << id << " dimension: " << name
+         << " total nodes in ring: " << total_nodes_in_ring
+         << " index in ring: " << index_in_ring << " offset: " << offset
+         << "total nodes in ring: " << total_nodes_in_ring << endl;
   }
   this->id = id;
   this->total_nodes_in_ring = total_nodes_in_ring;
   this->index_in_ring = index_in_ring;
   this->dimension = dimension;
-  this->offset=offset;
+  this->offset = offset;
 
   id_to_index[id] = index_in_ring;
-  index_to_id[index_in_ring]=id;
-  int tmp=id;
-  for(int i=0;i<total_nodes_in_ring-1;i++){
-    tmp = get_receiver_homogeneous(tmp,RingTopology::Direction::Clockwise, offset);
+  index_to_id[index_in_ring] = id;
+  int tmp = id;
+  for (int i = 0; i < total_nodes_in_ring - 1; i++) {
+    tmp = get_receiver_homogeneous(
+        tmp, RingTopology::Direction::Clockwise, offset);
   }
 }
 
-int RingTopology::get_receiver_homogeneous(int node_id, Direction direction, int offset) {
+int RingTopology::get_receiver_homogeneous(
+    int node_id,
+    Direction direction,
+    int offset) {
   assert(id_to_index.find(node_id) != id_to_index.end());
   int index = id_to_index[node_id];
   if (direction == RingTopology::Direction::Clockwise) {
@@ -90,11 +90,10 @@ int RingTopology::get_receiver_homogeneous(int node_id, Direction direction, int
       index++;
     }
     if (receiver < 0) {
-      cout << "at dim: " << name << "at id: " << id
-      << "dimension: " << name << " index: " << index
-      << " ,node id: " << node_id << " ,offset: " << offset
-      << " ,index_in_ring: " << index_in_ring
-      << " receiver: " << receiver << endl;
+      cout << "at dim: " << name << "at id: " << id << "dimension: " << name
+           << " index: " << index << " ,node id: " << node_id
+           << " ,offset: " << offset << " ,index_in_ring: " << index_in_ring
+           << " receiver: " << receiver << endl;
     }
     assert(receiver >= 0);
     id_to_index[receiver] = index;
@@ -109,11 +108,10 @@ int RingTopology::get_receiver_homogeneous(int node_id, Direction direction, int
       index--;
     }
     if (receiver < 0) {
-      cout << "at dim: " << name << "at id: " << id
-      << "dimension: " << name << " index: " << index
-      << " ,node id: " << node_id << " ,offset: " << offset
-      << " ,index_in_ring: " << index_in_ring
-      << " receiver: " << receiver << endl;
+      cout << "at dim: " << name << "at id: " << id << "dimension: " << name
+           << " index: " << index << " ,node id: " << node_id
+           << " ,offset: " << offset << " ,index_in_ring: " << index_in_ring
+           << " receiver: " << receiver << endl;
     }
     assert(receiver >= 0);
     id_to_index[receiver] = index;
@@ -127,15 +125,14 @@ int RingTopology::get_receiver(int node_id, Direction direction) {
   int index = id_to_index[node_id];
   if (direction == RingTopology::Direction::Clockwise) {
     index++;
-    if(index==total_nodes_in_ring){
-      index=0;
+    if (index == total_nodes_in_ring) {
+      index = 0;
     }
     return index_to_id[index];
-  }
-  else{
+  } else {
     index--;
-    if(index<0){
-      index=total_nodes_in_ring-1;
+    if (index < 0) {
+      index = total_nodes_in_ring - 1;
     }
     return index_to_id[index];
   }
@@ -146,15 +143,14 @@ int RingTopology::get_sender(int node_id, Direction direction) {
   int index = id_to_index[node_id];
   if (direction == RingTopology::Direction::Anticlockwise) {
     index++;
-    if(index==total_nodes_in_ring){
-      index=0;
+    if (index == total_nodes_in_ring) {
+      index = 0;
     }
     return index_to_id[index];
-  }
-  else{
+  } else {
     index--;
-    if(index<0){
-      index=total_nodes_in_ring-1;
+    if (index < 0) {
+      index = total_nodes_in_ring - 1;
     }
     return index_to_id[index];
   }
@@ -177,7 +173,7 @@ int RingTopology::get_nodes_in_ring() {
 }
 
 bool RingTopology::is_enabled() {
-  assert(offset>0);
+  assert(offset > 0);
   int tmp_index = index_in_ring;
   int tmp_id = id;
   while (tmp_index > 0) {

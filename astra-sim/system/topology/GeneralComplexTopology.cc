@@ -8,8 +8,8 @@ LICENSE file in the root directory of this source tree.
 #include <cassert>
 #include <iostream>
 
-#include "astra-sim/system/topology/RingTopology.hh"
 #include "astra-sim/system/topology/DoubleBinaryTreeTopology.hh"
+#include "astra-sim/system/topology/RingTopology.hh"
 
 using namespace std;
 using namespace AstraSim;
@@ -22,12 +22,9 @@ GeneralComplexTopology::GeneralComplexTopology(
   int last_dim = collective_impl.size() - 1;
   assert(collective_impl.size() <= dimension_size.size());
   for (int dim = 0; dim < collective_impl.size(); dim++) {
-    if (collective_impl[dim]->type ==
-            CollectiveImplType::Ring ||
-        collective_impl[dim]->type ==
-            CollectiveImplType::Direct ||
-        collective_impl[dim]->type ==
-            CollectiveImplType::HalvingDoubling) {
+    if (collective_impl[dim]->type == CollectiveImplType::Ring ||
+        collective_impl[dim]->type == CollectiveImplType::Direct ||
+        collective_impl[dim]->type == CollectiveImplType::HalvingDoubling) {
       RingTopology* ring = new RingTopology(
           RingTopology::Dimension::NA,
           id,
@@ -36,12 +33,9 @@ GeneralComplexTopology::GeneralComplexTopology(
           offset);
       dimension_topology.push_back(ring);
     } else if (
-        collective_impl[dim]->type ==
-            CollectiveImplType::OneRing ||
-        collective_impl[dim]->type ==
-            CollectiveImplType::OneDirect ||
-        collective_impl[dim]->type ==
-            CollectiveImplType::OneHalvingDoubling) {
+        collective_impl[dim]->type == CollectiveImplType::OneRing ||
+        collective_impl[dim]->type == CollectiveImplType::OneDirect ||
+        collective_impl[dim]->type == CollectiveImplType::OneHalvingDoubling) {
       int total_npus = 1;
       for (int d : dimension_size) {
         total_npus *= d;
@@ -51,8 +45,7 @@ GeneralComplexTopology::GeneralComplexTopology(
       dimension_topology.push_back(ring);
       return;
     } else if (
-        collective_impl[dim]->type ==
-        CollectiveImplType::DoubleBinaryTree) {
+        collective_impl[dim]->type == CollectiveImplType::DoubleBinaryTree) {
       if (dim == last_dim) {
         DoubleBinaryTreeTopology* DBT = new DoubleBinaryTreeTopology(
             id, dimension_size[dim], id % offset, offset);

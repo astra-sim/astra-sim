@@ -8,9 +8,9 @@ LICENSE file in the root directory of this source tree.
 
 #include <map>
 
+#include "astra-sim/system/Common.hh"
 #include "astra-sim/system/topology/BasicLogicalTopology.hh"
 #include "astra-sim/system/topology/Node.hh"
-#include "astra-sim/system/Common.hh"
 
 namespace AstraSim {
 
@@ -47,5 +47,5 @@ class BinaryTree : public BasicLogicalTopology {
   std::map<int, Node*> node_list;
 };
 
-}
+} // namespace AstraSim
 #endif /* __BINARY_TREE_HH__ */

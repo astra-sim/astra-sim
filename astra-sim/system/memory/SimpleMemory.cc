@@ -34,14 +34,12 @@ uint64_t SimpleMemory::mem_write(uint64_t size) {
 
 uint64_t SimpleMemory::npu_mem_read(uint64_t size) {
   npu_read_request_count++;
-  return static_cast<uint64_t>(
-      static_cast<double>(size) / npu_access_bw_GB);
+  return static_cast<uint64_t>(static_cast<double>(size) / npu_access_bw_GB);
 }
 
 uint64_t SimpleMemory::SimpleMemory::npu_mem_write(uint64_t size) {
   npu_write_request_count++;
-  return static_cast<uint64_t>(
-      static_cast<double>(size) / npu_access_bw_GB);
+  return static_cast<uint64_t>(static_cast<double>(size) / npu_access_bw_GB);
 }
 
 uint64_t SimpleMemory::nic_mem_read(uint64_t size) {

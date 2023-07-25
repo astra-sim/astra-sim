@@ -13,7 +13,7 @@ namespace AstraSim {
 
 class WorkloadLayerHandlerData;
 
-class RecvPacketEventHandlerData : public BasicEventHandlerData{
+class RecvPacketEventHandlerData : public BasicEventHandlerData {
  public:
   RecvPacketEventHandlerData();
   RecvPacketEventHandlerData(

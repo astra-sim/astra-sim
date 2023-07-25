@@ -52,7 +52,7 @@ void UsageTracker::report(CSVWriter* writer, int offset) {
   return;
 }
 
-std::list<std::pair<uint64_t, double> > UsageTracker::report_percentage(
+std::list<std::pair<uint64_t, double>> UsageTracker::report_percentage(
     uint64_t cycles) {
   decrease_usage();
   increase_usage();
@@ -61,7 +61,7 @@ std::list<std::pair<uint64_t, double> > UsageTracker::report_percentage(
   Tick current_activity = 0;
   Tick period_start = 0;
   Tick period_end = cycles;
-  std::list<std::pair<uint64_t, double> > result;
+  std::list<std::pair<uint64_t, double>> result;
   while (usage_pointer != this->usage.end()) {
     Usage current_usage = *usage_pointer;
     uint64_t begin =

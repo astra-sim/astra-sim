@@ -12,15 +12,15 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/CollectivePlan.hh"
 #include "astra-sim/system/DataSet.hh"
 #include "astra-sim/system/MemBus.hh"
+#include "astra-sim/system/MemEventHandlerData.hh"
 #include "astra-sim/system/QueueLevels.hh"
 #include "astra-sim/system/RendezvousRecvData.hh"
 #include "astra-sim/system/RendezvousSendData.hh"
+#include "astra-sim/system/SendPacketEventHandlerData.hh"
 #include "astra-sim/system/SimRecvCaller.hh"
 #include "astra-sim/system/SimSendCaller.hh"
-#include "astra-sim/system/SendPacketEventHandlerData.hh"
 #include "astra-sim/system/StreamBaseline.hh"
 #include "astra-sim/system/WorkloadLayerHandlerData.hh"
-#include "astra-sim/system/MemEventHandlerData.hh"
 #include "astra-sim/system/collective/AllToAll.hh"
 #include "astra-sim/system/collective/DoubleBinaryTreeAllReduce.hh"
 #include "astra-sim/system/collective/HalvingDoubling.hh"
@@ -197,7 +197,8 @@ Sys::Sys(
   this->local_reduction_delay = 1;
 
   if (initialize_sys(system_configuration) == false) {
-    sys_panic("Unable to initialize the system layer because the file can not be openned");
+    sys_panic(
+        "Unable to initialize the system layer because the file can not be openned");
   }
 
   // scheduler
@@ -221,7 +222,8 @@ Sys::Sys(
     }
   }
 
-  this->concurrent_streams = (int)ceil(((double)active_chunks_per_dimension) / queues_per_dim[0]);
+  this->concurrent_streams =
+      (int)ceil(((double)active_chunks_per_dimension) / queues_per_dim[0]);
   this->active_first_phase = 100000000;
   this->max_running = 100000000;
 
@@ -258,13 +260,12 @@ Sys::Sys(
       communication_delay,
       true);
 
-  workload = new Workload(
-      this,
-      workload_configuration,
-      comm_group_configuration);
+  workload =
+      new Workload(this, workload_configuration, comm_group_configuration);
 
   if (inter_dimension_scheduling == InterDimensionScheduling::OfflineGreedy ||
-      inter_dimension_scheduling == InterDimensionScheduling::OfflineGreedyFlex) {
+      inter_dimension_scheduling ==
+          InterDimensionScheduling::OfflineGreedyFlex) {
     offline_greedy = new OfflineGreedy(this);
   }
 
@@ -354,29 +355,33 @@ bool Sys::initialize_sys(string name) {
   }
   if (j.contains("all-reduce-implementation")) {
     vector<string> collective_impl_str_vec = j["all-reduce-implementation"];
-    for (auto collective_impl_str: collective_impl_str_vec) {
-      CollectiveImpl* ci = generate_collective_impl_from_input(collective_impl_str);
+    for (auto collective_impl_str : collective_impl_str_vec) {
+      CollectiveImpl* ci =
+          generate_collective_impl_from_input(collective_impl_str);
       all_reduce_implementation_per_dimension.push_back(ci);
     }
   }
   if (j.contains("reduce-scatter-implementation")) {
     vector<string> collective_impl_str_vec = j["reduce-scatter-implementation"];
-    for (auto collective_impl_str: collective_impl_str_vec) {
-      CollectiveImpl* ci = generate_collective_impl_from_input(collective_impl_str);
+    for (auto collective_impl_str : collective_impl_str_vec) {
+      CollectiveImpl* ci =
+          generate_collective_impl_from_input(collective_impl_str);
       reduce_scatter_implementation_per_dimension.push_back(ci);
     }
   }
   if (j.contains("all-gather-implementation")) {
     vector<string> collective_impl_str_vec = j["all-gather-implementation"];
-    for (auto collective_impl_str: collective_impl_str_vec) {
-      CollectiveImpl* ci = generate_collective_impl_from_input(collective_impl_str);
+    for (auto collective_impl_str : collective_impl_str_vec) {
+      CollectiveImpl* ci =
+          generate_collective_impl_from_input(collective_impl_str);
       all_gather_implementation_per_dimension.push_back(ci);
     }
   }
   if (j.contains("all-to-all-implementation")) {
     vector<string> collective_impl_str_vec = j["all-to-all-implementation"];
-    for (auto collective_impl_str: collective_impl_str_vec) {
-      CollectiveImpl* ci = generate_collective_impl_from_input(collective_impl_str);
+    for (auto collective_impl_str : collective_impl_str_vec) {
+      CollectiveImpl* ci =
+          generate_collective_impl_from_input(collective_impl_str);
       all_to_all_implementation_per_dimension.push_back(ci);
     }
   }
@@ -452,7 +457,8 @@ bool Sys::initialize_sys(string name) {
   return true;
 }
 
-CollectiveImpl* Sys::generate_collective_impl_from_input(string collective_impl_str) {
+CollectiveImpl* Sys::generate_collective_impl_from_input(
+    string collective_impl_str) {
   if (collective_impl_str == "ring") {
     return new CollectiveImpl(CollectiveImplType::Ring);
   } else if (collective_impl_str == "oneRing") {
@@ -507,15 +513,13 @@ void Sys::exit_sim_loop(string msg) {
   cout << msg << endl;
 }
 
-void Sys::call(EventType type, CallData* data) {
-}
+void Sys::call(EventType type, CallData* data) {}
 
 void Sys::call_events() {
   for (auto& callable : event_queue[Sys::boostedTick()]) {
     try {
       pending_events--;
-      (get<0>(callable))
-          ->call(get<1>(callable), get<2>(callable));
+      (get<0>(callable))->call(get<1>(callable), get<2>(callable));
     } catch (...) {
       cerr << "warning! a callable is removed before call" << endl;
     }
@@ -541,7 +545,7 @@ void Sys::try_register_event(
     Tick& cycles) {
   bool should_schedule = false;
   if (event_queue.find(Sys::boostedTick() + cycles) == event_queue.end()) {
-    list<tuple<Callable*, EventType, CallData*> > tmp;
+    list<tuple<Callable*, EventType, CallData*>> tmp;
     event_queue[Sys::boostedTick() + cycles] = tmp;
     should_schedule = true;
   }
@@ -551,7 +555,7 @@ void Sys::try_register_event(
     timespec_t tmp;
     tmp.time_val = Sys::boostedTick() + cycles;
     BasicEventHandlerData* data =
-      new BasicEventHandlerData(id, EventType::CallEvents);
+        new BasicEventHandlerData(id, EventType::CallEvents);
     data->sys_id = id;
     comm_NI->schedule(tmp, &Sys::handleEvent, data);
   }
@@ -571,8 +575,8 @@ void Sys::handleEvent(void* arg) {
   if (event == EventType::CallEvents) {
     all_sys[id]->call_events();
     delete ehd;
-  } else if ((event == EventType::NPU_to_MA)
-      || (event == EventType::MA_to_NPU)) {
+  } else if (
+      (event == EventType::NPU_to_MA) || (event == EventType::MA_to_NPU)) {
     all_sys[id]->call_events();
   } else if (event == EventType::RendezvousSend) {
     RendezvousSendData* rsd = (RendezvousSendData*)ehd;
@@ -582,9 +586,10 @@ void Sys::handleEvent(void* arg) {
     RendezvousRecvData* rrd = (RendezvousRecvData*)ehd;
     rrd->recv->call(EventType::General, nullptr);
     delete rrd;
-  } else if ((event == EventType::CompFinished)
-      || (event == EventType::MemLoadFinished)
-      || (event == EventType::MemStoreFinished)) {
+  } else if (
+      (event == EventType::CompFinished) ||
+      (event == EventType::MemLoadFinished) ||
+      (event == EventType::MemStoreFinished)) {
     MemEventHandlerData* mehd = (MemEventHandlerData*)ehd;
     if (mehd->workload) {
       mehd->workload->call(event, mehd->wlhd);
@@ -600,7 +605,7 @@ void Sys::handleEvent(void* arg) {
     }
     delete rcehd;
   } else if (event == EventType::PacketSent) {
-    SendPacketEventHandlerData *sehd = (SendPacketEventHandlerData*)ehd;
+    SendPacketEventHandlerData* sehd = (SendPacketEventHandlerData*)ehd;
     sehd->callable->call(EventType::PacketSent, sehd->wlhd);
     delete sehd;
   }
@@ -624,31 +629,31 @@ Tick Sys::mem_write(uint64_t bytes) {
   return delay_cycles;
 }
 
-LogicalTopology* Sys::get_logical_topology(ComType comm_type){
-  if(comm_type==ComType::All_Reduce)
+LogicalTopology* Sys::get_logical_topology(ComType comm_type) {
+  if (comm_type == ComType::All_Reduce)
     return logical_topologies["AllReduce"];
-  else if(comm_type==ComType::All_to_All)
+  else if (comm_type == ComType::All_to_All)
     return logical_topologies["AllToAll"];
-  else if(comm_type==ComType::Reduce_Scatter)
-      return logical_topologies["ReduceScatter"];
-  else if(comm_type==ComType::All_Gather)
+  else if (comm_type == ComType::Reduce_Scatter)
+    return logical_topologies["ReduceScatter"];
+  else if (comm_type == ComType::All_Gather)
     return logical_topologies["AllGather"];
-  else{
+  else {
     sys_panic("no known logical topology!");
     return nullptr;
   }
 }
 
 vector<CollectiveImpl*> Sys::get_collective_implementation(ComType comm_type) {
-  if(comm_type==ComType::All_Reduce)
+  if (comm_type == ComType::All_Reduce)
     return all_reduce_implementation_per_dimension;
-  else if(comm_type==ComType::All_to_All)
+  else if (comm_type == ComType::All_to_All)
     return all_to_all_implementation_per_dimension;
-  else if(comm_type==ComType::Reduce_Scatter)
+  else if (comm_type == ComType::Reduce_Scatter)
     return reduce_scatter_implementation_per_dimension;
-  else if(comm_type==ComType::All_Gather)
+  else if (comm_type == ComType::All_Gather)
     return all_gather_implementation_per_dimension;
-  else{
+  else {
     sys_panic("no known collective implementation!");
     vector<CollectiveImpl*> tmp;
     return tmp;
@@ -658,7 +663,7 @@ vector<CollectiveImpl*> Sys::get_collective_implementation(ComType comm_type) {
 DataSet* Sys::generate_all_reduce(
     uint64_t size,
     vector<bool> involved_dimensions,
-    CommunicatorGroup *communicator_group,
+    CommunicatorGroup* communicator_group,
     int explicit_priority) {
   if (communicator_group == nullptr) {
     return generate_collective(
@@ -670,8 +675,8 @@ DataSet* Sys::generate_all_reduce(
         explicit_priority,
         communicator_group);
   } else {
-    CollectivePlan *plan
-      = communicator_group->get_collective_plan(ComType::All_Reduce);
+    CollectivePlan* plan =
+        communicator_group->get_collective_plan(ComType::All_Reduce);
     return generate_collective(
         size,
         plan->topology,
@@ -686,7 +691,7 @@ DataSet* Sys::generate_all_reduce(
 DataSet* Sys::generate_all_to_all(
     uint64_t size,
     vector<bool> involved_dimensions,
-    CommunicatorGroup *communicator_group,
+    CommunicatorGroup* communicator_group,
     int explicit_priority) {
   if (communicator_group == nullptr) {
     return generate_collective(
@@ -698,8 +703,8 @@ DataSet* Sys::generate_all_to_all(
         explicit_priority,
         communicator_group);
   } else {
-    CollectivePlan *plan
-      = communicator_group->get_collective_plan(ComType::All_to_All);
+    CollectivePlan* plan =
+        communicator_group->get_collective_plan(ComType::All_to_All);
     return generate_collective(
         size,
         plan->topology,
@@ -714,7 +719,7 @@ DataSet* Sys::generate_all_to_all(
 DataSet* Sys::generate_all_gather(
     uint64_t size,
     vector<bool> involved_dimensions,
-    CommunicatorGroup *communicator_group,
+    CommunicatorGroup* communicator_group,
     int explicit_priority) {
   if (communicator_group == nullptr) {
     return generate_collective(
@@ -726,8 +731,8 @@ DataSet* Sys::generate_all_gather(
         explicit_priority,
         communicator_group);
   } else {
-    CollectivePlan *plan
-      = communicator_group->get_collective_plan(ComType::All_Gather);
+    CollectivePlan* plan =
+        communicator_group->get_collective_plan(ComType::All_Gather);
     return generate_collective(
         size,
         plan->topology,
@@ -742,7 +747,7 @@ DataSet* Sys::generate_all_gather(
 DataSet* Sys::generate_reduce_scatter(
     uint64_t size,
     vector<bool> involved_dimensions,
-    CommunicatorGroup *communicator_group,
+    CommunicatorGroup* communicator_group,
     int explicit_priority) {
   if (communicator_group == nullptr) {
     return generate_collective(
@@ -754,8 +759,8 @@ DataSet* Sys::generate_reduce_scatter(
         explicit_priority,
         communicator_group);
   } else {
-    CollectivePlan *plan
-      = communicator_group->get_collective_plan(ComType::Reduce_Scatter);
+    CollectivePlan* plan =
+        communicator_group->get_collective_plan(ComType::Reduce_Scatter);
     return generate_collective(
         size,
         plan->topology,
@@ -774,7 +779,7 @@ DataSet* Sys::generate_collective(
     vector<bool> dimensions_involved,
     ComType collective_type,
     int explicit_priority,
-    CommunicatorGroup *communicator_group) {
+    CommunicatorGroup* communicator_group) {
   uint64_t chunk_size = determine_chunk_size(size, collective_type);
   uint64_t recommended_chunk_size = chunk_size;
   int streams = ceil(((double)size) / chunk_size);
@@ -784,7 +789,8 @@ DataSet* Sys::generate_collective(
   int count = 0;
   if (id == 0 &&
       (inter_dimension_scheduling == InterDimensionScheduling::OfflineGreedy ||
-       inter_dimension_scheduling == InterDimensionScheduling::OfflineGreedyFlex)) {
+       inter_dimension_scheduling ==
+           InterDimensionScheduling::OfflineGreedyFlex)) {
     if (last_scheduled_collective != Sys::boostedTick()) {
       offline_greedy->reset_loads();
       last_scheduled_collective = Sys::boostedTick();
@@ -812,8 +818,10 @@ DataSet* Sys::generate_collective(
       }
     } else if (
         collective_type != ComType::All_to_All &&
-        (inter_dimension_scheduling == InterDimensionScheduling::OfflineGreedy ||
-         inter_dimension_scheduling == InterDimensionScheduling::OfflineGreedyFlex)) {
+        (inter_dimension_scheduling ==
+             InterDimensionScheduling::OfflineGreedy ||
+         inter_dimension_scheduling ==
+             InterDimensionScheduling::OfflineGreedyFlex)) {
       uint64_t prev_size = size;
       dim_mapper = offline_greedy->get_chunk_scheduling(
           num_streams,
@@ -826,8 +834,10 @@ DataSet* Sys::generate_collective(
     }
 
     if (collective_type == ComType::All_to_All ||
-        (inter_dimension_scheduling != InterDimensionScheduling::OfflineGreedy &&
-         inter_dimension_scheduling != InterDimensionScheduling::OfflineGreedyFlex)) {
+        (inter_dimension_scheduling !=
+             InterDimensionScheduling::OfflineGreedy &&
+         inter_dimension_scheduling !=
+             InterDimensionScheduling::OfflineGreedyFlex)) {
       size -= chunk_size;
     }
     tmp = chunk_size;
@@ -856,7 +866,8 @@ DataSet* Sys::generate_collective(
       }
     } else if (
         inter_dimension_scheduling == InterDimensionScheduling::OfflineGreedy ||
-        inter_dimension_scheduling == InterDimensionScheduling::OfflineGreedyFlex ||
+        inter_dimension_scheduling ==
+            InterDimensionScheduling::OfflineGreedyFlex ||
         inter_dimension_scheduling == InterDimensionScheduling::OnlineGreedy) {
       int dim = 0;
       for (dim = 0; dim < topology->get_num_of_dimensions(); dim++) {
@@ -974,7 +985,7 @@ DataSet* Sys::generate_collective(
         stream_id = communicator_group->num_streams++;
       }
       StreamBaseline* newStream =
-        new StreamBaseline(this, dataset, stream_id, vect, pri);
+          new StreamBaseline(this, dataset, stream_id, vect, pri);
       newStream->current_queue_id = -1;
       insert_into_ready_list(newStream);
     } else {
@@ -997,8 +1008,7 @@ CollectivePhase Sys::generate_collective_phase(
     InjectionPolicy injection_policy,
     CollectiveImpl* collective_impl) {
   if (collective_impl->type == CollectiveImplType::Ring ||
-      collective_impl->type ==
-          CollectiveImplType::OneRing) {
+      collective_impl->type == CollectiveImplType::OneRing) {
     CollectivePhase vn(
         this,
         queue_id,
@@ -1012,48 +1022,37 @@ CollectivePhase Sys::generate_collective_phase(
     return vn;
   } else if (
       collective_impl->type == CollectiveImplType::Direct ||
-      collective_impl->type ==
-          CollectiveImplType::OneDirect) {
+      collective_impl->type == CollectiveImplType::OneDirect) {
     CollectivePhase vn(
         this,
         queue_id,
         new AllToAll(
             collective_type,
-            ((DirectCollectiveImpl*)collective_impl)
-                ->direct_collective_window,
+            ((DirectCollectiveImpl*)collective_impl)->direct_collective_window,
             id,
             (RingTopology*)topology,
             data_size,
             direction,
             InjectionPolicy::Normal));
     return vn;
-  } else if (
-      collective_impl->type ==
-      CollectiveImplType::DoubleBinaryTree) {
+  } else if (collective_impl->type == CollectiveImplType::DoubleBinaryTree) {
     CollectivePhase vn(
         this,
         queue_id,
-        new DoubleBinaryTreeAllReduce(
-            id, (BinaryTree*)topology, data_size));
+        new DoubleBinaryTreeAllReduce(id, (BinaryTree*)topology, data_size));
     return vn;
   } else if (
-      collective_impl->type ==
-          CollectiveImplType::HalvingDoubling ||
-      collective_impl->type ==
-          CollectiveImplType::OneHalvingDoubling) {
+      collective_impl->type == CollectiveImplType::HalvingDoubling ||
+      collective_impl->type == CollectiveImplType::OneHalvingDoubling) {
     CollectivePhase vn(
         this,
         queue_id,
         new HalvingDoubling(
-            collective_type,
-            id,
-            (RingTopology*)topology,
-            data_size));
+            collective_type, id, (RingTopology*)topology, data_size));
     return vn;
   } else {
-    cerr
-        << "Error: No known collective implementation for collective phase"
-        << endl;
+    cerr << "Error: No known collective implementation for collective phase"
+         << endl;
     exit(1);
   }
 }
@@ -1114,8 +1113,7 @@ int Sys::break_dimension(int model_parallel_npu_group) {
       } else {
         std::advance(it, all_reduce_implementation_per_dimension.size());
       }
-      CollectiveImpl* replicate =
-          (CollectiveImpl*)(*it)->clone();
+      CollectiveImpl* replicate = (CollectiveImpl*)(*it)->clone();
       all_reduce_implementation_per_dimension.insert(it, replicate);
 
       it = reduce_scatter_implementation_per_dimension.begin();
@@ -1239,7 +1237,7 @@ void Sys::insert_stream(list<BaseStream*>* queue, BaseStream* baseStream) {
     }
   } else if (
       intra_dimension_scheduling == IntraDimensionScheduling::SmallestFirst) {
-    if(baseStream->phases_to_go.size()==1){
+    if (baseStream->phases_to_go.size() == 1) {
       it = queue->end();
     }
     while (it != queue->end()) {
@@ -1247,8 +1245,10 @@ void Sys::insert_stream(list<BaseStream*>* queue, BaseStream* baseStream) {
         advance(it, 1);
         continue;
       } else if (
-          max((*it)->my_current_phase.initial_data_size,(*it)->my_current_phase.final_data_size) <
-          max(baseStream->my_current_phase.initial_data_size,baseStream->my_current_phase.final_data_size)) {
+          max((*it)->my_current_phase.initial_data_size,
+              (*it)->my_current_phase.final_data_size) <
+          max(baseStream->my_current_phase.initial_data_size,
+              baseStream->my_current_phase.final_data_size)) {
         advance(it, 1);
         continue;
       } else {
@@ -1284,7 +1284,7 @@ void Sys::ask_for_schedule(int max) {
   if (min > max) {
     min = max;
   }
-  for (auto& sys: all_sys) {
+  for (auto& sys : all_sys) {
     if (sys->ready_list.size() == 0 ||
         sys->ready_list.front()->stream_id != top) {
       return;
@@ -1293,7 +1293,7 @@ void Sys::ask_for_schedule(int max) {
       min = sys->ready_list.size();
     }
   }
-  for (auto& sys: all_sys) {
+  for (auto& sys : all_sys) {
     sys->schedule(min);
   }
   return;
@@ -1312,11 +1312,9 @@ void Sys::schedule(int num) {
     if (ready_list.front()->current_queue_id == -1) {
       Sys::sys_panic(
           "should not happen! " +
-          to_string(
-              BaseStream::synchronizer[ready_list.front()->stream_id]) +
+          to_string(BaseStream::synchronizer[ready_list.front()->stream_id]) +
           " , " +
-          to_string(
-              BaseStream::ready_counter[ready_list.front()->stream_id]) +
+          to_string(BaseStream::ready_counter[ready_list.front()->stream_id]) +
           " , top queue id: " + to_string(top_vn) +
           " , total phases: " + to_string(total_phases) +
           " , waiting streams: " + to_string(total_waiting_streams));
@@ -1347,8 +1345,7 @@ void Sys::proceed_to_next_vnet_baseline(StreamBaseline* stream) {
   if (stream->current_queue_id >= 0 && stream->my_current_phase.enabled) {
     list<BaseStream*>& target =
         active_Streams.at(stream->my_current_phase.queue_id);
-    for (list<BaseStream*>::iterator it = target.begin();
-         it != target.end();
+    for (list<BaseStream*>::iterator it = target.begin(); it != target.end();
          ++it) {
       if (((StreamBaseline*)(*it))->stream_id == stream->stream_id) {
         target.erase(it);
@@ -1508,14 +1505,7 @@ int Sys::sim_send(
     void* fun_arg) {
   if (delay == 0) {
     comm_NI->sim_send(
-        buffer,
-        count,
-        type,
-        dst,
-        tag,
-        request,
-        msg_handler,
-        fun_arg);
+        buffer, count, type, dst, tag, request, msg_handler, fun_arg);
   } else {
     try_register_event(
         new SimSendCaller(
@@ -1547,14 +1537,7 @@ int Sys::sim_recv(
     void* fun_arg) {
   if (delay == 0) {
     comm_NI->sim_recv(
-        buffer,
-        count,
-        type,
-        src,
-        tag,
-        request,
-        msg_handler,
-        fun_arg);
+        buffer, count, type, src, tag, request, msg_handler, fun_arg);
   } else {
     try_register_event(
         new SimRecvCaller(

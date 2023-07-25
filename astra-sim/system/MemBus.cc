@@ -53,20 +53,14 @@ void MemBus::send_from_NPU_to_MA(
       SharedBusStat* ss = new SharedBusStat(BusType::Shared, 0, 10, 0, 0);
       ss->sys_id = sys->id;
       ss->event = EventType::NPU_to_MA;
-      sys->register_event(
-          callable,
-          EventType::NPU_to_MA,
-          ss,
-          10);
+      sys->register_event(callable, EventType::NPU_to_MA, ss, 10);
     } else {
-      SharedBusStat* ss = new SharedBusStat(BusType::Shared, 0, communication_delay, 0, 0);
+      SharedBusStat* ss =
+          new SharedBusStat(BusType::Shared, 0, communication_delay, 0, 0);
       ss->sys_id = sys->id;
       ss->event = EventType::NPU_to_MA;
       sys->register_event(
-          callable,
-          EventType::NPU_to_MA,
-          ss,
-          communication_delay);
+          callable, EventType::NPU_to_MA, ss, communication_delay);
     }
   }
 }
@@ -84,20 +78,14 @@ void MemBus::send_from_MA_to_NPU(
       SharedBusStat* ss = new SharedBusStat(BusType::Shared, 0, 10, 0, 0);
       ss->sys_id = sys->id;
       ss->event = EventType::MA_to_NPU;
-      sys->register_event(
-          callable,
-          EventType::MA_to_NPU,
-          ss,
-          10);
+      sys->register_event(callable, EventType::MA_to_NPU, ss, 10);
     } else {
-      SharedBusStat* ss = new SharedBusStat(BusType::Shared, 0, communication_delay, 0, 0);
+      SharedBusStat* ss =
+          new SharedBusStat(BusType::Shared, 0, communication_delay, 0, 0);
       ss->sys_id = sys->id;
       ss->event = EventType::MA_to_NPU;
       sys->register_event(
-          callable,
-          EventType::MA_to_NPU,
-          ss,
-          communication_delay);
+          callable, EventType::MA_to_NPU, ss, communication_delay);
     }
   }
 }

@@ -180,7 +180,8 @@ void HalvingDoubling::process_max_count() {
     curr_receiver = id;
     RingTopology::Direction direction = specify_direction();
     for (int i = 0; i < rank_offset; i++) {
-      curr_receiver = ((RingTopology*)logical_topo)->get_receiver(curr_receiver, direction);
+      curr_receiver =
+          ((RingTopology*)logical_topo)->get_receiver(curr_receiver, direction);
       curr_sender = curr_receiver;
     }
   }
@@ -255,8 +256,7 @@ bool HalvingDoubling::ready() {
       stream->state == StreamState::Ready) {
     stream->changeState(StreamState::Executing);
   }
-  if (packets.size() == 0 || stream_count == 0 ||
-      free_packets == 0) {
+  if (packets.size() == 0 || stream_count == 0 || free_packets == 0) {
     return false;
   }
   MyPacket packet = packets.front();

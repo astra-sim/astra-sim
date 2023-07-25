@@ -11,7 +11,7 @@ using namespace AstraSim;
 
 std::map<int, int> BaseStream::synchronizer;
 std::map<int, int> BaseStream::ready_counter;
-std::map<int, std::list<BaseStream*> > BaseStream::suspended_streams;
+std::map<int, std::list<BaseStream*>> BaseStream::suspended_streams;
 
 void BaseStream::changeState(StreamState state) {
   this->state = state;

@@ -22,7 +22,7 @@ class CSVWriter {
     }
   }
   void initialize_csv(int rows, int cols);
-  void finalize_csv(std::list<std::list<std::pair<uint64_t, double> > > dims);
+  void finalize_csv(std::list<std::list<std::pair<uint64_t, double>>> dims);
   void write_cell(int row, int column, std::string data);
   inline bool exists_test(const std::string& name) {
     struct stat buffer;

@@ -11,8 +11,7 @@ LICENSE file in the root directory of this source tree.
 
 namespace AstraSim {
 
-class WorkloadLayerHandlerData : public BasicEventHandlerData,
-                                 public MetaData {
+class WorkloadLayerHandlerData : public BasicEventHandlerData, public MetaData {
  public:
   uint64_t node_id;
   WorkloadLayerHandlerData();

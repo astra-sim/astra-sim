@@ -9,4 +9,4 @@
 	url = https://github.com/georgia-tech-synergy-lab/gem5_astra.git
 [submodule "extern/graph_frontend/chakra"]
 	path = extern/graph_frontend/chakra
-	url = git@github.com:chakra-eg/chakra.git
+	url = git@github.com:mlcommons/chakra.git
