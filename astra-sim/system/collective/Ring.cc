@@ -231,8 +231,7 @@ bool Ring::ready() {
       stream->state == StreamState::Ready) {
     stream->changeState(StreamState::Executing);
   }
-  if (packets.size() == 0 || stream_count == 0 ||
-      free_packets == 0) {
+  if (packets.size() == 0 || stream_count == 0 || free_packets == 0) {
     return false;
   }
   MyPacket packet = packets.front();

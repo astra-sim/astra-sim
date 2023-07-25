@@ -20,10 +20,7 @@ class Sys;
 
 class Workload : Callable {
  public:
-  Workload(
-      Sys* sys,
-      std::string eg_filename,
-      std::string comm_group_filename);
+  Workload(Sys* sys, std::string eg_filename, std::string comm_group_filename);
   ~Workload();
 
   // communicator groups
@@ -49,6 +46,6 @@ class Workload : Callable {
   bool is_finished;
 };
 
-}
+} // namespace AstraSim
 
 #endif /* __WORKLOAD_HH__ */

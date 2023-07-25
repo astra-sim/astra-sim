@@ -26,10 +26,7 @@ class RingTopology : public BasicLogicalTopology {
       int total_nodes_in_ring,
       int index_in_ring,
       int offset);
-  RingTopology(
-      Dimension dimension,
-      int id,
-      std::vector<int> NPUs);
+  RingTopology(Dimension dimension, int id, std::vector<int> NPUs);
   virtual int get_receiver(int node_id, Direction direction);
   virtual int get_sender(int node_id, Direction direction);
   int get_nodes_in_ring();
@@ -48,7 +45,10 @@ class RingTopology : public BasicLogicalTopology {
   int index_in_ring;
   Dimension dimension;
 
-  virtual int get_receiver_homogeneous(int node_id, Direction direction, int offset);
+  virtual int get_receiver_homogeneous(
+      int node_id,
+      Direction direction,
+      int offset);
 };
 
 } // namespace AstraSim

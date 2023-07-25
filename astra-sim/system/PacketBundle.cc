@@ -55,15 +55,13 @@ void PacketBundle::call(EventType event, CallData* data) {
   if (needs_processing == true) {
     needs_processing = false;
     this->delay =
-      sys->mem_write(size)
-      + sys->mem_read(size)
-      + sys->mem_read(size);
+        sys->mem_write(size) + sys->mem_read(size) + sys->mem_read(size);
     sys->try_register_event(
         this, EventType::CommProcessingFinished, data, this->delay);
     return;
   }
   Tick current = Sys::boostedTick();
-  for (auto& packet: locked_packets) {
+  for (auto& packet : locked_packets) {
     packet->ready_time = current;
   }
   stream->call(EventType::General, data);

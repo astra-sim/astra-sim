@@ -11,7 +11,11 @@ using namespace std;
 using namespace AstraSim;
 
 BinaryTree::BinaryTree(
-    int id, TreeType tree_type, int total_tree_nodes, int start, int stride)
+    int id,
+    TreeType tree_type,
+    int total_tree_nodes,
+    int start,
+    int stride)
     : BasicLogicalTopology(BasicLogicalTopology::BasicTopology::BinaryTree) {
   this->total_tree_nodes = total_tree_nodes;
   this->start = start;

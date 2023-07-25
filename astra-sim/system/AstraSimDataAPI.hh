@@ -23,8 +23,10 @@ class LayerData {
   double total_fwd_comm;
   double total_weight_grad_comm;
   double total_input_grad_comm;
-  std::list<std::pair<int, double> > avg_queuing_delay; // int is phase #, double is latency
-  std::list<std::pair<int, double> > avg_network_message_dealy; // int is phase #, double is latency
+  std::list<std::pair<int, double>>
+      avg_queuing_delay; // int is phase #, double is latency
+  std::list<std::pair<int, double>>
+      avg_network_message_dealy; // int is phase #, double is latency
 };
 
 class AstraSimDataAPI {
