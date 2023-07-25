@@ -167,12 +167,6 @@ This project is a collaboration of dedicated professionals. Each core developer 
 | Saeed Rashidi | Hewlett Packard Labs | ASTRA-sim 1.0, system layer, communicator groups, in-switch collective communication | rashidi1saeid@gmail.com |
 | William Won | Georgia Tech | Network layer | william.won@gatech.edu |
 | Taekyung Heo | Georgia Tech | Chakra, workload layer, graph execution engine, memory API | taekyung@gatech.edu |
-| Srinivas Sridharan | Meta | Chakra, General inquiries | ssrinivas@fb.com |
+| Changhai Man | Georgia Tech | Chakra | cman8@gatech.edu |
+| Srinivas Sridharan | Meta | Chakra, General inquiries | ssrinivas@meta.com |
 | Tushar Krishna | Georgia Tech | General inquiries | tushar@ece.gatech.edu |
-
-## Additional Contributors
-* Jiayi Huang (University of California, Santa Barbara)
-* Apurve Chawde (Georgia Tech)
-* Santosh Kumar Elangoven (Georgia Tech)
-* Greg Steinbrecher (Meta)
-* Changhai Man (Georgia Tech)
