@@ -12,4 +12,4 @@
 	url = https://github.com/scalesim-project/scale-sim-v2.git
 [submodule "extern/network_backend/ns3-interface"]
 	path = extern/network_backend/ns3-interface
-	url = https://github.com/DartingMelody/ns3-interface.git
+	url = https://github.com/astra-sim/astra-network-ns3.git
