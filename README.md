@@ -151,7 +151,6 @@ sys[63] finished, 187442108 cycles
 ## Features Under Active Development
 We are constantly working to improve ASTRA-sim and expand its capabilities. Here are some of the features that are currently under active development:
 
-* Memory API
 * Congestion-aware Analytical Network Backend
 * NS3 Network Backend
 * Garnet Network Backend
