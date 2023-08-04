@@ -20,6 +20,7 @@ class HardwareResource {
   bool is_available(const std::shared_ptr<Chakra::ETFeederNode> node) const;
 
   const uint32_t num_npus;
+  uint32_t num_in_flight_mem_reqs;
   uint32_t num_in_flight_comps;
   uint32_t num_in_flight_comms;
 };

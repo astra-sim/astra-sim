@@ -20,6 +20,7 @@ using namespace Chakra;
 using json = nlohmann::json;
 
 typedef ChakraProtoMsg::NodeType ChakraNodeType;
+typedef ChakraProtoMsg::MemoryType ChakraMemoryType;
 typedef ChakraProtoMsg::CollectiveCommType ChakraCollectiveCommType;
 
 Workload::Workload(Sys* sys, string eg_filename, string comm_group_filename) {
@@ -93,7 +94,16 @@ void Workload::issue_dep_free_nodes() {
 }
 
 void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
-  if (node->getChakraNode()->node_type() == ChakraNodeType::COMP_NODE) {
+  if ((node->getChakraNode()->node_type() == ChakraNodeType::MEM_LOAD_NODE)
+      || (node->getChakraNode()->node_type() == ChakraNodeType::MEM_STORE_NODE)) {
+    if (sys->trace_enabled) {
+      cout << "issue,sys->id=" << sys->id
+        << ",tick=" << Sys::boostedTick()
+        << ",node->id=" << node->getChakraNode()->id()
+        << ",node->name=" << node->getChakraNode()->name() << endl;
+    }
+    issue_mem(node);
+  } else if (node->getChakraNode()->node_type() == ChakraNodeType::COMP_NODE) {
     if ((node->getChakraNode()->simulated_run_time() == 0) &&
         (node->getChakraNode()->num_ops() == 0)) {
       skip_invalid(node);
@@ -118,6 +128,20 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
   } else if (
       node->getChakraNode()->node_type() == ChakraNodeType::INVALID_NODE) {
     skip_invalid(node);
+  }
+}
+
+void Workload::issue_mem(shared_ptr<Chakra::ETFeederNode> node) {
+  hw_resource->occupy(node);
+
+  WorkloadLayerHandlerData* wlhd = new WorkloadLayerHandlerData;
+  wlhd->sys_id = sys->id;
+  wlhd->workload = this;
+  wlhd->node_id = node->getChakraNode()->id();
+  if (node->getChakraNode()->tensor_loc() == ChakraMemoryType::LOCAL_MEMORY) {
+    sys->mem->issue(LOCAL_MEMORY, node->getChakraNode()->tensor_size(), wlhd);
+  } else {
+    sys->mem->issue(REMOTE_MEMORY, node->getChakraNode()->tensor_size(), wlhd);
   }
 }
 
@@ -301,6 +325,7 @@ void Workload::call(EventType event, CallData* data) {
   }
 
   if (!et_feeder->hasNodesToIssue() &&
+      (hw_resource->num_in_flight_mem_reqs == 0) &&
       (hw_resource->num_in_flight_comps == 0) &&
       (hw_resource->num_in_flight_comms == 0)) {
     report();

@@ -161,6 +161,7 @@ Sys::Sys(
   this->roofline = nullptr;
 
   this->mem = mem;
+  this->mem->set_sys(id, this);
   this->local_mem_bw = 0;
 
   this->memBus = nullptr;
@@ -609,24 +610,6 @@ void Sys::handleEvent(void* arg) {
     sehd->callable->call(EventType::PacketSent, sehd->wlhd);
     delete sehd;
   }
-}
-
-Tick Sys::mem_read(uint64_t bytes) {
-  if (mem == nullptr) {
-    return 10;
-  }
-  uint64_t delay_ns = mem->npu_mem_read(bytes);
-  Tick delay_cycles = delay_ns / CLOCK_PERIOD;
-  return delay_cycles;
-}
-
-Tick Sys::mem_write(uint64_t bytes) {
-  if (mem == nullptr) {
-    return 10;
-  }
-  uint64_t delay_ns = mem->npu_mem_write(bytes);
-  Tick delay_cycles = delay_ns / CLOCK_PERIOD;
-  return delay_cycles;
 }
 
 LogicalTopology* Sys::get_logical_topology(ComType comm_type) {

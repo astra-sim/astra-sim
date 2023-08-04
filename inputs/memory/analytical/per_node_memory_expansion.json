@@ -1,0 +1,9 @@
+{
+  "memory-type": "PER_NODE_MEMORY_EXPANSION",
+  "local-mem-latency": 0,
+  "local-mem-bw": 4096,
+  "remote-mem-latency": 0,
+  "remote-mem-bw": 128,
+  "num-nodes": 8,
+  "num-npus-per-node": 8
+}
