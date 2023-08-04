@@ -104,7 +104,8 @@ $ cd -
 $ ./build/astra_analytical/build/AnalyticalAstra/bin/AnalyticalAstra \
   --workload-configuration=./extern/graph_frontend/chakra/et_generator/twoCompNodesDependent \
   --system-configuration=./inputs/system/sample_fully_connected_sys.txt \
-  --network-configuration=./inputs/network/analytical/fully_connected.json
+  --network-configuration=./inputs/network/analytical/fully_connected.json \
+  --memory-configuration=/inputs/memory/analytical/no_memory_expansion.json
 ```
 
 Upon completion, ASTRA-sim will display the number of cycles it took to run the simulation.
@@ -136,7 +137,8 @@ $ cd -
 $ ./build/astra_analytical/build/AnalyticalAstra/bin/AnalyticalAstra \
   --workload-configuration=./inputs/workload/ASTRA-sim-2.0/Resnet50_DataParallel \
   --system-configuration=./inputs/system/sample_fully_connected_sys.txt \
-  --network-configuration=./inputs/network/analytical/fully_connected.json
+  --network-configuration=./inputs/network/analytical/fully_connected.json \
+  --memory-configuration=/inputs/memory/analytical/no_memory_expansion.json
 ```
 
 Upon completion, ASTRA-sim will display the number of cycles it took to run the simulation.
