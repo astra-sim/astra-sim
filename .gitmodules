@@ -3,10 +3,10 @@
 	url = https://github.com/google/googletest.git
 [submodule "extern/network_backend/analytical"]
 	path = extern/network_backend/analytical
-	url = https://github.com/astra-sim/analytical.git
+	url = git@github.com:astra-sim/astra-network-analytical.git
 [submodule "extern/network_backend/garnet/gem5_astra"]
 	path = extern/network_backend/garnet/gem5_astra
-	url = https://github.com/georgia-tech-synergy-lab/gem5_astra.git
+	url = git@github.com:astra-sim/astra-network-garnet.git
 [submodule "extern/graph_frontend/chakra"]
 	path = extern/graph_frontend/chakra
 	url = git@github.com:mlcommons/chakra.git
