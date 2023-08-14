@@ -54,10 +54,15 @@ void PacketBundle::send_to_NPU() {
 void PacketBundle::call(EventType event, CallData* data) {
   if (needs_processing == true) {
     needs_processing = false;
+    if (sys->mem == nullptr){
+	this->delay = 10;
+    }else{
+
     this->delay =
       sys->mem->get_local_mem_runtime((uint64_t)size) // write
       + sys->mem->get_local_mem_runtime((uint64_t)size) // read
       + sys->mem->get_local_mem_runtime((uint64_t)size); // read
+    }
     sys->try_register_event(
         this, EventType::CommProcessingFinished, data, this->delay);
     return;
