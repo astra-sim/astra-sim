@@ -161,7 +161,7 @@ Sys::Sys(
   this->roofline = nullptr;
 
   this->mem = mem;
-  this->mem->set_sys(id, this);
+ // this->mem->set_sys(id, this);
   this->local_mem_bw = 0;
 
   this->memBus = nullptr;
