@@ -169,5 +169,6 @@ This project is a collaboration of dedicated professionals. Each core developer 
 | William Won | Georgia Tech | Network layer | william.won@gatech.edu |
 | Taekyung Heo | Georgia Tech | Chakra, workload layer, graph execution engine, memory API | taekyung@gatech.edu |
 | Changhai Man | Georgia Tech | Chakra | cman8@gatech.edu |
-| Srinivas Sridharan | Meta | Chakra, General inquiries | ssrinivas@meta.com |
+| Jinsun Yoo   | Georgia Tech | NS3 Network Layer Integration | jinsun@gatech.edu |
+| Srinivas Sridharan | Meta | Chakra, General inquiries | srinivas@mlcommons.org |
 | Tushar Krishna | Georgia Tech | General inquiries | tushar@ece.gatech.edu |
