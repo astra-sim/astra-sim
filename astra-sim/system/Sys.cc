@@ -766,7 +766,7 @@ DataSet* Sys::generate_collective(
   uint64_t chunk_size = determine_chunk_size(size, collective_type);
   uint64_t recommended_chunk_size = chunk_size;
   int streams = ceil(((double)size) / chunk_size);
-  int64_t tmp;
+  uint64_t remain_size;
   DataSet* dataset = new DataSet(streams);
   int pri = get_priority(explicit_priority);
   int count = 0;
@@ -823,7 +823,7 @@ DataSet* Sys::generate_collective(
              InterDimensionScheduling::OfflineGreedyFlex)) {
       size -= chunk_size;
     }
-    tmp = chunk_size;
+    remain_size = chunk_size;
     list<CollectivePhase> vect;
 
     if (collective_type != ComType::All_Reduce ||
@@ -839,13 +839,13 @@ DataSet* Sys::generate_collective(
             collective_type,
             topology->get_basic_topology_at_dimension(
                 dim_mapper[dim], collective_type),
-            tmp,
+            remain_size,
             queue.first,
             queue.second,
             InjectionPolicy::Normal,
             implementation_per_dimension[dim_mapper[dim]]);
         vect.push_back(phase);
-        tmp = phase.final_data_size;
+        remain_size = phase.final_data_size;
       }
     } else if (
         inter_dimension_scheduling == InterDimensionScheduling::OfflineGreedy ||
@@ -864,13 +864,13 @@ DataSet* Sys::generate_collective(
             ComType::Reduce_Scatter,
             topology->get_basic_topology_at_dimension(
                 dim_mapper[dim], ComType::Reduce_Scatter),
-            tmp,
+            remain_size,
             queue.first,
             queue.second,
             InjectionPolicy::Normal,
             implementation_per_dimension[dim_mapper[dim]]);
         vect.push_back(phase);
-        tmp = phase.final_data_size;
+        remain_size = phase.final_data_size;
       }
       dim--;
       for (; dim >= 0; dim--) {
@@ -884,13 +884,13 @@ DataSet* Sys::generate_collective(
             ComType::All_Gather,
             topology->get_basic_topology_at_dimension(
                 dim_mapper[dim], ComType::All_Gather),
-            tmp,
+            remain_size,
             queue.first,
             queue.second,
             InjectionPolicy::Normal,
             implementation_per_dimension[dim_mapper[dim]]);
         vect.push_back(phase);
-        tmp = phase.final_data_size;
+        remain_size = phase.final_data_size;
       }
     } else {
       int dim = 0;
@@ -912,13 +912,13 @@ DataSet* Sys::generate_collective(
             ComType::Reduce_Scatter,
             topology->get_basic_topology_at_dimension(
                 dim_mapper[dim], ComType::Reduce_Scatter),
-            tmp,
+            remain_size,
             queue.first,
             queue.second,
             InjectionPolicy::Normal,
             implementation_per_dimension[dim_mapper[dim]]);
         vect.push_back(phase);
-        tmp = phase.final_data_size;
+        remain_size = phase.final_data_size;
       }
       while (dim > 0 &&
              (dimensions_involved[dim_mapper[dim]] == false ||
@@ -933,13 +933,13 @@ DataSet* Sys::generate_collective(
             ComType::All_Reduce,
             topology->get_basic_topology_at_dimension(
                 dim_mapper[dim], ComType::All_Reduce),
-            tmp,
+            remain_size,
             queue.first,
             queue.second,
             InjectionPolicy::Normal,
             implementation_per_dimension[dim_mapper[dim]]);
         vect.push_back(phase);
-        tmp = phase.final_data_size;
+        remain_size = phase.final_data_size;
       }
       dim--;
       for (; dim >= 0; dim--) {
@@ -953,13 +953,13 @@ DataSet* Sys::generate_collective(
             ComType::All_Gather,
             topology->get_basic_topology_at_dimension(
                 dim_mapper[dim], ComType::All_Gather),
-            tmp,
+            remain_size,
             queue.first,
             queue.second,
             InjectionPolicy::Normal,
             implementation_per_dimension[dim_mapper[dim]]);
         vect.push_back(phase);
-        tmp = phase.final_data_size;
+        remain_size = phase.final_data_size;
       }
     }
     if (vect.size() > 0) {
