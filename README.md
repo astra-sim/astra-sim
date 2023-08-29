@@ -51,8 +51,8 @@ $ git submodule update
 3. The results of example script runs will be dumped inside `examples/results/` path. 
 
 #### Instructions for compiling & running NS3 as the network simulator
-> This version of ns3 requires gcc-5, g++-5, and python2.7. It also requires the `python` command to default to `python2.7`. 
-> Astrasim 2.0 will include a version of ns3 which does not need the above ancient dependencies.
+> This version of ns3 requires gcc-4.9, g++-4.9, and python2.7. It also requires the `python` command to default to `python2.7`. 
+> In the long term, Astrasim 2.0 will include a version of ns3 which does not need the above ancient dependencies.
 
 1. Check-out to the **ns3_interface_tmp2** branch by running `git checkout ns3_interface_tmp2` .
 2. Update the submodules by typing `git submodule init & git submodule update`. The ns3 backend is hosted at https://github.com/DartingMelody/ns3-interface.
