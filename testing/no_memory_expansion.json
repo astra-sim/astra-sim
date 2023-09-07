@@ -1,0 +1,5 @@
+{
+  "memory-type": "NO_MEMORY_EXPANSION",
+  "local-mem-latency": 0,
+  "local-mem-bw": 4096
+}

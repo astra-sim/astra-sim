@@ -1,0 +1,11 @@
+{
+  "scheduling-policy": "LIFO",
+  "endpoint-delay": 1,
+  "active-chunks-per-dimension": 4,
+  "preferred-dataset-splits": 4,
+  "all-reduce-implementation": ["ring"],
+  "all-gather-implementation": ["ring"],
+  "reduce-scatter-implementation": ["ring"],
+  "all-to-all-implementation": ["ring"],
+  "collective-optimization": "baseline"
+}

@@ -16,7 +16,7 @@ function setup {
 function compile {
     cd "${BUILD_DIR}" || exit
     cmake ..
-    make
+    make -j 8
 }
 
 case "$1" in

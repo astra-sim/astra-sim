@@ -1,0 +1,5 @@
+# Network Configuration
+topology: FullyConnected  # Ring, Switch, FullyConnected, Mesh2D
+npus_count: [64]  # number of NPUs
+bandwidth: [50]  # uni-dir bandwidth in GB/s
+latency: [500]  # latency in ns

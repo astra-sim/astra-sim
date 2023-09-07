@@ -1,0 +1,15 @@
+{
+  "topology-name": "Hierarchical",
+  "topologies-per-dim": ["Ring", "FullyConnected", "Switch"],
+  "dimension-type": ["N", "N", "P"],
+  "dimensions-count": 3,
+  "units-count": [2, 8, 2],
+  "links-count": [2, 7, 1],
+  "link-latency": [500, 500, 500],
+  "link-bandwidth": [250, 25, 12.5],
+  "nic-latency": [0, 0, 0],
+  "router-latency": [0, 0, 0],
+  "hbm-latency": [500, 500, 500],
+  "hbm-bandwidth": [370, 370, 370],
+  "hbm-scale": [0, 0, 0]
+}
