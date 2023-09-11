@@ -124,7 +124,11 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
            << ",node->id=" << node->getChakraNode()->id()
            << ",node->name=" << node->getChakraNode()->name() << endl;
     }
-    issue_comm(node);
+    if (node->getChakraNode()->comm_size() == 0) {
+      skip_invalid(node);
+    } else {
+      issue_comm(node);
+    }
   } else if (
       node->getChakraNode()->node_type() == ChakraNodeType::INVALID_NODE) {
     skip_invalid(node);
