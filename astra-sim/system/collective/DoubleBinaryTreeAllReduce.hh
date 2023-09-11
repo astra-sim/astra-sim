@@ -19,10 +19,10 @@ LICENSE file in the root directory of this source tree.
 #include <sstream>
 #include <tuple>
 #include <vector>
-#include "ns3/Algorithm.hh"
-#include "ns3/CallData.hh"
-#include "ns3/Common.hh"
-#include "ns3/BinaryTree.hh"
+#include "Algorithm.hh"
+#include "astra-sim/system/CallData.hh"
+#include "astra-sim/system/Common.hh"
+#include "astra-sim/system/topology/BinaryTree.hh"
 
 namespace AstraSim {
 class DoubleBinaryTreeAllReduce : public Algorithm {

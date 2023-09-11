@@ -20,10 +20,10 @@ class SendPacketEventHandlerData {};
 #include <sstream>
 #include <tuple>
 #include <vector>
-#include "ns3/BaseStream.hh"
-#include "ns3/BasicEventHandlerData.hh"
-#include "ns3/Common.hh"
-#include "ns3/Sys.hh"
+#include "BaseStream.hh"
+#include "BasicEventHandlerData.hh"
+#include "Common.hh"
+#include "Sys.hh"
 
 namespace AstraSim {
 class SendPacketEventHandlerData : public BasicEventHandlerData,

@@ -6,7 +6,7 @@
 #include <map>
 #include <tuple>
 
-#include "ns3/AstraNetworkAPI.hh"
+#include "astra-sim/system/AstraNetworkAPI.hh"
 namespace AstraSim {
 class FastBackEnd;
 
