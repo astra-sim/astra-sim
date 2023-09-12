@@ -1,5 +1,5 @@
-#include "ns3/AstraNetworkAPI.hh"
-#include "ns3/Sys.hh"
+#include "astra-sim/system/AstraNetworkAPI.hh"
+#include "astra-sim/system/Sys.hh"
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
 #include "ns3/csma-module.h"

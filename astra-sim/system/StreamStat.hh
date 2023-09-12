@@ -18,9 +18,9 @@ LICENSE file in the root directory of this source tree.
 #include <sstream>
 #include <tuple>
 #include <vector>
-#include "ns3/Common.hh"
-#include "ns3/NetworkStat.hh"
-#include "ns3/SharedBusStat.hh"
+#include "Common.hh"
+#include "NetworkStat.hh"
+#include "SharedBusStat.hh"
 
 namespace AstraSim {
 class StreamStat : public SharedBusStat, public NetworkStat {

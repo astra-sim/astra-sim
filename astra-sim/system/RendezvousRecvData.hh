@@ -18,9 +18,9 @@ LICENSE file in the root directory of this source tree.
 #include <sstream>
 #include <tuple>
 #include <vector>
-#include "ns3/BasicEventHandlerData.hh"
-#include "ns3/Common.hh"
-#include "ns3/SimRecvCaller.hh"
+#include "BasicEventHandlerData.hh"
+#include "Common.hh"
+#include "SimRecvCaller.hh"
 
 namespace AstraSim {
 class Sys;

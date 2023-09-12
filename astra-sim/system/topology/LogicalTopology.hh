@@ -5,7 +5,7 @@ LICENSE file in the root directory of this source tree.
 
 #ifndef __LOGICALTOPOLOGY_HH__
 #define __LOGICALTOPOLOGY_HH__
-#include "ns3/Common.hh"
+#include "astra-sim/system/Common.hh"
 namespace AstraSim {
 class BasicLogicalTopology;
 class LogicalTopology {

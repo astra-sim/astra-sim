@@ -1,4 +1,4 @@
-#include "ns3/AstraNetworkAPI.hh"
+#include "astra-sim/system/AstraNetworkAPI.hh"
 #include<iostream>
 #include <stdio.h>
 #include <execinfo.h>
@@ -16,7 +16,7 @@
 #include "ns3/applications-module.h"
 #include "ns3/internet-module.h"
 #include "ns3/csma-module.h"
-#include "ns3/Sys.hh"
+#include "astra-sim/system/Sys.hh"
 #include <time.h> 
 // #include "RoCE.h"
 //#include<type_info>

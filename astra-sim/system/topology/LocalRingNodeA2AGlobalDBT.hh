@@ -18,10 +18,10 @@ LICENSE file in the root directory of this source tree.
 #include <sstream>
 #include <tuple>
 #include <vector>
-#include "ns3/ComplexLogicalTopology.hh"
-#include "ns3/DoubleBinaryTreeTopology.hh"
-#include "ns3/RingTopology.hh"
-#include "ns3/Common.hh"
+#include "ComplexLogicalTopology.hh"
+#include "DoubleBinaryTreeTopology.hh"
+#include "RingTopology.hh"
+#include "astra-sim/system/Common.hh"
 
 namespace AstraSim {
 class LocalRingNodeA2AGlobalDBT : public ComplexLogicalTopology {
