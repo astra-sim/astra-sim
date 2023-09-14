@@ -5,8 +5,7 @@
 #include "ns3/csma-module.h"
 #include "ns3/internet-module.h"
 #include "ns3/network-module.h"
-#include "third.cc"
-#include "workerQueue.h"
+#include "entry.h"
 #include <execinfo.h>
 #include <fstream>
 #include <iostream>
@@ -34,7 +33,6 @@ struct sim_event {
   int tag;
   string fnType;
 };
-Ptr<SimpleUdpApplication> *udp;
 class ASTRASimNetwork : public AstraSim::AstraNetworkAPI {
 private:
   int npu_offset;
@@ -159,7 +157,6 @@ int main(int argc, char *argv[]) {
     num_gpus += job_npus;
   }
 
-  LogComponentEnable("SimpleUdpApplication", LOG_LEVEL_INFO);
   LogComponentEnable("OnOffApplication", LOG_LEVEL_INFO);
   LogComponentEnable("PacketSink", LOG_LEVEL_INFO);
   std::vector<ASTRASimNetwork *> networks(num_gpus, nullptr);
