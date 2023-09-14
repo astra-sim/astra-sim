@@ -13,4 +13,3 @@
 [submodule "extern/network_backend/ns3-interface"]
 	path = extern/network_backend/ns3-interface
 	url = https://github.com/astra-sim/astra-network-ns3.git
-	branch = main
