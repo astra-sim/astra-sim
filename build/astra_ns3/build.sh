@@ -30,7 +30,6 @@ function cleanup_result {
 function compile {
     cp "${ASTRA_SIM_DIR}"/network_frontend/ns3/*.cc "${NS3_DIR}"/simulation/scratch/
     cp "${ASTRA_SIM_DIR}"/network_frontend/ns3/*.h "${NS3_DIR}"/simulation/scratch/
-    cp "${ASTRA_SIM_DIR}"/network_frontend/ns3/wscript "${NS3_DIR}"/simulation/src/applications
     cd "${NS3_DIR}/simulation"
     CC='gcc-4.9' CXX='g++-4.9' ./waf configure 
     ./waf --run 'scratch/AstraSimNetwork mix/config.txt --commscale=1'
