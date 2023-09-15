@@ -161,7 +161,6 @@ Sys::Sys(
   this->roofline = nullptr;
 
   this->mem = mem;
-  this->mem->set_sys(id, this);
   this->local_mem_bw = 0;
 
   this->memBus = nullptr;
@@ -453,6 +452,14 @@ bool Sys::initialize_sys(string name) {
       this->trace_enabled = false;
     }
   }
+  this->replay_only = false;
+  if (j.contains("replay-only")) {
+    if (j["replay-only"] != 0) {
+      this->replay_only = true;
+    } else {
+      this->replay_only = false;
+    }
+  }
 
   inFile.close();
   return true;
@@ -612,6 +619,24 @@ void Sys::handleEvent(void* arg) {
   }
 }
 
+Tick Sys::mem_read(uint64_t bytes) {
+  if (mem == nullptr) {
+    return 10;
+  }
+  uint64_t delay_ns = mem->npu_mem_read(bytes);
+  Tick delay_cycles = delay_ns / CLOCK_PERIOD;
+  return delay_cycles;
+}
+
+Tick Sys::mem_write(uint64_t bytes) {
+  if (mem == nullptr) {
+    return 10;
+  }
+  uint64_t delay_ns = mem->npu_mem_write(bytes);
+  Tick delay_cycles = delay_ns / CLOCK_PERIOD;
+  return delay_cycles;
+}
+
 LogicalTopology* Sys::get_logical_topology(ComType comm_type) {
   if (comm_type == ComType::All_Reduce)
     return logical_topologies["AllReduce"];
@@ -766,7 +791,7 @@ DataSet* Sys::generate_collective(
   uint64_t chunk_size = determine_chunk_size(size, collective_type);
   uint64_t recommended_chunk_size = chunk_size;
   int streams = ceil(((double)size) / chunk_size);
-  uint64_t remain_size;
+  int tmp;
   DataSet* dataset = new DataSet(streams);
   int pri = get_priority(explicit_priority);
   int count = 0;
@@ -823,7 +848,7 @@ DataSet* Sys::generate_collective(
              InterDimensionScheduling::OfflineGreedyFlex)) {
       size -= chunk_size;
     }
-    remain_size = chunk_size;
+    tmp = chunk_size;
     list<CollectivePhase> vect;
 
     if (collective_type != ComType::All_Reduce ||
@@ -839,13 +864,13 @@ DataSet* Sys::generate_collective(
             collective_type,
             topology->get_basic_topology_at_dimension(
                 dim_mapper[dim], collective_type),
-            remain_size,
+            tmp,
             queue.first,
             queue.second,
             InjectionPolicy::Normal,
             implementation_per_dimension[dim_mapper[dim]]);
         vect.push_back(phase);
-        remain_size = phase.final_data_size;
+        tmp = phase.final_data_size;
       }
     } else if (
         inter_dimension_scheduling == InterDimensionScheduling::OfflineGreedy ||
@@ -864,13 +889,13 @@ DataSet* Sys::generate_collective(
             ComType::Reduce_Scatter,
             topology->get_basic_topology_at_dimension(
                 dim_mapper[dim], ComType::Reduce_Scatter),
-            remain_size,
+            tmp,
             queue.first,
             queue.second,
             InjectionPolicy::Normal,
             implementation_per_dimension[dim_mapper[dim]]);
         vect.push_back(phase);
-        remain_size = phase.final_data_size;
+        tmp = phase.final_data_size;
       }
       dim--;
       for (; dim >= 0; dim--) {
@@ -884,13 +909,13 @@ DataSet* Sys::generate_collective(
             ComType::All_Gather,
             topology->get_basic_topology_at_dimension(
                 dim_mapper[dim], ComType::All_Gather),
-            remain_size,
+            tmp,
             queue.first,
             queue.second,
             InjectionPolicy::Normal,
             implementation_per_dimension[dim_mapper[dim]]);
         vect.push_back(phase);
-        remain_size = phase.final_data_size;
+        tmp = phase.final_data_size;
       }
     } else {
       int dim = 0;
@@ -912,13 +937,13 @@ DataSet* Sys::generate_collective(
             ComType::Reduce_Scatter,
             topology->get_basic_topology_at_dimension(
                 dim_mapper[dim], ComType::Reduce_Scatter),
-            remain_size,
+            tmp,
             queue.first,
             queue.second,
             InjectionPolicy::Normal,
             implementation_per_dimension[dim_mapper[dim]]);
         vect.push_back(phase);
-        remain_size = phase.final_data_size;
+        tmp = phase.final_data_size;
       }
       while (dim > 0 &&
              (dimensions_involved[dim_mapper[dim]] == false ||
@@ -933,13 +958,13 @@ DataSet* Sys::generate_collective(
             ComType::All_Reduce,
             topology->get_basic_topology_at_dimension(
                 dim_mapper[dim], ComType::All_Reduce),
-            remain_size,
+            tmp,
             queue.first,
             queue.second,
             InjectionPolicy::Normal,
             implementation_per_dimension[dim_mapper[dim]]);
         vect.push_back(phase);
-        remain_size = phase.final_data_size;
+        tmp = phase.final_data_size;
       }
       dim--;
       for (; dim >= 0; dim--) {
@@ -953,13 +978,13 @@ DataSet* Sys::generate_collective(
             ComType::All_Gather,
             topology->get_basic_topology_at_dimension(
                 dim_mapper[dim], ComType::All_Gather),
-            remain_size,
+            tmp,
             queue.first,
             queue.second,
             InjectionPolicy::Normal,
             implementation_per_dimension[dim_mapper[dim]]);
         vect.push_back(phase);
-        remain_size = phase.final_data_size;
+        tmp = phase.final_data_size;
       }
     }
     if (vect.size() > 0) {
@@ -1384,6 +1409,7 @@ int Sys::front_end_sim_send(
     sim_request* request,
     void (*msg_handler)(void* fun_arg),
     void* fun_arg) {
+  //std::cout<<"Send from src: "<<id<<", dst: "<<dst<<" ,tag: "<<tag<<", at time: "<<Sys::boostedTick()<<", size: "<<count<<std::endl;
   if (rendezvous_enabled) {
     return rendezvous_sim_send(
         delay, buffer, count, type, dst, tag, request, msg_handler, fun_arg);
@@ -1403,6 +1429,7 @@ int Sys::front_end_sim_recv(
     sim_request* request,
     void (*msg_handler)(void* fun_arg),
     void* fun_arg) {
+  //std::cout<<"Recv at node: "<<id<<", expecting from: "<<src<<" ,tag: "<<tag<<", at time: "<<Sys::boostedTick()<<", size: "<<count<<std::endl;
   if (rendezvous_enabled) {
     return rendezvous_sim_recv(
         delay, buffer, count, type, src, tag, request, msg_handler, fun_arg);

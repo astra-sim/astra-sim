@@ -10,23 +10,15 @@ LICENSE file in the root directory of this source tree.
 
 namespace AstraSim {
 
-class Sys;
-class WorkloadLayerHandlerData;
-
-enum TensorLocationType {
-  LOCAL_MEMORY = 0,
-  REMOTE_MEMORY
-};
-
 class AstraMemoryAPI {
  public:
+  virtual uint64_t mem_read(uint64_t size) = 0;
+  virtual uint64_t mem_write(uint64_t size) = 0;
+  virtual uint64_t npu_mem_read(uint64_t size) = 0;
+  virtual uint64_t npu_mem_write(uint64_t size) = 0;
+  virtual uint64_t nic_mem_read(uint64_t size) = 0;
+  virtual uint64_t nic_mem_write(uint64_t size) = 0;
   virtual ~AstraMemoryAPI() = default;
-  virtual void set_sys(int id, Sys* sys) = 0;
-  virtual void issue(
-      TensorLocationType tensor_loc,
-      uint64_t tensor_size,
-      WorkloadLayerHandlerData* wlhd) = 0;
-  virtual uint64_t get_local_mem_runtime(uint64_t tensor_size) = 0;
 };
 
 } // namespace AstraSim
