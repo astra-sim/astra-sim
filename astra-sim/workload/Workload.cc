@@ -108,43 +108,60 @@ void Workload::issue_dep_free_nodes() {
 }
 
 void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
-  if ((node->type() == ChakraNodeType::MEM_LOAD_NODE)
-      || (node->type() == ChakraNodeType::MEM_STORE_NODE)) {
-    if (sys->trace_enabled) {
-      cout << "issue,sys->id=" << sys->id
-        << ",tick=" << Sys::boostedTick()
-        << ",node->id=" << node->id()
-        << ",node->name=" << node->name() << endl;
-    }
-    issue_remote_mem(node);
-  } else if (node->is_cpu_op()
-      || (!node->is_cpu_op() && node->type() == ChakraNodeType::COMP_NODE)) {
-    if ((node->runtime() == 0) &&
-        (node->num_ops() == 0)) {
-      skip_invalid(node);
-    } else {
+  if (sys->replay_only) {
+      issue_replay(node);
+  } else {
+    if ((node->type() == ChakraNodeType::MEM_LOAD_NODE)
+        || (node->type() == ChakraNodeType::MEM_STORE_NODE)) {
+      if (sys->trace_enabled) {
+        cout << "issue,sys->id=" << sys->id
+          << ",tick=" << Sys::boostedTick()
+          << ",node->id=" << node->id()
+          << ",node->name=" << node->name() << endl;
+      }
+      issue_remote_mem(node);
+    } else if (
+        node->is_cpu_op()
+        || (!node->is_cpu_op() && node->type() == ChakraNodeType::COMP_NODE)) {
+      if ((node->runtime() == 0) &&
+          (node->num_ops() == 0)) {
+        skip_invalid(node);
+      } else {
+        if (sys->trace_enabled) {
+          cout << "issue,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
+               << ",node->id=" << node->id()
+               << ",node->name=" << node->name() << endl;
+        }
+        issue_comp(node);
+      }
+    } else if (
+        !node->is_cpu_op() &&
+        (node->type() == ChakraNodeType::COMM_COLL_NODE
+         || (node->type() == ChakraNodeType::COMM_SEND_NODE)
+         || (node->type() == ChakraNodeType::COMM_RECV_NODE))) {
       if (sys->trace_enabled) {
         cout << "issue,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
              << ",node->id=" << node->id()
              << ",node->name=" << node->name() << endl;
       }
-      issue_comp(node);
+      issue_comm(node);
+    } else if (
+        node->type() == ChakraNodeType::INVALID_NODE) {
+      skip_invalid(node);
     }
-  } else if (
-      !node->is_cpu_op() &&
-      (node->type() == ChakraNodeType::COMM_COLL_NODE
-       || (node->type() == ChakraNodeType::COMM_SEND_NODE)
-       || (node->type() == ChakraNodeType::COMM_RECV_NODE))) {
-    if (sys->trace_enabled) {
-      cout << "issue,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
-           << ",node->id=" << node->id()
-           << ",node->name=" << node->name() << endl;
-    }
-    issue_comm(node);
-  } else if (
-      node->type() == ChakraNodeType::INVALID_NODE) {
-    skip_invalid(node);
   }
+}
+
+void Workload::issue_replay(shared_ptr<Chakra::ETFeederNode> node) {
+  WorkloadLayerHandlerData* wlhd = new WorkloadLayerHandlerData;
+  wlhd->node_id = node->id();
+
+  assert(node->runtime() != 0);
+  sys->register_event(
+      this,
+      EventType::General,
+      wlhd,
+      node->runtime());
 }
 
 void Workload::issue_remote_mem(shared_ptr<Chakra::ETFeederNode> node) {
@@ -174,14 +191,8 @@ void Workload::issue_comp(shared_ptr<Chakra::ETFeederNode> node) {
         static_cast<uint64_t>(elapsed_time * static_cast<double>(FREQ));
     sys->register_event(this, EventType::General, wlhd, runtime);
   } else {
-    WorkloadLayerHandlerData* wlhd = new WorkloadLayerHandlerData;
-    wlhd->node_id = node->id();
-
-    sys->register_event(
-        this,
-        EventType::General,
-        wlhd,
-        node->runtime());
+    // advance this node forward the recorded "replayed" time specificed in the ET.
+    issue_replay(node);
   }
 }
 
