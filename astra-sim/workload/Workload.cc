@@ -117,7 +117,8 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
         << ",node->name=" << node->name() << endl;
     }
     issue_mem(node);
-  } else if (node->type() == ChakraNodeType::COMP_NODE) {
+  } else if (node->is_host_op()
+      || (!node->is_host_op() && node->type() == ChakraNodeType::COMP_NODE)) {
     if ((node->runtime() == 0) &&
         (node->num_ops() == 0)) {
       skip_invalid(node);
@@ -130,9 +131,10 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
       issue_comp(node);
     }
   } else if (
-      (node->type() == ChakraNodeType::COMM_COLL_NODE) ||
-      (node->type() == ChakraNodeType::COMM_SEND_NODE) ||
-      (node->type() == ChakraNodeType::COMM_RECV_NODE)) {
+      !node->is_host_op() &&
+      (node->type() == ChakraNodeType::COMM_COLL_NODE
+       || (node->type() == ChakraNodeType::COMM_SEND_NODE)
+       || (node->type() == ChakraNodeType::COMM_RECV_NODE))) {
     if (sys->trace_enabled) {
       cout << "issue,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
            << ",node->id=" << node->id()
@@ -160,7 +162,6 @@ void Workload::issue_mem(shared_ptr<Chakra::ETFeederNode> node) {
 }
 
 void Workload::issue_comp(shared_ptr<Chakra::ETFeederNode> node) {
-  assert(node->type() == ChakraNodeType::COMP_NODE);
   hw_resource->occupy(node);
 
   if (sys->roofline_enabled) {
@@ -198,7 +199,8 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
     involved_dim.push_back(node->involved_dim(i));
   }
 
-  if (node->type() == ChakraNodeType::COMM_COLL_NODE) {
+  if (!node->is_host_op()
+      && (node->type() == ChakraNodeType::COMM_COLL_NODE)) {
     if (node->comm_type() ==
         ChakraCollectiveCommType::ALL_REDUCE) {
       DataSet* fp = sys->generate_all_reduce(
@@ -341,9 +343,8 @@ void Workload::call(EventType event, CallData* data) {
   }
 
   if (!et_feeder->hasNodesToIssue() &&
-      (hw_resource->num_in_flight_mem_reqs == 0) &&
-      (hw_resource->num_in_flight_comps == 0) &&
-      (hw_resource->num_in_flight_comms == 0)) {
+      (hw_resource->num_in_flight_host_ops == 0) &&
+      (hw_resource->num_in_flight_kernel_ops == 0)) {
     report();
     is_finished = true;
   }
