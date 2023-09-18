@@ -13,6 +13,8 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/WorkloadLayerHandlerData.hh"
 
 #include <iostream>
+#include <unistd.h>
+#include <stdlib.h>
 
 using namespace std;
 using namespace AstraSim;
@@ -24,8 +26,21 @@ typedef ChakraProtoMsg::MemoryType ChakraMemoryType;
 typedef ChakraProtoMsg::CollectiveCommType ChakraCollectiveCommType;
 
 Workload::Workload(Sys* sys, string eg_filename, string comm_group_filename) {
-  this->et_feeder =
-      new ETFeeder(eg_filename + "." + to_string(sys->id) + ".eg");
+  string workload_filename = eg_filename + "." + to_string(sys->id) + ".et";
+  // Check if workload filename exists
+  if (access(workload_filename.c_str(), R_OK) < 0) {
+      string error_msg;
+      if (errno == ENOENT) {
+          error_msg = "workload file: " + workload_filename + " does not exist";
+      } else if (errno == EACCES) {
+          error_msg = "workload file: " + workload_filename + " exists but is not readable";
+      } else {
+          error_msg = "Unknown workload file: " + workload_filename + " access error";
+      }
+      cerr << error_msg << endl;
+      exit(EXIT_FAILURE);
+  }
+  this->et_feeder = new ETFeeder(workload_filename);
   this->comm_group = nullptr;
   // TODO: parametrize the number of available hardware resources
   this->hw_resource = new HardwareResource(1);
