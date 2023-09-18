@@ -94,13 +94,12 @@ void Workload::issue_dep_free_nodes() {
 }
 
 void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
-  if ((node->getChakraNode()->node_type() == ChakraNodeType::MEM_LOAD_NODE)
-      || (node->getChakraNode()->node_type() == ChakraNodeType::MEM_STORE_NODE)) {
+  if ((node->getChakraNode()->node_type() == ChakraNodeType::MEM_LOAD_NODE) ||
+      (node->getChakraNode()->node_type() == ChakraNodeType::MEM_STORE_NODE)) {
     if (sys->trace_enabled) {
-      cout << "issue,sys->id=" << sys->id
-        << ",tick=" << Sys::boostedTick()
-        << ",node->id=" << node->getChakraNode()->id()
-        << ",node->name=" << node->getChakraNode()->name() << endl;
+      cout << "issue,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
+           << ",node->id=" << node->getChakraNode()->id()
+           << ",node->name=" << node->getChakraNode()->name() << endl;
     }
     issue_mem(node);
   } else if (node->getChakraNode()->node_type() == ChakraNodeType::COMP_NODE) {
