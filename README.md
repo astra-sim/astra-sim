@@ -35,8 +35,9 @@ To build ASTRA-sim locally, you first need to install the necessary packages.
 - #### Debian-based Linux Distribution
 For Debian-based Linux distributions, including Ubuntu, you can install dependencies using the following commands:
 ```bash
-$ sudo apt-get -y update
-$ sudo apt-get -y install \
+$ sudo apt update
+$ sudo apt upgrade
+$ sudo apt install \
     gcc g++ make cmake \
     libboost-dev libboost-program-options-dev \
     libprotobuf-dev protobuf-compiler \
