@@ -1,6 +1,6 @@
 # ASTRA-sim 2.0
 ASTRA-sim is a distributed machine learning system simulator, developed as a joint collaboration between Georgia Tech, Meta, and Intel.
-The previous version, ASTRA-sim 1.0, is available in the [`ASTRA-sim-1.0` branch](https://github.com/astra-sim/astra-sim/tree/ASTRA-sim-1.0).
+The previous version, ASTRA-sim 1.0, is available in the `ASTRA-sim-1.0` [branch](https://github.com/astra-sim/astra-sim/tree/ASTRA-sim-1.0).
 
 Here is a concise visual summary of our simulator:
 ![alt text](https://github.com/astra-sim/astra-sim/blob/master/docs/images/astrasim_overview_codesign.png)
@@ -33,7 +33,7 @@ The following steps will guide you through both methods.
 To build ASTRA-sim locally, you first need to install the necessary packages.
 
 - #### Debian-based Linux Distribution
-For Debian-based Linux distributions including Ubuntu, you can install dependencies using the following commands:
+For Debian-based Linux distributions, including Ubuntu, you can install dependencies using the following commands:
 ```bash
 $ sudo apt-get -y update
 $ sudo apt-get -y install \
@@ -47,10 +47,12 @@ $ sudo pip3 install protobuf==3.6.1 pydot
 - #### macOS
 For macOS, you can first install required dependencies using [homebrew](https://brew.sh).
 ```bash
+$ brew update
+$ brew upgrade
 $ brew install boost cmake coreutils 
 ```
 
-Then, you have to install protobuf 3.6.1 locally. You can download protobuf 3.6.1 [here](https://github.com/protocolbuffers/protobuf/releases/tag/v3.6.1).
+Then, you have to install protobuf 3.6.1 locally. You can download protobuf 3.6.1 here: [[GitHub]](https://github.com/protocolbuffers/protobuf/releases/tag/v3.6.1) [[protobuf-all-3.6.1.tar.gz]](https://github.com/protocolbuffers/protobuf/releases/download/v3.6.1/protobuf-all-3.6.1.tar.gz).
 ```bash
 # Installing protobuf 3.6.1 locally
 $ ./configure
@@ -75,7 +77,7 @@ ASTRA-sim is not natively supporting Windows environment at this moment. We sugg
 Once the packages are installed, you will need to clone this repository onto your local machine using the following command:
 ```bash
 $ git clone --recurse-submodules git@github.com:astra-sim/astra-sim.git
-$ cd astra-sim/
+$ cd ./astra-sim/
 ```
 
 #### Compiling ASTRA-sim
@@ -91,7 +93,7 @@ Alternatively, you can build ASTRA-sim within a Docker container.
 Start by cloning this repository to your local machine using the same command as above:
 ```bash
 $ git clone --recurse-submodules git@github.com:astra-sim/astra-sim.git
-$ cd astra-sim/
+$ cd ./astra-sim/
 ```
 
 Next, create a Docker image using the following command:
