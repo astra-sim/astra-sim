@@ -55,9 +55,7 @@ void PacketBundle::call(EventType event, CallData* data) {
   if (needs_processing == true) {
     needs_processing = false;
     this->delay =
-      sys->mem->get_local_mem_runtime((uint64_t)size) // write
-      + sys->mem->get_local_mem_runtime((uint64_t)size) // read
-      + sys->mem->get_local_mem_runtime((uint64_t)size); // read
+        sys->mem_write(size) + sys->mem_read(size) + sys->mem_read(size);
     sys->try_register_event(
         this, EventType::CommProcessingFinished, data, this->delay);
     return;

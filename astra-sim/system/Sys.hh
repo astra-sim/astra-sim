@@ -106,6 +106,11 @@ class Sys : public Callable {
   static void handleEvent(void* arg);
   //---------------------------------------------------------------------------
 
+  // Memory Read & Write ------------------------------------------------------
+  Tick mem_read(uint64_t bytes);
+  Tick mem_write(uint64_t bytes);
+  //---------------------------------------------------------------------------
+
   // Communicator Group Support -----------------------------------------------
   LogicalTopology* get_logical_topology(ComType comm_type);
   std::vector<CollectiveImpl*> get_collective_implementation(ComType comm_type);
@@ -309,6 +314,9 @@ class Sys : public Callable {
 
   // statistics
   bool trace_enabled;
+
+  //only replay the ops and do not simulate any op
+  bool replay_only;
 };
 
 } // namespace AstraSim

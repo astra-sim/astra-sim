@@ -8,6 +8,7 @@ LICENSE file in the root directory of this source tree.
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 #include "astra-sim/system/Callable.hh"
 #include "astra-sim/system/CommunicatorGroup.hh"
@@ -17,8 +18,9 @@ LICENSE file in the root directory of this source tree.
 namespace AstraSim {
 
 class Sys;
+class DataSet;
 
-class Workload : public Callable {
+class Workload : Callable {
  public:
   Workload(Sys* sys, std::string eg_filename, std::string comm_group_filename);
   ~Workload();
@@ -29,7 +31,6 @@ class Workload : public Callable {
   // event-based simulation
   void issue_dep_free_nodes();
   void issue(std::shared_ptr<Chakra::ETFeederNode> node);
-  void issue_mem(std::shared_ptr<Chakra::ETFeederNode> node);
   void issue_comp(std::shared_ptr<Chakra::ETFeederNode> node);
   void issue_comm(std::shared_ptr<Chakra::ETFeederNode> node);
   void skip_invalid(std::shared_ptr<Chakra::ETFeederNode> node);
@@ -43,7 +44,8 @@ class Workload : public Callable {
   CommunicatorGroup* comm_group;
   HardwareResource* hw_resource;
   Sys* sys;
-  std::map<int, uint64_t> collective_comm_node_id_map;
+  std::unordered_map<int, uint64_t> collective_comm_node_id_map;
+  std::unordered_map<int, DataSet*> collective_comm_wrapper_map;
   bool is_finished;
 };
 

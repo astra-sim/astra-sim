@@ -13,6 +13,8 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/WorkloadLayerHandlerData.hh"
 
 #include <iostream>
+#include <unistd.h>
+#include <stdlib.h> 
 
 using namespace std;
 using namespace AstraSim;
@@ -20,12 +22,30 @@ using namespace Chakra;
 using json = nlohmann::json;
 
 typedef ChakraProtoMsg::NodeType ChakraNodeType;
-typedef ChakraProtoMsg::MemoryType ChakraMemoryType;
 typedef ChakraProtoMsg::CollectiveCommType ChakraCollectiveCommType;
 
 Workload::Workload(Sys* sys, string eg_filename, string comm_group_filename) {
+  string workload_filename=eg_filename + "." + to_string(sys->id) + ".et";
+  //Checking if workload filename exist
+  int res = access(workload_filename.c_str(), R_OK);
+  if (res < 0) {
+	if (errno == ENOENT) {
+		// file does not exist
+		cerr<<"workload file: "<< workload_filename<<" does not exist"<<endl;
+		exit (EXIT_FAILURE);
+		
+	} else if (errno == EACCES) {
+		// file exists but is not readable
+		cerr<<"workload file: "<< workload_filename<<" exists but is not readble"<<endl;;
+		exit (EXIT_FAILURE);
+	} else {
+		 // uh oh
+		cerr<<"Unknown workload file: "<<workload_filename<<" access error"<<endl;;
+		exit (EXIT_FAILURE);
+	}
+  }
   this->et_feeder =
-      new ETFeeder(eg_filename + "." + to_string(sys->id) + ".eg");
+      new ETFeeder(workload_filename);
   this->comm_group = nullptr;
   // TODO: parametrize the number of available hardware resources
   this->hw_resource = new HardwareResource(1);
@@ -77,6 +97,7 @@ void Workload::initialize_comm_group(string comm_group_filename) {
 void Workload::issue_dep_free_nodes() {
   std::queue<shared_ptr<Chakra::ETFeederNode>> push_back_queue;
   shared_ptr<Chakra::ETFeederNode> node = et_feeder->getNextIssuableNode();
+  
   while (node != nullptr) {
     if (hw_resource->is_available(node)) {
       issue(node);
@@ -91,62 +112,46 @@ void Workload::issue_dep_free_nodes() {
     et_feeder->pushBackIssuableNode(node->getChakraNode()->id());
     push_back_queue.pop();
   }
+  
 }
 
 void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
-  if ((node->getChakraNode()->node_type() == ChakraNodeType::MEM_LOAD_NODE)
-      || (node->getChakraNode()->node_type() == ChakraNodeType::MEM_STORE_NODE)) {
-    if (sys->trace_enabled) {
-      cout << "issue,sys->id=" << sys->id
-        << ",tick=" << Sys::boostedTick()
-        << ",node->id=" << node->getChakraNode()->id()
-        << ",node->name=" << node->getChakraNode()->name() << endl;
-    }
-    issue_mem(node);
-  } else if (node->getChakraNode()->node_type() == ChakraNodeType::COMP_NODE) {
-    if ((node->getChakraNode()->simulated_run_time() == 0) &&
-        (node->getChakraNode()->num_ops() == 0)) {
+  if (
+      sys->replay_only ||
+      (node->getChakraNode()->type() == ChakraNodeType::COMP_NODE) ||
+      (node->getChakraNode()->type() == ChakraNodeType::COMM_COLL_NODE) ||
+      (node->getChakraNode()->type() == ChakraNodeType::COMM_SEND_NODE) ||
+      (node->getChakraNode()->type() == ChakraNodeType::COMM_RECV_NODE) ||
+      (node->getChakraNode()->type() == ChakraNodeType::KERNEL_COMP_NODE)) {
+      if ((node->getChakraNodeFlattened()->runtime() == 0) &&
+          (node->getChakraNodeFlattened()->num_ops() == 0)) {
       skip_invalid(node);
-    } else {
-      if (sys->trace_enabled) {
-        cout << "issue,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
-             << ",node->id=" << node->getChakraNode()->id()
-             << ",node->name=" << node->getChakraNode()->name() << endl;
+      } else {
+        if (sys->trace_enabled) {
+          cout << "issue comp node,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
+              << ",node->id=" << node->getChakraNode()->id()
+              << ",node->name=" << node->getChakraNode()->name().substr(0,20) <<", dur: "<<node->getChakraNodeFlattened()->runtime()*1000<<" ns"<< endl;
+        }
+        issue_comp(node);
       }
-      issue_comp(node);
-    }
   } else if (
-      (node->getChakraNode()->node_type() == ChakraNodeType::COMM_COLL_NODE) ||
-      (node->getChakraNode()->node_type() == ChakraNodeType::COMM_SEND_NODE) ||
-      (node->getChakraNode()->node_type() == ChakraNodeType::COMM_RECV_NODE)) {
+      (node->getChakraNode()->type() == ChakraNodeType::KERNEL_COMM_COLL_NODE) ||
+      (node->getChakraNode()->type() == ChakraNodeType::KERNEL_COMM_SEND_NODE) ||
+      (node->getChakraNode()->type() == ChakraNodeType::KERNEL_COMM_RECV_NODE)) {
     if (sys->trace_enabled) {
-      cout << "issue,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
+      cout << "issue comm node,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
            << ",node->id=" << node->getChakraNode()->id()
-           << ",node->name=" << node->getChakraNode()->name() << endl;
+           << ",node->name=" << node->getChakraNode()->name().substr(0,20)<<", comm size: "<<node->getChakraNodeFlattened()->comm_size() << endl;
     }
     issue_comm(node);
   } else if (
-      node->getChakraNode()->node_type() == ChakraNodeType::INVALID_NODE) {
+      node->getChakraNode()->type() == ChakraNodeType::INVALID_NODE) {
     skip_invalid(node);
   }
 }
 
-void Workload::issue_mem(shared_ptr<Chakra::ETFeederNode> node) {
-  hw_resource->occupy(node);
-
-  WorkloadLayerHandlerData* wlhd = new WorkloadLayerHandlerData;
-  wlhd->sys_id = sys->id;
-  wlhd->workload = this;
-  wlhd->node_id = node->getChakraNode()->id();
-  if (node->getChakraNode()->tensor_loc() == ChakraMemoryType::LOCAL_MEMORY) {
-    sys->mem->issue(LOCAL_MEMORY, node->getChakraNode()->tensor_size(), wlhd);
-  } else {
-    sys->mem->issue(REMOTE_MEMORY, node->getChakraNode()->tensor_size(), wlhd);
-  }
-}
-
 void Workload::issue_comp(shared_ptr<Chakra::ETFeederNode> node) {
-  assert(node->getChakraNode()->node_type() == ChakraNodeType::COMP_NODE);
+  //assert(node->getChakraNode()->type() == ChakraNodeType::COMP_NODE);
   hw_resource->occupy(node);
 
   if (sys->roofline_enabled) {
@@ -154,14 +159,14 @@ void Workload::issue_comp(shared_ptr<Chakra::ETFeederNode> node) {
     wlhd->node_id = node->getChakraNode()->id();
 
     double operational_intensity =
-        static_cast<double>(node->getChakraNode()->num_ops()) /
-        static_cast<double>(node->getChakraNode()->tensor_size());
+        static_cast<double>(node->getChakraNodeFlattened()->num_ops()) /
+        static_cast<double>(node->getChakraNodeFlattened()->tensor_size());
     double perf = sys->roofline->get_perf(operational_intensity);
     double elapsed_time =
-        static_cast<double>(node->getChakraNode()->num_ops()) / perf;
-    uint64_t simulated_run_time =
+        static_cast<double>(node->getChakraNodeFlattened()->num_ops()) / perf;
+    uint64_t runtime =
         static_cast<uint64_t>(elapsed_time * static_cast<double>(FREQ));
-    sys->register_event(this, EventType::General, wlhd, simulated_run_time);
+    sys->register_event(this, EventType::General, wlhd, runtime);
   } else {
     WorkloadLayerHandlerData* wlhd = new WorkloadLayerHandlerData;
     wlhd->node_id = node->getChakraNode()->id();
@@ -170,69 +175,97 @@ void Workload::issue_comp(shared_ptr<Chakra::ETFeederNode> node) {
         this,
         EventType::General,
         wlhd,
-        node->getChakraNode()->simulated_run_time());
+        //chakra runtimes are in microseconds and we should convert it into nanoseconds
+        node->getChakraNodeFlattened()->runtime()*1000); 
   }
 }
 
 void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
   int src, dst;
-
+  //node->getChakraNodeFlattened()->print_node_type();
+  //node->getChakraNodeFlattened()->print_comm_coll_type();
+  assert(node->getChakraNodeFlattened()->comm_size()>0);
   hw_resource->occupy(node);
 
   vector<bool> involved_dim;
-  for (int i = 0; i < node->getChakraNode()->involved_dim_size(); i++) {
-    involved_dim.push_back(node->getChakraNode()->involved_dim(i));
+  for (int i = 0; i < node->getChakraNodeFlattened()->involved_dim_size(); i++) {
+    involved_dim.push_back(node->getChakraNodeFlattened()->involved_dim(i));
   }
 
-  if (node->getChakraNode()->node_type() == ChakraNodeType::COMM_COLL_NODE) {
-    if (node->getChakraNode()->comm_type() ==
+  if (node->getChakraNode()->type() == ChakraNodeType::KERNEL_COMM_COLL_NODE) {
+    assert(involved_dim.size()>0);
+    
+    /*if(sys->trace_enabled){
+      //node->getChakraNodeFlattened()->print_comm_coll_type();
+      cout << "collective comm issue,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
+            << ",node->id=" << node->getChakraNode()->id()
+            << ",node->name=" << node->getChakraNode()->name()<<", comm size: "<<node->getChakraNodeFlattened()->comm_size()<< endl;
+    }*/
+    if (node->getChakraNodeFlattened()->comm_type() ==
         ChakraCollectiveCommType::ALL_REDUCE) {
       DataSet* fp = sys->generate_all_reduce(
-          node->getChakraNode()->comm_size(),
+          node->getChakraNodeFlattened()->comm_size(),
           involved_dim,
           comm_group,
-          node->getChakraNode()->comm_priority());
+          node->getChakraNodeFlattened()->comm_priority());
       collective_comm_node_id_map[fp->my_id] = node->getChakraNode()->id();
+      collective_comm_wrapper_map[fp->my_id] = fp;
       fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
 
     } else if (
-        node->getChakraNode()->comm_type() ==
+        node->getChakraNodeFlattened()->comm_type() ==
         ChakraCollectiveCommType::ALL_TO_ALL) {
       DataSet* fp = sys->generate_all_to_all(
-          node->getChakraNode()->comm_size(),
+          node->getChakraNodeFlattened()->comm_size(),
           involved_dim,
           comm_group,
-          node->getChakraNode()->comm_priority());
+          node->getChakraNodeFlattened()->comm_priority());
       collective_comm_node_id_map[fp->my_id] = node->getChakraNode()->id();
+      collective_comm_wrapper_map[fp->my_id] = fp;
       fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
 
     } else if (
-        node->getChakraNode()->comm_type() ==
+        node->getChakraNodeFlattened()->comm_type() ==
         ChakraCollectiveCommType::ALL_GATHER) {
       DataSet* fp = sys->generate_all_gather(
-          node->getChakraNode()->comm_size(),
+          node->getChakraNodeFlattened()->comm_size(),
           involved_dim,
           comm_group,
-          node->getChakraNode()->comm_priority());
+          node->getChakraNodeFlattened()->comm_priority());
       collective_comm_node_id_map[fp->my_id] = node->getChakraNode()->id();
+      collective_comm_wrapper_map[fp->my_id] = fp;
       fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
 
     } else if (
-        node->getChakraNode()->comm_type() ==
+        node->getChakraNodeFlattened()->comm_type() ==
         ChakraCollectiveCommType::REDUCE_SCATTER) {
       DataSet* fp = sys->generate_reduce_scatter(
-          node->getChakraNode()->comm_size(),
+          node->getChakraNodeFlattened()->comm_size(),
           involved_dim,
           comm_group,
-          node->getChakraNode()->comm_priority());
+          node->getChakraNodeFlattened()->comm_priority());
       collective_comm_node_id_map[fp->my_id] = node->getChakraNode()->id();
+      collective_comm_wrapper_map[fp->my_id] = fp;
       fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
-    }
-  } else if (
-      node->getChakraNode()->node_type() == ChakraNodeType::COMM_SEND_NODE) {
+    } else if (
+        node->getChakraNodeFlattened()->comm_type() ==
+        ChakraCollectiveCommType::BROADCAST) {
+      //broadcast colelctive has not been implemented in ASTRA-SIM yet. So, we just use its real system mesurements
+      DataSet* fp = new DataSet(1);
+      fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
+      sys->register_event(
+        fp,
+        EventType::General,
+        nullptr,
+        //chakra runtimes are in microseconds and we should convert it into nanoseconds
+        node->getChakraNodeFlattened()->runtime()*1000);
+      }
+  } 
+  else if (
+    node->getChakraNode()->type() == ChakraNodeType::COMM_SEND_NODE) {
     sim_request snd_req;
-    snd_req.srcRank = node->getChakraNode()->comm_src();
-    snd_req.dstRank = node->getChakraNode()->comm_dst();
+    snd_req.srcRank = node->getChakraNodeFlattened()->comm_src();
+    snd_req.dstRank = node->getChakraNodeFlattened()->comm_dst();
     snd_req.reqType = UINT8;
     SendPacketEventHandlerData* sehd = new SendPacketEventHandlerData;
     sehd->callable = this;
@@ -242,15 +275,15 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
     sys->front_end_sim_send(
         0,
         Sys::dummy_data,
-        node->getChakraNode()->comm_size(),
+        node->getChakraNodeFlattened()->comm_size(),
         UINT8,
-        node->getChakraNode()->comm_dst(),
-        node->getChakraNode()->comm_tag(),
+        node->getChakraNodeFlattened()->comm_dst(),
+        node->getChakraNodeFlattened()->comm_tag(),
         &snd_req,
         &Sys::handleEvent,
         sehd);
   } else if (
-      node->getChakraNode()->node_type() == ChakraNodeType::COMM_RECV_NODE) {
+      node->getChakraNode()->type() == ChakraNodeType::COMM_RECV_NODE) {
     sim_request rcv_req;
     RecvPacketEventHandlerData* rcehd = new RecvPacketEventHandlerData;
     rcehd->wlhd = new WorkloadLayerHandlerData;
@@ -260,13 +293,16 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
     sys->front_end_sim_recv(
         0,
         Sys::dummy_data,
-        node->getChakraNode()->comm_size(),
+        node->getChakraNodeFlattened()->comm_size(),
         UINT8,
-        node->getChakraNode()->comm_src(),
-        node->getChakraNode()->comm_tag(),
+        node->getChakraNodeFlattened()->comm_src(),
+        node->getChakraNodeFlattened()->comm_tag(),
         &rcv_req,
         &Sys::handleEvent,
         rcehd);
+  } else{
+    cerr<<"Unknown comm node type"<<endl;
+    exit (EXIT_FAILURE);
   }
 }
 
@@ -286,9 +322,9 @@ void Workload::call(EventType event, CallData* data) {
     shared_ptr<Chakra::ETFeederNode> node = et_feeder->lookupNode(node_id);
 
     if (sys->trace_enabled) {
-      cout << "callback,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
+      cout << "collective comm callback,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
            << ",node->id=" << node->getChakraNode()->id()
-           << ",node->name=" << node->getChakraNode()->name() << endl;
+           << ",node->name=" << node->getChakraNode()->name().substr(0,20)<<", comm size: "<<node->getChakraNodeFlattened()->comm_size()<< endl;
     }
 
     hw_resource->release(node);
@@ -298,6 +334,9 @@ void Workload::call(EventType event, CallData* data) {
     issue_dep_free_nodes();
 
     et_feeder->removeNode(node_id);
+    // The Dataset class provides statistics that should be used later to dump more stats in the workload layer
+    delete collective_comm_wrapper_map[node_id];
+    collective_comm_wrapper_map.erase(node_id);
 
   } else {
     if (data == nullptr) {
@@ -306,13 +345,12 @@ void Workload::call(EventType event, CallData* data) {
       WorkloadLayerHandlerData* wlhd = (WorkloadLayerHandlerData*)data;
       shared_ptr<Chakra::ETFeederNode> node =
           et_feeder->lookupNode(wlhd->node_id);
-
       if (sys->trace_enabled) {
         cout << "callback,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
              << ",node->id=" << node->getChakraNode()->id()
-             << ",node->name=" << node->getChakraNode()->name() << endl;
+             << ",node->name=" << node->getChakraNode()->name().substr(0,20)<< " with simulated runtime of: "
+             <<node->getChakraNodeFlattened()->runtime()*1000<<" ns"<< endl;
       }
-
       hw_resource->release(node);
 
       et_feeder->freeChildrenNodes(node->getChakraNode()->id());
@@ -323,11 +361,20 @@ void Workload::call(EventType event, CallData* data) {
       delete wlhd;
     }
   }
-
+  /*if(sys->id==3)
+    cout<<"for npu: "<<sys->id<<" hasNodesToIssue: "<<et_feeder->hasNodesToIssue()<<", num in-flight-comps: "<<hw_resource->num_in_flight_comps<<", num in-fligh-comms: "
+    <<hw_resource->num_in_flight_comms<<", dep_graph size: "<<et_feeder->dep_graph_.size()<<", dep_free_nodes size: "<<et_feeder->dep_free_node_queue_.size()<<
+    " and cycle check is: "<<et_feeder->check_dep_graph_cycle()<<endl;*/
+  /*if(et_feeder->dep_graph_.size()==4)
+    for(auto &a:et_feeder->dep_graph_){
+      //a.second->getChakraNodeFlattened()->print_node_type();
+      //a.second->getChakraNodeFlattened()->print_comm_coll_type();
+      cout<<"And comm size is: "<<a.second->getChakraNodeFlattened()->comm_size()<<" and comm tag is: "<<a.second->getChakraNodeFlattened()->comm_tag()
+      <<" and hw available is: "<<hw_resource->is_available(a.second)<<endl;
+    }*/
   if (!et_feeder->hasNodesToIssue() &&
-      (hw_resource->num_in_flight_mem_reqs == 0) &&
-      (hw_resource->num_in_flight_comps == 0) &&
-      (hw_resource->num_in_flight_comms == 0)) {
+      (hw_resource->num_in_flight_host_ops == 0) &&
+      (hw_resource->num_in_flight_kernel_ops == 0)) {
     report();
     is_finished = true;
   }
