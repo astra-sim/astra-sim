@@ -33,10 +33,28 @@ function cleanup {
   rm -rf "${BUILD_DIR:?}"
 }
 
+function create_symlinks {
+  # create symlinks for backward compatibility
+  # ASTRA-sim library
+  mkdir -p "${BUILD_DIR:?}"/AstraSim/lib/
+  ln -s "${BUILD_DIR:?}"/lib/libAstraSim.a "${BUILD_DIR:?}"/AstraSim/lib/libAstraSim.a
+
+  # congestion_unaware
+  mkdir -p "${BUILD_DIR:?}"/AnalyticalAstra/bin/
+  ln -s "${BUILD_DIR:?}"/bin/AstraSim_Analytical_Congestion_Unaware "${BUILD_DIR:?}"/AnalyticalAstra/bin/AnalyticalAstra
+
+  # congestion_aware
+  mkdir -p "${BUILD_DIR:?}"/AstraCongestion/bin/
+  ln -s "${BUILD_DIR:?}"/bin/AstraSim_Analytical_Congestion_Aware "${BUILD_DIR:?}"/AstraCongestion/bin/AstraCongestion
+}
+
 case "$1" in
--l|--clean)
-  cleanup;;
+-l | --clean)
+  cleanup
+  ;;
 *)
   setup
-  compile;;
+  compile
+  create_symlinks
+  ;;
 esac

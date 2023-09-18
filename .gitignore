@@ -12,7 +12,5 @@ compile_commands.json
 # Analytical Model build and result files
 build/astra_analytical/build/
 build/astra_analytical/result/
-build/astra_congestion/build/
-build/astra_congestion/result/
 build/astra_garnet/build/
 build/astra_garnet/result/
