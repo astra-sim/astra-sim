@@ -117,7 +117,9 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
         << ",node->name=" << node->name() << endl;
     }
     issue_mem(node);
-  } else if (node->is_host_op()
+  } else if (
+      sys->replay_only
+      || node->is_host_op()
       || (!node->is_host_op() && node->type() == ChakraNodeType::COMP_NODE)) {
     if ((node->runtime() == 0) &&
         (node->num_ops() == 0)) {
