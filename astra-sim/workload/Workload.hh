@@ -8,6 +8,7 @@ LICENSE file in the root directory of this source tree.
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 #include "astra-sim/system/Callable.hh"
 #include "astra-sim/system/CommunicatorGroup.hh"
@@ -43,7 +44,7 @@ class Workload : public Callable {
   CommunicatorGroup* comm_group;
   HardwareResource* hw_resource;
   Sys* sys;
-  std::map<int, uint64_t> collective_comm_node_id_map;
+  std::unordered_map<int, uint64_t> collective_comm_node_id_map;
   bool is_finished;
 };
 
