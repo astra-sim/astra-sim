@@ -281,6 +281,9 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
         &rcv_req,
         &Sys::handleEvent,
         rcehd);
+  } else{
+    cerr << "Unknown communication node type" << endl;
+    exit(EXIT_FAILURE);
   }
 }
 
