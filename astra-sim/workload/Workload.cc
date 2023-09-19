@@ -161,7 +161,8 @@ void Workload::issue_replay(shared_ptr<Chakra::ETFeederNode> node) {
       this,
       EventType::General,
       wlhd,
-      node->runtime());
+      // chakra runtimes are in microseconds and we should convert it into nanoseconds
+      node->runtime() * 1000);
 }
 
 void Workload::issue_remote_mem(shared_ptr<Chakra::ETFeederNode> node) {
@@ -260,7 +261,8 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
         fp,
         EventType::General,
         nullptr,
-        node->runtime());
+        // chakra runtimes are in microseconds and we should convert it into nanoseconds
+        node->runtime() * 1000);
       }
   } else if (node->type() == ChakraNodeType::COMM_SEND_NODE) {
     sim_request snd_req;
