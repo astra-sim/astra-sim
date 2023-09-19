@@ -13,10 +13,7 @@ namespace AstraSim {
 class Sys;
 class WorkloadLayerHandlerData;
 
-enum TensorLocationType {
-  LOCAL_MEMORY = 0,
-  REMOTE_MEMORY
-};
+enum TensorLocationType { LOCAL_MEMORY = 0, REMOTE_MEMORY };
 
 class AstraMemoryAPI {
  public:
