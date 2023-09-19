@@ -187,7 +187,8 @@ void Workload::issue_comp(shared_ptr<Chakra::ETFeederNode> node) {
         this,
         EventType::General,
         wlhd,
-        node->runtime());
+        // chakra runtimes are in microseconds and we should convert it into nanoseconds
+        node->runtime() * 1000);
   }
 }
 
@@ -256,7 +257,8 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
         fp,
         EventType::General,
         nullptr,
-        node->runtime());
+        // chakra runtimes are in microseconds and we should convert it into nanoseconds
+        node->runtime() * 1000);
       }
   } else if (
       node->type() == ChakraNodeType::COMM_SEND_NODE) {
