@@ -84,7 +84,7 @@ $ pip3 install --upgrade pip
 $ pip3 install protobuf==3.6.1 pydot
 ```
 
-#### Downloading ASTRA-sim
+#### (iii) Downloading ASTRA-sim
 
 Once the packages are installed, you will need to clone this repository onto your local machine using the following command:
 ```bash
@@ -92,7 +92,7 @@ $ git clone --recurse-submodules git@github.com:astra-sim/astra-sim.git
 $ cd ./astra-sim/
 ```
 
-#### Compiling ASTRA-sim
+#### (iv) Compiling ASTRA-sim
 Then, based on your target network backend, execute the corresponding build script:
 ```bash
 # For the analytical network backend
