@@ -16,10 +16,20 @@ add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../../" AstraSim)
 
 # Compile congestion_unaware
 if (BUILDTARGET STREQUAL "all" OR BUILDTARGET STREQUAL "congestion_unaware")
-    add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../../extern/network_backend/analytical/congestion_unaware" Congestion_Unaware)
+    # build network backend as library
+    set(NETWORK_BACKEND_BUILD_AS_LIBRARY ON)
+    add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../../extern/network_backend/analytical/congestion_unaware" Analytical_Congestion_Unaware)
+
+#    # build AstraSim + network backend as executable
+#    add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../../astra-sim/network_frontend/analytical/congestion_aware" AstraSim_Analytical_Congestion_Aware)
 endif ()
 
 # Compile congestion_aware
 if (BUILDTARGET STREQUAL "all" OR BUILDTARGET STREQUAL "congestion_aware")
-    add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../../extern/network_backend/analytical/congestion_aware" Congestion_Aware)
+    # build network backend as library
+    set(NETWORK_BACKEND_BUILD_AS_LIBRARY ON)
+    add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../../extern/network_backend/analytical/congestion_aware" Analytical_Congestion_Aware)
+
+    # build AstraSim + network backend as executable
+    add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../../astra-sim/network_frontend/analytical/congestion_aware" AstraSim_Analytical_Congestion_Aware)
 endif ()

@@ -25,7 +25,7 @@ file(GLOB srcs
         "${CMAKE_CURRENT_SOURCE_DIR}/extern/memory_backend/analytical/*.cc")
 
 # Compile AstraSim Library
-add_library(AstraSim ${srcs})
+add_library(AstraSim STATIC ${srcs})
 
 # Link libraries
 target_link_libraries(AstraSim LINK_PUBLIC ${Protobuf_LIBRARIES})
