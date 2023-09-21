@@ -6,7 +6,7 @@ LICENSE file in the root directory of this source tree.
 #pragma once
 
 #include <network_backend/analytical/common/event-queue/Event.hh>
-#include <network_backend/analytical/congestion_aware/type/Type.hh>
+#include <network_backend/analytical/common/type/Type.hh>
 #include <optional>
 
 namespace Congestion {
