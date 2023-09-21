@@ -7,7 +7,7 @@ LICENSE file in the root directory of this source tree.
 
 #include <iostream>
 
-#include "astra-sim/json.hpp"
+#include <json/json.hpp>
 #include "astra-sim/system/BaseStream.hh"
 #include "astra-sim/system/CollectivePlan.hh"
 #include "astra-sim/system/DataSet.hh"

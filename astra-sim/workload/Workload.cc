@@ -5,7 +5,7 @@ LICENSE file in the root directory of this source tree.
 
 #include "astra-sim/workload/Workload.hh"
 
-#include "astra-sim/json.hpp"
+#include <json/json.hpp>
 #include "astra-sim/system/IntData.hh"
 #include "astra-sim/system/MemEventHandlerData.hh"
 #include "astra-sim/system/RecvPacketEventHandlerData.hh"
