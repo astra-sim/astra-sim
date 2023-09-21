@@ -10,13 +10,13 @@ LICENSE file in the root directory of this source tree.
 // #include "astra-sim/system/memory/SimpleMemory.hh"
 #include <json/json.hpp>
 #include <congestion_aware/event-queue/EventQueue.hh>
-#include "extern/memory_backend/analytical/AnalyticalMemory.hh" // Divya: to port congestion backend to latest Chakra
 #include <congestion_aware/helper/CommandLineOptParser.hh>
 #include <congestion_aware/helper/NetworkConfigParser.hh>
 #include <congestion_aware/topology/FullyConnected.hh>
 #include <congestion_aware/topology/Ring.hh>
 #include <congestion_aware/topology/Switch.hh>
 #include <congestion_aware/topology/Topology.hh>
+#include "extern/memory_backend/analytical/AnalyticalMemory.hh" // Divya: to port congestion backend to latest Chakra
 
 using namespace Congestion;
 using json = nlohmann::json;

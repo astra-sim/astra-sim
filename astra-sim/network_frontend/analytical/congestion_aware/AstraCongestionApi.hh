@@ -5,8 +5,6 @@ LICENSE file in the root directory of this source tree.
 
 #pragma once
 
-#include "ChunkIdGenerator.hh"
-#include "EventHandlerTracker.hh"
 #include <astra-sim/system/AstraMemoryAPI.hh>
 #include <astra-sim/system/AstraNetworkAPI.hh>
 #include <astra-sim/system/AstraSimDataAPI.hh>
@@ -15,6 +13,8 @@ LICENSE file in the root directory of this source tree.
 #include <congestion_aware/network/Chunk.hh>
 #include <congestion_aware/network/Link.hh>
 #include <congestion_aware/topology/Topology.hh>
+#include "ChunkIdGenerator.hh"
+#include "EventHandlerTracker.hh"
 
 namespace Congestion {
 
