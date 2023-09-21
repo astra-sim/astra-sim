@@ -3,19 +3,18 @@ This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
+#include <json/json.hpp>
+#include <astra-sim/system/Sys.hh>
 #include <iostream> // Divya: to port congestion backend to Chakra
+#include <network_backend/analytical/common/event-queue/EventQueue.hh>
+#include <network_backend/analytical/congestion_aware/helper/CommandLineOptParser.hh>
+#include <network_backend/analytical/congestion_aware/helper/NetworkConfigParser.hh>
+#include <network_backend/analytical/congestion_aware/topology/FullyConnected.hh>
+#include <network_backend/analytical/congestion_aware/topology/Ring.hh>
+#include <network_backend/analytical/congestion_aware/topology/Switch.hh>
+#include <network_backend/analytical/congestion_aware/topology/Topology.hh>
 #include <vector>
 #include "AstraCongestionApi.hh"
-#include "astra-sim/system/Sys.hh"
-// #include "astra-sim/system/memory/SimpleMemory.hh"
-#include <json/json.hpp>
-#include <congestion_aware/event-queue/EventQueue.hh>
-#include <congestion_aware/helper/CommandLineOptParser.hh>
-#include <congestion_aware/helper/NetworkConfigParser.hh>
-#include <congestion_aware/topology/FullyConnected.hh>
-#include <congestion_aware/topology/Ring.hh>
-#include <congestion_aware/topology/Switch.hh>
-#include <congestion_aware/topology/Topology.hh>
 #include "extern/memory_backend/analytical/AnalyticalMemory.hh" // Divya: to port congestion backend to latest Chakra
 
 using namespace Congestion;

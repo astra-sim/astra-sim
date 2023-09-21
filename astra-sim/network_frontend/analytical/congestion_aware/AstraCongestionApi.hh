@@ -9,10 +9,10 @@ LICENSE file in the root directory of this source tree.
 #include <astra-sim/system/AstraNetworkAPI.hh>
 #include <astra-sim/system/AstraSimDataAPI.hh>
 #include <astra-sim/system/Common.hh>
-#include <congestion_aware/event-queue/EventQueue.hh>
-#include <congestion_aware/network/Chunk.hh>
-#include <congestion_aware/network/Link.hh>
-#include <congestion_aware/topology/Topology.hh>
+#include <network_backend/analytical/common/event-queue/EventQueue.hh>
+#include <network_backend/analytical/congestion_aware/network/Chunk.hh>
+#include <network_backend/analytical/congestion_aware/network/Link.hh>
+#include <network_backend/analytical/congestion_aware/topology/Topology.hh>
 #include "ChunkIdGenerator.hh"
 #include "EventHandlerTracker.hh"
 
