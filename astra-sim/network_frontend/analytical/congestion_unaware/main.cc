@@ -7,14 +7,14 @@ LICENSE file in the root directory of this source tree.
 
 #include "AnalyticalNetwork.hh"
 #include <json/json.hpp>
-#include "astra-sim/system/Sys.hh"
-#include "event-queue/EventQueue.hh"
-#include "event-queue/EventQueueEntry.hh"
+#include <astra-sim/system/Sys.hh>
+#include <congestion_unaware/event-queue/EventQueue.hh>
+#include <congestion_unaware/event-queue/EventQueueEntry.hh>
 #include "extern/memory_backend/analytical/AnalyticalMemory.hh"
-#include "helper/NetworkConfigParser.hh"
-#include "helper/cxxopts.hpp"
-#include "topology/HierarchicalTopology.hh"
-#include "topology/HierarchicalTopologyConfig.hh"
+#include <congestion_unaware/helper/NetworkConfigParser.hh>
+#include <cxxopts/cxxopts.hpp>
+#include <congestion_unaware/topology/HierarchicalTopology.hh>
+#include <congestion_unaware/topology/HierarchicalTopologyConfig.hh>
 
 using namespace std;
 using json = nlohmann::json;

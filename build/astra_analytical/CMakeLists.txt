@@ -14,21 +14,7 @@ set(BUILDTARGET "all" CACHE STRING "Compilation target ([all]/congestion_unaware
 # Compile AstraSim library
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../ AstraSim)
 
-## Compile congestion_unaware
-#if (BUILDTARGET STREQUAL "all" OR BUILDTARGET STREQUAL "congestion_unaware")
-#    # build network backend as library
-#    set(NETWORK_BACKEND_BUILD_AS_LIBRARY ON)
-#    add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../../extern/network_backend/analytical/congestion_unaware" Analytical_Congestion_Unaware)
-#
-#   # build AstraSim + network backend as executable
-#   add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../../astra-sim/network_frontend/analytical/congestion_unaware" AstraSim_Analytical_Congestion_Unaware)
-#endif ()
-
 # build appropriate analytical network backend as library
 set(NETWORK_BACKEND_BUILD_AS_LIBRARY ON)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../extern/network_backend/analytical/ Analytical)
-
-if (BUILDTARGET STREQUAL "all" OR BUILDTARGET STREQUAL "congestion_aware")
-   # build AstraSim + network backend as executable
-   add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../../astra-sim/network_frontend/analytical/congestion_aware" AstraSim_Analytical_Congestion_Aware)
-endif ()
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../astra-sim/network_frontend/analytical/ AstraSim_Analytical)

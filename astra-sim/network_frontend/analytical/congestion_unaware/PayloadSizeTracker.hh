@@ -8,7 +8,7 @@ LICENSE file in the root directory of this source tree.
 
 #include <vector>
 
-#include "topology/TopologyConfig.hh"
+#include <congestion_unaware/topology/TopologyConfig.hh>
 
 namespace Analytical {
 class PayloadSizeTracker {
