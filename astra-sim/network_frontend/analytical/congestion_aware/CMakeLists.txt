@@ -24,7 +24,7 @@ target_link_libraries(AstraSim_Analytical_Congestion_Aware LINK_PUBLIC Analytica
 
 # Properties
 target_include_directories(AstraSim_Analytical_Congestion_Aware PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
-target_include_directories(AstraSim_Analytical_Congestion_Aware PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../../../../astra-sim")
+target_include_directories(AstraSim_Analytical_Congestion_Aware PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../../../../")
 target_include_directories(AstraSim_Analytical_Congestion_Aware PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../../../../extern/network_backend/analytical/congestion_aware")
 set_target_properties(AstraSim_Analytical_Congestion_Aware
         PROPERTIES
