@@ -54,7 +54,7 @@ $ git submodule update --init --recursive
 This version of ns-3 requires gcc-5, g++-5, and python2.7. It also requires the `python` command to default to `python2.7`. 
 
 <!-- TODO: Check the validity of below statements (especially branches) -->
-1. Check-out to the **ns3_interface_tmp2** branch by running `git checkout ns3_interface_tmp2` .
+1. Check-out to the **ASTRA-sim-1.0_ns3** branch by running `git checkout ASTRA-sim-1.0_ns3` .
 2. Update the submodules by typing `git submodule update --init`. The ns-3 backend is hosted at [https://github.com/astra-sim/astra-network-ns3](https://github.com/astra-sim/astra-network-ns3).
 3. Go to the ns-3 directory: `cd ./extern/network_backend/ns3-interface/simulation/` and run `./waf configure` (only required once)
 4. Now go back to the root directory of ASTRA-sim and run `./build/astra_ns3/build.sh -c`. This will first copy the ASTRA-sim/ns-3 glue code (stored in the `./astra-sim/network_frontend/ns3` directory and contains the main file), and then build and run the ns-3 main file. Please refer to the `./astra-sim/network_frontend/ns3` for more information about the glue code.
