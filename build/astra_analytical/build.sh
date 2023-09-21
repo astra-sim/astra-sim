@@ -47,7 +47,7 @@ function create_symlink_astrasim() {
     mkdir -p "${BUILD_DIR:?}"/AstraSim/lib/
   fi
 
-  if [[ ! -e "${BUILD_DIR:?}"/AstraSim/lib/libAstraSim.a ]]; then
+  if [[ ! -L "${BUILD_DIR:?}"/AstraSim/lib/libAstraSim.a ]]; then
     ln -s "${BUILD_DIR:?}"/lib/libAstraSim.a "${BUILD_DIR:?}"/AstraSim/lib/libAstraSim.a
   fi
 }
@@ -59,7 +59,7 @@ function create_symlink_congestion_unaware() {
     mkdir -p "${BUILD_DIR:?}"/AnalyticalAstra/bin/
   fi
 
-  if [[ ! -e "${BUILD_DIR:?}"/AnalyticalAstra/bin/AnalyticalAstra ]]; then
+  if [[ ! -L "${BUILD_DIR:?}"/AnalyticalAstra/bin/AnalyticalAstra ]]; then
     ln -s "${BUILD_DIR:?}"/bin/AstraSim_Analytical_Congestion_Unaware "${BUILD_DIR:?}"/AnalyticalAstra/bin/AnalyticalAstra
   fi
 }
@@ -71,7 +71,7 @@ function create_symlink_congestion_aware() {
     mkdir -p "${BUILD_DIR:?}"/AstraCongestion/bin/
   fi
 
-  if [[ ! -e "${BUILD_DIR:?}"/AstraCongestion/bin/AstraCongestion ]]; then
+  if [[ ! -L "${BUILD_DIR:?}"/AstraCongestion/bin/AstraCongestion ]]; then
     ln -s "${BUILD_DIR:?}"/bin/AstraSim_Analytical_Congestion_Aware "${BUILD_DIR:?}"/AstraCongestion/bin/AstraCongestion
   fi
 }

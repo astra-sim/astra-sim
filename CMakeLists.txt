@@ -33,8 +33,8 @@ target_link_libraries(AstraSim LINK_PUBLIC ${Protobuf_LIBRARIES})
 # Include Directories
 target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/)
-target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/helper/)
 target_include_directories(AstraSim PUBLIC ${Protobuf_INCLUDE_DIRS})
+target_include_directories(AstraSim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/extern/helper/)
 
 # Properties
 set_target_properties(AstraSim
