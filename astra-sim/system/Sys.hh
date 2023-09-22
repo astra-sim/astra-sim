@@ -8,7 +8,7 @@ LICENSE file in the root directory of this source tree.
 
 #include <chrono>
 
-#include "astra-sim/system/AstraMemoryAPI.hh"
+#include "astra-sim/system/AstraRemoteMemoryAPI.hh"
 #include "astra-sim/system/AstraNetworkAPI.hh"
 #include "astra-sim/system/Callable.hh"
 #include "astra-sim/system/CollectivePhase.hh"
@@ -65,7 +65,7 @@ class Sys : public Callable {
       std::string workload_configuration,
       std::string comm_group_configuration,
       std::string system_configuration,
-      AstraMemoryAPI* mem,
+      AstraRemoteMemoryAPI* remote_mem,
       AstraNetworkAPI* comm_NI,
       std::vector<int> physical_dims,
       std::vector<int> queues_per_dim,
@@ -243,8 +243,8 @@ class Sys : public Callable {
   Roofline* roofline;
 
   // memory
-  AstraMemoryAPI* mem;
   double local_mem_bw;
+  AstraRemoteMemoryAPI* remote_mem;
 
   // memory bus
   MemBus* memBus;

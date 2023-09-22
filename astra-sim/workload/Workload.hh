@@ -29,7 +29,7 @@ class Workload : public Callable {
   // event-based simulation
   void issue_dep_free_nodes();
   void issue(std::shared_ptr<Chakra::ETFeederNode> node);
-  void issue_mem(std::shared_ptr<Chakra::ETFeederNode> node);
+  void issue_remote_mem(std::shared_ptr<Chakra::ETFeederNode> node);
   void issue_comp(std::shared_ptr<Chakra::ETFeederNode> node);
   void issue_comm(std::shared_ptr<Chakra::ETFeederNode> node);
   void skip_invalid(std::shared_ptr<Chakra::ETFeederNode> node);
