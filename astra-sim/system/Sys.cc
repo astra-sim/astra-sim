@@ -139,7 +139,7 @@ Sys::Sys(
     string workload_configuration,
     string comm_group_configuration,
     string system_configuration,
-    AstraMemoryAPI* mem,
+    AstraRemoteMemoryAPI* remote_mem,
     AstraNetworkAPI* comm_NI,
     vector<int> physical_dims,
     vector<int> queues_per_dim,
@@ -160,8 +160,8 @@ Sys::Sys(
   this->peak_perf = 0;
   this->roofline = nullptr;
 
-  this->mem = mem;
-  this->mem->set_sys(id, this);
+  this->remote_mem = remote_mem;
+  this->remote_mem->set_sys(id, this);
   this->local_mem_bw = 0;
 
   this->memBus = nullptr;

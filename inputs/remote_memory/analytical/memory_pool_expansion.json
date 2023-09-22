@@ -1,7 +1,5 @@
 {
   "memory-type": "MEMORY_POOL",
-  "local-mem-latency": 0,
-  "local-mem-bw": 4096,
   "remote-mem-latency": 0,
   "remote-mem-bw": 512
 }
