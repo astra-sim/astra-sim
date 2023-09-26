@@ -3,23 +3,26 @@ This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
-#include "ChunkIdGenerator.hh"
+#include "network_frontend/analytical/congestion_aware/ChunkIdGenerator.hh"
 
-using namespace Congestion;
+using namespace AstraSimAnalyticalCongestionAware;
 
 ChunkIdGenerator::ChunkIdGenerator() noexcept {
   chunk_id_map = std::map<Key, SendRecvId>();
 }
 
-ChunkIdGenerator::~ChunkIdGenerator() noexcept = default;
-
 int ChunkIdGenerator::get_send_id(
-    int tag,
-    int src,
-    int dest,
-    PayloadSize count) noexcept {
+    const int tag,
+    const int src,
+    const int dest,
+    const PayloadSize count) noexcept {
+  assert(tag >= 0);
+  assert(src >= 0);
+  assert(dest >= 0);
+  assert(count > 0);
+
   // create key
-  auto key = std::make_tuple(tag, src, dest, count);
+  const auto key = std::make_tuple(tag, src, dest, count);
 
   // search whether the key exists
   auto entry = chunk_id_map.find(key);
@@ -36,12 +39,17 @@ int ChunkIdGenerator::get_send_id(
 }
 
 int ChunkIdGenerator::get_recv_id(
-    int tag,
-    int src,
-    int dest,
-    PayloadSize count) noexcept {
+    const int tag,
+    const int src,
+    const int dest,
+    const PayloadSize count) noexcept {
+  assert(tag >= 0);
+  assert(src >= 0);
+  assert(dest >= 0);
+  assert(count > 0);
+
   // create key
-  auto key = std::make_tuple(tag, src, dest, count);
+  const auto key = std::make_tuple(tag, src, dest, count);
 
   // search whether the key exists
   auto entry = chunk_id_map.find(key);

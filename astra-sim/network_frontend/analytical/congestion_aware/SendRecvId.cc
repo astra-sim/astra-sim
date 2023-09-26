@@ -3,13 +3,11 @@ This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
-#include "SendRecvId.hh"
+#include "network_frontend/analytical/congestion_aware/SendRecvId.hh"
 
-using namespace Congestion;
+using namespace AstraSimAnalyticalCongestionAware;
 
 SendRecvId::SendRecvId() noexcept : send_id(-1), recv_id(-1) {}
-
-SendRecvId::~SendRecvId() noexcept = default;
 
 int SendRecvId::get_send_id() const noexcept {
   return send_id;

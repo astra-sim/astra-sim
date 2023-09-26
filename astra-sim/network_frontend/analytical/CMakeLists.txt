@@ -12,6 +12,10 @@ project(AstraSim_Analytical)
 set(BUILDTARGET "all" CACHE STRING "Compilation target ([all]/congestion_unaware/congestion_aware)")
 
 # Include src files to compile
+file(GLOB srcs_common
+        ${CMAKE_CURRENT_SOURCE_DIR}/common/*.cc
+)
+
 file(GLOB srcs_congestion_unaware
         ${CMAKE_CURRENT_SOURCE_DIR}/congestion_unaware/*.cc
 )
@@ -22,15 +26,19 @@ file(GLOB srcs_congestion_aware
 
 # Compile Congestion Unaware Backend
 if (BUILDTARGET STREQUAL "all" OR BUILDTARGET STREQUAL "congestion_unaware")
-    add_executable(AstraSim_Analytical_Congestion_Unaware ${srcs_congestion_unaware})
+    add_executable(AstraSim_Analytical_Congestion_Unaware ${srcs_congestion_unaware} ${srcs_common})
     target_sources(AstraSim_Analytical_Congestion_Unaware PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/congestion_unaware/main.cc)
 
     # Link libraries
     target_link_libraries(AstraSim_Analytical_Congestion_Unaware LINK_PRIVATE AstraSim)
     target_link_libraries(AstraSim_Analytical_Congestion_Unaware LINK_PRIVATE Analytical_Congestion_Unaware)
 
-    # Properties
+    # Include directories
+    target_include_directories(AstraSim_Analytical_Congestion_Unaware PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../)
     target_include_directories(AstraSim_Analytical_Congestion_Unaware PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../extern/helper)
+
+    # Properties
+    set_target_properties(AstraSim_Analytical_Congestion_Unaware PROPERTIES COMPILE_WARNING_AS_ERROR ON)
     set_target_properties(AstraSim_Analytical_Congestion_Unaware
             PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../bin/
@@ -41,15 +49,19 @@ endif ()
 
 # Compile Congestion Aware Backend
 if (BUILDTARGET STREQUAL "all" OR BUILDTARGET STREQUAL "congestion_aware")
-    add_executable(AstraSim_Analytical_Congestion_Aware ${srcs_congestion_aware})
+    add_executable(AstraSim_Analytical_Congestion_Aware ${srcs_congestion_aware} ${srcs_common})
     target_sources(AstraSim_Analytical_Congestion_Aware PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/congestion_aware/main.cc)
 
     # Link libraries
     target_link_libraries(AstraSim_Analytical_Congestion_Aware LINK_PRIVATE AstraSim)
     target_link_libraries(AstraSim_Analytical_Congestion_Aware LINK_PRIVATE Analytical_Congestion_Aware)
 
-    # Properties
+    # Include directories
+    target_include_directories(AstraSim_Analytical_Congestion_Aware PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../)
     target_include_directories(AstraSim_Analytical_Congestion_Aware PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../extern/helper)
+
+    # Properties
+    set_target_properties(AstraSim_Analytical_Congestion_Aware PROPERTIES COMPILE_WARNING_AS_ERROR ON)
     set_target_properties(AstraSim_Analytical_Congestion_Aware
             PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../bin/

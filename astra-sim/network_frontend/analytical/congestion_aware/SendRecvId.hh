@@ -5,13 +5,11 @@ LICENSE file in the root directory of this source tree.
 
 #pragma once
 
-namespace Congestion {
+namespace AstraSimAnalyticalCongestionAware {
 
 class SendRecvId {
  public:
   SendRecvId() noexcept;
-
-  ~SendRecvId() noexcept;
 
   int get_send_id() const noexcept;
 
@@ -26,4 +24,4 @@ class SendRecvId {
   int recv_id;
 };
 
-} // namespace Congestion
+} // namespace AstraSimAnalyticalCongestionAware

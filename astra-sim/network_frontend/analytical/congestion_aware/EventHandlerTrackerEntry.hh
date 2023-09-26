@@ -5,17 +5,17 @@ LICENSE file in the root directory of this source tree.
 
 #pragma once
 
+#include <network_backend/analytical/common/Common.hh>
+#include <network_backend/analytical/common/Type.hh>
 #include <network_backend/analytical/common/event-queue/Event.hh>
-#include <network_backend/analytical/common/type/Type.hh>
-#include <optional>
 
-namespace Congestion {
+using namespace NetworkAnalytical;
+
+namespace AstraSimAnalyticalCongestionAware {
 
 class EventHandlerTrackerEntry {
  public:
   EventHandlerTrackerEntry() noexcept;
-
-  ~EventHandlerTrackerEntry() noexcept;
 
   void register_send_callback(Callback callback, CallbackArg arg) noexcept;
 
@@ -38,4 +38,4 @@ class EventHandlerTrackerEntry {
   bool transmission_finished;
 };
 
-} // namespace Congestion
+} // namespace AstraSimAnalyticalCongestionAware

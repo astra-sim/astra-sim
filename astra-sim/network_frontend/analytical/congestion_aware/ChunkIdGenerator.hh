@@ -5,12 +5,10 @@ LICENSE file in the root directory of this source tree.
 
 #pragma once
 
-#include <cstdint>
-#include <map>
-#include <tuple>
+#include <network_backend/analytical/common/Common.hh>
 #include "SendRecvId.hh"
 
-namespace Congestion {
+namespace AstraSimAnalyticalCongestionAware {
 
 class ChunkIdGenerator {
  public:
@@ -18,8 +16,6 @@ class ChunkIdGenerator {
   using Key = std::tuple<int, int, int, PayloadSize>; // tag, src, dest, count
 
   ChunkIdGenerator() noexcept;
-
-  ~ChunkIdGenerator() noexcept;
 
   int get_send_id(int tag, int src, int dest, PayloadSize count) noexcept;
 
@@ -29,4 +25,4 @@ class ChunkIdGenerator {
   std::map<Key, SendRecvId> chunk_id_map;
 };
 
-} // namespace Congestion
+} // namespace AstraSimAnalyticalCongestionAware

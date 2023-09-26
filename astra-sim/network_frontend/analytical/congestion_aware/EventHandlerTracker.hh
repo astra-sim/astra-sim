@@ -5,22 +5,18 @@ LICENSE file in the root directory of this source tree.
 
 #pragma once
 
-#include <map>
-#include <optional>
-#include <tuple>
-#include "ChunkIdGenerator.hh"
-#include "EventHandlerTrackerEntry.hh"
+#include <network_backend/analytical/common/Common.hh>
+#include "network_frontend/analytical/congestion_aware/ChunkIdGenerator.hh"
+#include "network_frontend/analytical/congestion_aware/EventHandlerTrackerEntry.hh"
 
-namespace Congestion {
+namespace AstraSimAnalyticalCongestionAware {
 
 class EventHandlerTracker {
  public:
   using PayloadSize = ChunkIdGenerator::PayloadSize;
   using Key = std::tuple<int, int, int, PayloadSize, int>; // tag, src, dest,
                                                            // count, chunkId
-
   EventHandlerTracker() noexcept;
-  ~EventHandlerTracker() noexcept;
 
   std::optional<EventHandlerTrackerEntry*> search_entry(
       int tag,
@@ -47,4 +43,4 @@ class EventHandlerTracker {
   std::map<Key, EventHandlerTrackerEntry> tracker;
 };
 
-} // namespace Congestion
+} // namespace AstraSimAnalyticalCongestionAware

@@ -3,272 +3,90 @@ This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
-#include <json/json.hpp>
-#include <astra-sim/system/Sys.hh>
-#include <iostream> // Divya: to port congestion backend to Chakra
+#include <memory_backend/analytical/AnalyticalMemory.hh>
+#include <network_backend/analytical/common/Common.hh>
 #include <network_backend/analytical/common/event-queue/EventQueue.hh>
-#include <network_backend/analytical/congestion_aware/helper/CommandLineOptParser.hh>
-#include <network_backend/analytical/congestion_aware/helper/NetworkConfigParser.hh>
-#include <network_backend/analytical/congestion_aware/topology/FullyConnected.hh>
-#include <network_backend/analytical/congestion_aware/topology/Ring.hh>
-#include <network_backend/analytical/congestion_aware/topology/Switch.hh>
-#include <network_backend/analytical/congestion_aware/topology/Topology.hh>
-#include <vector>
-#include "AstraCongestionApi.hh"
-#include "extern/memory_backend/analytical/AnalyticalMemory.hh" // Divya: to port congestion backend to latest Chakra
+#include <network_backend/analytical/common/network-parser/NetworkParser.hh>
+#include <network_backend/analytical/congestion_aware/topology/Helper.hh>
+#include "network_frontend/analytical/common/CmdLineParser.hh"
+#include "network_frontend/analytical/congestion_aware/NetworkApi.hh"
 
-using namespace Congestion;
-using json = nlohmann::json;
-
-int get_num_npus(std::vector<int> units_counts) {
-  int num_npus = 1;
-  for (auto units_count : units_counts) {
-    num_npus *= units_count;
-  }
-  return num_npus;
-}
+using namespace AstraSim;
+using namespace Analytical;
+using namespace AstraSimAnalytical;
+using namespace AstraSimAnalyticalCongestionAware;
+using namespace NetworkAnalytical;
+using namespace NetworkAnalyticalCongestionAware;
 
 int main(int argc, char* argv[]) {
-  /// Create command line parser
-  auto command_line_parser = CommandLineOptParser();
+  /// Parse command line arguments
+  auto cmd_line_parser = CmdLineParser(argv[0]);
+  cmd_line_parser.parse(argc, argv);
 
-  // add command line options
-  // file path
-  command_line_parser.define_option<std::string>(
-      "network-configuration", "Network Configuration File Path");
-  command_line_parser.define_option<std::string>(
-      "system-configuration", "system Configuration File Path");
-  command_line_parser.define_option<std::string>(
-      "workload-configuration", "Workload Configuration File Path");
-  command_line_parser.define_option<std::string>(
-      "memory-configuration", "Memory configuration File Path");
-  command_line_parser.define_option<std::string>(
-      "comm-group-configuration", "Communicator group configuration file");
+  /// Get command line arguments
+  const auto workload_configuration =
+      cmd_line_parser.get<std::string>("workload-configuration");
+  const auto comm_group_configuration =
+      cmd_line_parser.get<std::string>("comm-group-configuration");
+  const auto system_configuration =
+      cmd_line_parser.get<std::string>("system-configuration");
+  const auto remote_memory_configuration =
+      cmd_line_parser.get<std::string>("remote-memory-configuration");
+  const auto network_configuration =
+      cmd_line_parser.get<std::string>("network-configuration");
+  const auto num_queues_per_dim =
+      cmd_line_parser.get<int>("num-queues-per-dim");
+  const auto compute_scale = cmd_line_parser.get<double>("compute-scale");
+  const auto comm_scale = cmd_line_parser.get<double>("comm-scale");
+  const auto injection_scale = cmd_line_parser.get<double>("injection-scale");
+  const auto rendezvous_protocol =
+      cmd_line_parser.get<bool>("rendezvous-protocol");
 
-  // run-related names and paths
-  command_line_parser.define_option<std::string>("run-name", "Run Name");
-  command_line_parser.define_option<std::string>(
-      "path", "Result directory path");
-  command_line_parser.define_option<int>("total-stat-rows", "Total stat rows");
-  command_line_parser.define_option<int>("stat-row", "Current stat row");
+  /// Instantiate event queue
+  const auto event_queue = std::make_shared<EventQueue>();
+  Topology::set_event_queue(event_queue);
 
-  // scale configuration
-  command_line_parser.define_option<float>(
-      "comm-scale", "Communication scale", 1.0);
-  command_line_parser.define_option<float>(
-      "compute-scale", "Communication scale", 1.0);
-  command_line_parser.define_option<float>(
-      "injection-scale", "Communication scale", 1.0);
-  command_line_parser.define_option<int>(
-      "num-passes", "Number of run passes", 1);
-  command_line_parser.define_option<bool>(
-      "rendezvous-protocol", "Rendezvous Protocol", false);
+  /// Generate topology
+  const auto network_parser = NetworkParser(network_configuration);
+  const auto topology = construct_topology(network_parser);
+  const auto npus_count = topology->get_npus_count();
+  const auto npus_count_per_dim = topology->get_npus_count_per_dim();
+  const auto dims_count = topology->get_dims_count();
 
-  // topology-related options that could be overridden
-  command_line_parser.define_option<int>(
-      "npus-count", "Npus count", OptType::Multi);
-  command_line_parser.define_option<double>(
-      "bandwidth", "Bandwidth of each dim", OptType::Multi);
-  command_line_parser.define_option<double>(
-      "latency", "Latency of each dim", OptType::Multi);
-
-  // parse command line
-  command_line_parser.parse(argc, argv);
-
-  // print help message
-  try {
-    command_line_parser.print_help_message_if_required();
-  } catch (const HelpMessagePrinted&) {
-    return 1;
-  }
-
-  // get required command line option values
-  auto network_file_path = std::string();
-  auto system_file_path = std::string();
-  auto workload_file_path = std::string();
-  auto memory_file_path = std::string();
-  auto comm_group_configuration = "empty";
-
-  auto run_name = std::string();
-  auto path = std::string();
-
-  auto comm_scale = 0.0f;
-  auto compute_scale = 0.0f;
-  auto injection_scale = 0.0f;
-  auto num_passes = -1;
-  auto total_stat_rows = -1;
-  auto stat_row = -1;
-  auto rendezvous_protocol = false;
-
-  // first, parse network file
-  // parse network file path
-  try {
-    network_file_path =
-        command_line_parser.get_value<std::string>("network-configuration");
-  } catch (const OptNotSpecifiedError& e) {
-    std::cout << e.what() << std::endl;
-    return 2;
-  }
-
-  // parse network configuration file
-  auto network_config_parser = NetworkConfigParser();
-  try {
-    network_config_parser.parse(network_file_path);
-  } catch (const YAML::BadFile& e) {
-    std::cout << e.what() << std::endl;
-    return 3;
-  } catch (const YAML::ParserException& e) {
-    std::cout << e.what() << std::endl;
-    return 4;
-  }
-
-  // get network configuration values
-  auto topology_name = std::string();
-  auto npus_count_dim = std::vector<int>();
-  auto bandwidth = std::vector<double>();
-  auto latency = std::vector<double>();
-  try {
-    topology_name = network_config_parser.get_value<std::string>("topology");
-    npus_count_dim =
-        network_config_parser.get_value<std::vector<int>>("npus_count");
-    bandwidth =
-        network_config_parser.get_value<std::vector<double>>("bandwidth");
-    latency = network_config_parser.get_value<std::vector<double>>("latency");
-  } catch (const OptNotSpecifiedError& e) {
-    std::cout << e.what() << std::endl;
-    return 5;
-  }
-
-  // parse command line options
-  try {
-    system_file_path =
-        command_line_parser.get_value<std::string>("system-configuration");
-    workload_file_path =
-        command_line_parser.get_value<std::string>("workload-configuration");
-    memory_file_path =
-        command_line_parser.get_value<std::string>("memory-configuration");
-
-    // run_name = command_line_parser.get_value<std::string>("run-name");
-    // path = command_line_parser.get_value<std::string>("path");
-
-    comm_scale = command_line_parser.get_value<float>("comm-scale");
-    compute_scale = command_line_parser.get_value<float>("compute-scale");
-    injection_scale = command_line_parser.get_value<float>("injection-scale");
-    // num_passes = command_line_parser.get_value<int>("num-passes");
-    // total_stat_rows = command_line_parser.get_value<int>("total-stat-rows");
-    // stat_row = command_line_parser.get_value<int>("stat-row");
-    rendezvous_protocol =
-        command_line_parser.get_value<bool>("rendezvous-protocol");
-  } catch (const OptNotSpecifiedError& e) {
-    std::cout << e.what() << std::endl;
-    return 2;
-  }
-
-  // override topology-related options if specified
-  auto npus_count_opt =
-      command_line_parser.get_optional_value<std::vector<int>>("npus-count");
-  auto bandwidth_opt =
-      command_line_parser.get_optional_value<std::vector<double>>("bandwidth");
-  auto latency_opt =
-      command_line_parser.get_optional_value<std::vector<double>>("latency");
-
-  if (npus_count_opt.has_value()) {
-    npus_count_dim = npus_count_opt.value();
-  }
-  if (bandwidth_opt.has_value()) {
-    bandwidth = bandwidth_opt.value();
-  }
-  if (latency_opt.has_value()) {
-    latency = latency_opt.value();
-  }
-
-  /// Instantiate shared resources
-  auto event_queue = std::make_shared<EventQueue>();
-
-  /// Setup topology
-  Topology::link_event_queue(event_queue);
-
-  // create topology
-  std::shared_ptr<Topology> topology;
-  auto npus_count = -1;
-  if (topology_name == "Ring") {
-    npus_count = npus_count_dim[0];
-    topology =
-        std::make_shared<Ring>(npus_count, bandwidth[0], latency[0], true);
-  } else if (topology_name == "Switch") {
-    npus_count = npus_count_dim[0];
-    topology = std::make_shared<Switch>(npus_count, bandwidth[0], latency[0]);
-  } else if (topology_name == "FullyConnected") {
-    npus_count = npus_count_dim[0];
-    topology =
-        std::make_shared<FullyConnected>(npus_count, bandwidth[0], latency[0]);
-  } else {
-    std::cout << "Unknown topology name: " << topology_name << std::endl;
-    return 6;
-  }
-
-  /// Setup Common resources
-  Link::link_event_queue(event_queue);
-  AstraCongestionApi::link_event_queue(event_queue);
-  AstraCongestionApi::link_topology(topology);
+  /// Instantiate Network API
+  NetworkApi::set_event_queue(event_queue);
+  NetworkApi::set_topology(topology);
 
   /// Create ASTRA-sim related resources
-  std::shared_ptr<Congestion::AstraCongestionApi> congestion_apis[npus_count];
-  // std::shared_ptr<AstraSim::SimpleMemory> memories[npus_count];
-  std::unique_ptr<Analytical::AnalyticalMemory> mem =
-      std::make_unique<Analytical::AnalyticalMemory>(memory_file_path);
-
-  AstraSim::Sys* systems[npus_count];
+  auto network_apis = std::vector<std::unique_ptr<NetworkApi>>();
+  const auto memory_api =
+      std::make_unique<AnalyticalMemory>(remote_memory_configuration);
+  auto systems = std::vector<Sys*>();
 
   auto queues_per_dim = std::vector<int>();
-  for (int i = 0; i < npus_count_dim.size(); i++) {
-    queues_per_dim.push_back(1);
+  for (auto i = 0; i < dims_count; i++) {
+    queues_per_dim.push_back(num_queues_per_dim);
   }
 
   for (int i = 0; i < npus_count; i++) {
-    congestion_apis[i] = std::make_shared<AstraCongestionApi>(i);
-
-    // memories[i] = std::make_shared<AstraSim::SimpleMemory>(
-    // memories[i] = std::make_unique<AstraSim::SimpleMemory>(
-    //     (AstraSim::AstraNetworkAPI*)(congestion_apis[i].get()),
-    //     1,
-    //     500000,
-    //     12.5);
-
-    /*
-    systems[i] = new AstraSim::Sys(
-        congestion_apis[i].get(),
-        memories[i].get(),
+    // create network and system
+    auto network_api = std::make_unique<NetworkApi>(i);
+    auto* const system = new Sys(
         i,
-        num_passes,
-        npus_count_dim,
-        queues_per_dim,
-        system_file_path,
-        workload_file_path,
-        comm_scale,
-        compute_scale,
-        injection_scale,
-        total_stat_rows,
-        stat_row,
-        path,
-        run_name,
-        true,
-        rendezvous_protocol);
-    */
-
-    systems[i] = new AstraSim::Sys(
-        i,
-        workload_file_path,
+        workload_configuration,
         comm_group_configuration,
-        system_file_path,
-        mem.get(),
-        // memories[i].get(),
-        congestion_apis[i].get(),
-        npus_count_dim,
+        system_configuration,
+        memory_api.get(),
+        network_api.get(),
+        npus_count_per_dim,
         queues_per_dim,
         injection_scale,
         comm_scale,
         rendezvous_protocol);
+
+    // push back network and system
+    network_apis.push_back(std::move(network_api));
+    systems.push_back(system);
   }
 
   /// Run ASTRA-sim simulation

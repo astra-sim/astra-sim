@@ -3,33 +3,30 @@ This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
-#include "EventHandlerTrackerEntry.hh"
-#include <cassert>
+#include "network_frontend/analytical/congestion_aware/EventHandlerTrackerEntry.hh"
 
-using namespace Congestion;
+using namespace AstraSimAnalyticalCongestionAware;
 
 EventHandlerTrackerEntry::EventHandlerTrackerEntry() noexcept
     : send_event(std::nullopt),
       recv_event(std::nullopt),
       transmission_finished(false) {}
 
-EventHandlerTrackerEntry::~EventHandlerTrackerEntry() noexcept = default;
-
 void EventHandlerTrackerEntry::register_send_callback(
-    Callback callback,
-    CallbackArg arg) noexcept {
+    const Callback callback,
+    CallbackArg const arg) noexcept {
   assert(!send_event.has_value());
 
-  auto event = Event(callback, arg);
+  const auto event = Event(callback, arg);
   send_event = event;
 }
 
 void EventHandlerTrackerEntry::register_recv_callback(
-    Callback callback,
-    CallbackArg arg) noexcept {
+    const Callback callback,
+    CallbackArg const arg) noexcept {
   assert(!recv_event.has_value());
 
-  auto event = Event(callback, arg);
+  const auto event = Event(callback, arg);
   recv_event = event;
 }
 
