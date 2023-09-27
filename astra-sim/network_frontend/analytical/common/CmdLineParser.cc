@@ -3,7 +3,7 @@ This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
-#include "network_frontend/analytical/common/CmdLineParser.hh"
+#include "common/CmdLineParser.hh"
 
 using namespace AstraSimAnalytical;
 
@@ -54,7 +54,7 @@ void CmdLineParser::parse(int argc, char* argv[]) noexcept {
     // try parsing command line options
     parsed = options.parse(argc, argv);
   } catch (const cxxopts::OptionException& e) {
-    // error occured
+    // error occurred
     std::cerr << "[Error] (AstraSim/analytical/common) "
               << "Error parsing options: " << e.what() << std::endl;
     exit(-1);

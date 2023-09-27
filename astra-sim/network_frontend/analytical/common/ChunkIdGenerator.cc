@@ -3,63 +3,63 @@ This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
-#include "network_frontend/analytical/congestion_aware/ChunkIdGenerator.hh"
+#include "common/ChunkIdGenerator.hh"
+#include <cassert>
 
-using namespace AstraSimAnalyticalCongestionAware;
+using namespace AstraSimAnalytical;
 
 ChunkIdGenerator::ChunkIdGenerator() noexcept {
-  chunk_id_map = std::map<Key, SendRecvId>();
+  chunk_id_map = {};
 }
 
-int ChunkIdGenerator::get_send_id(
+int ChunkIdGenerator::create_send_chunk_id(
     const int tag,
     const int src,
     const int dest,
-    const PayloadSize count) noexcept {
+    const ChunkSize chunk_size) noexcept {
   assert(tag >= 0);
   assert(src >= 0);
   assert(dest >= 0);
-  assert(count > 0);
+  assert(chunk_size > 0);
 
   // create key
-  const auto key = std::make_tuple(tag, src, dest, count);
+  const auto key = std::make_tuple(tag, src, dest, chunk_size);
 
   // search whether the key exists
   auto entry = chunk_id_map.find(key);
 
+  // if key doesn't exist, create new entry
   if (entry == chunk_id_map.end()) {
-    // key doesn't exist, create new entry
-    chunk_id_map[key] = SendRecvId();
-    entry = chunk_id_map.insert({key, SendRecvId()}).first;
+    entry = chunk_id_map.emplace(key, ChunkIdGeneratorEntry()).first;
   }
 
   // increment id and return
-  entry->second.increase_send_id();
+  entry->second.increment_send_id();
   return entry->second.get_send_id();
 }
 
-int ChunkIdGenerator::get_recv_id(
+int ChunkIdGenerator::create_recv_chunk_id(
     const int tag,
     const int src,
     const int dest,
-    const PayloadSize count) noexcept {
+    const ChunkSize chunk_size) noexcept {
   assert(tag >= 0);
   assert(src >= 0);
   assert(dest >= 0);
-  assert(count > 0);
+  assert(chunk_size > 0);
 
   // create key
-  const auto key = std::make_tuple(tag, src, dest, count);
+  const auto key = std::make_tuple(tag, src, dest, chunk_size);
 
   // search whether the key exists
   auto entry = chunk_id_map.find(key);
 
+  // key doesn't exist, create new entry
   if (entry == chunk_id_map.end()) {
-    // key doesn't exist, create new entry
-    entry = chunk_id_map.insert({key, SendRecvId()}).first;
+    entry = chunk_id_map.emplace(key, ChunkIdGeneratorEntry()).first;
   }
 
   // if key exists, increment send id and return
-  entry->second.increase_recv_id();
+  entry->second.increment_recv_id();
   return entry->second.get_recv_id();
 }

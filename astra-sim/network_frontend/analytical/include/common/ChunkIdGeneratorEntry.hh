@@ -5,23 +5,23 @@ LICENSE file in the root directory of this source tree.
 
 #pragma once
 
-namespace AstraSimAnalyticalCongestionAware {
+namespace AstraSimAnalytical {
 
-class SendRecvId {
+class ChunkIdGeneratorEntry {
  public:
-  SendRecvId() noexcept;
+  ChunkIdGeneratorEntry() noexcept;
 
-  int get_send_id() const noexcept;
+  [[nodiscard]] int get_send_id() const noexcept;
 
-  void increase_send_id() noexcept;
+  [[nodiscard]] int get_recv_id() const noexcept;
 
-  int get_recv_id() const noexcept;
+  void increment_send_id() noexcept;
 
-  void increase_recv_id() noexcept;
+  void increment_recv_id() noexcept;
 
  private:
   int send_id;
   int recv_id;
 };
 
-} // namespace AstraSimAnalyticalCongestionAware
+} // namespace AstraSimAnalytical

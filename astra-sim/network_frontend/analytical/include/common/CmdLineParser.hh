@@ -7,6 +7,7 @@ LICENSE file in the root directory of this source tree.
 
 #include <cxxopts/cxxopts.hpp>
 #include <cstdlib>
+#include <iostream>
 
 namespace AstraSimAnalytical {
 

@@ -5,27 +5,27 @@ LICENSE file in the root directory of this source tree.
 
 #pragma once
 
-#include <network_backend/analytical/common/Common.hh>
-#include <network_backend/analytical/common/Type.hh>
-#include <network_backend/analytical/common/event-queue/Event.hh>
+#include <astra-network-analytical/common/Event.hh>
+#include <astra-network-analytical/common/Type.hh>
+#include <optional>
 
 using namespace NetworkAnalytical;
 
-namespace AstraSimAnalyticalCongestionAware {
+namespace AstraSimAnalytical {
 
-class EventHandlerTrackerEntry {
+class CallbackTrackerEntry {
  public:
-  EventHandlerTrackerEntry() noexcept;
+  CallbackTrackerEntry() noexcept;
 
   void register_send_callback(Callback callback, CallbackArg arg) noexcept;
 
   void register_recv_callback(Callback callback, CallbackArg arg) noexcept;
 
-  bool is_transmission_finished() const noexcept;
-
-  bool both_callbacks_registered() const noexcept;
+  [[nodiscard]] bool is_transmission_finished() const noexcept;
 
   void set_transmission_finished() noexcept;
+
+  [[nodiscard]] bool both_callbacks_registered() const noexcept;
 
   void invoke_send_handler() noexcept;
 
@@ -34,8 +34,7 @@ class EventHandlerTrackerEntry {
  private:
   std::optional<Event> send_event;
   std::optional<Event> recv_event;
-
   bool transmission_finished;
 };
 
-} // namespace AstraSimAnalyticalCongestionAware
+} // namespace AstraSimAnalytical

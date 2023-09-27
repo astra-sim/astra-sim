@@ -3,13 +3,12 @@ This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
+#include <astra-network-analytical/common/EventQueue.hh>
+#include <astra-network-analytical/common/NetworkParser.hh>
+#include <astra-network-analytical/congestion_aware/Helper.hh>
 #include <memory_backend/analytical/AnalyticalMemory.hh>
-#include <network_backend/analytical/common/Common.hh>
-#include <network_backend/analytical/common/event-queue/EventQueue.hh>
-#include <network_backend/analytical/common/network-parser/NetworkParser.hh>
-#include <network_backend/analytical/congestion_aware/topology/Helper.hh>
-#include "network_frontend/analytical/common/CmdLineParser.hh"
-#include "network_frontend/analytical/congestion_aware/NetworkApi.hh"
+#include "common/CmdLineParser.hh"
+#include "congestion_aware/NetworkApi.hh"
 
 using namespace AstraSim;
 using namespace Analytical;
@@ -36,7 +35,6 @@ int main(int argc, char* argv[]) {
       cmd_line_parser.get<std::string>("network-configuration");
   const auto num_queues_per_dim =
       cmd_line_parser.get<int>("num-queues-per-dim");
-  const auto compute_scale = cmd_line_parser.get<double>("compute-scale");
   const auto comm_scale = cmd_line_parser.get<double>("comm-scale");
   const auto injection_scale = cmd_line_parser.get<double>("injection-scale");
   const auto rendezvous_protocol =
@@ -49,11 +47,13 @@ int main(int argc, char* argv[]) {
   /// Generate topology
   const auto network_parser = NetworkParser(network_configuration);
   const auto topology = construct_topology(network_parser);
+
+  /// Get topology information
   const auto npus_count = topology->get_npus_count();
   const auto npus_count_per_dim = topology->get_npus_count_per_dim();
   const auto dims_count = topology->get_dims_count();
 
-  /// Instantiate Network API
+  /// Set up Network API
   NetworkApi::set_event_queue(event_queue);
   NetworkApi::set_topology(topology);
 
