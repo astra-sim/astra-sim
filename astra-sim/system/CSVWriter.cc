@@ -112,16 +112,16 @@ void CSVWriter::finalize_csv(
   int dim_num = 1;
   myFile << " time (us) ";
   myFile << ",";
-  for (int i = 0; i < dims.size(); i++) {
+  for (uint64_t i = 0; i < dims.size(); i++) {
     myFile << "dim" + std::to_string(dim_num) + " util";
     myFile << ',';
     dim_num++;
   }
   myFile << '\n';
   while (true) {
-    int finished = 0;
+    uint64_t finished = 0;
     uint64_t compare;
-    for (int i = 0; i < dims_it.size(); i++) {
+    for (uint64_t i = 0; i < dims_it.size(); i++) {
       if (dims_it[i] != dims_it_end[i]) {
         if (i == 0) {
           myFile << std::to_string((*dims_it[i]).first / FREQ);

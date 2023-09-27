@@ -19,9 +19,9 @@ GeneralComplexTopology::GeneralComplexTopology(
     std::vector<int> dimension_size,
     std::vector<CollectiveImpl*> collective_impl) {
   int offset = 1;
-  int last_dim = collective_impl.size() - 1;
+  uint64_t last_dim = collective_impl.size() - 1;
   assert(collective_impl.size() <= dimension_size.size());
-  for (int dim = 0; dim < collective_impl.size(); dim++) {
+  for (uint64_t dim = 0; dim < collective_impl.size(); dim++) {
     if (collective_impl[dim]->type == CollectiveImplType::Ring ||
         collective_impl[dim]->type == CollectiveImplType::Direct ||
         collective_impl[dim]->type == CollectiveImplType::HalvingDoubling) {
@@ -64,7 +64,7 @@ GeneralComplexTopology::GeneralComplexTopology(
 }
 
 GeneralComplexTopology::~GeneralComplexTopology() {
-  for (int i = 0; i < dimension_topology.size(); i++) {
+  for (uint64_t i = 0; i < dimension_topology.size(); i++) {
     delete dimension_topology[i];
   }
 }
@@ -74,12 +74,12 @@ int GeneralComplexTopology::get_num_of_dimensions() {
 }
 
 int GeneralComplexTopology::get_num_of_nodes_in_dimension(int dimension) {
-  if (dimension >= dimension_topology.size()) {
+  if (static_cast<uint64_t>(dimension) >= dimension_topology.size()) {
     std::cout << "dim: " << dimension
               << " requested! but max dim is: " << dimension_topology.size() - 1
               << std::endl;
   }
-  assert(dimension < dimension_topology.size());
+  assert(static_cast<uint64_t>(dimension) < dimension_topology.size());
   return dimension_topology[dimension]->get_num_of_nodes_in_dimension(0);
 }
 
