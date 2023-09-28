@@ -170,8 +170,6 @@ void Workload::issue_comp(shared_ptr<Chakra::ETFeederNode> node) {
 }
 
 void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
-  int src, dst;
-
   hw_resource->occupy(node);
 
   vector<bool> involved_dim;

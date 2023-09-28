@@ -127,7 +127,7 @@ void Sys::SchedulerUnit::notify_stream_removed(int vnet, Tick running_time) {
 vector<double> Sys::SchedulerUnit::get_average_latency_per_dimension() {
   vector<double> result;
   result.resize(latency_per_dimension.size(), -1);
-  for (int i = 0; i < result.size(); i++) {
+  for (uint64_t i = 0; i < result.size(); i++) {
     result[i] = latency_per_dimension[i] / total_chunks_per_dimension[i];
   }
   return result;
@@ -203,13 +203,12 @@ Sys::Sys(
   }
 
   // scheduler
-  int total_disabled = 0;
   this->physical_dims = physical_dims;
   this->queues_per_dim = queues_per_dim;
   int element = 0;
   this->total_nodes = 1;
   this->dim_to_break = -1;
-  for (int current_dim = 0; current_dim < queues_per_dim.size();
+  for (uint64_t current_dim = 0; current_dim < queues_per_dim.size();
        current_dim++) {
     if (physical_dims[current_dim] >= 1) {
       this->total_nodes *= physical_dims[current_dim];
@@ -493,7 +492,7 @@ CollectiveImpl* Sys::generate_collective_impl_from_input(
 Tick Sys::boostedTick() {
   Sys* ts = all_sys[0];
   if (ts == nullptr) {
-    for (int i = 1; i < all_sys.size(); i++) {
+    for (uint64_t i = 1; i < all_sys.size(); i++) {
       if (all_sys[i] != nullptr) {
         ts = all_sys[i];
         break;
@@ -1080,8 +1079,8 @@ int Sys::break_dimension(int model_parallel_npu_group) {
       int second_subdim = physical_dims[dimension_to_break] / first_subdim;
       std::vector<int> logical_dims;
 
-      for (int dim = 0; dim < physical_dims.size(); dim++) {
-        if (dim != dimension_to_break) {
+      for (uint64_t dim = 0; dim < physical_dims.size(); dim++) {
+        if (dim != static_cast<uint64_t>(dimension_to_break)) {
           logical_dims.push_back(physical_dims[dim]);
         } else {
           logical_dims.push_back(first_subdim);
@@ -1263,9 +1262,9 @@ void Sys::ask_for_schedule(int max) {
     return;
   }
   int top = ready_list.front()->stream_id;
-  int min = ready_list.size();
+  uint64_t min = ready_list.size();
   if (min > max) {
-    min = max;
+    min = static_cast<uint64_t>(max);
   }
   for (auto& sys : all_sys) {
     if (sys->ready_list.size() == 0 ||
