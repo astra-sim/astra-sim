@@ -31,6 +31,10 @@ class CallbackTrackerEntry {
 
   void invoke_recv_handler() noexcept;
 
+  [[nodiscard]] Event get_send_event() const noexcept;
+
+  [[nodiscard]] Event get_recv_event() const noexcept;
+
  private:
   std::optional<Event> send_event;
   std::optional<Event> recv_event;

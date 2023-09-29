@@ -55,3 +55,15 @@ void CallbackTrackerEntry::invoke_recv_handler() noexcept {
 
   recv_event.value().invoke_event();
 }
+
+Event CallbackTrackerEntry::get_send_event() const noexcept {
+  assert(send_event.has_value());
+
+  return send_event.value();
+}
+
+Event CallbackTrackerEntry::get_recv_event() const noexcept {
+  assert(recv_event.has_value());
+
+  return recv_event.value();
+}

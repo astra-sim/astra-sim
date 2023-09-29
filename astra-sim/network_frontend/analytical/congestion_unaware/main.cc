@@ -3,13 +3,17 @@ This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
-#include <astra-network-analytical/common/Common.hh>
-#include <astra-network-analytical/common/event-queue/EventQueue.hh>
-#include <astra-network-analytical/common/network-parser/NetworkParser.hh>
-#include <astra-network-analytical/congestion_unaware/topology/Helper.hh>
-#include "network_frontend/analytical/common/CmdLineParser.hh"
+#include <astra-network-analytical/common/EventQueue.hh>
+#include <astra-network-analytical/common/NetworkParser.hh>
+#include <astra-network-analytical/congestion_unaware/Helper.hh>
+#include <memory_backend/analytical/AnalyticalMemory.hh>
+#include "common/CmdLineParser.hh"
+#include "congestion_unaware/CongestionUnawareNetworkApi.hh"
 
+using namespace AstraSim;
+using namespace Analytical;
 using namespace AstraSimAnalytical;
+using namespace AstraSimAnalyticalCongestionUnaware;
 using namespace NetworkAnalytical;
 using namespace NetworkAnalyticalCongestionUnaware;
 
@@ -49,10 +53,51 @@ int main(int argc, char* argv[]) {
   const auto dims_count = topology->get_dims_count();
 
   /// Set up Network API
-//  NetworkApi::set_event_queue(event_queue);
-//  NetworkApi::set_topology(topology);
+  CongestionUnawareNetworkApi::set_event_queue(event_queue);
+  CongestionUnawareNetworkApi::set_topology(topology);
 
-  /// terminate
-  std::cout << "Done!" << std::endl;
+  /// Create ASTRA-sim related resources
+  auto network_apis =
+      std::vector<std::unique_ptr<CongestionUnawareNetworkApi>>();
+  const auto memory_api =
+      std::make_unique<AnalyticalMemory>(remote_memory_configuration);
+  auto systems = std::vector<Sys*>();
+
+  auto queues_per_dim = std::vector<int>();
+  for (auto i = 0; i < dims_count; i++) {
+    queues_per_dim.push_back(num_queues_per_dim);
+  }
+
+  for (int i = 0; i < npus_count; i++) {
+    // create network and system
+    auto network_api = std::make_unique<CongestionUnawareNetworkApi>(i);
+    auto* const system = new Sys(
+        i,
+        workload_configuration,
+        comm_group_configuration,
+        system_configuration,
+        memory_api.get(),
+        network_api.get(),
+        npus_count_per_dim,
+        queues_per_dim,
+        injection_scale,
+        comm_scale,
+        rendezvous_protocol);
+
+    // push back network and system
+    network_apis.push_back(std::move(network_api));
+    systems.push_back(system);
+  }
+
+  /// Run ASTRA-sim simulation
+  for (int i = 0; i < npus_count; i++) {
+    systems[i]->workload->fire();
+  }
+
+  while (!event_queue->finished()) {
+    event_queue->proceed();
+  }
+
+  /// terminate simulation
   return 0;
 }
