@@ -25,15 +25,15 @@ OfflineGreedy::OfflineGreedy(Sys* sys) {
   if (sys->dim_to_break == -1) {
     this->dim_size = sys->physical_dims;
     this->dim_BW.resize(this->dim_size.size());
-    for (int i = 0; i < this->dim_size.size(); i++) {
+    for (uint64_t i = 0; i < this->dim_size.size(); i++) {
       this->dim_BW[i] = sys->comm_NI->get_BW_at_dimension(i);
       this->dim_elapsed_time.push_back(DimElapsedTime(i));
     }
   } else {
     this->dim_size = sys->logical_broken_dims;
     this->dim_BW.resize(this->dim_size.size());
-    for (int i = 0; i < this->dim_size.size(); i++) {
-      if (i > sys->dim_to_break) {
+    for (uint64_t i = 0; i < this->dim_size.size(); i++) {
+      if (i > static_cast<uint64_t>(sys->dim_to_break)) {
         this->dim_BW[i] = sys->comm_NI->get_BW_at_dimension(i - 1);
       } else {
         this->dim_BW[i] = sys->comm_NI->get_BW_at_dimension(i);
@@ -45,12 +45,12 @@ OfflineGreedy::OfflineGreedy(Sys* sys) {
     std::cout << "Themis is configured with the following parameters: "
               << std::endl;
     std::cout << "Dim size: ";
-    for (int i = 0; i < this->dim_size.size(); i++) {
+    for (uint64_t i = 0; i < this->dim_size.size(); i++) {
       std::cout << this->dim_size[i] << ", ";
     }
     std::cout << std::endl;
     std::cout << "BW per dim: ";
-    for (int i = 0; i < this->dim_BW.size(); i++) {
+    for (uint64_t i = 0; i < this->dim_BW.size(); i++) {
       std::cout << this->dim_BW[i] << ", ";
     }
     std::cout << std::endl << std::endl;
@@ -90,7 +90,8 @@ std::vector<int> OfflineGreedy::get_chunk_scheduling(
     ComType comm_type) {
   if (chunk_schedule.find(chunk_id) != chunk_schedule.end()) {
     schedule_consumer[chunk_id]++;
-    if (schedule_consumer[chunk_id] == sys->all_sys.size()) {
+    if (schedule_consumer[chunk_id] ==
+        static_cast<int64_t>(sys->all_sys.size())) {
       std::vector<int> res = chunk_schedule[chunk_id];
       remaining_data_size -= global_chunk_size[chunk_id];
       chunk_schedule.erase(chunk_id);
@@ -172,10 +173,11 @@ std::vector<int> OfflineGreedy::get_chunk_scheduling(
           schedule_consumer[chunk_id] = 1;
           std::vector<DimElapsedTime> myReordered;
           myReordered.resize(dim_elapsed_time.size(), dim_elapsed_time[0]);
-          for (int myDim = 0; myDim < dim_elapsed_time.size(); myDim++) {
-            for (int searchDim = 0; searchDim < dim_elapsed_time.size();
+          for (uint64_t myDim = 0; myDim < dim_elapsed_time.size(); myDim++) {
+            for (uint64_t searchDim = 0; searchDim < dim_elapsed_time.size();
                  searchDim++) {
-              if (dim_elapsed_time[searchDim].dim_num == myDim) {
+              if (dim_elapsed_time[searchDim].dim_num ==
+                  static_cast<uint64_t>(myDim)) {
                 myReordered[myDim] = dim_elapsed_time[searchDim];
                 break;
               }
@@ -185,7 +187,7 @@ std::vector<int> OfflineGreedy::get_chunk_scheduling(
           if (comm_type == ComType::All_Gather) {
             std::reverse(dim_elapsed_time.begin(), dim_elapsed_time.end());
           }
-          for (int myDim = 0; myDim < dim_elapsed_time.size(); myDim++) {
+          for (uint64_t myDim = 0; myDim < dim_elapsed_time.size(); myDim++) {
             if (!dimensions_involved[myDim] || dim_size[myDim] == 1) {
               result.push_back(myDim);
               continue;
@@ -248,10 +250,11 @@ std::vector<int> OfflineGreedy::get_chunk_scheduling(
           schedule_consumer[chunk_id] = 1;
           std::vector<DimElapsedTime> myReordered;
           myReordered.resize(dim_elapsed_time.size(), dim_elapsed_time[0]);
-          for (int myDim = 0; myDim < dim_elapsed_time.size(); myDim++) {
-            for (int searchDim = 0; searchDim < dim_elapsed_time.size();
+          for (uint64_t myDim = 0; myDim < dim_elapsed_time.size(); myDim++) {
+            for (uint64_t searchDim = 0; searchDim < dim_elapsed_time.size();
                  searchDim++) {
-              if (dim_elapsed_time[searchDim].dim_num == myDim) {
+              if (dim_elapsed_time[searchDim].dim_num ==
+                  static_cast<uint64_t>(myDim)) {
                 myReordered[myDim] = dim_elapsed_time[searchDim];
                 break;
               }
@@ -261,7 +264,7 @@ std::vector<int> OfflineGreedy::get_chunk_scheduling(
           if (comm_type == ComType::All_Gather) {
             std::reverse(dim_elapsed_time.begin(), dim_elapsed_time.end());
           }
-          for (int myDim = 0; myDim < dim_elapsed_time.size(); myDim++) {
+          for (uint64_t myDim = 0; myDim < dim_elapsed_time.size(); myDim++) {
             if (!dimensions_involved[myDim] || dim_size[myDim] == 1) {
               // result.push_back(myDim);
               continue;

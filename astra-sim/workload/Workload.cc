@@ -101,7 +101,7 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
            << ",node->id=" << node->getChakraNode()->id()
            << ",node->name=" << node->getChakraNode()->name() << endl;
     }
-    issue_mem(node);
+    issue_remote_mem(node);
   } else if (node->getChakraNode()->node_type() == ChakraNodeType::COMP_NODE) {
     if ((node->getChakraNode()->simulated_run_time() == 0) &&
         (node->getChakraNode()->num_ops() == 0)) {
@@ -130,18 +130,14 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
   }
 }
 
-void Workload::issue_mem(shared_ptr<Chakra::ETFeederNode> node) {
+void Workload::issue_remote_mem(shared_ptr<Chakra::ETFeederNode> node) {
   hw_resource->occupy(node);
 
   WorkloadLayerHandlerData* wlhd = new WorkloadLayerHandlerData;
   wlhd->sys_id = sys->id;
   wlhd->workload = this;
   wlhd->node_id = node->getChakraNode()->id();
-  if (node->getChakraNode()->tensor_loc() == ChakraMemoryType::LOCAL_MEMORY) {
-    sys->mem->issue(LOCAL_MEMORY, node->getChakraNode()->tensor_size(), wlhd);
-  } else {
-    sys->mem->issue(REMOTE_MEMORY, node->getChakraNode()->tensor_size(), wlhd);
-  }
+  sys->remote_mem->issue(node->getChakraNode()->tensor_size(), wlhd);
 }
 
 void Workload::issue_comp(shared_ptr<Chakra::ETFeederNode> node) {
@@ -174,8 +170,6 @@ void Workload::issue_comp(shared_ptr<Chakra::ETFeederNode> node) {
 }
 
 void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
-  int src, dst;
-
   hw_resource->occupy(node);
 
   vector<bool> involved_dim;

@@ -1,7 +1,5 @@
 {
   "memory-type": "PER_NPU_MEMORY_EXPANSION",
-  "local-mem-latency": 0,
-  "local-mem-bw": 4096,
   "remote-mem-latency": 0,
   "remote-mem-bw": 512
 }
