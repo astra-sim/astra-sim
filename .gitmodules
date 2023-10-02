@@ -7,3 +7,6 @@
 [submodule "extern/graph_frontend/chakra"]
 	path = extern/graph_frontend/chakra
 	url = git@github.com:mlcommons/chakra.git
+[submodule "extern/remote_memory_backend/analytical"]
+	path = extern/remote_memory_backend/analytical
+	url = git@github.com:astra-sim/astra-memory-analytical.git
