@@ -36,6 +36,13 @@ function compile_astrasim_analytical() {
   cmake --build . -j "${NUM_THREADS:?}"
 }
 
+function compile_astrasim_analytical_as_debug() {
+  # compile AstraSim
+  cd "${BUILD_DIR:?}" || exit
+  cmake .. -DBUILDTARGET="$1" -DCMAKE_BUILD_TYPE=Debug
+  cmake --build . --config=Debug -j "${NUM_THREADS:?}"
+}
+
 function cleanup() {
   rm -rf "${BUILD_DIR:?}"
 }
@@ -82,16 +89,20 @@ function print_usage() {
 
 # set default option values
 build_target="all"
+build_as_debug=false
 should_clean=false
 
 # Process command-line options
-while getopts "t:l" OPT; do
+while getopts "t:ld" OPT; do
   case "${OPT:?}" in
   t)
     build_target="${OPTARG:?}"
     ;;
   l)
     should_clean=true
+    ;;
+  d)
+    build_as_debug=true
     ;;
   *)
     exit 1
@@ -111,11 +122,16 @@ fi
 if [[ ${should_clean:?} == true ]]; then
   cleanup
 else
-  # compile AstraSim
+  # setup ASTRA-sim build
   setup
   compile_chakra_et
-  compile_astrasim_analytical "${build_target:?}"
-  create_symlink_astrasim
+
+  # compile ASTRA-sim
+  if [[ ${build_as_debug:?} == true ]]; then
+    compile_astrasim_analytical_as_debug "${build_target:?}"
+  else
+    compile_astrasim_analytical "${build_target:?}"
+  fi
 
   # create symlinks as appropriate (for backward compatibility)
   if [[ ${build_target:?} == "all" ]]; then

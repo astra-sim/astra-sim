@@ -6,6 +6,7 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/Sys.hh"
 
 #include <iostream>
+#include <cstdlib>
 
 #include <json/json.hpp>
 #include "astra-sim/system/BaseStream.hh"
@@ -1164,9 +1165,11 @@ int Sys::get_priority(int explicit_priority) {
     return priority_counter--;
   } else if (scheduling_policy == SchedulingPolicy::EXPLICIT) {
     return explicit_priority;
-  } else {
-    assert(false);
   }
+
+  // should not reach here
+  assert(false);
+  std::exit(-1);
 }
 
 void Sys::insert_into_ready_list(BaseStream* stream) {
