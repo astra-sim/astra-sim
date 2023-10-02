@@ -8,6 +8,8 @@ LICENSE file in the root directory of this source tree.
 #include <astra-network-analytical/common/EventQueue.hh>
 #include <astra-sim/system/AstraNetworkAPI.hh>
 #include <astra-sim/system/Common.hh>
+#include <memory>
+#include <vector>
 #include "common/CallbackTracker.hh"
 #include "common/ChunkIdGenerator.hh"
 
