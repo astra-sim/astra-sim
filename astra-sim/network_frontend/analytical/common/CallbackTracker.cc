@@ -9,6 +9,7 @@ LICENSE file in the root directory of this source tree.
 using namespace AstraSimAnalytical;
 
 CallbackTracker::CallbackTracker() noexcept {
+  // initialize tracker
   tracker = {};
 }
 

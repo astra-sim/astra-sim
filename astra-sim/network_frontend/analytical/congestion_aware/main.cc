@@ -18,11 +18,11 @@ using namespace NetworkAnalytical;
 using namespace NetworkAnalyticalCongestionAware;
 
 int main(int argc, char* argv[]) {
-  /// Parse command line arguments
+  // Parse command line arguments
   auto cmd_line_parser = CmdLineParser(argv[0]);
   cmd_line_parser.parse(argc, argv);
 
-  /// Get command line arguments
+  // Get command line arguments
   const auto workload_configuration =
       cmd_line_parser.get<std::string>("workload-configuration");
   const auto comm_group_configuration =
@@ -40,24 +40,24 @@ int main(int argc, char* argv[]) {
   const auto rendezvous_protocol =
       cmd_line_parser.get<bool>("rendezvous-protocol");
 
-  /// Instantiate event queue
+  // Instantiate event queue
   const auto event_queue = std::make_shared<EventQueue>();
   Topology::set_event_queue(event_queue);
 
-  /// Generate topology
+  // Generate topology
   const auto network_parser = NetworkParser(network_configuration);
   const auto topology = construct_topology(network_parser);
 
-  /// Get topology information
+  // Get topology information
   const auto npus_count = topology->get_npus_count();
   const auto npus_count_per_dim = topology->get_npus_count_per_dim();
   const auto dims_count = topology->get_dims_count();
 
-  /// Set up Network API
+  // Set up Network API
   CongestionAwareNetworkApi::set_event_queue(event_queue);
   CongestionAwareNetworkApi::set_topology(topology);
 
-  /// Create ASTRA-sim related resources
+  // Create ASTRA-sim related resources
   auto network_apis = std::vector<std::unique_ptr<CongestionAwareNetworkApi>>();
   const auto memory_api =
       std::make_unique<AnalyticalMemory>(remote_memory_configuration);
@@ -89,15 +89,16 @@ int main(int argc, char* argv[]) {
     systems.push_back(system);
   }
 
-  /// Run ASTRA-sim simulation
+  // Initiate ASTRA-sim simulation
   for (int i = 0; i < npus_count; i++) {
     systems[i]->workload->fire();
   }
 
+  // run simulation
   while (!event_queue->finished()) {
     event_queue->proceed();
   }
 
-  /// terminate simulation
+  // terminate simulation
   return 0;
 }

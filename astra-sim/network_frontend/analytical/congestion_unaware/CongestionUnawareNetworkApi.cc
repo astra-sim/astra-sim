@@ -20,7 +20,7 @@ void CongestionUnawareNetworkApi::set_topology(
   // move topology
   CongestionUnawareNetworkApi::topology = std::move(topology_ptr);
 
-  // get values
+  // set topology-related values
   CongestionUnawareNetworkApi::dims_count =
       CongestionUnawareNetworkApi::topology->get_dims_count();
   CongestionUnawareNetworkApi::bandwidth_per_dim =

@@ -44,7 +44,7 @@ void CommonNetworkApi::process_chunk_arrival(void* args) noexcept {
   const auto entry = tracker.search_entry(tag, src, dest, count, chunk_id);
   assert(entry.has_value()); // entry must exist
 
-  // call both send and recv callback
+  // if both callbacks are registered, invoke both callbacks
   if (entry.value()->both_callbacks_registered()) {
     entry.value()->invoke_send_handler();
     entry.value()->invoke_recv_handler();
@@ -56,11 +56,14 @@ void CommonNetworkApi::process_chunk_arrival(void* args) noexcept {
     entry.value()->invoke_send_handler();
 
     // mark the transmission as finished
+    // so that recv callback will be invoked immediately
+    // when sim_recv() is called
     entry.value()->set_transmission_finished();
   }
 }
 
-CommonNetworkApi::CommonNetworkApi(const int rank) noexcept : AstraNetworkAPI(rank) {
+CommonNetworkApi::CommonNetworkApi(const int rank) noexcept
+    : AstraNetworkAPI(rank) {
   assert(rank >= 0);
 }
 
@@ -68,7 +71,7 @@ timespec_t CommonNetworkApi::sim_get_time() {
   // get current time from event queue
   const auto current_time = event_queue->get_current_time();
 
-  // return astra-sim time
+  // return the current time in ASTRA-sim format
   const auto astra_sim_time = static_cast<double>(current_time);
   return {NS, astra_sim_time};
 }
@@ -80,12 +83,12 @@ void CommonNetworkApi::sim_schedule(
   assert(delta.time_res == NS);
   assert(fun_ptr != nullptr);
 
-  // calculate event_time
+  // calculate absolute event time
   const auto current_time = sim_get_time();
   const auto event_time = current_time.time_val + delta.time_val;
   const auto event_time_ns = static_cast<EventTime>(event_time);
 
-  // schedule event
+  // schedule the event to the event queue
   assert(event_time_ns >= event_queue->get_current_time());
   event_queue->schedule_event(event_time_ns, fun_ptr, fun_arg);
 }
@@ -97,7 +100,7 @@ void CommonNetworkApi::schedule(
   assert(event_time.time_res == NS);
   assert(fun_ptr != nullptr);
 
-  // get event event_time
+  // get the event time
   const auto event_time_ns = static_cast<EventTime>(event_time.time_val);
 
   // schedule event

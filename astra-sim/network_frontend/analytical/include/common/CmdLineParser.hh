@@ -11,12 +11,34 @@ LICENSE file in the root directory of this source tree.
 
 namespace AstraSimAnalytical {
 
+/**
+ * CmdLineParser parses command line arguments using cxxopts
+ * for ASTRA-sim input parameters.
+ */
 class CmdLineParser {
  public:
+  /**
+   * Constructor.
+   *
+   * @param argv0 argv[0] from main function
+   */
   explicit CmdLineParser(const char* argv0) noexcept;
 
+  /**
+   * Parse the command line arguments.
+   *
+   * @param argc argc from main function
+   * @param argv argv from main function
+   */
   void parse(int argc, char* argv[]) noexcept;
 
+  /**
+   * Get the value of the option in type T with the given name.
+   *
+   * @tparam T type of the argument value
+   * @param name name of the argument
+   * @return read argument value in type T
+   */
   template <typename T>
   T get(const std::string& name) const noexcept {
     try {
@@ -31,10 +53,15 @@ class CmdLineParser {
   }
 
  private:
+  /// cxxopts options
   cxxopts::Options options;
 
+  /// cxxopts parsed results
   cxxopts::ParseResult parsed;
 
+  /**
+   * Define the options for cxxopts.
+   */
   void define_options() noexcept;
 };
 

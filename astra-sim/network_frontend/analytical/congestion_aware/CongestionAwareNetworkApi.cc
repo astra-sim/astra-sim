@@ -21,7 +21,7 @@ void CongestionAwareNetworkApi::set_topology(
   // move topology
   CongestionAwareNetworkApi::topology = std::move(topology_ptr);
 
-  // get topology values
+  // set topology-related values
   CongestionAwareNetworkApi::dims_count =
       CongestionAwareNetworkApi::topology->get_dims_count();
   CongestionAwareNetworkApi::bandwidth_per_dim =
@@ -52,9 +52,11 @@ int CongestionAwareNetworkApi::sim_send(
   const auto entry =
       callback_tracker.search_entry(tag, src, dst, count, chunk_id);
   if (entry.has_value()) {
+    // recv operation already issued.
     // register send callback
     entry.value()->register_send_callback(msg_handler, fun_arg);
   } else {
+    // recv operation not issued yet
     // create new entry and insert callback
     auto* const new_entry =
         callback_tracker.create_new_entry(tag, src, dst, count, chunk_id);

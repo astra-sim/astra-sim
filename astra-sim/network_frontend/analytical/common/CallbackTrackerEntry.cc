@@ -19,6 +19,7 @@ void CallbackTrackerEntry::register_send_callback(
     const CallbackArg arg) noexcept {
   assert(!send_event.has_value());
 
+  // register send callback
   const auto event = Event(callback, arg);
   send_event = event;
 }
@@ -28,6 +29,7 @@ void CallbackTrackerEntry::register_recv_callback(
     const CallbackArg arg) noexcept {
   assert(!recv_event.has_value());
 
+  // register recv callback
   const auto event = Event(callback, arg);
   recv_event = event;
 }
@@ -41,29 +43,20 @@ void CallbackTrackerEntry::set_transmission_finished() noexcept {
 }
 
 bool CallbackTrackerEntry::both_callbacks_registered() const noexcept {
+  // check both callback is registered
   return (send_event.has_value() && recv_event.has_value());
 }
 
 void CallbackTrackerEntry::invoke_send_handler() noexcept {
   assert(send_event.has_value());
 
+  // invoke send event
   send_event.value().invoke_event();
 }
 
 void CallbackTrackerEntry::invoke_recv_handler() noexcept {
   assert(recv_event.has_value());
 
+  // invoke recv event
   recv_event.value().invoke_event();
-}
-
-Event CallbackTrackerEntry::get_send_event() const noexcept {
-  assert(send_event.has_value());
-
-  return send_event.value();
-}
-
-Event CallbackTrackerEntry::get_recv_event() const noexcept {
-  assert(recv_event.has_value());
-
-  return recv_event.value();
 }
