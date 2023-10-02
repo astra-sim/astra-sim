@@ -6,7 +6,7 @@ LICENSE file in the root directory of this source tree.
 #include <astra-network-analytical/common/EventQueue.hh>
 #include <astra-network-analytical/common/NetworkParser.hh>
 #include <astra-network-analytical/congestion_aware/Helper.hh>
-#include <memory_backend/analytical/AnalyticalMemory.hh>
+#include <remote_memory_backend/analytical/AnalyticalRemoteMemory.hh>
 #include "common/CmdLineParser.hh"
 #include "congestion_aware/CongestionAwareNetworkApi.hh"
 
@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
   // Create ASTRA-sim related resources
   auto network_apis = std::vector<std::unique_ptr<CongestionAwareNetworkApi>>();
   const auto memory_api =
-      std::make_unique<AnalyticalMemory>(remote_memory_configuration);
+      std::make_unique<AnalyticalRemoteMemory>(remote_memory_configuration);
   auto systems = std::vector<Sys*>();
 
   auto queues_per_dim = std::vector<int>();
