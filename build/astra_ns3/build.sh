@@ -11,8 +11,18 @@ BUILD_DIR="${SCRIPT_DIR:?}"/build/
 RESULT_DIR="${SCRIPT_DIR:?}"/result/
 BINARY="${BUILD_DIR}"/gem5.opt
 
+WORKLOAD="${SCRIPT_DIR:?}"/../../inputs/workload/ASTRA-sim-2.0/microAllReduce
+SYSTEM="${SCRIPT_DIR:?}"/../../inputs/system/sample_fully_connected_sys.txt
+NETWORK="${SCRIPT_DIR:?}"/../../inputs/network/analytical/fully_connected.json
+MEMORY="${SCRIPT_DIR:?}"/../../inputs/remote_memory/analytical/no_memory_expansion.json
+
+
 # Functions
 function setup {
+    protoc et_def.proto\
+        --proto_path ${SCRIPT_DIR}/../../extern/graph_frontend/chakra/et_def/\
+        --cpp_out ${SCRIPT_DIR}/../../extern/graph_frontend/chakra/et_def/
+    mkdir -p "${BUILD_DIR}"
     mkdir -p "${BUILD_DIR}"
     mkdir -p "${RESULT_DIR}"
 }
@@ -32,8 +42,13 @@ function compile {
     cp "${ASTRA_SIM_DIR}"/network_frontend/ns3/AstraSimNetwork.cc "${NS3_DIR}"/simulation/scratch/
     cp "${ASTRA_SIM_DIR}"/network_frontend/ns3/*.h "${NS3_DIR}"/simulation/scratch/
     cd "${NS3_DIR}/simulation"
-    CC='gcc-4.9' CXX='g++-4.9' ./waf -d debug configure 
-    ./waf -d debug --run 'scratch/AstraSimNetwork mix/config.txt --commscale=1'
+    CC='gcc-5' CXX='g++-5' ./waf -d debug configure 
+    ./waf --run "scratch/AstraSimNetwork mix/config.txt \
+        --workload-configuration=${WORKLOAD} \
+        --system-configuration=${SYSTEM} \
+        --network-configuration=${NETWORK}\
+        --remote-memory-configuration=${MEMORY}\
+        --comm-group-configuration=\"empty\""
     cd "${SCRIPT_DIR:?}"
 }
 
@@ -41,9 +56,13 @@ function debug {
     cp "${ASTRA_SIM_DIR}"/network_frontend/ns3/AstraSimNetwork.cc "${NS3_DIR}"/simulation/scratch/
     cp "${ASTRA_SIM_DIR}"/network_frontend/ns3/*.h "${NS3_DIR}"/simulation/scratch/
     cd "${NS3_DIR}/simulation"
-    CC='gcc-4.9' CXX='g++-4.9' ./waf -d debug configure
-    ./waf -d debug --run 'scratch/AstraSimNetwork' --command-template="gdb --args %s mix/config.txt"
-    cd "${SCRIPT_DIR:?}"
+    CC='gcc-5' CXX='g++-5' ./waf -d debug configure
+    ./waf  --run 'scratch/AstraSimNetwork' --command-template="gdb --args %s mix/config.txt \
+        --workload-configuration=${WORKLOAD} \
+        --system-configuration=${SYSTEM} \
+        --network-configuration=${NETWORK}\
+        --remote-memory-configuration=${MEMORY}\
+        --comm-group-configuration=\"empty\""
 }
 
 # Main Script

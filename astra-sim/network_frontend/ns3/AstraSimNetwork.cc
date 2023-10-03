@@ -1,5 +1,7 @@
 #include "astra-sim/system/AstraNetworkAPI.hh"
 #include "astra-sim/system/Sys.hh"
+#include "extern/remote_memory_backend/analytical/AnalyticalRemoteMemory.hh"
+
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
 #include "ns3/csma-module.h"
@@ -19,11 +21,11 @@
 using namespace std;
 using namespace ns3;
 
+/*
 std::vector<string> workloads{"Resnet50_fused.txt"};
 //std::vector<string> workloads{"Resnet50_fused.txt"};
 std::vector<std::vector<int>> physical_dims{{8, 4}};
 
-queue<struct task1> workerQueue;
 unsigned long long tempcnt = 999;
 unsigned long long cnt = 0;
 struct sim_event {
@@ -34,17 +36,19 @@ struct sim_event {
   int tag;
   string fnType;
 };
+*/
+queue<struct task1> workerQueue;
+
 class ASTRASimNetwork : public AstraSim::AstraNetworkAPI {
 private:
   int npu_offset;
 
 public:
-  queue<sim_event> sim_event_queue;
-  ASTRASimNetwork(int rank, int npu_offset) : AstraNetworkAPI(rank) {
-    this->npu_offset = npu_offset;
-  }
+  //queue<sim_event> sim_event_queue;
+  ASTRASimNetwork(int rank) : AstraNetworkAPI(rank) {}
+
   ~ASTRASimNetwork() {}
-  int sim_comm_size(AstraSim::sim_comm comm, int *size) { return 0; }
+
   int sim_finish() {
     for (auto it = nodeHash.begin(); it != nodeHash.end(); it++) {
       pair<int, int> p = it->first;
@@ -59,15 +63,18 @@ public:
     exit(0);
     return 0;
   }
+
   double sim_time_resolution() { return 0; }
-  int sim_init(AstraSim::AstraMemoryAPI *MEM) { return 0; }
+  //int sim_init(AstraSim::AstraMemoryAPI *MEM) { return 0; }
+
   AstraSim::timespec_t sim_get_time() {
     AstraSim::timespec_t timeSpec;
     timeSpec.time_val = Simulator::Now().GetNanoSeconds();
     return timeSpec;
   }
-  virtual void sim_schedule(AstraSim::timespec_t delta,
-                            void (*fun_ptr)(void *fun_arg), void *fun_arg) {
+
+  virtual void schedule(AstraSim::timespec_t delta,
+                        void (*fun_ptr)(void *fun_arg), void *fun_arg) {
     task1 t;
     t.type = 2;
     t.fun_arg = fun_arg;
@@ -76,6 +83,7 @@ public:
     Simulator::Schedule(NanoSeconds(t.schTime), t.msg_handler, t.fun_arg);
     return;
   }
+
   virtual int sim_send(void *buffer,   // not yet used
                        uint64_t count, // number of bytes to be send
                        int type,       // not yet used
@@ -98,10 +106,10 @@ public:
     SendFlow(rank, dst, count, msg_handler, fun_arg, tag);
     return 0;
   }
+
   virtual int sim_recv(void *buffer, uint64_t count, int type, int src, int tag,
                        AstraSim::sim_request *request,
                        void (*msg_handler)(void *fun_arg), void *fun_arg) {
-    src += npu_offset;
     task1 t;
     t.src = src;
     t.dest = rank;
@@ -142,12 +150,53 @@ public:
 };
 
 int main(int argc, char *argv[]) {
-  float comm_scale = 1;
+  LogComponentEnable("OnOffApplication", LOG_LEVEL_INFO);
+  LogComponentEnable("PacketSink", LOG_LEVEL_INFO);
+
+  cout << "ASTRA-sim + NS3" << endl;
+
+  string workload_configuration;
+  string comm_group_configuration;
+  string system_configuration;
+  string network_configuration;
+  string memory_configuration;
+  const int num_npus = 64; // TODO: parametrize
+  int num_queues_per_dim = 1;
+  vector<int> physical_dims{num_npus}; // TODO: parametrize
+  vector<int> queues_per_dim{1};
+  double comm_scale = 1;
+  double injection_scale = 1;
+  bool rendezvous_protocol = false;
 
   CommandLine cmd;
-  cmd.AddValue("commscale", "Communication Scale", comm_scale);
+  cmd.AddValue("workload-configuration", "Workload configuration file",
+               workload_configuration);
+  cmd.AddValue("comm-group-configuration",
+               "Communicator group configuration file",
+               comm_group_configuration);
+  cmd.AddValue("system-configuration", "System configuration file",
+               system_configuration);
+  cmd.AddValue("network-configuration", "Network configuration file",
+               network_configuration);
+  cmd.AddValue("num-queues-per-dim", "Number of queues per each dimension",
+               num_queues_per_dim);
+  cmd.AddValue("comm-scale", "Communication scale", comm_scale);
+  cmd.AddValue("injection-scale", "Injection scale", injection_scale);
+  cmd.AddValue("rendezvous-protocol", "Whether to enable rendezvous protocol",
+               rendezvous_protocol);
+  cmd.AddValue("remote-memory-configuration", "Memory configuration file", 
+                memory_configuration);
   cmd.Parse(argc, argv);
 
+  
+
+  vector<ASTRASimNetwork *> networks(num_npus, nullptr);
+  vector<AstraSim::Sys *> systems(num_npus, nullptr);
+  // make_unique is a C++14 feature.
+  Analytical::AnalyticalRemoteMemory* mem =
+      new Analytical::AnalyticalRemoteMemory(memory_configuration);
+
+/*
   assert(workloads.size() == physical_dims.size());
   int num_gpus = 0;
   for (auto &a : physical_dims) {
@@ -157,13 +206,13 @@ int main(int argc, char *argv[]) {
     }
     num_gpus += job_npus;
   }
+  */
 
   LogComponentEnable("OnOffApplication", LOG_LEVEL_INFO);
   LogComponentEnable("PacketSink", LOG_LEVEL_INFO);
-  std::vector<ASTRASimNetwork *> networks(num_gpus, nullptr);
-  std::vector<AstraSim::Sys *> systems(num_gpus, nullptr);
 
   int npu_offset = 0;
+  /*
   for (int i = 0; i < physical_dims.size(); i++) {
     std::vector<int> queues_per_dim(physical_dims[i].size(), 1);
     // determining the appropriate system input file
@@ -180,10 +229,15 @@ int main(int argc, char *argv[]) {
     for (auto dim : physical_dims[i]) {
       job_npus *= dim;
     }
-    for (int j = 0; j < job_npus; j++) {
-      networks[j + npu_offset] =
-          new ASTRASimNetwork(j + npu_offset, npu_offset);
-      systems[j + npu_offset] = new AstraSim::Sys(
+  */
+  for (int npu_id = 0; npu_id < num_npus; npu_id++) {
+    networks[npu_id] = new ASTRASimNetwork(npu_id);
+    systems[npu_id] = new AstraSim::Sys(
+        npu_id, workload_configuration, comm_group_configuration,
+        system_configuration, mem, networks[npu_id], physical_dims,
+        queues_per_dim, injection_scale, comm_scale, rendezvous_protocol);
+        /*
+    systems[npu_id] = new AstraSim::Sys(
           networks[j + npu_offset], // AstraNetworkAPI
           nullptr,                  // AstraMemoryAPI
           j,                        // id
@@ -197,9 +251,9 @@ int main(int argc, char *argv[]) {
               workloads[i], // DLRM_HybridParallel.txt, //
                             // Resnet50_DataParallel.txt, // workload
                             // configuration
-          comm_scale, // communication scale
-          1,          // computation scale
-          1,          // injection scale
+          comm_scale,       // communication scale
+          1,                // computation scale
+          1,                // injection scale
           1,
           0,                  // total_stat_rows and stat_row
           "scratch/results/", // stat file path
@@ -207,14 +261,16 @@ int main(int argc, char *argv[]) {
           true,               // separate_log
           false               // randezvous protocol
       );
-    }
-    npu_offset += job_npus;
+      */
+    //}
+    //npu_offset += job_npus;
   }
   main1(argc, argv);
   // pass number of nodes
-  for (int i = 0; i < num_gpus; i++) {
+  for (int i = 0; i < num_npus; i++) {
     systems[i]->workload->fire();
   }
+
   Simulator::Run();
   // Simulator::Stop(TimeStep (0x7fffffffffffffffLL));
   Simulator::Stop(Seconds(2000000000));

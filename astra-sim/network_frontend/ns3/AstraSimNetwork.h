@@ -8,9 +8,7 @@ class ASTRASimNetwork: AstraSim::AstraNetworkAPI{
             cout<<"hello constructor\n";
         }
         ~ASTRASimNetwork(){}
-        int sim_comm_size(AstraSim::sim_comm comm, int* size){
-            return 0;
-        }
+        
         int sim_finish(){
             cout<<"sim finish\n";
             return 0;
@@ -18,9 +16,7 @@ class ASTRASimNetwork: AstraSim::AstraNetworkAPI{
         double sim_time_resolution(){
             return 0;
         }
-        int sim_init(AstraSim::AstraMemoryAPI* MEM){
-            return 0;
-        }
+
         AstraSim::timespec_t sim_get_time(){
             AstraSim::timespec_t timeSpec;
             // timeSpec.time_type_e = "SE";
