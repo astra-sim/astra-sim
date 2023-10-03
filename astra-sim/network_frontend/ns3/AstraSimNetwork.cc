@@ -73,14 +73,14 @@ public:
     return timeSpec;
   }
 
-  virtual void schedule(AstraSim::timespec_t delta,
+  virtual void schedule(AstraSim::timespec_t schTime,
                         void (*fun_ptr)(void *fun_arg), void *fun_arg) {
     task1 t;
     t.type = 2;
     t.fun_arg = fun_arg;
     t.msg_handler = fun_ptr;
-    t.schTime = delta.time_val;
-    Simulator::Schedule(NanoSeconds(t.schTime), t.msg_handler, t.fun_arg);
+    t.schTime = schTime.time_val;
+    Simulator::Schedule(NanoSeconds(t.schTime)- Simulator::Now(), t.msg_handler, t.fun_arg);
     return;
   }
 
