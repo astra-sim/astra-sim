@@ -12,6 +12,7 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/SendPacketEventHandlerData.hh"
 #include "astra-sim/system/WorkloadLayerHandlerData.hh"
 
+#include <fstream>
 #include <iostream>
 
 using namespace std;
@@ -23,9 +24,17 @@ typedef ChakraProtoMsg::NodeType ChakraNodeType;
 typedef ChakraProtoMsg::MemoryType ChakraMemoryType;
 typedef ChakraProtoMsg::CollectiveCommType ChakraCollectiveCommType;
 
+bool file_exists(const string& filename) {
+  std::ifstream file(filename.c_str());
+  bool file_good = file.good();
+  file.close();
+  return file_good;
+}
+
 Workload::Workload(Sys* sys, string eg_filename, string comm_group_filename) {
-  this->et_feeder =
-      new ETFeeder(eg_filename + "." + to_string(sys->id) + ".eg");
+  const string path_to_eg = eg_filename + "." + to_string(sys->id) + ".eg";
+  assert(file_exists(path_to_eg));
+  this->et_feeder = new ETFeeder(path_to_eg);
   this->comm_group = nullptr;
   // TODO: parametrize the number of available hardware resources
   this->hw_resource = new HardwareResource(1);
