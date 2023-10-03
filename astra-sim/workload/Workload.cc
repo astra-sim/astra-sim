@@ -110,7 +110,74 @@ void Workload::issue_dep_free_nodes() {
   }
 }
 
+void Workload::check_node_valid(std::shared_ptr<Chakra::ETFeederNode> node) {
+  const auto& chakra_node = node->getChakraNode();
+  if ((chakra_node->node_type() == ChakraNodeType::MEM_LOAD_NODE) ||
+      (chakra_node->node_type() == ChakraNodeType::MEM_STORE_NODE)) {
+    if (!(chakra_node->tensor_loc() == ChakraMemoryType::REMOTE_MEMORY))
+      throw std::invalid_argument("invalid tensor location for memory node");
+    if (!(chakra_node->has_tensor_size()))
+      throw std::invalid_argument("empty tensor size for memory node");
+    return;
+  } else if (chakra_node->node_type() == ChakraNodeType::COMP_NODE) {
+    if (sys->roofline_enabled) {
+      if (!(chakra_node->has_num_ops()))
+        throw std::invalid_argument(
+            "empty num_ops, with roofline model, comp node should have num_ops");
+      if (!(chakra_node->has_tensor_size()))
+        throw std::invalid_argument(
+            "empty tensor_size, with roofline model, comp node should have tensor_size");
+    } else {
+      if (!(chakra_node->has_simulated_run_time()))
+        throw std::invalid_argument(
+            "empty simulated_run_time, with roofline model, comp node should have simulated_run_time");
+    }
+    return;
+  } else if (
+      (chakra_node->node_type() == ChakraNodeType::COMM_COLL_NODE) ||
+      (chakra_node->node_type() == ChakraNodeType::COMM_SEND_NODE) ||
+      (chakra_node->node_type() == ChakraNodeType::COMM_RECV_NODE)) {
+    if (!(chakra_node->has_comm_size()))
+      throw std::invalid_argument("empty comm_size for comm node");
+    if (chakra_node->node_type() == ChakraNodeType::COMM_COLL_NODE) {
+      switch (chakra_node->comm_type()) {
+        // for all implemented comm types, break: please make sure list here
+        // align to issue_comm implementation
+        case ChakraCollectiveCommType::ALL_REDUCE:
+        case ChakraCollectiveCommType::ALL_GATHER:
+        case ChakraCollectiveCommType::ALL_TO_ALL:
+        case ChakraCollectiveCommType::REDUCE_SCATTER:
+          break;
+        // for other comm types, shouldnt be here, trigger exception
+        default:
+          throw std::invalid_argument("invalid comm type for COMM_COLL_NODE");
+      }
+    }
+    return;
+  }
+
+  throw std::invalid_argument("invalid node type");
+}
+
 void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
+  // In strict_mode, the node field check will be enforced, and the simulation
+  // will stop if field check fails. Otherwise, just skip these invalid nodes
+  // and continue run (default behavior)
+  const bool strict_mode = false;
+  try {
+    check_node_valid(node);
+  } catch (std::invalid_argument& e) {
+    // conditional catch when not strict_mode
+    if (!strict_mode) {
+      std::cerr << e.what() << std::endl;
+      skip_invalid(node);
+      return;
+    } else {
+      throw e;
+    }
+  }
+
+  // from here the node should be valid and following code should run well.
   if ((node->getChakraNode()->node_type() == ChakraNodeType::MEM_LOAD_NODE) ||
       (node->getChakraNode()->node_type() == ChakraNodeType::MEM_STORE_NODE)) {
     if (sys->trace_enabled) {
@@ -120,17 +187,12 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
     }
     issue_remote_mem(node);
   } else if (node->getChakraNode()->node_type() == ChakraNodeType::COMP_NODE) {
-    if ((node->getChakraNode()->simulated_run_time() == 0) &&
-        (node->getChakraNode()->num_ops() == 0)) {
-      skip_invalid(node);
-    } else {
-      if (sys->trace_enabled) {
-        cout << "issue,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
-             << ",node->id=" << node->getChakraNode()->id()
-             << ",node->name=" << node->getChakraNode()->name() << endl;
-      }
-      issue_comp(node);
+    if (sys->trace_enabled) {
+      cout << "issue,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
+           << ",node->id=" << node->getChakraNode()->id()
+           << ",node->name=" << node->getChakraNode()->name() << endl;
     }
+    issue_comp(node);
   } else if (
       (node->getChakraNode()->node_type() == ChakraNodeType::COMM_COLL_NODE) ||
       (node->getChakraNode()->node_type() == ChakraNodeType::COMM_SEND_NODE) ||
@@ -141,9 +203,6 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
            << ",node->name=" << node->getChakraNode()->name() << endl;
     }
     issue_comm(node);
-  } else if (
-      node->getChakraNode()->node_type() == ChakraNodeType::INVALID_NODE) {
-    skip_invalid(node);
   }
 }
 
@@ -158,7 +217,6 @@ void Workload::issue_remote_mem(shared_ptr<Chakra::ETFeederNode> node) {
 }
 
 void Workload::issue_comp(shared_ptr<Chakra::ETFeederNode> node) {
-  assert(node->getChakraNode()->node_type() == ChakraNodeType::COMP_NODE);
   hw_resource->occupy(node);
 
   if (sys->roofline_enabled) {
