@@ -127,7 +127,7 @@ public:
 };
 
 // TODO: Migrate to yaml
-void read_network_config(string network_configuration, vector<int>&physical_dims) {
+void read_logical_topo_config(string network_configuration, vector<int>&physical_dims) {
   
   ifstream inFile;
   inFile.open(network_configuration);
@@ -161,10 +161,6 @@ int main(int argc, char *argv[]) {
   string system_configuration;
   cmd.AddValue("system-configuration", "System configuration file",
                system_configuration);
-
-  string network_configuration;
-  cmd.AddValue("network-configuration", "Network configuration file",
-               network_configuration);
                
   string memory_configuration;
   cmd.AddValue("remote-memory-configuration", "Memory configuration file", 
@@ -174,6 +170,11 @@ int main(int argc, char *argv[]) {
   cmd.AddValue("comm-group-configuration",
                "Communicator group configuration file",
                comm_group_configuration);
+
+  string logical_topology_configuration;
+  cmd.AddValue("logical-topology-configuration",
+               "Logical topology configuration file",
+               logical_topology_configuration);
 
   int num_queues_per_dim = 1;
   cmd.AddValue("num-queues-per-dim", "Number of queues per each dimension",
@@ -192,7 +193,7 @@ int main(int argc, char *argv[]) {
 
   // Read network config and find physical dims
   auto physical_dims = vector<int>();
-  read_network_config(network_configuration, physical_dims);
+  read_logical_topo_config(logical_topology_configuration, physical_dims);
   int num_npus = 1;
   
   stringstream dimstr;

@@ -45,8 +45,7 @@ $ sudo apt install \
 $ sudo pip3 install protobuf==3.6.1 pydot
 ```
 
-Note, that for the ns3 backend `python2`, `gcc-5.0` and `g++-5.0` are additionally required. This is because the ns3 backend is based on an older ns3 version.
-When Chakra 3.0 but ns3 2.0.
+NOTE: For the ns3 backend `python2`, `gcc-5.0` and `g++-5.0` are also required. This is because the ns3 backend is based on an older ns3 version. We recommend using virtual environments to isolate python instances. Even with the ns3 backend, `python3` is still used to create the workload using Chakra.
 
 - #### macOS
 For macOS, you can first install required dependencies using [homebrew](https://brew.sh).

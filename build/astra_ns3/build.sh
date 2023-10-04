@@ -10,8 +10,10 @@ NS3_DIR="${SCRIPT_DIR:?}"/../../extern/network_backend/ns3-interface
 # Inputs - change as necessary.
 WORKLOAD="${SCRIPT_DIR:?}"/../../extern/graph_frontend/chakra/et_generator/twoCompNodesDependent
 SYSTEM="${SCRIPT_DIR:?}"/../../inputs/system/sample_fully_connected_sys.txt
-NETWORK="${SCRIPT_DIR:?}"/../../inputs/network/ns3/sample_64nodes_1D.json
 MEMORY="${SCRIPT_DIR:?}"/../../inputs/remote_memory/analytical/no_memory_expansion.json
+LOGICAL_TOPOLOGY="${SCRIPT_DIR:?}"/../../inputs/network/ns3/sample_64nodes_1D.json
+# Note that ONLY this file is relative to NS3_DIR/simulation
+NETWORK="mix/config.txt"
 
 
 # Functions
@@ -33,11 +35,11 @@ function compile {
 
 function run {
     cd "${NS3_DIR}/simulation"
-    ./waf --run "scratch/AstraSimNetwork mix/config.txt \
+    ./waf --run "scratch/AstraSimNetwork ${NETWORK} \
         --workload-configuration=${WORKLOAD} \
         --system-configuration=${SYSTEM} \
-        --network-configuration=${NETWORK}\
-        --remote-memory-configuration=${MEMORY}\
+        --remote-memory-configuration=${MEMORY} \
+        --logical-topology-configuration=${LOGICAL_TOPOLOGY} \
         --comm-group-configuration=\"empty\""
     cd "${SCRIPT_DIR:?}"
 }
@@ -57,11 +59,11 @@ function debug {
     cp "${ASTRA_SIM_DIR}"/network_frontend/ns3/*.h "${NS3_DIR}"/simulation/scratch/
     cd "${NS3_DIR}/simulation"
     CC='gcc-5' CXX='g++-5' ./waf configure
-    ./waf  --run 'scratch/AstraSimNetwork' --command-template="gdb --args %s mix/config.txt \
+    ./waf  --run 'scratch/AstraSimNetwork' --command-template="gdb --args %s ${NETWORK} \
         --workload-configuration=${WORKLOAD} \
         --system-configuration=${SYSTEM} \
-        --network-configuration=${NETWORK}\
-        --remote-memory-configuration=${MEMORY}\
+        --remote-memory-configuration=${MEMORY} \
+        --logical-topology-configuration=${LOGICAL_TOPOLOGY} \
         --comm-group-configuration=\"empty\""
 }
 
