@@ -48,7 +48,7 @@ $ sudo pip3 install protobuf==3.6.1 pydot
 NOTE: For the ns3 backend `python2`, `gcc-5.0` and `g++-5.0` are also required. This is because the ns3 backend is based on an older ns3 version. We recommend using virtual environments to isolate python instances. Even with the ns3 backend, `python3` is still used to create the workload using Chakra.
 
 - #### macOS
-For macOS, you can first install required dependencies using [homebrew](https://brew.sh).
+For macOS, you can first install required dependencies using [homebrew](https://brew.sh). (Note: The ns3 backend has not yet been confirmed to build within macOS)
 ```bash
 $ brew update
 $ brew upgrade
@@ -88,12 +88,12 @@ Then, based on your target network backend, execute the corresponding build scri
 ```bash
 # For the analytical network backend
 $ ./build/astra_analytical/build.sh
-# For the ns3 network backend
+# For the ns3 network backend. Python2 required.
 $ ./build/astra_ns3/build.sh -c
 ```
 
 ### 2. Build ASTRA-sim in a Docker Image
-Alternatively, you can build ASTRA-sim within a Docker container.
+Alternatively, you can build ASTRA-sim within a Docker container. (Note: The ns3 backend has not yet been confirmed to build within a Docker image)
 
 Start by cloning this repository to your local machine using the same command as above:
 ```bash
@@ -115,8 +115,6 @@ Finally, similar to the local build process, depending on your target network ba
 ```bash
 # For the analytical network backend
 $ ./build/astra_analytical/build.sh
-# For the ns3 network backend. Python2 required.
-$ ./build/astra_ns3/build.sh -c
 ```
 
 ## Running ASTRA-sim
