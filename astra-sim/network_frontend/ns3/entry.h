@@ -25,25 +25,22 @@
 using namespace ns3;
 using namespace std;
 
-std::map<std::pair<int, std::pair<int, int>>, int> sender_src_port_map;
 
 struct task1 {
   int src;
   int dest;
   int type;
-  // void (*fptr) (void);
   int count;
   void *fun_arg;
   void (*msg_handler)(void *fun_arg);
   double schTime; // in sec
 };
-// extern queue<struct task1> workerQueue;
-//
+
+std::map<std::pair<int, std::pair<int, int>>, int> sender_src_port_map;
 map<std::pair<int, std::pair<int, int>>, struct task1> expeRecvHash;
 map<std::pair<int, std::pair<int, int>>, int> recvHash;
 map<std::pair<int, std::pair<int, int>>, struct task1> sentHash;
 map<std::pair<int, int>, int> nodeHash;
-// extern map<std::pair<int,int>,int> nodeHash;
 
 void SendFlow(int src, int dst, int maxPacketCount,
               void (*msg_handler)(void *fun_arg), void *fun_arg, int tag) {
@@ -171,28 +168,9 @@ void qp_finish(FILE *fout, Ptr<RdmaQueuePair> q) {
   notify_receiver_receive_data(sid, did, q->m_size, tag);
 }
 
-int main1(int argc, char *argv[]) {
-  ////std:://cout<<"testThird\n"
-  clock_t begint, endt;
-  begint = clock();
-
+int setup_ns3_simulation(int argc, char *argv[]) {
   if (!ReadConf(argc, argv))
     return -1;
   SetConfig();
   SetupNetwork(qp_finish);
-
-  //
-  // Now, do the actual simulation.
-  //
-  std::cout << "Running Simulation.\n";
-  fflush(stdout);
-  NS_LOG_INFO("Run Simulation.");
-  // Simulator::Stop(Seconds(simulator_stop_time));
-  // Simulator::Run();
-  // Simulator::Destroy();
-  // NS_LOG_INFO("Done.");
-  // fclose(trace_output);
-
-  endt = clock();
-  // std:://cout << (double)(endt - begint) / CLOCKS_PER_SEC << "\n";
 }
