@@ -25,31 +25,61 @@
 using namespace ns3;
 using namespace std;
 
+/*
+ * This file defines the interaction between the System layer and the NS3
+ * simulator (Network layer). System layer consists of num_npus different Sys
+ * objects, while there is only one ns3 simulator queue. Whenever send_flow. Will
+ * create an RDMAClient application, simplifying the ns3 application to send.
+ * Whenever this application terminates, it will call qp_finish. qp_finish will
+ * then trigger handler functions, That will reach out to system layer. This
+ * will forward the collectives, remove them from system layer queue, etc. For
+ * more detail, refer to the comments of each function. Sending is using maps.
+ * When system layer schedules send, it will place send/receive at maps.
+ * Whenever ns3 determines complete, it will trigger the handler in these maps.
+ */
 
+/*
+ * Task is used as a unit, to determine the map. Acts as a placeholder.
+ */
 struct task1 {
   int src;
   int dest;
   int type;
-  int count;
+  int remaining_msg_bytes;
   void *fun_arg;
   void (*msg_handler)(void *fun_arg);
   double schTime; // in sec
 };
 
-std::map<std::pair<int, std::pair<int, int>>, int> sender_src_port_map;
-map<std::pair<int, std::pair<int, int>>, struct task1> expeRecvHash;
-map<std::pair<int, std::pair<int, int>>, int> recvHash;
-map<std::pair<int, std::pair<int, int>>, struct task1> sentHash;
-map<std::pair<int, int>, int> nodeHash;
+// TaskKey is used as the key to all.
+typedef std::pair<int, std::pair<int, int>> TaskKey;
 
-void SendFlow(int src, int dst, int maxPacketCount,
+map<pair<int, pair<int, int>>, int> sender_src_port_map;
+map<TaskKey, struct task1> sentHash;
+
+/*
+ * Receive is more complex. Due to timing, ns3 may simulate receive earlier than when system layer calls sim_recv. 
+ * Therefore, we main two hashmaps. 
+ */
+
+map<TaskKey, struct task1> expeRecvHash;
+map<TaskKey, int> recvHash;
+// Used to count how many bytes were sent/received by this node. Refer to
+// sim_finish().
+map<pair<int, int>, int> nodeHash;
+
+
+// send_flow commands the ns3 simulator to schedule a RDMA message to be sent between two pair of nodes.
+// send_flow is triggered by sim_send.
+void send_flow(int src, int dst, int maxPacketCount,
               void (*msg_handler)(void *fun_arg), void *fun_arg, int tag) {
-  uint32_t port = portNumber[src][dst]++; // get a new port number
+  // get a new port number
+  uint32_t port = portNumber[src][dst]++;
   sender_src_port_map[make_pair(port, make_pair(src, dst))] = tag;
   int pg = 3, dport = 100;
   flow_input.idx++;
-  //std::cout << "flow input is " << flow_input.idx << " src " << src << " dst "
-  //          << dst << "\n";
+
+  // Create a queue pair from ns3. NS3 will send data. 
   RdmaClientHelper clientHelper(
       pg, serverAddress[src], serverAddress[dst], port, dport, maxPacketCount,
       has_win ? (global_t == 1 ? maxBdp : pairBdp[n.Get(src)][n.Get(dst)]) : 0,
@@ -62,48 +92,41 @@ void SendFlow(int src, int dst, int maxPacketCount,
 void notify_receiver_receive_data(int sender_node, int receiver_node,
                                   int message_size, int tag) {
 
-  if (expeRecvHash.find(make_pair(
-          tag, make_pair(sender_node, receiver_node))) != expeRecvHash.end()) {
-    task1 t2 =
-        expeRecvHash[make_pair(tag, make_pair(sender_node, receiver_node))];
-    // std::cout<<"count and t2.count is"<<count<<" "<<t2.count<<"\n";
-    if (message_size == t2.count) {
-      expeRecvHash.erase(make_pair(tag, make_pair(sender_node, receiver_node)));
-      // std::cout<<"already in expected recv hash src dest count "<<src<<"
-      // "<<dest<<" "<<count<<"\n";
-      // totalRecvs++;
-      // cout<<"total recvs: "<<totalRecvs<<endl;
+  TaskKey tagKey = make_pair(tag, make_pair(sender_node, receiver_node));
+
+  // The Sys object is waiting for packets to arrive.
+  if (expeRecvHash.find(tagKey) != expeRecvHash.end()) {
+    task1 t2 = expeRecvHash[tagKey];
+    if (message_size == t2.remaining_msg_bytes) {
+      // We received exactly what Sys object was expecting.
+      expeRecvHash.erase(tagKey);
       t2.msg_handler(t2.fun_arg);
-    } else if (message_size > t2.count) {
-      recvHash[make_pair(tag, make_pair(sender_node, receiver_node))] =
-          message_size - t2.count;
-      expeRecvHash.erase(make_pair(tag, make_pair(sender_node, receiver_node)));
-      // std::cout<<"already in recv hash with more data\n";
-      // std::cout<<"already in expected recv hash src dest count "<<src<<"
-      // "<<dest<<" "<<count<<"\n";
-      // totalRecvs++;
-      // cout<<"total recvs: "<<totalRecvs<<endl;
+    } else if (message_size > t2.remaining_msg_bytes) {
+      // We received more packets than the Sys object is expecting. 
+      // Place task in recvHash and wait for Sys object to issue more sim_recv calls.
+      // Call handler for the amount Sys object was waiting for.
+      recvHash[tagKey] = message_size - t2.remaining_msg_bytes;
+      expeRecvHash.erase(tagKey);
       t2.msg_handler(t2.fun_arg);
     } else {
-      t2.count -= message_size;
-      expeRecvHash[make_pair(tag, make_pair(sender_node, receiver_node))] = t2;
-      // std::cout<<"t2.count is"<<t2.count<<"\n";
-      // std::cout<<"partially in recv hash \n";
+      // There are still packets to arrive. 
+      // Reduce the number of packets we are waiting for. Do not call handler. 
+      t2.remaining_msg_bytes -= message_size;
+      expeRecvHash[tagKey] = t2;
     }
-    // t2.msg_handler(t2.fun_arg);
+  // The Sys object is not yet waiting for packets to arrive
   } else {
-    if (recvHash.find(make_pair(tag, make_pair(sender_node, receiver_node))) ==
-        recvHash.end()) {
-      recvHash[make_pair(tag, make_pair(sender_node, receiver_node))] =
-          message_size;
-      // std::cout<<"not in expected recv hash\n";
+    if (recvHash.find(tagKey) == recvHash.end()) {
+      // Place task in recvHash and wait for Sys object to issue more sim_recv calls.
+      // Call handler for the amount Sys object was waiting for.
+      recvHash[tagKey] = message_size;
     } else {
-      // TODO: is this really required?
-      recvHash[make_pair(tag, make_pair(sender_node, receiver_node))] +=
-          message_size;
-      // std::cout<<"in recv hash already maybe from previous flows\n";
+      // Sys object is still waiting. Add number of bytes we are waiting for. 
+      recvHash[tagKey] += message_size;
     }
   }
+
+
   if (nodeHash.find(make_pair(receiver_node, 1)) == nodeHash.end()) {
     nodeHash[make_pair(receiver_node, 1)] = message_size;
   } else {
@@ -113,20 +136,26 @@ void notify_receiver_receive_data(int sender_node, int receiver_node,
 
 void notify_sender_sending_finished(int sender_node, int receiver_node,
                                     int message_size, int tag) {
-  if (sentHash.find(make_pair(tag, make_pair(sender_node, receiver_node))) !=
-      sentHash.end()) {
-    task1 t2 = sentHash[make_pair(tag, make_pair(sender_node, receiver_node))];
-    // sentHash.erase(make_pair(tag,make_pair(sender_node, receiver_node)));
-    if (t2.count == message_size) {
-      sentHash.erase(make_pair(tag, make_pair(sender_node, receiver_node)));
-      if (nodeHash.find(make_pair(sender_node, 0)) == nodeHash.end()) {
-        nodeHash[make_pair(sender_node, 0)] = message_size;
-      } else {
-        nodeHash[make_pair(sender_node, 0)] += message_size;
-      }
-      t2.msg_handler(t2.fun_arg);
-    }
+
+  TaskKey tagKey = make_pair(tag, make_pair(sender_node, receiver_node));
+  if (sentHash.find(tagKey) == sentHash.end()) {
+    cout << "Something is wrong"
+         << "\n";
   }
+
+  task1 t2 = sentHash[tagKey];
+  if (t2.remaining_msg_bytes != message_size) {
+    cout << "Something is wrong"
+         << "\n";
+  }
+
+  sentHash.erase(tagKey);
+  if (nodeHash.find(make_pair(sender_node, 0)) == nodeHash.end()) {
+    nodeHash[make_pair(sender_node, 0)] = message_size;
+  } else {
+    nodeHash[make_pair(sender_node, 0)] += message_size;
+  }
+  t2.msg_handler(t2.fun_arg);
 }
 
 void qp_finish(FILE *fout, Ptr<RdmaQueuePair> q) {
@@ -145,9 +174,9 @@ void qp_finish(FILE *fout, Ptr<RdmaQueuePair> q) {
           (Simulator::Now() - q->startTime).GetTimeStep(), standalone_fct);
   fflush(fout);
 
-  if (false){//sid == 1 && did == 2) {
-  std::cout << "qp_finish " << sid << " " << did << " " << q->sport << " " << q->dport
-            << " " << q->m_size << std::endl;
+  if (false) {
+    cout << "qp_finish " << sid << " " << did << " " << q->sport << " "
+         << q->dport << " " << q->m_size << endl;
   }
   // remove rxQp from the receiver
   Ptr<Node> dstNode = n.Get(did);
@@ -156,14 +185,15 @@ void qp_finish(FILE *fout, Ptr<RdmaQueuePair> q) {
 
   if (sender_src_port_map.find(make_pair(q->sport, make_pair(sid, did))) ==
       sender_src_port_map.end()) {
-    std::cout << "could not find the tag, there must be something wrong"
-              << std::endl;
+    cout << "could not find the tag, there must be something wrong" << endl;
     exit(-1);
   }
   int tag = sender_src_port_map[make_pair(q->sport, make_pair(sid, did))];
   sender_src_port_map.erase(make_pair(q->sport, make_pair(sid, did)));
+
   // let sender knows that the flow finishes;
   notify_sender_sending_finished(sid, did, q->m_size, tag);
+
   // let receiver knows that it receives packets;
   notify_receiver_receive_data(sid, did, q->m_size, tag);
 }
