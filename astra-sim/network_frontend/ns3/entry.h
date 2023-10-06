@@ -58,8 +58,10 @@ public:
         remaining_msg_bytes(_remaining_msg_bytes), fun_arg(_fun_arg),
         msg_handler(_msg_handler) {}
 
-  // Default constructor to prevent compile errors. When using the map, we
-  // should always check that exists.
+  // Default constructor to prevent compile errors. When looking up MsgEvents
+  // from maps such as sim_send_waiting_hash, we should always check that a MsgEvent exists
+  // for the given key. (i.e. this default constructor should not be called in
+  // runtime.)
   MsgEvent()
       : src_id(0), dst_id(0), type(0), remaining_msg_bytes(0), fun_arg(nullptr),
         msg_handler(nullptr) {}
@@ -73,7 +75,7 @@ public:
 
 // MsgEventKey is a key to uniquely identify each MsgEvent.
 //  - Pair <Tag, Pair <src_id, dst_id>>
-typedef std::pair<int, std::pair<int, int>> MsgEventKey;
+typedef pair<int, pair<int, int>> MsgEventKey;
 
 // The ns3 RdmaClient structure cannot hold the 'tag' information, which is a
 // Astra-sim specific implementation. We use a mapping with the source port
@@ -90,31 +92,31 @@ map<pair<int, pair<int, int>>, int> sender_src_port_map;
 //   value is for send or receive
 //   - value: Number of bytes this node has sent (if send/receive is 0) and
 //   received (if send/receive is 1)
-map<pair<int, int>, int> nodeHash;
+map<pair<int, int>, int> node_to_bytes_sent_map;
 
 // SentHash stores a MsgEvent for sim_send events and its callback handler.
 //   - key: A MsgEventKey isntance.
 //   - value: A MsgEvent instance that indicates that Sys layer is waiting for a
 //   send event to finish
-map<MsgEventKey, MsgEvent> sentHash;
+map<MsgEventKey, MsgEvent> sim_send_waiting_hash;
 
 // While ns3 cannot send packets before System layer calls sim_send, it
 // is possible for ns3 to simulate Incoming messages before System layer calls
 // sim_recv to 'reap' the messages. Therefore, we maintain two maps:
-//   - expeRecvHash holds messages where sim_recv has been called but ns3 has
+//   - sim_recv_waiting_hash holds messages where sim_recv has been called but ns3 has
 //   not yet simulated the message arriving,
-//   - recvHash holds messages which ns3 has simulated the arrival, but sim_recv
+//   - received_msg_standby_hash holds messages which ns3 has simulated the arrival, but sim_recv
 //   has not yet been called.
 
 //   - key: A MsgEventKey isntance.
 //   - value: A MsgEvent instance that indicates that Sys layer is waiting for a
 //   receive event to finish
-map<MsgEventKey, MsgEvent> expeRecvHash;
+map<MsgEventKey, MsgEvent> sim_recv_waiting_hash;
 
 //   - key: A MsgEventKey isntance.
 //   - value: The number of bytes that ns3 has simulated completed, but the
 //   System layer has not yet called sim_recv
-map<MsgEventKey, int> recvHash;
+map<MsgEventKey, int> received_msg_standby_hash;
 
 // send_flow commands the ns3 simulator to schedule a RDMA message to be sent
 // between two pair of nodes. send_flow is triggered by sim_send.
@@ -144,51 +146,50 @@ void send_flow(int src_id, int dst, int maxPacketCount,
 // waiting for this message, register that this message has arrived,
 // so that the system layer can later call the callback handler when sim_recv
 // is called.
-void notify_receiver_receive_data(int sender_node, int receiver_node,
-                                  int message_size, int tag) {
+void notify_receiver_receive_data(int src_id, int dst_id, int message_size,
+                                  int tag) {
 
-  MsgEventKey recv_expect_event_key =
-      make_pair(tag, make_pair(sender_node, receiver_node));
+  MsgEventKey recv_expect_event_key = make_pair(tag, make_pair(src_id, dst_id));
 
-  if (expeRecvHash.find(recv_expect_event_key) != expeRecvHash.end()) {
+  if (sim_recv_waiting_hash.find(recv_expect_event_key) != sim_recv_waiting_hash.end()) {
     // The Sys object is waiting for packets to arrive.
-    MsgEvent recv_expect_event = expeRecvHash[recv_expect_event_key];
+    MsgEvent recv_expect_event = sim_recv_waiting_hash[recv_expect_event_key];
     if (message_size == recv_expect_event.remaining_msg_bytes) {
       // We received exactly the amount of data what Sys object was expecting.
-      expeRecvHash.erase(recv_expect_event_key);
+      sim_recv_waiting_hash.erase(recv_expect_event_key);
       recv_expect_event.callHandler();
     } else if (message_size > recv_expect_event.remaining_msg_bytes) {
       // We received more packets than the Sys object is expecting.
-      // Place task in recvHash and wait for Sys object to issue more sim_recv
+      // Place task in received_msg_standby_hash and wait for Sys object to issue more sim_recv
       // calls. Call callback handler for the amount Sys object was waiting for.
-      recvHash[recv_expect_event_key] =
+      received_msg_standby_hash[recv_expect_event_key] =
           message_size - recv_expect_event.remaining_msg_bytes;
-      expeRecvHash.erase(recv_expect_event_key);
+      sim_recv_waiting_hash.erase(recv_expect_event_key);
       recv_expect_event.callHandler();
     } else {
       // There are still packets to arrive.
       // Reduce the number of packets we are waiting for. Do not call callback
       // handler.
       recv_expect_event.remaining_msg_bytes -= message_size;
-      expeRecvHash[recv_expect_event_key] = recv_expect_event;
+      sim_recv_waiting_hash[recv_expect_event_key] = recv_expect_event;
     }
   } else {
     // The Sys object is not yet waiting for packets to arrive.
-    if (recvHash.find(recv_expect_event_key) == recvHash.end()) {
-      // Place task in recvHash and wait for Sys object to issue more sim_recv
+    if (received_msg_standby_hash.find(recv_expect_event_key) == received_msg_standby_hash.end()) {
+      // Place task in received_msg_standby_hash and wait for Sys object to issue more sim_recv
       // calls.
-      recvHash[recv_expect_event_key] = message_size;
+      received_msg_standby_hash[recv_expect_event_key] = message_size;
     } else {
       // Sys object is still waiting. Add number of bytes we are waiting for.
-      recvHash[recv_expect_event_key] += message_size;
+      received_msg_standby_hash[recv_expect_event_key] += message_size;
     }
   }
 
   // Add to the number of total bytes received.
-  if (nodeHash.find(make_pair(receiver_node, 1)) == nodeHash.end()) {
-    nodeHash[make_pair(receiver_node, 1)] = message_size;
+  if (node_to_bytes_sent_map.find(make_pair(dst_id, 1)) == node_to_bytes_sent_map.end()) {
+    node_to_bytes_sent_map[make_pair(dst_id, 1)] = message_size;
   } else {
-    nodeHash[make_pair(receiver_node, 1)] += message_size;
+    node_to_bytes_sent_map[make_pair(dst_id, 1)] += message_size;
   }
 }
 
@@ -196,7 +197,7 @@ void notify_sender_sending_finished(int src_id, int dst_id, int message_size,
                                     int tag) {
   // Lookup the send_event registered at send_flow().
   MsgEventKey send_event_key = make_pair(tag, make_pair(src_id, dst_id));
-  if (sentHash.find(send_event_key) == sentHash.end()) {
+  if (sim_send_waiting_hash.find(send_event_key) == sim_send_waiting_hash.end()) {
     cerr << "Cannot find send_event in sent_hash. Something is wrong."
          << "tag, src_id, dst_id: " << tag << " " << src_id << " " << dst_id
          << "\n";
@@ -205,7 +206,7 @@ void notify_sender_sending_finished(int src_id, int dst_id, int message_size,
 
   // Verify that the (ns3 identified) sent message size matches what was
   // expected by the system layer.
-  MsgEvent send_event = sentHash[send_event_key];
+  MsgEvent send_event = sim_send_waiting_hash[send_event_key];
   if (send_event.remaining_msg_bytes != message_size) {
     cerr << "The message size does not match what is expected. Something is "
             "wrong."
@@ -214,13 +215,13 @@ void notify_sender_sending_finished(int src_id, int dst_id, int message_size,
          << send_event.remaining_msg_bytes << " " << message_size << "\n";
     exit(1);
   }
-  sentHash.erase(send_event_key);
+  sim_send_waiting_hash.erase(send_event_key);
 
   // Add to the number of total bytes sent.
-  if (nodeHash.find(make_pair(src_id, 0)) == nodeHash.end()) {
-    nodeHash[make_pair(src_id, 0)] = message_size;
+  if (node_to_bytes_sent_map.find(make_pair(src_id, 0)) == node_to_bytes_sent_map.end()) {
+    node_to_bytes_sent_map[make_pair(src_id, 0)] = message_size;
   } else {
-    nodeHash[make_pair(src_id, 0)] += message_size;
+    node_to_bytes_sent_map[make_pair(src_id, 0)] += message_size;
   }
   send_event.callHandler();
 }

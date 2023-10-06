@@ -31,7 +31,7 @@ public:
   ~ASTRASimNetwork() {}
 
   int sim_finish() {
-    for (auto it = nodeHash.begin(); it != nodeHash.end(); it++) {
+    for (auto it = node_to_bytes_sent_map.begin(); it != node_to_bytes_sent_map.end(); it++) {
       pair<int, int> p = it->first;
       if (p.second == 0) {
         cout << "All data sent from node " << p.first << " is " << it->second
@@ -62,62 +62,63 @@ public:
     return;
   }
 
-  virtual int sim_send(void *buffer,   
-                       uint64_t message_size, 
-                       int type,       
-                       int dst,
-                       int tag,                        
-                       AstraSim::sim_request *request, 
+  virtual int sim_send(void *buffer, uint64_t message_size, int type,
+                       int dst_id, int tag, AstraSim::sim_request *request,
                        void (*msg_handler)(void *fun_arg), void *fun_arg) {
+    int src_id = rank;
     // Create a MsgEvent instance and register callback function.
-    MsgEvent send_event = MsgEvent(rank, dst, 0, message_size, fun_arg, msg_handler);
+    MsgEvent send_event =
+        MsgEvent(src_id, dst_id, 0, message_size, fun_arg, msg_handler);
     MsgEventKey send_event_key =
         make_pair(tag, make_pair(send_event.src_id, send_event.dst_id));
-    sentHash[send_event_key] = send_event;
+    sim_send_waiting_hash[send_event_key] = send_event;
 
     // Trigger ns3 to schedule RDMA QP event.
-    send_flow(rank, dst, message_size, msg_handler, fun_arg, tag);
+    send_flow(src_id, dst_id, message_size, msg_handler, fun_arg, tag);
     return 0;
   }
 
-  virtual int sim_recv(void *buffer, uint64_t message_size, int type, int src, int tag,
-                       AstraSim::sim_request *request,
+  virtual int sim_recv(void *buffer, uint64_t message_size, int type,
+                       int src_id, int tag, AstraSim::sim_request *request,
                        void (*msg_handler)(void *fun_arg), void *fun_arg) {
-    MsgEvent recv_event = MsgEvent(src, rank, 1, message_size, fun_arg, msg_handler);
-    MsgEventKey recv_event_key = make_pair(tag, make_pair(recv_event.src_id, recv_event.dst_id));
+    int dst_id = rank;
+    MsgEvent recv_event =
+        MsgEvent(src_id, dst_id, 1, message_size, fun_arg, msg_handler);
+    MsgEventKey recv_event_key =
+        make_pair(tag, make_pair(recv_event.src_id, recv_event.dst_id));
 
-    if (recvHash.find(recv_event_key) != recvHash.end()) {
+    if (received_msg_standby_hash.find(recv_event_key) != received_msg_standby_hash.end()) {
       // 1) ns3 has already received some message before sim_recv is called.
-      int received_msg_bytes = recvHash[recv_event_key];
+      int received_msg_bytes = received_msg_standby_hash[recv_event_key];
       if (received_msg_bytes == message_size) {
         // 1-1) The received message size is same as what we expect. Exit.
-        recvHash.erase(recv_event_key);
+        received_msg_standby_hash.erase(recv_event_key);
         recv_event.callHandler();
       } else if (received_msg_bytes > message_size) {
-        // 1-2) The node received more than expected. 
-        // Do trigger the callback handler for this message, but wait for Sys layer to 
-        // call sim_recv for more messages.
-        recvHash[recv_event_key] = received_msg_bytes - message_size;
+        // 1-2) The node received more than expected.
+        // Do trigger the callback handler for this message, but wait for Sys
+        // layer to call sim_recv for more messages.
+        received_msg_standby_hash[recv_event_key] = received_msg_bytes - message_size;
         recv_event.callHandler();
       } else {
         // 1-3) The node received less than what we expected.
         // Reduce the number of bytes we are waiting to receive.
-        recvHash.erase(recv_event_key);
+        received_msg_standby_hash.erase(recv_event_key);
         recv_event.remaining_msg_bytes -= received_msg_bytes;
-        expeRecvHash[recv_event_key] = recv_event;
+        sim_recv_waiting_hash[recv_event_key] = recv_event;
       }
     } else {
       // 2) ns3 has not yet received anything.
-      if (expeRecvHash.find(recv_event_key) == expeRecvHash.end()) {
+      if (sim_recv_waiting_hash.find(recv_event_key) == sim_recv_waiting_hash.end()) {
         // 2-1) We have not been expecting anything.
-        expeRecvHash[recv_event_key] = recv_event;
+        sim_recv_waiting_hash[recv_event_key] = recv_event;
       } else {
-        // 2-2) We have already been expecting something. 
+        // 2-2) We have already been expecting something.
         // Increment the number of bytes we are waiting to receive.
         int expecting_msg_bytes =
-            expeRecvHash[recv_event_key].remaining_msg_bytes;
+            sim_recv_waiting_hash[recv_event_key].remaining_msg_bytes;
         recv_event.remaining_msg_bytes += expecting_msg_bytes;
-        expeRecvHash[recv_event_key] = recv_event;
+        sim_recv_waiting_hash[recv_event_key] = recv_event;
       }
     }
     return 0;
