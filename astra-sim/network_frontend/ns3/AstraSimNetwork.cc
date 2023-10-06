@@ -1,14 +1,14 @@
+#include "astra-sim/json.hpp"
 #include "astra-sim/system/AstraNetworkAPI.hh"
 #include "astra-sim/system/Sys.hh"
-#include "astra-sim/json.hpp"
 #include "extern/remote_memory_backend/analytical/AnalyticalRemoteMemory.hh"
 
+#include "entry.h"
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
 #include "ns3/csma-module.h"
 #include "ns3/internet-module.h"
 #include "ns3/network-module.h"
-#include "entry.h"
 #include <execinfo.h>
 #include <fstream>
 #include <iostream>
@@ -22,8 +22,6 @@
 using namespace std;
 using namespace ns3;
 using json = nlohmann::json;
-
-queue<struct task1> workerQueue;
 
 class ASTRASimNetwork : public AstraSim::AstraNetworkAPI {
 
@@ -59,90 +57,74 @@ public:
 
   virtual void schedule(AstraSim::timespec_t schTime,
                         void (*fun_ptr)(void *fun_arg), void *fun_arg) {
-    task1 t;
-    t.type = 2;
-    t.fun_arg = fun_arg;
-    t.msg_handler = fun_ptr;
-    t.schTime = schTime.time_val;
-    Simulator::Schedule(NanoSeconds(t.schTime)- Simulator::Now(), t.msg_handler, t.fun_arg);
+    Simulator::Schedule(NanoSeconds(schTime.time_val) - Simulator::Now(),
+                        fun_ptr, fun_arg);
     return;
   }
 
-  virtual int sim_send(void *buffer,   // not yet used
-                       uint64_t count, // number of bytes to be send
-                       int type,       // not yet used
+  virtual int sim_send(void *buffer,   
+                       uint64_t message_size, 
+                       int type,       
                        int dst,
-                       int tag,                        // not yet used
-                       AstraSim::sim_request *request, // not yet used
+                       int tag,                        
+                       AstraSim::sim_request *request, 
                        void (*msg_handler)(void *fun_arg), void *fun_arg) {
-    task1 t;
-    t.src = rank;
-    t.dest = dst;
-    t.remaining_msg_bytes = count;
-    t.type = 0;
-    t.fun_arg = fun_arg;
-    t.msg_handler = msg_handler;
+    // Create a MsgEvent instance and register callback function.
+    MsgEvent send_event = MsgEvent(rank, dst, 0, message_size, fun_arg, msg_handler);
+    MsgEventKey send_event_key =
+        make_pair(tag, make_pair(send_event.src_id, send_event.dst_id));
+    sentHash[send_event_key] = send_event;
 
-    TaskKey tagKey = make_pair(tag, make_pair(t.src, t.dest));
-    sentHash[tagKey] = t;
-    send_flow(rank, dst, count, msg_handler, fun_arg, tag);
+    // Trigger ns3 to schedule RDMA QP event.
+    send_flow(rank, dst, message_size, msg_handler, fun_arg, tag);
     return 0;
   }
 
-// When the system layer is told to wait for a message, one of three can happen:
-// 1) ns3 has already received message
-// 2) ns3 has not yet received message
-  virtual int sim_recv(void *buffer, uint64_t count, int type, int src, int tag,
+  virtual int sim_recv(void *buffer, uint64_t message_size, int type, int src, int tag,
                        AstraSim::sim_request *request,
                        void (*msg_handler)(void *fun_arg), void *fun_arg) {
-    task1 t;
-    t.src = src;
-    t.dest = rank;
-    t.remaining_msg_bytes = count;
-    t.type = 1;
-    t.fun_arg = fun_arg;
-    t.msg_handler = msg_handler;
+    MsgEvent recv_event = MsgEvent(src, rank, 1, message_size, fun_arg, msg_handler);
+    MsgEventKey recv_event_key = make_pair(tag, make_pair(recv_event.src_id, recv_event.dst_id));
 
-    TaskKey tagKey = make_pair(tag, make_pair(t.src, t.dest));
-    // 1) ns3 has already received message
-    if (recvHash.find(tagKey) !=
-        recvHash.end()) {
-      int count = recvHash[tagKey];
-      // 1-1) Ns3 received message size is same as what we expect. Exit
-      if (count == t.remaining_msg_bytes) {
-        recvHash.erase(tagKey);
-        t.msg_handler(t.fun_arg);
-      // 1-2) NS3 received more than what we expected. Trigger handler, and 
-      // Wait for sim to receive more messages. 
-      } else if (count > t.remaining_msg_bytes) {
-        recvHash[tagKey] = count - t.remaining_msg_bytes;
-        t.msg_handler(t.fun_arg);
-      // 1-3) NS3 received less than what we expected. 
-      // Put in expeRecv, and wait until ns3 sends.
+    if (recvHash.find(recv_event_key) != recvHash.end()) {
+      // 1) ns3 has already received some message before sim_recv is called.
+      int received_msg_bytes = recvHash[recv_event_key];
+      if (received_msg_bytes == message_size) {
+        // 1-1) The received message size is same as what we expect. Exit.
+        recvHash.erase(recv_event_key);
+        recv_event.callHandler();
+      } else if (received_msg_bytes > message_size) {
+        // 1-2) The node received more than expected. 
+        // Do trigger the callback handler for this message, but wait for Sys layer to 
+        // call sim_recv for more messages.
+        recvHash[recv_event_key] = received_msg_bytes - message_size;
+        recv_event.callHandler();
       } else {
-        recvHash.erase(tagKey);
-        t.remaining_msg_bytes -= count;
-        expeRecvHash[tagKey] = t;
+        // 1-3) The node received less than what we expected.
+        // Reduce the number of bytes we are waiting to receive.
+        recvHash.erase(recv_event_key);
+        recv_event.remaining_msg_bytes -= received_msg_bytes;
+        expeRecvHash[recv_event_key] = recv_event;
       }
-    // 2) Ns3 has not yet sent anything.
     } else {
-      // We have not been expecting anything
-      if (expeRecvHash.find(tagKey) ==
-          expeRecvHash.end()) {
-        expeRecvHash[tagKey] = t;
-      // We have been expecting something already. Waiting for more. 
+      // 2) ns3 has not yet received anything.
+      if (expeRecvHash.find(recv_event_key) == expeRecvHash.end()) {
+        // 2-1) We have not been expecting anything.
+        expeRecvHash[recv_event_key] = recv_event;
       } else {
-        int expecount =
-            expeRecvHash[tagKey].remaining_msg_bytes;
-        t.remaining_msg_bytes += expecount;
-        expeRecvHash[tagKey] = t;
+        // 2-2) We have already been expecting something. 
+        // Increment the number of bytes we are waiting to receive.
+        int expecting_msg_bytes =
+            expeRecvHash[recv_event_key].remaining_msg_bytes;
+        recv_event.remaining_msg_bytes += expecting_msg_bytes;
+        expeRecvHash[recv_event_key] = recv_event;
       }
     }
     return 0;
   }
 };
 
-// Command line arguments and default values
+// Command line arguments and default values.
 string workload_configuration;
 string system_configuration;
 string memory_configuration;
@@ -157,7 +139,8 @@ int num_npus = 1;
 auto queues_per_dim = vector<int>();
 
 // TODO: Migrate to yaml
-void read_logical_topo_config(string network_configuration, vector<int>&physical_dims) {
+void read_logical_topo_config(string network_configuration,
+                              vector<int> &physical_dims) {
   ifstream inFile;
   inFile.open(network_configuration);
   if (!inFile) {
@@ -165,6 +148,7 @@ void read_logical_topo_config(string network_configuration, vector<int>&physical
     exit(1);
   }
 
+  // Find the size of each dimension.
   json j;
   inFile >> j;
   if (j.contains("physical-dims")) {
@@ -174,34 +158,32 @@ void read_logical_topo_config(string network_configuration, vector<int>&physical
     }
   }
 
-  
+  // Find the number of all npus.
   stringstream dimstr;
-  for (auto num_npus_per_dim : physical_dims){
+  for (auto num_npus_per_dim : physical_dims) {
     num_npus *= num_npus_per_dim;
     dimstr << num_npus_per_dim << ",";
   }
   cout << "There are " << num_npus << " npus: " << dimstr.str() << "\n";
-  
+
   queues_per_dim = vector<int>(physical_dims.size(), num_queues_per_dim);
 }
 
-
-// Read command line arguments
-void parse_args (int argc, char *argv[]) {
+// Read command line arguments.
+void parse_args(int argc, char *argv[]) {
   CommandLine cmd;
   cmd.AddValue("workload-configuration", "Workload configuration file.",
                workload_configuration);
   cmd.AddValue("system-configuration", "System configuration file",
-               system_configuration);              
-  cmd.AddValue("remote-memory-configuration", "Memory configuration file", 
-                memory_configuration);
+               system_configuration);
+  cmd.AddValue("remote-memory-configuration", "Memory configuration file",
+               memory_configuration);
   cmd.AddValue("comm-group-configuration",
                "Communicator group configuration file",
                comm_group_configuration);
   cmd.AddValue("logical-topology-configuration",
                "Logical topology configuration file",
                logical_topology_configuration);
-
 
   cmd.AddValue("num-queues-per-dim", "Number of queues per each dimension",
                num_queues_per_dim);
@@ -219,34 +201,25 @@ int main(int argc, char *argv[]) {
 
   cout << "ASTRA-sim + NS3" << endl;
 
-  // Read network config and find physical dims
+  // Read network config and find physical dims.
   parse_args(argc, argv);
   read_logical_topo_config(logical_topology_configuration, physical_dims);
-  
 
-  // Setup network & System layer
+  // Setup network & System layer.
   vector<ASTRASimNetwork *> networks(num_npus, nullptr);
   vector<AstraSim::Sys *> systems(num_npus, nullptr);
-  Analytical::AnalyticalRemoteMemory* mem =
+  Analytical::AnalyticalRemoteMemory *mem =
       new Analytical::AnalyticalRemoteMemory(memory_configuration);
 
   for (int npu_id = 0; npu_id < num_npus; npu_id++) {
     networks[npu_id] = new ASTRASimNetwork(npu_id);
     systems[npu_id] = new AstraSim::Sys(
-        npu_id,
-        workload_configuration,
-        comm_group_configuration,
-        system_configuration,
-        mem,
-        networks[npu_id],
-        physical_dims,
-        queues_per_dim,
-        injection_scale,
-        comm_scale,
-        rendezvous_protocol);
+        npu_id, workload_configuration, comm_group_configuration,
+        system_configuration, mem, networks[npu_id], physical_dims,
+        queues_per_dim, injection_scale, comm_scale, rendezvous_protocol);
   }
 
-  // Initialize ns3 simulation
+  // Initialize ns3 simulation.
   setup_ns3_simulation(argc, argv);
 
   // Tell workload layer to schedule first events.

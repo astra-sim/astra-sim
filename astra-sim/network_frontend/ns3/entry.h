@@ -27,106 +27,164 @@ using namespace std;
 
 /*
  * This file defines the interaction between the System layer and the NS3
- * simulator (Network layer). System layer consists of num_npus different Sys
- * objects, while there is only one ns3 simulator queue. Whenever send_flow. Will
- * create an RDMAClient application, simplifying the ns3 application to send.
- * Whenever this application terminates, it will call qp_finish. qp_finish will
- * then trigger handler functions, That will reach out to system layer. This
- * will forward the collectives, remove them from system layer queue, etc. For
- * more detail, refer to the comments of each function. Sending is using maps.
- * When system layer schedules send, it will place send/receive at maps.
- * Whenever ns3 determines complete, it will trigger the handler in these maps.
+ * simulator (Network layer). The system layer issues send/receive events, and
+ * waits until the ns3 simulates the conclusion of these events to issue the
+ * next collective communication. When ns3 simulates the conclusion of an event,
+ * it will call qp_finish to lookup the maps in this file and call the callback
+ * handlers. Refer to below comments for further detail.
  */
 
-/*
- * Task is used as a unit, to determine the map. Acts as a placeholder.
- */
-struct task1 {
-  int src;
-  int dest;
+// MsgEvent represents a single send or receive event, issued by the system
+// layer. The system layer will wait for the ns3 backend to simulate the event
+// finishing (i.e. node 0 finishes sending message, or node 1 finishes receiving
+// the message) The callback handler 'msg_handler' signals the System layer that
+// the event has finished in ns3.
+class MsgEvent {
+public:
+  int src_id;
+  int dst_id;
   int type;
+  // Indicates the number of bytes remaining to be sent or received.
+  // Initialized with the original size of the message, and
+  // incremented/decremented depending on how many bytes were sent/received.
+  // Eventually, this value will reach 0 when the event has completed.
   int remaining_msg_bytes;
   void *fun_arg;
   void (*msg_handler)(void *fun_arg);
-  double schTime; // in sec
+
+  MsgEvent(int _src_id, int _dst_id, int _type, int _remaining_msg_bytes,
+           void *_fun_arg, void (*_msg_handler)(void *fun_arg))
+      : src_id(_src_id), dst_id(_dst_id), type(_type),
+        remaining_msg_bytes(_remaining_msg_bytes), fun_arg(_fun_arg),
+        msg_handler(_msg_handler) {}
+
+  // Default constructor to prevent compile errors. When using the map, we
+  // should always check that exists.
+  MsgEvent()
+      : src_id(0), dst_id(0), type(0), remaining_msg_bytes(0), fun_arg(nullptr),
+        msg_handler(nullptr) {}
+
+  // CallHandler will call the callback handler associated with this MsgEvent.
+  void callHandler() {
+    msg_handler(fun_arg);
+    return;
+  }
 };
 
-// TaskKey is used as the key to all.
-typedef std::pair<int, std::pair<int, int>> TaskKey;
+// MsgEventKey is a key to uniquely identify each MsgEvent.
+//  - Pair <Tag, Pair <src_id, dst_id>>
+typedef std::pair<int, std::pair<int, int>> MsgEventKey;
 
+// The ns3 RdmaClient structure cannot hold the 'tag' information, which is a
+// Astra-sim specific implementation. We use a mapping with the source port
+// number (another unique value) to hold tag information.
+//   - key: Pair <port_id, Pair <src_id, dst_id>>
+//   - value: tag
+// TODO: It seems we *can* obtain the tag through q->GetTag() at qp_finish.
+// Verify & Simplify.
 map<pair<int, pair<int, int>>, int> sender_src_port_map;
-map<TaskKey, struct task1> sentHash;
 
-/*
- * Receive is more complex. Due to timing, ns3 may simulate receive earlier than when system layer calls sim_recv. 
- * Therefore, we main two hashmaps. 
- */
-
-map<TaskKey, struct task1> expeRecvHash;
-map<TaskKey, int> recvHash;
-// Used to count how many bytes were sent/received by this node. Refer to
-// sim_finish().
+// NodeHash is used to count how many bytes were sent/received by this node.
+// Refer to sim_finish().
+//   - key: Pair <node_id, send/receive>. Where 'send/receive' indicates if the
+//   value is for send or receive
+//   - value: Number of bytes this node has sent (if send/receive is 0) and
+//   received (if send/receive is 1)
 map<pair<int, int>, int> nodeHash;
 
+// SentHash stores a MsgEvent for sim_send events and its callback handler.
+//   - key: A MsgEventKey isntance.
+//   - value: A MsgEvent instance that indicates that Sys layer is waiting for a
+//   send event to finish
+map<MsgEventKey, MsgEvent> sentHash;
 
-// send_flow commands the ns3 simulator to schedule a RDMA message to be sent between two pair of nodes.
-// send_flow is triggered by sim_send.
-void send_flow(int src, int dst, int maxPacketCount,
-              void (*msg_handler)(void *fun_arg), void *fun_arg, int tag) {
-  // get a new port number
-  uint32_t port = portNumber[src][dst]++;
-  sender_src_port_map[make_pair(port, make_pair(src, dst))] = tag;
+// While ns3 cannot send packets before System layer calls sim_send, it
+// is possible for ns3 to simulate Incoming messages before System layer calls
+// sim_recv to 'reap' the messages. Therefore, we maintain two maps:
+//   - expeRecvHash holds messages where sim_recv has been called but ns3 has
+//   not yet simulated the message arriving,
+//   - recvHash holds messages which ns3 has simulated the arrival, but sim_recv
+//   has not yet been called.
+
+//   - key: A MsgEventKey isntance.
+//   - value: A MsgEvent instance that indicates that Sys layer is waiting for a
+//   receive event to finish
+map<MsgEventKey, MsgEvent> expeRecvHash;
+
+//   - key: A MsgEventKey isntance.
+//   - value: The number of bytes that ns3 has simulated completed, but the
+//   System layer has not yet called sim_recv
+map<MsgEventKey, int> recvHash;
+
+// send_flow commands the ns3 simulator to schedule a RDMA message to be sent
+// between two pair of nodes. send_flow is triggered by sim_send.
+void send_flow(int src_id, int dst, int maxPacketCount,
+               void (*msg_handler)(void *fun_arg), void *fun_arg, int tag) {
+  // Get a new port number.
+  uint32_t port = portNumber[src_id][dst]++;
+  sender_src_port_map[make_pair(port, make_pair(src_id, dst))] = tag;
   int pg = 3, dport = 100;
   flow_input.idx++;
 
-  // Create a queue pair from ns3. NS3 will send data. 
+  // Create a queue pair and schedule within the ns3 simulator.
   RdmaClientHelper clientHelper(
-      pg, serverAddress[src], serverAddress[dst], port, dport, maxPacketCount,
-      has_win ? (global_t == 1 ? maxBdp : pairBdp[n.Get(src)][n.Get(dst)]) : 0,
-      global_t == 1 ? maxRtt : pairRtt[src][dst], msg_handler, fun_arg, tag,
-      src, dst);
-  ApplicationContainer appCon = clientHelper.Install(n.Get(src));
+      pg, serverAddress[src_id], serverAddress[dst], port, dport,
+      maxPacketCount,
+      has_win ? (global_t == 1 ? maxBdp : pairBdp[n.Get(src_id)][n.Get(dst)])
+              : 0,
+      global_t == 1 ? maxRtt : pairRtt[src_id][dst], msg_handler, fun_arg, tag,
+      src_id, dst);
+  ApplicationContainer appCon = clientHelper.Install(n.Get(src_id));
   appCon.Start(Time(0));
 }
 
+// notify_receiver_receive_data looks at whether the System layer has issued
+// sim_recv for this message. If the system layer is waiting for this message,
+// call the callback handler for the MsgEvent. If the system layer is not *yet*
+// waiting for this message, register that this message has arrived,
+// so that the system layer can later call the callback handler when sim_recv
+// is called.
 void notify_receiver_receive_data(int sender_node, int receiver_node,
                                   int message_size, int tag) {
 
-  TaskKey tagKey = make_pair(tag, make_pair(sender_node, receiver_node));
+  MsgEventKey recv_expect_event_key =
+      make_pair(tag, make_pair(sender_node, receiver_node));
 
-  // The Sys object is waiting for packets to arrive.
-  if (expeRecvHash.find(tagKey) != expeRecvHash.end()) {
-    task1 t2 = expeRecvHash[tagKey];
-    if (message_size == t2.remaining_msg_bytes) {
-      // We received exactly what Sys object was expecting.
-      expeRecvHash.erase(tagKey);
-      t2.msg_handler(t2.fun_arg);
-    } else if (message_size > t2.remaining_msg_bytes) {
-      // We received more packets than the Sys object is expecting. 
-      // Place task in recvHash and wait for Sys object to issue more sim_recv calls.
-      // Call handler for the amount Sys object was waiting for.
-      recvHash[tagKey] = message_size - t2.remaining_msg_bytes;
-      expeRecvHash.erase(tagKey);
-      t2.msg_handler(t2.fun_arg);
+  if (expeRecvHash.find(recv_expect_event_key) != expeRecvHash.end()) {
+    // The Sys object is waiting for packets to arrive.
+    MsgEvent recv_expect_event = expeRecvHash[recv_expect_event_key];
+    if (message_size == recv_expect_event.remaining_msg_bytes) {
+      // We received exactly the amount of data what Sys object was expecting.
+      expeRecvHash.erase(recv_expect_event_key);
+      recv_expect_event.callHandler();
+    } else if (message_size > recv_expect_event.remaining_msg_bytes) {
+      // We received more packets than the Sys object is expecting.
+      // Place task in recvHash and wait for Sys object to issue more sim_recv
+      // calls. Call callback handler for the amount Sys object was waiting for.
+      recvHash[recv_expect_event_key] =
+          message_size - recv_expect_event.remaining_msg_bytes;
+      expeRecvHash.erase(recv_expect_event_key);
+      recv_expect_event.callHandler();
     } else {
-      // There are still packets to arrive. 
-      // Reduce the number of packets we are waiting for. Do not call handler. 
-      t2.remaining_msg_bytes -= message_size;
-      expeRecvHash[tagKey] = t2;
+      // There are still packets to arrive.
+      // Reduce the number of packets we are waiting for. Do not call callback
+      // handler.
+      recv_expect_event.remaining_msg_bytes -= message_size;
+      expeRecvHash[recv_expect_event_key] = recv_expect_event;
     }
-  // The Sys object is not yet waiting for packets to arrive
   } else {
-    if (recvHash.find(tagKey) == recvHash.end()) {
-      // Place task in recvHash and wait for Sys object to issue more sim_recv calls.
-      // Call handler for the amount Sys object was waiting for.
-      recvHash[tagKey] = message_size;
+    // The Sys object is not yet waiting for packets to arrive.
+    if (recvHash.find(recv_expect_event_key) == recvHash.end()) {
+      // Place task in recvHash and wait for Sys object to issue more sim_recv
+      // calls.
+      recvHash[recv_expect_event_key] = message_size;
     } else {
-      // Sys object is still waiting. Add number of bytes we are waiting for. 
-      recvHash[tagKey] += message_size;
+      // Sys object is still waiting. Add number of bytes we are waiting for.
+      recvHash[recv_expect_event_key] += message_size;
     }
   }
 
-
+  // Add to the number of total bytes received.
   if (nodeHash.find(make_pair(receiver_node, 1)) == nodeHash.end()) {
     nodeHash[make_pair(receiver_node, 1)] = message_size;
   } else {
@@ -134,31 +192,40 @@ void notify_receiver_receive_data(int sender_node, int receiver_node,
   }
 }
 
-void notify_sender_sending_finished(int sender_node, int receiver_node,
-                                    int message_size, int tag) {
-
-  TaskKey tagKey = make_pair(tag, make_pair(sender_node, receiver_node));
-  if (sentHash.find(tagKey) == sentHash.end()) {
-    cout << "Something is wrong"
+void notify_sender_sending_finished(int src_id, int dst_id, int message_size,
+                                    int tag) {
+  // Lookup the send_event registered at send_flow().
+  MsgEventKey send_event_key = make_pair(tag, make_pair(src_id, dst_id));
+  if (sentHash.find(send_event_key) == sentHash.end()) {
+    cerr << "Cannot find send_event in sent_hash. Something is wrong."
+         << "tag, src_id, dst_id: " << tag << " " << src_id << " " << dst_id
          << "\n";
+    exit(1);
   }
 
-  task1 t2 = sentHash[tagKey];
-  if (t2.remaining_msg_bytes != message_size) {
-    cout << "Something is wrong"
-         << "\n";
+  // Verify that the (ns3 identified) sent message size matches what was
+  // expected by the system layer.
+  MsgEvent send_event = sentHash[send_event_key];
+  if (send_event.remaining_msg_bytes != message_size) {
+    cerr << "The message size does not match what is expected. Something is "
+            "wrong."
+         << "tag, src_id, dst_id, expected msg_bytes, actual msg_bytes: " << tag
+         << " " << src_id << " " << dst_id << " "
+         << send_event.remaining_msg_bytes << " " << message_size << "\n";
+    exit(1);
   }
+  sentHash.erase(send_event_key);
 
-  sentHash.erase(tagKey);
-  if (nodeHash.find(make_pair(sender_node, 0)) == nodeHash.end()) {
-    nodeHash[make_pair(sender_node, 0)] = message_size;
+  // Add to the number of total bytes sent.
+  if (nodeHash.find(make_pair(src_id, 0)) == nodeHash.end()) {
+    nodeHash[make_pair(src_id, 0)] = message_size;
   } else {
-    nodeHash[make_pair(sender_node, 0)] += message_size;
+    nodeHash[make_pair(src_id, 0)] += message_size;
   }
-  t2.msg_handler(t2.fun_arg);
+  send_event.callHandler();
 }
 
-void qp_finish(FILE *fout, Ptr<RdmaQueuePair> q) {
+void qp_finish_print_log(FILE *fout, Ptr<RdmaQueuePair> q) {
   uint32_t sid = ip_to_node_id(q->sip), did = ip_to_node_id(q->dip);
   uint64_t base_rtt = pairRtt[sid][did], b = pairBw[sid][did];
   uint32_t total_bytes =
@@ -173,16 +240,22 @@ void qp_finish(FILE *fout, Ptr<RdmaQueuePair> q) {
           q->sport, q->dport, q->m_size, q->startTime.GetTimeStep(),
           (Simulator::Now() - q->startTime).GetTimeStep(), standalone_fct);
   fflush(fout);
+}
 
-  if (false) {
-    cout << "qp_finish " << sid << " " << did << " " << q->sport << " "
-         << q->dport << " " << q->m_size << endl;
-  }
-  // remove rxQp from the receiver
+// qp_finish is triggered by NS3 to indicate that an RDMA queue pair has
+// finished. qp_finish is registered as the callback handlerto the RdmaClient
+// instance created at send_flow. This registration is done at
+// common.h::SetupNetwork().
+void qp_finish(FILE *fout, Ptr<RdmaQueuePair> q) {
+  uint32_t sid = ip_to_node_id(q->sip), did = ip_to_node_id(q->dip);
+  qp_finish_print_log(fout, q);
+
+  // remove rxQp from the receiver.
   Ptr<Node> dstNode = n.Get(did);
   Ptr<RdmaDriver> rdma = dstNode->GetObject<RdmaDriver>();
   rdma->m_rdma->DeleteRxQp(q->sip.Get(), q->m_pg, q->sport);
 
+  // Identify the tag of this message.
   if (sender_src_port_map.find(make_pair(q->sport, make_pair(sid, did))) ==
       sender_src_port_map.end()) {
     cout << "could not find the tag, there must be something wrong" << endl;
@@ -191,10 +264,10 @@ void qp_finish(FILE *fout, Ptr<RdmaQueuePair> q) {
   int tag = sender_src_port_map[make_pair(q->sport, make_pair(sid, did))];
   sender_src_port_map.erase(make_pair(q->sport, make_pair(sid, did)));
 
-  // let sender knows that the flow finishes;
+  // Let sender knows that the flow has finished.
   notify_sender_sending_finished(sid, did, q->m_size, tag);
 
-  // let receiver knows that it receives packets;
+  // Let receiver knows that it has received packets.
   notify_receiver_receive_data(sid, did, q->m_size, tag);
 }
 
