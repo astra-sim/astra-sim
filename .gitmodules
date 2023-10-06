@@ -10,3 +10,6 @@
 [submodule "extern/graph_frontend/chakra"]
 	path = extern/graph_frontend/chakra
 	url = https://github.com/rashidi1saeed/chakra.git
+[submodule "extern/trace_merger/param"]
+	path = extern/trace_merger/param
+	url = https://github.com/rashidi1saeed/param.git
