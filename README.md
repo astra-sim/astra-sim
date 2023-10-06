@@ -139,7 +139,7 @@ $ pip3 install .
 # we run the follwing script that uses the already generated Pytorch-ET+Kineto traces for
 # one training iteration of DLRM running on 8 GPUs, and merge them to a single enhanced ET
 $ ./convert.sh
-# We then move the enhanced ETs to the chakra submodule for convertion to chakra format
+# We then move the enhanced ETs to the chakra submodule for conversion to chakra format
 $ mv test/data/et_plus ../../../../../graph_frontend/chakra/
 $ cd ../../../../../graph_frontend/chakra/
 $ pip3 install -r requirements.txt
