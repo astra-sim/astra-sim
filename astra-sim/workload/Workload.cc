@@ -114,7 +114,7 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
       cout << "issue,sys->id=" << sys->id
         << ",tick=" << Sys::boostedTick()
         << ",node->id=" << node->id()
-        << ",node->name=" << node->name() << endl;
+        << ",node->name=" << node->name().substr(0,20) << endl;
     }
     issue_mem(node);
   } else if (
@@ -126,9 +126,9 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
       skip_invalid(node);
     } else {
       if (sys->trace_enabled) {
-        cout << "issue,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
+        cout << "issue comp,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
              << ",node->id=" << node->id()
-             << ",node->name=" << node->name() << endl;
+             << ",node->name=" << node->name().substr(0,20) << ", is host: " << node->is_host_op()<<", runtime: "<< node->runtime() << endl;
       }
       issue_comp(node);
     }
@@ -138,9 +138,9 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
        || (node->type() == ChakraNodeType::COMM_SEND_NODE)
        || (node->type() == ChakraNodeType::COMM_RECV_NODE))) {
     if (sys->trace_enabled) {
-      cout << "issue,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
+      cout << "issue comm,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
            << ",node->id=" << node->id()
-           << ",node->name=" << node->name() << endl;
+           << ",node->name=" << node->name().substr(0,20) << ", is host: " << node->is_host_op() << endl;
     }
     issue_comm(node);
   } else if (
@@ -321,9 +321,9 @@ void Workload::call(EventType event, CallData* data) {
     shared_ptr<Chakra::ETFeederNode> node = et_feeder->lookupNode(node_id);
 
     if (sys->trace_enabled) {
-      cout << "callback,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
+      cout << "callback of collective,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
            << ",node->id=" << node->id()
-           << ",node->name=" << node->name() << endl;
+           << ",node->name=" << node->name().substr(0,20) <<" is host: "<< node->is_host_op()<< endl;
     }
 
     hw_resource->release(node);
@@ -345,7 +345,7 @@ void Workload::call(EventType event, CallData* data) {
       if (sys->trace_enabled) {
         cout << "callback,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
              << ",node->id=" << node->id()
-             << ",node->name=" << node->name() << endl;
+             << ",node->name=" << node->name().substr(0,20) <<" is host: "<< node->is_host_op() << endl;
       }
 
       hw_resource->release(node);

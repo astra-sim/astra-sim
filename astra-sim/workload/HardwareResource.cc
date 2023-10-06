@@ -4,6 +4,7 @@ LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
 #include "astra-sim/workload/HardwareResource.hh"
+#include <assert.h> 
 
 using namespace std;
 using namespace AstraSim;
@@ -16,8 +17,10 @@ HardwareResource::HardwareResource(uint32_t num_npus)
 
 void HardwareResource::occupy(const shared_ptr<Chakra::ETFeederNode> node) {
   if (node->is_host_op()) {
+    assert(num_in_flight_host_ops==0);
     ++num_in_flight_host_ops;
   } else {
+    assert(num_in_flight_kernel_ops==0);
     ++num_in_flight_kernel_ops;
   }
 }
@@ -25,8 +28,10 @@ void HardwareResource::occupy(const shared_ptr<Chakra::ETFeederNode> node) {
 void HardwareResource::release(const shared_ptr<Chakra::ETFeederNode> node) {
   if (node->is_host_op()) {
     --num_in_flight_host_ops;
+    assert(num_in_flight_host_ops==0);
   } else {
     --num_in_flight_kernel_ops;
+    assert(num_in_flight_kernel_ops==0);
   }
 }
 
