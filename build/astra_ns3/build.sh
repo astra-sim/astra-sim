@@ -5,7 +5,7 @@ SCRIPT_DIR=$(dirname "$(realpath $0)")
 
 # Absolute paths to useful directories
 ASTRA_SIM_DIR="${SCRIPT_DIR:?}"/../../astra-sim
-NS3_DIR="${SCRIPT_DIR:?}"/../../extern/network_backend/ns3-interface
+NS3_DIR="${SCRIPT_DIR:?}"/../../extern/network_backend/ns3
 
 # Inputs - change as necessary.
 WORKLOAD="${SCRIPT_DIR:?}"/../../extern/graph_frontend/chakra/et_generator/twoCompNodesDependent

@@ -152,7 +152,7 @@ $ ./build/astra_analytical/build/AnalyticalAstra/bin/AnalyticalAstra \
 $ ./build/astra_ns3/build.sh -r
 
 # Or, alternatively:
-$ cd ./extern/network_backend/ns3-interface/simulation
+$ cd ./extern/network_backend/ns3/simulation
 $ ./waf --run "scratch/AstraSimNetwork mix/config.txt \
   --workload-configuration=../../../../extern/graph_frontend/chakra/et_generator/twoCompNodesDependent \
   --system-configuration=../../../../inputs/system/sample_fully_connected_sys.txt \
