@@ -45,8 +45,10 @@ $ sudo apt install \
 $ sudo pip3 install protobuf==3.6.1 pydot
 ```
 
+NOTE: For the ns3 backend `python2`, `gcc-5.0` and `g++-5.0` are also required. This is because the ns3 backend is based on an older ns3 version. We recommend using virtual environments to isolate python instances. Even with the ns3 backend, `python3` is still used to create the workload using Chakra.
+
 - #### macOS
-For macOS, you can first install required dependencies using [homebrew](https://brew.sh).
+For macOS, you can first install required dependencies using [homebrew](https://brew.sh). (Note: The ns3 backend has not yet been confirmed to build within macOS)
 ```bash
 $ brew update
 $ brew upgrade
@@ -71,7 +73,7 @@ $ pip3 install protobuf==3.6.1 pydot
 ```
 
 - #### Windows
-ASTRA-sim is not natively supporting Windows environment at this moment. We suggest to use Docker or Windows Subsystem for Linux ([WSL](https://learn.microsoft.com/en-us/windows/wsl/install)).
+ASTRA-sim does not natively support Windows environment at this moment. We suggest to use Docker or Windows Subsystem for Linux ([WSL](https://learn.microsoft.com/en-us/windows/wsl/install)).
 
 #### Downloading ASTRA-sim
 
@@ -86,10 +88,12 @@ Then, based on your target network backend, execute the corresponding build scri
 ```bash
 # For the analytical network backend
 $ ./build/astra_analytical/build.sh
+# For the ns3 network backend. Python2 required.
+$ ./build/astra_ns3/build.sh -c
 ```
 
 ### 2. Build ASTRA-sim in a Docker Image
-Alternatively, you can build ASTRA-sim within a Docker container.
+Alternatively, you can build ASTRA-sim within a Docker container. (Note: The ns3 backend has not yet been confirmed to build within a Docker image)
 
 Start by cloning this repository to your local machine using the same command as above:
 ```bash
@@ -135,12 +139,27 @@ $ ./et_generator --num_npus 64 --num_dims 1
 
 To run one of the example traces (`twoCompNodesDependent`), execute the following command.
 ```bash
+# For the analytical network backend
 $ cd -
 $ ./build/astra_analytical/build/AnalyticalAstra/bin/AnalyticalAstra \
   --workload-configuration=./extern/graph_frontend/chakra/et_generator/twoCompNodesDependent \
   --system-configuration=./inputs/system/sample_fully_connected_sys.txt \
   --network-configuration=./inputs/network/analytical/fully_connected.json \
   --remote-memory-configuration=./inputs/remote_memory/analytical/no_memory_expansion.json
+
+# For the ns3 network backend. Python2 required.
+# After editing the configuration files in the following script
+$ ./build/astra_ns3/build.sh -r
+
+# Or, alternatively:
+$ cd ./extern/network_backend/ns3/simulation
+$ ./waf --run "scratch/AstraSimNetwork mix/config.txt \
+  --workload-configuration=../../../../extern/graph_frontend/chakra/et_generator/twoCompNodesDependent \
+  --system-configuration=../../../../inputs/system/sample_fully_connected_sys.txt \
+  --network-configuration=../../../../inputs/network/analytical/fully_connected.json \
+  --remote-memory-configuration=../../../../inputs/remote_memory/analytical/no_memory_expansion.json \
+  --comm-group-configuration=\"empty\""
+$ cd -
 ```
 
 Upon completion, ASTRA-sim will display the number of cycles it took to run the simulation.
@@ -189,7 +208,6 @@ sys[63] finished, 187442108 cycles
 We are constantly working to improve ASTRA-sim and expand its capabilities. Here are some of the features that are currently under active development:
 
 * Congestion-aware Analytical Network Backend
-* NS3 Network Backend
 * Garnet Network Backend
 * Detailed Statistics Report (Network Utilization)
   
