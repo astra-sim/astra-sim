@@ -11,6 +11,9 @@ BUILD_DIR="${SCRIPT_DIR:?}"/build/
 RESULT_DIR="${SCRIPT_DIR:?}"/result/
 BINARY="${BUILD_DIR}"/gem5.opt
 
+# To avoid copying files for ASTRA-sim 2.0. Refer to src/applications/wscript.
+export IS_ASTRA_SIM_1_0="True"
+
 # Functions
 function setup {
     mkdir -p "${BUILD_DIR}"
