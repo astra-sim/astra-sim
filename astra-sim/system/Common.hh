@@ -21,7 +21,7 @@ enum req_type_e { UINT8 = 0, BFLOAT16, FP32 };
 
 struct timespec_t {
   time_type_e time_res;
-  double time_val;
+  long double time_val;
 };
 
 struct sim_request {
