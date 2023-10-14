@@ -18,6 +18,7 @@ LICENSE file in the root directory of this source tree.
 namespace AstraSim {
 
 class Sys;
+class DataSet;
 
 class Workload : public Callable {
  public:
@@ -45,6 +46,7 @@ class Workload : public Callable {
   HardwareResource* hw_resource;
   Sys* sys;
   std::unordered_map<int, uint64_t> collective_comm_node_id_map;
+  std::unordered_map<int, DataSet*> collective_comm_wrapper_map;
   bool is_finished;
 };
 
