@@ -11,5 +11,5 @@
 	path = extern/compute/SCALE-Sim
 	url = https://github.com/scalesim-project/scale-sim-v2.git
 [submodule "extern/network_backend/ns3-interface"]
-	path = extern/network_backend/ns3-interface
+	path = extern/network_backend/ns3
 	url = https://github.com/astra-sim/astra-network-ns3.git

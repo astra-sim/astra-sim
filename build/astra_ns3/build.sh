@@ -6,7 +6,7 @@ SCRIPT_DIR=$(dirname "$(realpath $0)")
 # Absolute paths to useful directories
 GEM5_DIR="${SCRIPT_DIR:?}"/../../extern/network_backend/garnet/gem5_astra/
 ASTRA_SIM_DIR="${SCRIPT_DIR:?}"/../../astra-sim
-NS3_DIR="${SCRIPT_DIR:?}"/../../extern/network_backend/ns3-interface
+NS3_DIR="${SCRIPT_DIR:?}"/../../extern/network_backend/ns3
 BUILD_DIR="${SCRIPT_DIR:?}"/build/
 RESULT_DIR="${SCRIPT_DIR:?}"/result/
 BINARY="${BUILD_DIR}"/gem5.opt
