@@ -201,6 +201,7 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
           comm_group,
           node->getChakraNode()->comm_priority());
       collective_comm_node_id_map[fp->my_id] = node->getChakraNode()->id();
+      collective_comm_wrapper_map[fp->my_id] = fp;
       fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
 
     } else if (
@@ -212,6 +213,7 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
           comm_group,
           node->getChakraNode()->comm_priority());
       collective_comm_node_id_map[fp->my_id] = node->getChakraNode()->id();
+      collective_comm_wrapper_map[fp->my_id] = fp;
       fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
 
     } else if (
@@ -223,6 +225,7 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
           comm_group,
           node->getChakraNode()->comm_priority());
       collective_comm_node_id_map[fp->my_id] = node->getChakraNode()->id();
+      collective_comm_wrapper_map[fp->my_id] = fp;
       fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
 
     } else if (
@@ -234,6 +237,7 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
           comm_group,
           node->getChakraNode()->comm_priority());
       collective_comm_node_id_map[fp->my_id] = node->getChakraNode()->id();
+      collective_comm_wrapper_map[fp->my_id] = fp;
       fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
     }
   } else if (
@@ -309,6 +313,11 @@ void Workload::call(EventType event, CallData* data) {
     issue_dep_free_nodes();
 
     et_feeder->removeNode(node_id);
+
+    // The Dataset class provides statistics that should be used later to dump
+    // more statistics in the workload layer
+    delete collective_comm_wrapper_map[node_id];
+    collective_comm_wrapper_map.erase(node_id);
 
   } else {
     if (data == nullptr) {
