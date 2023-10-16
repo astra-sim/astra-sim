@@ -207,18 +207,26 @@ sys[63] finished, 187442108 cycles
 ## Features Under Active Development
 We are constantly working to improve ASTRA-sim and expand its capabilities. Here are some of the features that are currently under active development:
 
-* Congestion-aware Analytical Network Backend
-* Garnet Network Backend
+* Network Backends
+    * Congestion-aware Analytical
+    * Garnet (for chiplet fabrics)
 * Detailed Statistics Report (Network Utilization)
   
-Please note that these features are under active development and, while we aim to have them available as soon as possible, the completion timeline can vary. Check back regularly for updates on the progress of these and other features. We appreciate your interest and support in ASTRA-sim!
+Please note that these features are under active development and, while we aim to have them available as soon as possible, the completion timeline can vary. Check back regularly for updates on the progress of these and other features. This is an open-source project and we also value PRs from the community on features they have added.
+
+We appreciate your interest and support in ASTRA-sim! 
 
 
 ## Contact Us
-This project is a collaboration of dedicated professionals. Each core developer and contributor plays a unique role in the project. For any inquiries or questions, feel free to reach out to the corresponding developer based on their expertise. 
+For any questions about using ASTRA-sim, you can email the ASTRA-sim User Mailing List: astrasim-users@googlegroups.com
+
+To join the mailing list, please fill out the following form: https://forms.gle/18KVS99SG3k9CGXm6
+
+This project is a collaboration of dedicated professionals. The core developers and contributors are acknowledged below.
+
 | Developer | Organization | Responsibility | Contact |
 |-----------|--------------|----------------|---------|
-| Saeed Rashidi | Hewlett Packard Labs | ASTRA-sim 1.0, system layer, communicator groups, in-switch collective communication | rashidi1saeid@gmail.com |
+| Saeed Rashidi | Hewlett Packard Labs | ASTRA-sim 1.0, system layer, collective communication | rashidi1saeid@gmail.com |
 | William Won | Georgia Tech | Network layer | william.won@gatech.edu |
 | Taekyung Heo | Georgia Tech | Chakra, workload layer, graph execution engine, memory API | taekyung@gatech.edu |
 | Changhai Man | Georgia Tech | Chakra | cman8@gatech.edu |
