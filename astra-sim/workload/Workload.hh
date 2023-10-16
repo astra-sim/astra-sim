@@ -21,7 +21,7 @@ class Sys;
 
 class Workload : public Callable {
  public:
-  Workload(Sys* sys, std::string eg_filename, std::string comm_group_filename);
+  Workload(Sys* sys, std::string et_filename, std::string comm_group_filename);
   ~Workload();
 
   // communicator groups

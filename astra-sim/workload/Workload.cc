@@ -25,8 +25,8 @@ typedef ChakraProtoMsg::NodeType ChakraNodeType;
 typedef ChakraProtoMsg::MemoryType ChakraMemoryType;
 typedef ChakraProtoMsg::CollectiveCommType ChakraCollectiveCommType;
 
-Workload::Workload(Sys* sys, string eg_filename, string comm_group_filename) {
-  string workload_filename = eg_filename + "." + to_string(sys->id) + ".eg";
+Workload::Workload(Sys* sys, string et_filename, string comm_group_filename) {
+  string workload_filename = et_filename + "." + to_string(sys->id) + ".et";
   // Check if workload filename exists
   if (access(workload_filename.c_str(), R_OK) < 0) {
       string error_msg;
