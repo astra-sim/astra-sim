@@ -10,13 +10,17 @@ SYSTEM=./sample_fully_connected_sys.txt
 #WORKLOAD="${SCRIPT_DIR:?}"/inputs/workload/ASTRA-sim-2.0/Resnet50_DataParallel
 #WORKLOAD="${SCRIPT_DIR:?}"/inputs/workload/ASTRA-sim-2.0/DLRM_HybridParallel
 
-WORKLOAD="${SCRIPT_DIR:?}"/inputs/workload/ASTRA-sim-2.0/microAllReduce
+#WORKLOAD="${SCRIPT_DIR:?}"/inputs/workload/ASTRA-sim-2.0/microAllReduce
 #WORKLOAD="${SCRIPT_DIR:?}"/inputs/workload/ASTRA-sim-2.0/microAllToAll
+#WORKLOAD="${SCRIPT_DIR:?}"/inputs/workload/ASTRA-sim-2.0/MLP_HybridParallel_Data_Model
+WORKLOAD="${SCRIPT_DIR:?}"/inputs/workload/ASTRA-sim-2.0/Resnet50_DataParallel
+
+#WORKLOAD="${SCRIPT_DIR:?}"/inputs/workload/ASTRA-sim-2.0/MLP_HybridParallel_Data_Model
 
 
 #NETWORK=./congestion/fully_connected.yml
-#NETWORK=./congestion/sample_Switch.yml
-NETWORK=./congestion/sample_Ring.yml
+NETWORK=./congestion/sample_Switch.yml
+#NETWORK=./congestion/sample_Ring.yml
 
 
 "${BINARY}" \
