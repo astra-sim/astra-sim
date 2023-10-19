@@ -100,13 +100,6 @@ void AstraCongestionApi::sim_schedule(
   event_queue->schedule_event(event_time, fun_ptr, fun_arg);
 }
 
-void AstraCongestionApi::schedule(
-    AstraSim::timespec_t delta,
-    void (*fun_ptr)(void*),
-    void* fun_arg) {
-  event_queue->schedule_event(delta.time_val, fun_ptr, fun_arg);
-}
-
 int AstraCongestionApi::sim_send(
     void* buffer,
     uint64_t count,
@@ -172,7 +165,7 @@ int AstraCongestionApi::sim_recv(
       auto delta = AstraSim::timespec_t{AstraSim::NS, 0};
       // sim_schedule(delta, msg_handler, fun_arg);
       //  Divya: Changes to port congestion backend to Chakra
-      schedule(delta, msg_handler, fun_arg);
+      sim_schedule(delta, msg_handler, fun_arg);
     } else {
       // register recv callback
       entry.value()->register_recv_callback(msg_handler, fun_arg);

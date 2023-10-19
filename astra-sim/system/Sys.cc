@@ -534,32 +534,32 @@ void Sys::register_event(
     Callable* callable,
     EventType event,
     CallData* callData,
-    Tick cycles) {
-  try_register_event(callable, event, callData, cycles);
+    Tick delta_cycles) {
+  try_register_event(callable, event, callData, delta_cycles);
 }
 
 void Sys::try_register_event(
     Callable* callable,
     EventType event,
     CallData* callData,
-    Tick& cycles) {
+    Tick& delta_cycles) {
   bool should_schedule = false;
-  if (event_queue.find(Sys::boostedTick() + cycles) == event_queue.end()) {
+  if (event_queue.find(Sys::boostedTick() + delta_cycles) == event_queue.end()) {
     list<tuple<Callable*, EventType, CallData*>> tmp;
-    event_queue[Sys::boostedTick() + cycles] = tmp;
+    event_queue[Sys::boostedTick() + delta_cycles] = tmp;
     should_schedule = true;
   }
-  event_queue[Sys::boostedTick() + cycles].push_back(
+  event_queue[Sys::boostedTick() + delta_cycles].push_back(
       make_tuple(callable, event, callData));
   if (should_schedule) {
     timespec_t tmp;
-    tmp.time_val = Sys::boostedTick() + cycles;
+    tmp.time_val = delta_cycles;
     BasicEventHandlerData* data =
         new BasicEventHandlerData(id, EventType::CallEvents);
     data->sys_id = id;
-    comm_NI->schedule(tmp, &Sys::handleEvent, data);
+    comm_NI->sim_schedule(tmp, &Sys::handleEvent, data);
   }
-  cycles = 0;
+  delta_cycles = 0;
   pending_events++;
   return;
 }

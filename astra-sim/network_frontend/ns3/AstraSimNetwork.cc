@@ -51,14 +51,14 @@ public:
 
   AstraSim::timespec_t sim_get_time() {
     AstraSim::timespec_t timeSpec;
+    timeSpec.time_res = AstraSim::NS;
     timeSpec.time_val = Simulator::Now().GetNanoSeconds();
     return timeSpec;
   }
 
-  virtual void schedule(AstraSim::timespec_t schTime,
+  virtual void sim_schedule(AstraSim::timespec_t delta,
                         void (*fun_ptr)(void *fun_arg), void *fun_arg) {
-    Simulator::Schedule(NanoSeconds(schTime.time_val) - Simulator::Now(),
-                        fun_ptr, fun_arg);
+    Simulator::Schedule(NanoSeconds(delta.time_val), fun_ptr, fun_arg);
     return;
   }
 

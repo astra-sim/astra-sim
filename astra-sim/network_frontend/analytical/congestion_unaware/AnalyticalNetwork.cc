@@ -135,13 +135,6 @@ void AnalyticalNetwork::sim_schedule(
   event_queue->add_event(event_time, fun_ptr, fun_arg);
 }
 
-void AnalyticalNetwork::schedule(
-    AstraSim::timespec_t event_time,
-    void (*fun_ptr)(void*),
-    void* fun_arg) {
-  event_queue->add_event(event_time, fun_ptr, fun_arg);
-}
-
 AstraSim::timespec_t AnalyticalNetwork::sim_get_time() {
   return event_queue->get_current_time();
 }
