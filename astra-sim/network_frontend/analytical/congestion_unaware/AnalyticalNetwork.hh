@@ -45,11 +45,6 @@ class AnalyticalNetwork : public AstraSim::AstraNetworkAPI {
       void (*fun_ptr)(void* fun_arg),
       void* fun_arg);
 
-  void schedule(
-      AstraSim::timespec_t event_time,
-      void (*fun_ptr)(void* fun_arg),
-      void* fun_arg) override;
-
   AstraSim::timespec_t sim_get_time() override;
 
   double get_BW_at_dimension(int dim) override;

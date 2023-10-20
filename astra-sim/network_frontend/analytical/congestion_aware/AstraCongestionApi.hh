@@ -49,11 +49,6 @@ class AstraCongestionApi : public AstraSim::AstraNetworkAPI {
       void (*fun_ptr)(void* fun_arg),
       void* fun_arg);
 
-  void schedule(
-      AstraSim::timespec_t delta,
-      void (*fun_ptr)(void* fun_arg),
-      void* fun_arg) override;
-
   int sim_send(
       void* buffer,
       uint64_t count,

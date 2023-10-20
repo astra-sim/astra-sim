@@ -37,7 +37,13 @@ class AstraNetworkAPI {
       void (*msg_handler)(void* fun_arg),
       void* fun_arg) = 0;
 
-  virtual void schedule(
+  /* 
+   * sim_schedule is used when ASTRA-sim wants to schedule an event on the network backend.
+   * delta: The relative time difference between the current time and the time when the event is triggered, as observed by the network simulator.
+   * fun_ptr: The event handler to be triggered at the scheduled time.
+   * fun_arg: Arguments to pass into fun_ptr.
+   */
+  virtual void sim_schedule(
       timespec_t delta,
       void (*fun_ptr)(void* fun_arg),
       void* fun_arg) = 0;
