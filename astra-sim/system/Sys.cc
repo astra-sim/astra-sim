@@ -544,13 +544,13 @@ void Sys::try_register_event(
     CallData* callData,
     Tick& delta_cycles) {
   bool should_schedule = false;
-  if (event_queue.find(Sys::boostedTick() + delta_cycles) == event_queue.end()) {
+  auto event_time = Sys::boostedTick() + delta_cycles;
+  if (event_queue.find(event_time) == event_queue.end()) {
     list<tuple<Callable*, EventType, CallData*>> tmp;
-    event_queue[Sys::boostedTick() + delta_cycles] = tmp;
+    event_queue[event_time] = tmp;
     should_schedule = true;
   }
-  event_queue[Sys::boostedTick() + delta_cycles].push_back(
-      make_tuple(callable, event, callData));
+  event_queue[event_time].push_back(make_tuple(callable, event, callData));
   if (should_schedule) {
     timespec_t tmp;
     tmp.time_val = delta_cycles;
