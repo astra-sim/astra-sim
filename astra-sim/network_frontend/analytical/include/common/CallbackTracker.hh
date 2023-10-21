@@ -12,8 +12,8 @@ LICENSE file in the root directory of this source tree.
 namespace AstraSimAnalytical {
 
 /**
- * CallbackTracker keeps track of sim_send() and sim_recv() callbacks of each chunk
- * identified by (tag, src, dest, chunk_size, chunk_id) tuple.
+ * CallbackTracker keeps track of sim_send() and sim_recv() callbacks of each
+ * chunk identified by (tag, src, dest, chunk_size, chunk_id) tuple.
  */
 class CallbackTracker {
  public:
@@ -22,7 +22,8 @@ class CallbackTracker {
   CallbackTracker() noexcept;
 
   /**
-   * Search for the entry identified by (tag, src, dest, chunk_size, chunk_id) tuple.
+   * Search for the entry identified by (tag, src, dest, chunk_size, chunk_id)
+   * tuple.
    *
    * @param tag tag of the sim_send() or sim_recv() call
    * @param src src NPU ID of the sim_send() or sim_recv() call
@@ -39,7 +40,8 @@ class CallbackTracker {
       int chunk_id) noexcept;
 
   /**
-   * Create a new entry identified by (tag, src, dest, chunk_size, chunk_id) tuple.
+   * Create a new entry identified by (tag, src, dest, chunk_size, chunk_id)
+   * tuple.
    *
    * @param tag tag of the sim_send() or sim_recv() call
    * @param src src NPU ID of the sim_send() or sim_recv() call
@@ -56,7 +58,8 @@ class CallbackTracker {
       int chunk_id) noexcept;
 
   /**
-   * Remove the entry identified by (tag, src, dest, chunk_size, chunk_id) tuple.
+   * Remove the entry identified by (tag, src, dest, chunk_size, chunk_id)
+   * tuple.
    *
    * @param tag tag of the sim_send() or sim_recv() call
    * @param src src NPU ID of the sim_send() or sim_recv() call
@@ -72,7 +75,8 @@ class CallbackTracker {
       int chunk_id) noexcept;
 
  private:
-  /// map from (tag, src, dest, chunk_size, chunk_id) tuple to CallbackTrackerEntry
+  /// map from (tag, src, dest, chunk_size, chunk_id) tuple to
+  /// CallbackTrackerEntry
   std::map<Key, CallbackTrackerEntry> tracker;
 };
 

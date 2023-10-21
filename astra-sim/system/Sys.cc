@@ -5,8 +5,8 @@ LICENSE file in the root directory of this source tree.
 
 #include "astra-sim/system/Sys.hh"
 
-#include <iostream>
 #include <cstdlib>
+#include <iostream>
 
 #include <json/json.hpp>
 #include "astra-sim/system/BaseStream.hh"
