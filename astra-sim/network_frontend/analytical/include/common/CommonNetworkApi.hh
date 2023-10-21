@@ -65,13 +65,7 @@ class CommonNetworkApi : public AstraNetworkAPI {
   void sim_schedule(
       timespec_t delta,
       void (*fun_ptr)(void* fun_arg),
-      void* fun_arg);
-
-  /**
-   * Implement schedule of AstraNetworkAPI.
-   */
-  void schedule(timespec_t time, void (*fun_ptr)(void* fun_arg), void* fun_arg)
-      override;
+      void* fun_arg) override;
 
   /**
    * Implement sim_recv of AstraNetworkAPI.

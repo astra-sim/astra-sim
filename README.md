@@ -44,8 +44,10 @@ $ sudo apt install \
     python3 python3-pip git
 ```
 
+NOTE: For the ns3 backend `python2`, `gcc-5.0` and `g++-5.0` are also required. This is because the ns3 backend is based on an older ns3 version. We recommend using virtual environments to isolate python instances. Even with the ns3 backend, `python3` is still used to create the workload using Chakra.
+
 - #### macOS
-For macOS, you can first install required dependencies using [homebrew](https://brew.sh).
+For macOS, you can first install required dependencies using [homebrew](https://brew.sh). (Note: The ns3 backend has not yet been confirmed to build within macOS)
 ```bash
 $ brew update
 $ brew upgrade
@@ -97,10 +99,12 @@ Then, based on your target network backend, execute the corresponding build scri
 ```bash
 # For the analytical network backend
 $ ./build/astra_analytical/build.sh
+# For the ns3 network backend. Python2 required.
+$ ./build/astra_ns3/build.sh -c
 ```
 
 ### 2. Build ASTRA-sim in a Docker Image
-Alternatively, you can build ASTRA-sim within a Docker container.
+Alternatively, you can build ASTRA-sim within a Docker container. (Note: The ns3 backend has not yet been confirmed to build within a Docker image)
 
 Start by cloning this repository to your local machine using the same command as above:
 ```bash
@@ -146,12 +150,27 @@ $ ./et_generator --num_npus 64 --num_dims 1
 
 To run one of the example traces (`twoCompNodesDependent`), execute the following command.
 ```bash
+# For the analytical network backend
 $ cd -
 $ ./build/astra_analytical/build/bin/AstraSim_Analytical_Congestion_Unaware \
   --workload-configuration=./extern/graph_frontend/chakra/et_generator/twoCompNodesDependent \
   --system-configuration=./inputs/system/sample_fully_connected_sys.txt \
   --network-configuration=./inputs/network/analytical/fully_connected.json \
   --remote-memory-configuration=./inputs/remote_memory/analytical/no_memory_expansion.json
+
+# For the ns3 network backend. Python2 required.
+# After editing the configuration files in the following script
+$ ./build/astra_ns3/build.sh -r
+
+# Or, alternatively:
+$ cd ./extern/network_backend/ns3/simulation
+$ ./waf --run "scratch/AstraSimNetwork mix/config.txt \
+  --workload-configuration=../../../../extern/graph_frontend/chakra/et_generator/twoCompNodesDependent \
+  --system-configuration=../../../../inputs/system/sample_fully_connected_sys.txt \
+  --network-configuration=../../../../inputs/network/analytical/fully_connected.json \
+  --remote-memory-configuration=../../../../inputs/remote_memory/analytical/no_memory_expansion.json \
+  --comm-group-configuration=\"empty\""
+$ cd -
 ```
 
 Upon completion, ASTRA-sim will display the number of cycles it took to run the simulation.
@@ -199,19 +218,26 @@ sys[63] finished, 187442108 cycles
 ## Features Under Active Development
 We are constantly working to improve ASTRA-sim and expand its capabilities. Here are some of the features that are currently under active development:
 
-* Congestion-aware Analytical Network Backend
-* NS3 Network Backend
-* Garnet Network Backend
+* Network Backends
+    * Congestion-aware Analytical
+    * Garnet (for chiplet fabrics)
 * Detailed Statistics Report (Network Utilization)
   
-Please note that these features are under active development and, while we aim to have them available as soon as possible, the completion timeline can vary. Check back regularly for updates on the progress of these and other features. We appreciate your interest and support in ASTRA-sim!
+Please note that these features are under active development and, while we aim to have them available as soon as possible, the completion timeline can vary. Check back regularly for updates on the progress of these and other features. This is an open-source project and we also value PRs from the community on features they have added.
+
+We appreciate your interest and support in ASTRA-sim! 
 
 
 ## Contact Us
-This project is a collaboration of dedicated professionals. Each core developer and contributor plays a unique role in the project. For any inquiries or questions, feel free to reach out to the corresponding developer based on their expertise. 
+For any questions about using ASTRA-sim, you can email the ASTRA-sim User Mailing List: astrasim-users@googlegroups.com
+
+To join the mailing list, please fill out the following form: https://forms.gle/18KVS99SG3k9CGXm6
+
+This project is a collaboration of dedicated professionals. The core developers and contributors are acknowledged below.
+
 | Developer | Organization | Responsibility | Contact |
 |-----------|--------------|----------------|---------|
-| Saeed Rashidi | Hewlett Packard Labs | ASTRA-sim 1.0, system layer, communicator groups, in-switch collective communication | rashidi1saeid@gmail.com |
+| Saeed Rashidi | Hewlett Packard Labs | ASTRA-sim 1.0, system layer, collective communication | rashidi1saeid@gmail.com |
 | William Won | Georgia Tech | Network layer | william.won@gatech.edu |
 | Taekyung Heo | Georgia Tech | Chakra, workload layer, graph execution engine, memory API | taekyung@gatech.edu |
 | Changhai Man | Georgia Tech | Chakra | cman8@gatech.edu |

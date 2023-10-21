@@ -97,12 +97,12 @@ class Sys : public Callable {
       Callable* callable,
       EventType event,
       CallData* callData,
-      Tick cycles);
+      Tick delta_cycles);
   void try_register_event(
       Callable* callable,
       EventType event,
       CallData* callData,
-      Tick& cycles);
+      Tick& delta_cycles);
   static void handleEvent(void* arg);
   //---------------------------------------------------------------------------
 

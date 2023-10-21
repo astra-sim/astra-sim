@@ -93,21 +93,6 @@ void CommonNetworkApi::sim_schedule(
   event_queue->schedule_event(event_time_ns, fun_ptr, fun_arg);
 }
 
-void CommonNetworkApi::schedule(
-    const timespec_t event_time,
-    void (*fun_ptr)(void*),
-    void* const fun_arg) {
-  assert(event_time.time_res == NS);
-  assert(fun_ptr != nullptr);
-
-  // get the event time
-  const auto event_time_ns = static_cast<EventTime>(event_time.time_val);
-
-  // schedule event
-  assert(event_time_ns >= event_queue->get_current_time());
-  event_queue->schedule_event(event_time_ns, fun_ptr, fun_arg);
-}
-
 int CommonNetworkApi::sim_recv(
     void* const buffer,
     const uint64_t count,
