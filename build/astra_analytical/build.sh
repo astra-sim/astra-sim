@@ -14,6 +14,12 @@ function compile_chakra_et() {
       --proto_path="${CHAKRA_ET_DIR:?}" \
       --cpp_out="${CHAKRA_ET_DIR:?}"
   fi
+
+  if [[ ! -f "${CHAKRA_ET_DIR:?}"/et_def_pb2.py ]]; then
+    protoc et_def.proto \
+      --proto_path="${CHAKRA_ET_DIR:?}" \
+      --python_out="${CHAKRA_ET_DIR:?}"
+  fi
 }
 
 function setup() {

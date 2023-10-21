@@ -99,6 +99,7 @@ Then, based on your target network backend, execute the corresponding build scri
 ```bash
 # For the analytical network backend
 $ ./build/astra_analytical/build.sh
+
 # For the ns3 network backend. Python2 required.
 $ ./build/astra_ns3/build.sh -c
 ```
@@ -148,14 +149,14 @@ $ cmake . && make -j$(nproc)
 $ ./et_generator --num_npus 64 --num_dims 1
 ```
 
-To run one of the example traces (`twoCompNodesDependent`), execute the following command.
+To run one of the example traces (`oneCommNodeAllReduce`), execute the following command.
 ```bash
 # For the analytical network backend
 $ cd -
 $ ./build/astra_analytical/build/bin/AstraSim_Analytical_Congestion_Unaware \
-  --workload-configuration=./extern/graph_frontend/chakra/et_generator/twoCompNodesDependent \
-  --system-configuration=./inputs/system/sample_fully_connected_sys.txt \
-  --network-configuration=./inputs/network/analytical/fully_connected.json \
+  --workload-configuration=./extern/graph_frontend/chakra/et_generator/oneCommNodeAllReduce \
+  --system-configuration=./inputs/system/Switch.json \
+  --network-configuration=./inputs/network/analytical/Switch.yml \
   --remote-memory-configuration=./inputs/remote_memory/analytical/no_memory_expansion.json
 
 # For the ns3 network backend. Python2 required.
@@ -175,11 +176,11 @@ $ cd -
 
 Upon completion, ASTRA-sim will display the number of cycles it took to run the simulation.
 ```bash
-sys[0] finished, 10 cycles
-sys[1] finished, 10 cycles
+sys[0] finished, 50904 cycles
+sys[1] finished, 50904 cycles
 ...
-sys[62] finished, 10 cycles
-sys[63] finished, 10 cycles
+sys[62] finished, 50904 cycles
+sys[63] finished, 50904 cycles
 ```
 
 ### Using the Execution Trace Converter
@@ -201,18 +202,18 @@ Run the following command.
 $ cd -
 $ ./build/astra_analytical/build/bin/AstraSim_Analytical_Congestion_Unaware \
   --workload-configuration=./inputs/workload/ASTRA-sim-2.0/Resnet50_DataParallel \
-  --system-configuration=./inputs/system/sample_fully_connected_sys.txt \
-  --network-configuration=./inputs/network/analytical/fully_connected.json \
+  --system-configuration=./inputs/system/Switch.json \
+  --network-configuration=./inputs/network/analytical/Switch.yml \
   --remote-memory-configuration=./inputs/remote_memory/analytical/no_memory_expansion.json
 ```
 
 Upon completion, ASTRA-sim will display the number of cycles it took to run the simulation.
 ```bash
-sys[62] finished, 187442108 cycles
-sys[61] finished, 187442108 cycles
+sys[62] finished, 6749042 cycles
+sys[61] finished, 6749042 cycles
 ...
-sys[0] finished, 187442108 cycles
-sys[63] finished, 187442108 cycles
+sys[0] finished, 6749042 cycles
+sys[63] finished, 6749042 cycles
 ```
 
 ## Features Under Active Development
