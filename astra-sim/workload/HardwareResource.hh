@@ -3,6 +3,8 @@ This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
+// TODO: HardwareResource.hh should be moved to the system layer.
+
 #ifndef __HARDWARE_RESOURCE_HH__
 #define __HARDWARE_RESOURCE_HH__
 
