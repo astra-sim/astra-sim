@@ -13,3 +13,6 @@
 [submodule "extern/network_backend/ns3"]
 	path = extern/network_backend/ns3
 	url = https://github.com/astra-sim/astra-network-ns3.git
+[submodule "inputs/workload/execution-graph-converter"]
+	path = inputs/workload/execution-graph-converter
+	url = https://github.com/astra-sim/execution-graph-converter-Intel
