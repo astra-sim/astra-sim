@@ -22,7 +22,8 @@ file(GLOB srcs
         "${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/third_party/utils/*.cc"
         "${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/et_def/*.cc"
         "${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/et_feeder/*.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/extern/remote_memory_backend/analytical/*.cc")
+        "${CMAKE_CURRENT_SOURCE_DIR}/extern/remote_memory_backend/analytical/*.cc"
+        "${CMAKE_CURRENT_SOURCE_DIR}/extern/statistics/*.cc")
 
 # Compile AstraSim Library
 add_library(AstraSim ${srcs})
