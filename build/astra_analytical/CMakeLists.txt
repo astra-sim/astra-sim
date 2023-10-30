@@ -5,7 +5,10 @@ cmake_minimum_required(VERSION 3.15)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(CMAKE_CXX_FLAGS "-O3 -Wall")
+#set(CMAKE_CXX_FLAGS "-O3 -Wall -g")
+#set(CMAKE_CXX_FLAGS "-Wall -ggdb3 -Wextra")
+#set(CMAKE_CXX_FLAGS "-Wall -ggdb3 -O3 -Wextra -pedantic -fsanitize=address")
+set(CMAKE_CXX_FLAGS "-Wall -ggdb3 -Wextra -pedantic")
 
 # Setup project
 project(AstraSim_Analytical)

@@ -14,6 +14,7 @@ LICENSE file in the root directory of this source tree.
 #include "event-queue/EventQueue.hh"
 #include "topology/CostModel.hh"
 #include "topology/Topology.hh"
+#include "../../../statistics/GStatsIoActivity.hh"
 
 namespace Analytical {
 class AnalyticalNetwork : public AstraSim::AstraNetworkAPI {
@@ -58,7 +59,11 @@ class AnalyticalNetwork : public AstraSim::AstraNetworkAPI {
 
   static void set_cost_model(CostModel* const cost_model_ptr) noexcept;
 
+  static GStatsIoActivity ioActivity;
+  std::pair<Time_t, Time_t> activityBlock;
+
  private:
+  // Global static members common for all the comm networks.
   static std::shared_ptr<EventQueue> event_queue;
   static std::shared_ptr<Topology> topology;
   static SendRecvTrackingMap send_recv_tracking_map;

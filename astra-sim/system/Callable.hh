@@ -10,6 +10,10 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/Common.hh"
 
 namespace AstraSim {
+/**
+ * An abstract class containing the method to a Callable object.
+ * Child classes need to specliaze the call based on the event type.
+ */
 
 class Callable {
  public:
