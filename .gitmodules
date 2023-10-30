@@ -15,4 +15,4 @@
 	url = https://github.com/astra-sim/astra-network-ns3.git
 [submodule "inputs/workload/execution-graph-converter"]
 	path = inputs/workload/execution-graph-converter
-	url = https://github.com/astra-sim/execution-graph-converter-Intel
+	url = git@github.com:astra-sim/execution-graph-converter-Intel.git
