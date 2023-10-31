@@ -16,3 +16,6 @@
 [submodule "inputs/workload/execution-graph-converter-Intel"]
 	path = inputs/workload/execution-graph-converter-Intel
 	url = git@github.com:astra-sim/execution-graph-converter-Intel.git
+[submodule "inputs/workload/inputs/workload/execution-graph-converter-Intel"]
+	path = inputs/workload/inputs/workload/execution-graph-converter-Intel
+	url = git@github.com:astra-sim/execution-graph-converter-Intel.git
