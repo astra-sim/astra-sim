@@ -110,7 +110,7 @@ void Workload::issue_dep_free_nodes() {
   }
 }
 
-void Workload::check_node_valid(std::shared_ptr<Chakra::ETFeederNode> node) {
+void Workload::node_sanity_check(std::shared_ptr<Chakra::ETFeederNode> node) {
   const auto& chakra_node = node->getChakraNode();
   if ((chakra_node->node_type() == ChakraNodeType::MEM_LOAD_NODE) ||
       (chakra_node->node_type() == ChakraNodeType::MEM_STORE_NODE)) {
@@ -165,7 +165,7 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
   // and continue run (default behavior)
   const bool strict_mode = false;
   try {
-    check_node_valid(node);
+    node_sanity_check(node);
   } catch (std::invalid_argument& e) {
     // conditional catch when not strict_mode
     if (!strict_mode) {
@@ -178,30 +178,22 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
   }
 
   // from here the node should be valid and following code should run well.
+  if (sys->trace_enabled) {
+    cout << "issue,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
+         << ",node->id=" << node->getChakraNode()->id()
+         << ",node->name=" << node->getChakraNode()->name()
+         << ",node->node_type=" << node->getChakraNode()->node_type() << endl;
+  }
+
   if ((node->getChakraNode()->node_type() == ChakraNodeType::MEM_LOAD_NODE) ||
       (node->getChakraNode()->node_type() == ChakraNodeType::MEM_STORE_NODE)) {
-    if (sys->trace_enabled) {
-      cout << "issue,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
-           << ",node->id=" << node->getChakraNode()->id()
-           << ",node->name=" << node->getChakraNode()->name() << endl;
-    }
     issue_remote_mem(node);
   } else if (node->getChakraNode()->node_type() == ChakraNodeType::COMP_NODE) {
-    if (sys->trace_enabled) {
-      cout << "issue,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
-           << ",node->id=" << node->getChakraNode()->id()
-           << ",node->name=" << node->getChakraNode()->name() << endl;
-    }
     issue_comp(node);
   } else if (
       (node->getChakraNode()->node_type() == ChakraNodeType::COMM_COLL_NODE) ||
       (node->getChakraNode()->node_type() == ChakraNodeType::COMM_SEND_NODE) ||
       (node->getChakraNode()->node_type() == ChakraNodeType::COMM_RECV_NODE)) {
-    if (sys->trace_enabled) {
-      cout << "issue,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
-           << ",node->id=" << node->getChakraNode()->id()
-           << ",node->name=" << node->getChakraNode()->name() << endl;
-    }
     issue_comm(node);
   }
 }
@@ -359,7 +351,8 @@ void Workload::call(EventType event, CallData* data) {
     if (sys->trace_enabled) {
       cout << "callback,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
            << ",node->id=" << node->getChakraNode()->id()
-           << ",node->name=" << node->getChakraNode()->name() << endl;
+           << ",node->name=" << node->getChakraNode()->name()
+           << ",node->node_type=" << node->getChakraNode()->node_type() << endl;
     }
 
     hw_resource->release(node);
@@ -381,7 +374,9 @@ void Workload::call(EventType event, CallData* data) {
       if (sys->trace_enabled) {
         cout << "callback,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
              << ",node->id=" << node->getChakraNode()->id()
-             << ",node->name=" << node->getChakraNode()->name() << endl;
+             << ",node->name=" << node->getChakraNode()->name()
+             << ",node->node_type=" << node->getChakraNode()->node_type()
+             << endl;
       }
 
       hw_resource->release(node);

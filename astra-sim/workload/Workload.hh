@@ -36,7 +36,7 @@ class Workload : public Callable {
   void skip_invalid(std::shared_ptr<Chakra::ETFeederNode> node);
   void call(EventType event, CallData* data);
   void fire();
-  void check_node_valid(std::shared_ptr<Chakra::ETFeederNode> node);
+  void node_sanity_check(std::shared_ptr<Chakra::ETFeederNode> node);
 
   // stats
   void report();
