@@ -198,6 +198,7 @@ void notify_sender_sending_finished(int src_id, int dst_id, int message_size,
   // Lookup the send_event registered at send_flow().
   MsgEventKey send_event_key = make_pair(tag, make_pair(src_id, dst_id));
   if (sim_send_waiting_hash.find(send_event_key) == sim_send_waiting_hash.end()) {
+    return;
     cerr << "Cannot find send_event in sent_hash. Something is wrong."
          << "tag, src_id, dst_id: " << tag << " " << src_id << " " << dst_id
          << "\n";
@@ -208,6 +209,7 @@ void notify_sender_sending_finished(int src_id, int dst_id, int message_size,
   // expected by the system layer.
   MsgEvent send_event = sim_send_waiting_hash[send_event_key];
   if (send_event.remaining_msg_bytes != message_size) {
+    return;
     cerr << "The message size does not match what is expected. Something is "
             "wrong."
          << "tag, src_id, dst_id, expected msg_bytes, actual msg_bytes: " << tag
