@@ -109,6 +109,7 @@ void Workload::issue_dep_free_nodes() {
 
 void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
   if (sys->replay_only) {
+      hw_resource->occupy(node);
       issue_replay(node);
   } else {
     if ((node->type() == ChakraNodeType::MEM_LOAD_NODE)
