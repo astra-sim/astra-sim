@@ -193,6 +193,7 @@ void Workload::issue_comp(shared_ptr<Chakra::ETFeederNode> node) {
         static_cast<uint64_t>(elapsed_time * static_cast<double>(FREQ));
     sys->register_event(this, EventType::General, wlhd, runtime);
   } else {
+    // advance this node forward the recorded "replayed" time specificed in the ET.
     issue_replay(node);
   }
 }
@@ -323,9 +324,9 @@ void Workload::call(EventType event, CallData* data) {
     shared_ptr<Chakra::ETFeederNode> node = et_feeder->lookupNode(node_id);
 
     if (sys->trace_enabled) {
-      cout << "collective callback,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
+      cout << "callback,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
            << ",node->id=" << node->id()
-           << ",node->name=" << node->name()<< "comm size: "<< node->comm_size() << endl;
+           << ",node->name=" << node->name()<< endl;
     }
 
     hw_resource->release(node);
