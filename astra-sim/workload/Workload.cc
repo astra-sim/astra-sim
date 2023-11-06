@@ -157,7 +157,7 @@ void Workload::issue_replay(shared_ptr<Chakra::ETFeederNode> node) {
   WorkloadLayerHandlerData* wlhd = new WorkloadLayerHandlerData;
   wlhd->node_id = node->id();
 
-  //assert(node->runtime() != 0);
+  assert(node->runtime() != 0);
   sys->register_event(
       this,
       EventType::General,
@@ -326,7 +326,7 @@ void Workload::call(EventType event, CallData* data) {
     if (sys->trace_enabled) {
       cout << "callback,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
            << ",node->id=" << node->id()
-           << ",node->name=" << node->name()<< endl;
+           << ",node->name=" << node->name() << endl;
     }
 
     hw_resource->release(node);
