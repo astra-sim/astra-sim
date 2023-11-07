@@ -894,6 +894,15 @@ DataSet* Sys::generate_collective(
         remain_size = phase.final_data_size;
       }
     } else {
+      // In this branch, and the branch directly above, a collective visits each dimension (excluding the last dimension) twice.
+      // Specifically, for example, in 2D AllReduce, there would be 3 collective phases:
+      // Phase 0: Reduce Scatter in dim 0, Phase 1: All Gather in dim 1, Phase 2: All Reduce in dim 2
+      // Similarly, in 3D AllReduce, there would be 5 collective phases: RS in dim 0, RS in dim 1, AG in dim 2, AR in dim 3, AR in dim 4. 
+      // Currently, queues are allocated per dimension. If we allocate all queues in a dimension to both phases of a single dimension, a race / deadlock condition may occur. 
+      // Therefore, in these cases, we have to allocate half of the queues to the first phase, and the remaining half to the second phase.
+      // (For example, in the above 2D case, if we have 4 queues per dim, queues 0~1 are allocated to phase 0, queues 2~3 are allocated to phase 2.  
+      // For details, refer to https://github.com/astra-sim/astra-sim/issues/137 and the linked document. 
+        
       int dim = 0;
       int last_active_dim = 0;
       for (dim = 0; dim < topology->get_num_of_dimensions(); dim++) {
@@ -902,11 +911,14 @@ DataSet* Sys::generate_collective(
           last_active_dim = dim;
         }
       }
+        
+      // Create collective phase for each dimension, excluding the last dimension, in ascending order.
       for (dim = 0; dim < last_active_dim; dim++) {
         if (topology->get_num_of_nodes_in_dimension(dim_mapper[dim]) == 1 ||
             !dimensions_involved[dim_mapper[dim]]) {
           continue;
         }
+        // Allocate the first half of queues available to this dimension.
         pair<int, RingTopology::Direction> queue =
             vLevels->get_next_queue_at_level_first(dim_mapper[dim]);
         CollectivePhase phase = generate_collective_phase(
@@ -926,8 +938,13 @@ DataSet* Sys::generate_collective(
               topology->get_num_of_nodes_in_dimension(dim_mapper[dim]) == 1)) {
         dim--;
       }
+
+      // The last dimension is the 'turning point'. Only one collective phase is created.
       if (dimensions_involved[dim_mapper[dim]] &&
           topology->get_num_of_nodes_in_dimension(dim_mapper[dim]) > 1) {
+        // Despite only one collective phase being allocated to the last dimension, we only allocate half of the queues available to this dimension. 
+        // This is because we want to match the number of queues allocated to each collective phase.
+        // Processing phases for this dim in n parallel queues, and queueing the next phases in n/2 parallel queues could cause another deadlock. Refer to the PR #135 for more details.
         pair<int, RingTopology::Direction> queue =
             vLevels->get_next_queue_at_level_first(dim_mapper[dim]);
         CollectivePhase phase = generate_collective_phase(
@@ -943,11 +960,14 @@ DataSet* Sys::generate_collective(
         remain_size = phase.final_data_size;
       }
       dim--;
+
+      // Create collective phases for each dimension, excluding the last dimension, in descending order.  
       for (; dim >= 0; dim--) {
         if (topology->get_num_of_nodes_in_dimension(dim_mapper[dim]) == 1 ||
             !dimensions_involved[dim_mapper[dim]]) {
           continue;
         }
+        // Allocate the second half of queues available to this dimension.
         pair<int, RingTopology::Direction> queue =
             vLevels->get_next_queue_at_level_last(dim_mapper[dim]);
         CollectivePhase phase = generate_collective_phase(
