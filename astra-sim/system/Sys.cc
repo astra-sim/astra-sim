@@ -854,13 +854,15 @@ DataSet* Sys::generate_collective(
             InterDimensionScheduling::OfflineGreedyFlex ||
         inter_dimension_scheduling == InterDimensionScheduling::OnlineGreedy) {
       int dim = 0;
+        
+      // Create collective phase for each dimension in ascending order.
       for (dim = 0; dim < topology->get_num_of_dimensions(); dim++) {
         if (topology->get_num_of_nodes_in_dimension(dim_mapper[dim]) == 1 ||
             !dimensions_involved[dim_mapper[dim]]) {
           continue;
         }
         pair<int, RingTopology::Direction> queue =
-            vLevels->get_next_queue_at_level(dim_mapper[dim]);
+            vLevels->get_next_queue_at_level_first(dim_mapper[dim]);
         CollectivePhase phase = generate_collective_phase(
             ComType::Reduce_Scatter,
             topology->get_basic_topology_at_dimension(
@@ -874,13 +876,15 @@ DataSet* Sys::generate_collective(
         remain_size = phase.final_data_size;
       }
       dim--;
+
+      // Create collective phases for each dimension in descending order.  
       for (; dim >= 0; dim--) {
         if (topology->get_num_of_nodes_in_dimension(dim_mapper[dim]) == 1 ||
             !dimensions_involved[dim_mapper[dim]]) {
           continue;
         }
         pair<int, RingTopology::Direction> queue =
-            vLevels->get_next_queue_at_level(dim_mapper[dim]);
+            vLevels->get_next_queue_at_level_last(dim_mapper[dim]);
         CollectivePhase phase = generate_collective_phase(
             ComType::All_Gather,
             topology->get_basic_topology_at_dimension(
