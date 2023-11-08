@@ -95,10 +95,12 @@ map<pair<int, pair<int, int>>, int> sender_src_port_map;
 map<pair<int, int>, int> node_to_bytes_sent_map;
 
 // SentHash stores a MsgEvent for sim_send events and its callback handler.
-//   - key: A MsgEventKey isntance.
+//   - key: A pair of <MsgEventKey, port_id>. 
+//          A single collective phase can be split into multiple sim_send messages, which all have the same MsgEventKey. 
+//          TODO: Adding port_id as key is a hacky solution. The real solution would be to split this map, similar to sim_recv_waiting_hash and received_msg_standby_hash.
 //   - value: A MsgEvent instance that indicates that Sys layer is waiting for a
 //   send event to finish
-map<MsgEventKey, MsgEvent> sim_send_waiting_hash;
+map<pair<MsgEventKey, int>, MsgEvent> sim_send_waiting_hash;
 
 // While ns3 cannot send packets before System layer calls sim_send, it
 // is possible for ns3 to simulate Incoming messages before System layer calls
@@ -127,6 +129,13 @@ void send_flow(int src_id, int dst, int maxPacketCount,
   sender_src_port_map[make_pair(port, make_pair(src_id, dst))] = tag;
   int pg = 3, dport = 100;
   flow_input.idx++;
+
+  // Create a MsgEvent instance and register callback function.
+  MsgEvent send_event =
+      MsgEvent(src_id, dst, 0, maxPacketCount, fun_arg, msg_handler);
+  pair<MsgEventKey, int> send_event_key =
+      make_pair(make_pair(tag, make_pair(send_event.src_id, send_event.dst_id)),port) ;
+  sim_send_waiting_hash[send_event_key] = send_event;
 
   // Create a queue pair and schedule within the ns3 simulator.
   RdmaClientHelper clientHelper(
@@ -194,9 +203,9 @@ void notify_receiver_receive_data(int src_id, int dst_id, int message_size,
 }
 
 void notify_sender_sending_finished(int src_id, int dst_id, int message_size,
-                                    int tag) {
+                                    int tag, int src_port) {
   // Lookup the send_event registered at send_flow().
-  MsgEventKey send_event_key = make_pair(tag, make_pair(src_id, dst_id));
+  pair<MsgEventKey, int> send_event_key = make_pair(make_pair(tag, make_pair(src_id, dst_id)), src_port);
   if (sim_send_waiting_hash.find(send_event_key) == sim_send_waiting_hash.end()) {
     cerr << "Cannot find send_event in sent_hash. Something is wrong."
          << "tag, src_id, dst_id: " << tag << " " << src_id << " " << dst_id
@@ -266,7 +275,7 @@ void qp_finish(FILE *fout, Ptr<RdmaQueuePair> q) {
   sender_src_port_map.erase(make_pair(q->sport, make_pair(sid, did)));
 
   // Let sender knows that the flow has finished.
-  notify_sender_sending_finished(sid, did, q->m_size, tag);
+  notify_sender_sending_finished(sid, did, q->m_size, tag, q->sport);
 
   // Let receiver knows that it has received packets.
   notify_receiver_receive_data(sid, did, q->m_size, tag);
