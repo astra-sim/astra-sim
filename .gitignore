@@ -14,3 +14,9 @@ build/astra_analytical/build/
 build/astra_analytical/result/
 build/astra_garnet/build/
 build/astra_garnet/result/
+
+# Execution graphs
+inputs/workload/ASTRA-sim-2.0/*.eg
+
+# temporary files
+**/*.swp

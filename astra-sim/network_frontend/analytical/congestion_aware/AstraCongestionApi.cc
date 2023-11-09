@@ -92,9 +92,9 @@ void AstraCongestionApi::sim_schedule(
 
   // calculate event time
   // assert(delta.time_res == AstraSim::NS); // fixme: assuming NS
-  std::cout << "[Before:] event_time: " << event_time << std::endl;
+  //std::cout << "[Before:] event_time: " << event_time << std::endl;
   event_time += delta.time_val;
-  std::cout << "[After:] event_time: " << event_time << std::endl;
+  //std::cout << "[After:] event_time: " << event_time << std::endl;
 
   // schedule event
   event_queue->schedule_event(event_time, fun_ptr, fun_arg);

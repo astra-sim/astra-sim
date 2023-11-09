@@ -4,7 +4,7 @@ the root directory of this source tree.
  *******************************************************************************/
 
 #include "AnalyticalNetwork.hh"
-
+#include "cassert"
 using namespace Analytical;
 
 std::shared_ptr<EventQueue> AnalyticalNetwork::event_queue;
@@ -16,6 +16,8 @@ SendRecvTrackingMap AnalyticalNetwork::send_recv_tracking_map;
 CostModel* AnalyticalNetwork::cost_model;
 
 std::shared_ptr<PayloadSizeTracker> AnalyticalNetwork::payload_size_tracker;
+
+GStatsIoActivity AnalyticalNetwork::ioActivity("network_io_activity");
 
 AnalyticalNetwork::AnalyticalNetwork(int rank, int dims_count) noexcept
     : AstraSim::AstraNetworkAPI(rank), dims_count(dims_count) {
@@ -41,7 +43,7 @@ int AnalyticalNetwork::sim_send(
   auto used_dim = -1;
   std::tie(delta.time_val, used_dim) =
       topology->send(src, dst, count); // simulate src->dst and get latency
-
+                                       // 'count' here is the payload size in bytes.
   // accumulate total message size
   if (src == 0) {
     payload_size_tracker->addPayloadSize(count, used_dim);
@@ -57,6 +59,7 @@ int AnalyticalNetwork::sim_send(
         delta,
         recv_event_handler.get_fun_ptr(),
         recv_event_handler.get_fun_arg());
+
   } else {
     // recv operation not issued yet.
     // Should assign this send operation to the tracker.
@@ -72,6 +75,29 @@ int AnalyticalNetwork::sim_send(
     // schedule this into the tracker
     send_recv_tracking_map.insert_send(tag, src, dst, count, send_finish_time);
   }
+
+  // Record the i/o ioActivity for both sender and receiver.
+  // Remember: the moment sender starts sending, receiver's ingress also
+  // gets busy. Scheduling the recev_handler is not the same as actually
+  // receiving the packet. recev_handler is to tell sys what to do once
+  // after the packet is arrived at the dest.
+
+  auto event_time = sim_get_time();
+  activityBlock.first=event_time;
+  activityBlock.second=event_time;
+  activityBlock.second.time_val += delta.time_val;
+
+  // record the egress io ioActivity for sender.
+  std::string key = "sys_out_"+std::to_string(src);
+  ioActivity.recordEntry(key,activityBlock);
+
+  // record the ingress io ioActivity for receiver
+  key = "sys_in_"+std::to_string(dst);
+  ioActivity.recordEntry(key,activityBlock);
+
+  // Reset the activityBlock;
+  activityBlock.first.time_val=-1;
+  activityBlock.second.time_val=-1;
 
   return 0;
 }
@@ -111,6 +137,7 @@ int AnalyticalNetwork::sim_recv(
 
     // schedule recv handler
     sim_schedule(delta, msg_handler, fun_arg);
+
   } else {
     // send operation not issued.
     // Add recv to the tracker and wait until corresponding sim_send to be

@@ -25,8 +25,10 @@ function setup {
 function compile {
   # compile AstraSim
   cd "${BUILD_DIR:?}" || exit
-  cmake ..
-  cmake --build . -j "${NUM_THREADS:?}"
+  #cmake ..
+  #cmake --build . -j "${NUM_THREADS:?}"
+  cmake -DCMAKE_BUILD_TYPE=Debug ..
+  make -j "${NUM_THREADS:?}"
 }
 
 function cleanup {
