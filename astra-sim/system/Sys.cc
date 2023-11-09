@@ -5,9 +5,10 @@ LICENSE file in the root directory of this source tree.
 
 #include "astra-sim/system/Sys.hh"
 
+#include <cstdlib>
 #include <iostream>
 
-#include "astra-sim/json.hpp"
+#include <json/json.hpp>
 #include "astra-sim/system/BaseStream.hh"
 #include "astra-sim/system/CollectivePlan.hh"
 #include "astra-sim/system/DataSet.hh"
@@ -553,6 +554,7 @@ void Sys::try_register_event(
   event_queue[event_time].push_back(make_tuple(callable, event, callData));
   if (should_schedule) {
     timespec_t tmp;
+    tmp.time_res = NS;
     tmp.time_val = delta_cycles;
     BasicEventHandlerData* data =
         new BasicEventHandlerData(id, EventType::CallEvents);
@@ -1162,9 +1164,11 @@ int Sys::get_priority(int explicit_priority) {
     return priority_counter--;
   } else if (scheduling_policy == SchedulingPolicy::EXPLICIT) {
     return explicit_priority;
-  } else {
-    assert(false);
   }
+
+  // should not reach here
+  assert(false);
+  std::exit(-1);
 }
 
 void Sys::insert_into_ready_list(BaseStream* stream) {

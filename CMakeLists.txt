@@ -5,6 +5,11 @@ cmake_minimum_required(VERSION 3.15)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Set the build type to Release if not specified
+if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif ()
+
 # Setup project
 project(AstraSim)
 
@@ -25,18 +30,22 @@ file(GLOB srcs
         "${CMAKE_CURRENT_SOURCE_DIR}/extern/remote_memory_backend/analytical/*.cc")
 
 # Compile AstraSim Library
-add_library(AstraSim ${srcs})
+add_library(AstraSim STATIC ${srcs})
 
 # Link libraries
-target_link_libraries(AstraSim LINK_PUBLIC ${Protobuf_LIBRARIES})
+target_link_libraries(AstraSim PUBLIC ${Protobuf_LIBRARIES})
 
-# Properties
-target_include_directories(AstraSim PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+# Include Directories
+target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/)
 target_include_directories(AstraSim PUBLIC ${Protobuf_INCLUDE_DIRS})
+target_include_directories(AstraSim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/extern/helper/)
+
+# Properties
+set_target_properties(AstraSim PROPERTIES COMPILE_WARNING_AS_ERROR ON)
 set_target_properties(AstraSim
         PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../bin/"
-        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../lib/"
-        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../lib/"
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../bin/
+        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../lib/
+        ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../lib/
 )

@@ -5,16 +5,16 @@ LICENSE file in the root directory of this source tree.
 
 #include "astra-sim/workload/Workload.hh"
 
-#include "astra-sim/json.hpp"
+#include <json/json.hpp>
 #include "astra-sim/system/IntData.hh"
 #include "astra-sim/system/MemEventHandlerData.hh"
 #include "astra-sim/system/RecvPacketEventHandlerData.hh"
 #include "astra-sim/system/SendPacketEventHandlerData.hh"
 #include "astra-sim/system/WorkloadLayerHandlerData.hh"
 
-#include <iostream>
-#include <unistd.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <iostream>
 
 using namespace std;
 using namespace AstraSim;
@@ -29,16 +29,18 @@ Workload::Workload(Sys* sys, string eg_filename, string comm_group_filename) {
   string workload_filename = eg_filename + "." + to_string(sys->id) + ".eg";
   // Check if workload filename exists
   if (access(workload_filename.c_str(), R_OK) < 0) {
-      string error_msg;
-      if (errno == ENOENT) {
-          error_msg = "workload file: " + workload_filename + " does not exist";
-      } else if (errno == EACCES) {
-          error_msg = "workload file: " + workload_filename + " exists but is not readable";
-      } else {
-          error_msg = "Unknown workload file: " + workload_filename + " access error";
-      }
-      cerr << error_msg << endl;
-      exit(EXIT_FAILURE);
+    string error_msg;
+    if (errno == ENOENT) {
+      error_msg = "workload file: " + workload_filename + " does not exist";
+    } else if (errno == EACCES) {
+      error_msg =
+          "workload file: " + workload_filename + " exists but is not readable";
+    } else {
+      error_msg =
+          "Unknown workload file: " + workload_filename + " access error";
+    }
+    cerr << error_msg << endl;
+    exit(EXIT_FAILURE);
   }
   this->et_feeder = new ETFeeder(workload_filename);
   this->comm_group = nullptr;
@@ -275,7 +277,7 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
         &rcv_req,
         &Sys::handleEvent,
         rcehd);
-  } else{
+  } else {
     cerr << "Unknown communication node type" << endl;
     exit(EXIT_FAILURE);
   }

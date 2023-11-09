@@ -14,3 +14,7 @@ build/astra_analytical/build/
 build/astra_analytical/result/
 build/astra_garnet/build/
 build/astra_garnet/result/
+
+# Generated Chakra ET files
+*.eg
+*.et

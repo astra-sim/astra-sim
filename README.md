@@ -29,7 +29,7 @@ ASTRA-sim can be built either (i) in your local environment or (ii) within a Doc
 The following steps will guide you through both methods.
 
 ### 1. Build ASTRA-sim Locally
-#### Installing Dependencies
+#### (i) Installing Dependencies
 To build ASTRA-sim locally, you first need to install the necessary packages.
 
 - #### Debian-based Linux Distribution
@@ -42,7 +42,6 @@ $ sudo apt install \
     libboost-dev libboost-program-options-dev \
     libprotobuf-dev protobuf-compiler \
     python3 python3-pip git
-$ sudo pip3 install protobuf==3.6.1 pydot
 ```
 
 NOTE: For the ns3 backend `python2`, `gcc-5.0` and `g++-5.0` are also required. This is because the ns3 backend is based on an older ns3 version. We recommend using virtual environments to isolate python instances. Even with the ns3 backend, `python3` is still used to create the workload using Chakra.
@@ -66,16 +65,28 @@ $ which protoc  # system should be able to locate protoc
 $ protoc --version  # should be 3.6.1
 ```
 
-Finally, you can install required Python packages using pip3.
+- #### Windows
+ASTRA-sim is not natively supporting Windows environment at this moment. We suggest to use Docker or Windows Subsystem for Linux ([WSL](https://learn.microsoft.com/en-us/windows/wsl/install)).
+
+#### (ii) Installing Required Python Packages
+Now, you can install required Python packages, either through conda or pip3.
+
+- #### Conda
+If you are managing Python environments through conda, you can run below commands to create a new environment for astra-sim.
+```bash
+$ conda create -n astra-sim python=3.7
+$ conda activate astra-sim
+$ conda install protobuf=3.6.1 graphviz python-graphviz pydot
+```
+
+- #### pip3
+You can also install required Python packages natively using pip3.
 ```bash
 $ pip3 install --upgrade pip
 $ pip3 install protobuf==3.6.1 pydot
 ```
 
-- #### Windows
-ASTRA-sim does not natively support Windows environment at this moment. We suggest to use Docker or Windows Subsystem for Linux ([WSL](https://learn.microsoft.com/en-us/windows/wsl/install)).
-
-#### Downloading ASTRA-sim
+#### (iii) Downloading ASTRA-sim
 
 Once the packages are installed, you will need to clone this repository onto your local machine using the following command:
 ```bash
@@ -83,11 +94,12 @@ $ git clone --recurse-submodules git@github.com:astra-sim/astra-sim.git
 $ cd ./astra-sim/
 ```
 
-#### Compiling ASTRA-sim
+#### (iv) Compiling ASTRA-sim
 Then, based on your target network backend, execute the corresponding build script:
 ```bash
 # For the analytical network backend
 $ ./build/astra_analytical/build.sh
+
 # For the ns3 network backend. Python2 required.
 $ ./build/astra_ns3/build.sh -c
 ```
@@ -137,14 +149,14 @@ $ cmake . && make -j$(nproc)
 $ ./et_generator --num_npus 64 --num_dims 1
 ```
 
-To run one of the example traces (`twoCompNodesDependent`), execute the following command.
+To run one of the example traces (`oneCommNodeAllReduce`), execute the following command.
 ```bash
 # For the analytical network backend
 $ cd -
-$ ./build/astra_analytical/build/AnalyticalAstra/bin/AnalyticalAstra \
-  --workload-configuration=./extern/graph_frontend/chakra/et_generator/twoCompNodesDependent \
-  --system-configuration=./inputs/system/sample_fully_connected_sys.txt \
-  --network-configuration=./inputs/network/analytical/fully_connected.json \
+$ ./build/astra_analytical/build/bin/AstraSim_Analytical_Congestion_Unaware \
+  --workload-configuration=./extern/graph_frontend/chakra/et_generator/oneCommNodeAllReduce \
+  --system-configuration=./inputs/system/Switch.json \
+  --network-configuration=./inputs/network/analytical/Switch.yml \
   --remote-memory-configuration=./inputs/remote_memory/analytical/no_memory_expansion.json
 
 # For the ns3 network backend. Python2 required.
@@ -164,11 +176,11 @@ $ cd -
 
 Upon completion, ASTRA-sim will display the number of cycles it took to run the simulation.
 ```bash
-sys[0] finished, 10 cycles
-sys[1] finished, 10 cycles
+sys[0] finished, 50904 cycles
+sys[1] finished, 50904 cycles
 ...
-sys[62] finished, 10 cycles
-sys[63] finished, 10 cycles
+sys[62] finished, 50904 cycles
+sys[63] finished, 50904 cycles
 ```
 
 ### Using the Execution Trace Converter
@@ -188,20 +200,20 @@ $ python3 -m et_converter.et_converter \
 Run the following command.
 ```bash
 $ cd -
-$ ./build/astra_analytical/build/AnalyticalAstra/bin/AnalyticalAstra \
+$ ./build/astra_analytical/build/bin/AstraSim_Analytical_Congestion_Unaware \
   --workload-configuration=./inputs/workload/ASTRA-sim-2.0/Resnet50_DataParallel \
-  --system-configuration=./inputs/system/sample_fully_connected_sys.txt \
-  --network-configuration=./inputs/network/analytical/fully_connected.json \
+  --system-configuration=./inputs/system/Switch.json \
+  --network-configuration=./inputs/network/analytical/Switch.yml \
   --remote-memory-configuration=./inputs/remote_memory/analytical/no_memory_expansion.json
 ```
 
 Upon completion, ASTRA-sim will display the number of cycles it took to run the simulation.
 ```bash
-sys[62] finished, 187442108 cycles
-sys[61] finished, 187442108 cycles
+sys[62] finished, 6749042 cycles
+sys[61] finished, 6749042 cycles
 ...
-sys[0] finished, 187442108 cycles
-sys[63] finished, 187442108 cycles
+sys[0] finished, 6749042 cycles
+sys[63] finished, 6749042 cycles
 ```
 
 ## Features Under Active Development

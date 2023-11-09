@@ -54,9 +54,12 @@ void PacketBundle::send_to_NPU() {
 void PacketBundle::call(EventType event, CallData* data) {
   if (needs_processing == true) {
     needs_processing = false;
-    this->delay = static_cast<uint64_t>(static_cast<double>(size) / sys->local_mem_bw) // write
-        + static_cast<uint64_t>(static_cast<double>(size) / sys->local_mem_bw) // read
-        + static_cast<uint64_t>(static_cast<double>(size) / sys->local_mem_bw); // read
+    this->delay = static_cast<uint64_t>(
+                      static_cast<double>(size) / sys->local_mem_bw) // write
+        + static_cast<uint64_t>(
+                      static_cast<double>(size) / sys->local_mem_bw) // read
+        + static_cast<uint64_t>(
+                      static_cast<double>(size) / sys->local_mem_bw); // read
     sys->try_register_event(
         this, EventType::CommProcessingFinished, data, this->delay);
     return;
