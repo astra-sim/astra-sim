@@ -167,9 +167,9 @@ $ ./build/astra_ns3/build.sh -r
 $ cd ./extern/network_backend/ns3/simulation
 $ ./waf --run "scratch/AstraSimNetwork mix/config.txt \
   --workload-configuration=../../../../extern/graph_frontend/chakra/et_generator/oneCommNodeAllReduce \
-  --system-configuration=../../../../inputs/system/sample_fully_connected_sys.txt \
-  --network-configuration=../../../../inputs/network/analytical/fully_connected.json \
+  --system-configuration=../../../../inputs/system/Switch.json \
   --remote-memory-configuration=../../../../inputs/remote_memory/analytical/no_memory_expansion.json \
+  --logical-topology-configuration=../../../../inputs/network/ns3/sample_64nodes_1D.json \
   --comm-group-configuration=\"empty\""
 $ cd -
 ```
