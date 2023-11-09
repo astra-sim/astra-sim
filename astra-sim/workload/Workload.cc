@@ -123,14 +123,14 @@ void Workload::node_sanity_check(std::shared_ptr<Chakra::ETFeederNode> node) {
     if (sys->roofline_enabled) {
       if (!(chakra_node->has_num_ops()))
         throw std::invalid_argument(
-            "empty num_ops, with roofline model, comp node should have num_ops");
+            "Empty num_ops! With roofline model, comp node should have num_ops");
       if (!(chakra_node->has_tensor_size()))
         throw std::invalid_argument(
-            "empty tensor_size, with roofline model, comp node should have tensor_size");
+            "Empty tensor_size! With roofline model, comp node should have tensor_size");
     } else {
       if (!(chakra_node->has_simulated_run_time()))
         throw std::invalid_argument(
-            "empty simulated_run_time, with roofline model, comp node should have simulated_run_time");
+            "Empty simulated_run_time! Without roofline model, comp node should have simulated_run_time");
     }
     return;
   } else if (
@@ -138,7 +138,7 @@ void Workload::node_sanity_check(std::shared_ptr<Chakra::ETFeederNode> node) {
       (chakra_node->node_type() == ChakraNodeType::COMM_SEND_NODE) ||
       (chakra_node->node_type() == ChakraNodeType::COMM_RECV_NODE)) {
     if (!(chakra_node->has_comm_size()))
-      throw std::invalid_argument("empty comm_size for comm node");
+      throw std::invalid_argument("Empty comm_size for comm node!");
     if (chakra_node->node_type() == ChakraNodeType::COMM_COLL_NODE) {
       switch (chakra_node->comm_type()) {
         // for all implemented comm types, break: please make sure list here
@@ -150,13 +150,13 @@ void Workload::node_sanity_check(std::shared_ptr<Chakra::ETFeederNode> node) {
           break;
         // for other comm types, shouldnt be here, trigger exception
         default:
-          throw std::invalid_argument("invalid comm type for COMM_COLL_NODE");
+          throw std::invalid_argument("Invalid comm type for COMM_COLL_NODE");
       }
     }
     return;
   }
 
-  throw std::invalid_argument("invalid node type");
+  throw std::invalid_argument("Invalid node type");
 }
 
 void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
