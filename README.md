@@ -166,7 +166,7 @@ $ ./build/astra_ns3/build.sh -r
 # Or, alternatively:
 $ cd ./extern/network_backend/ns3/simulation
 $ ./waf --run "scratch/AstraSimNetwork mix/config.txt \
-  --workload-configuration=../../../../extern/graph_frontend/chakra/et_generator/twoCompNodesDependent \
+  --workload-configuration=../../../../extern/graph_frontend/chakra/et_generator/oneCommNodeAllReduce \
   --system-configuration=../../../../inputs/system/sample_fully_connected_sys.txt \
   --network-configuration=../../../../inputs/network/analytical/fully_connected.json \
   --remote-memory-configuration=../../../../inputs/remote_memory/analytical/no_memory_expansion.json \
@@ -205,6 +205,8 @@ $ ./build/astra_analytical/build/bin/AstraSim_Analytical_Congestion_Unaware \
   --system-configuration=./inputs/system/Switch.json \
   --network-configuration=./inputs/network/analytical/Switch.yml \
   --remote-memory-configuration=./inputs/remote_memory/analytical/no_memory_expansion.json
+
+# Similarly, for ns3, run the previous command while only changing the workload.
 ```
 
 Upon completion, ASTRA-sim will display the number of cycles it took to run the simulation.
