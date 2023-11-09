@@ -35,9 +35,10 @@ function compile {
 
 function run {
     cd "${NS3_DIR}/simulation"
-    ./waf --run "scratch/AstraSimNetwork ${NETWORK} \
+    ./waf --run "scratch/AstraSimNetwork \
         --workload-configuration=${WORKLOAD} \
         --system-configuration=${SYSTEM} \
+        --network-configuration=${NETWORK} \
         --remote-memory-configuration=${MEMORY} \
         --logical-topology-configuration=${LOGICAL_TOPOLOGY} \
         --comm-group-configuration=\"empty\""

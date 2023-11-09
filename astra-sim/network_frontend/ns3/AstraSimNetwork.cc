@@ -142,6 +142,7 @@ class ASTRASimNetwork : public AstraSim::AstraNetworkAPI {
 // Command line arguments and default values.
 string workload_configuration;
 string system_configuration;
+string network_configuration;
 string memory_configuration;
 string comm_group_configuration;
 string logical_topology_configuration;
@@ -196,6 +197,10 @@ void parse_args(int argc, char* argv[]) {
       "system-configuration",
       "System configuration file",
       system_configuration);
+  cmd.AddValue(
+      "network-configuration",
+      "Network configuration file",
+      network_configuration);
   cmd.AddValue(
       "remote-memory-configuration",
       "Memory configuration file",
@@ -256,7 +261,7 @@ int main(int argc, char* argv[]) {
   }
 
   // Initialize ns3 simulation.
-  setup_ns3_simulation(argc, argv);
+  setup_ns3_simulation(network_configuration);
 
   // Tell workload layer to schedule first events.
   for (int i = 0; i < num_npus; i++) {
