@@ -77,12 +77,6 @@ class ASTRASimNetwork : public AstraSim::AstraNetworkAPI {
       void (*msg_handler)(void* fun_arg),
       void* fun_arg) {
     int src_id = rank;
-    // Create a MsgEvent instance and register callback function.
-    MsgEvent send_event =
-        MsgEvent(src_id, dst_id, 0, message_size, fun_arg, msg_handler);
-    MsgEventKey send_event_key =
-        make_pair(tag, make_pair(send_event.src_id, send_event.dst_id));
-    sim_send_waiting_hash[send_event_key] = send_event;
 
     // Trigger ns3 to schedule RDMA QP event.
     send_flow(src_id, dst_id, message_size, msg_handler, fun_arg, tag);
