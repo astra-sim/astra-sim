@@ -3,11 +3,14 @@
 ._*
 
 # CMake
-cmake-build-debug/
-compile_commands.json
+**/cmake-build-debug/
+**/compile_commands.json
 
 # JetBrains
 .idea/
+
+# VSCode
+.vscode/
 
 # Analytical Model build and result files
 build/astra_analytical/build/
@@ -16,5 +19,5 @@ build/astra_garnet/build/
 build/astra_garnet/result/
 
 # Generated Chakra ET files
-*.eg
-*.et
+**/*.eg
+**/*.et

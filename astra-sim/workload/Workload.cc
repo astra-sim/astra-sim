@@ -163,7 +163,7 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
   // In strict_mode, the node field check will be enforced, and the simulation
   // will stop if field check fails. Otherwise, just skip these invalid nodes
   // and continue run (default behavior)
-  const bool strict_mode = false;
+  constexpr bool strict_mode = true;
   try {
     node_sanity_check(node);
   } catch (std::invalid_argument& e) {
