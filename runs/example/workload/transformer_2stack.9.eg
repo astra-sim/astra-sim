@@ -1,0 +1,335 @@
+#ÿ	stack_0_mha_x@0_COMP0€€€`
+#€
+stack_0_mha_wq@0_COMP0€€N`
+#
+stack_0_mha_wk@0_COMP0€€N`
+#‚
+stack_0_mha_wv@0_COMP0€€N`
+/ƒ
+stack_0_mha_q@0_COMP „
+ €
+0€€ˆ¯`€€€€À¸/„
+stack_0_mha_q@0_X1COMM ÿ	hppp€€€È/…
+stack_0_mha_k@0_COMP †
+ 
+0€€ˆ¯`€€€€À¸/†
+stack_0_mha_k@0_X1COMM ÿ	hppp€€€È/‡
+stack_0_mha_v@0_COMP ˆ
+ ‚
+0€€ˆ¯`€€€€À¸/ˆ
+stack_0_mha_v@0_X1COMM ÿ	hppp€€€È/‰
+stack_0_mha_qk@0_COMP ƒ
+ …
+0€€€C`€€€€À0Š
+stack_0_mha_qkv@0_COMP ‰
+ ‡
+0€€€C`€€€€À4‹
+stack_0_mha_qkv_reshape@0_COMP Š
+0€€€Ø`€€€È/Œ
+stack_0_mha_res@0_COMP ‹
+ ÿ	0€€€Ø`€€€È-
+stack_0_mha_norm@0_COMP Œ
+0€€€`€€€è+
+stack_0_mha_d_norm@0_COMP º
+0€€€`
+.
+stack_0_mha_d_res@0_COMP 
+0€€€`€€€è2
+ stack_0_mha_d_qkv_reshape@0_COMP 
+0€€€`
+.‘
+stack_0_mha_d_qkv@0_COMP 
+0€€€Ø`€€€È1’
+stack_0_mha_d_qk@0_COMP ‘
+ ‡
+0€€€C`€€€€À0“
+stack_0_mha_d_v@0_COMP ‘
+ ‰
+0€€€C`€€€€À0”
+stack_0_mha_d_q@0_COMP ’
+ …
+0€€€C`€€€€À0•
+stack_0_mha_d_k@0_COMP ’
+ ƒ
+0€€€C`€€€€À2–
+stack_0_mha_d_wq@0_COMP —
+ ”
+0€€ˆ¯`€€€€À¸3—
+stack_0_mha_d_wq@0_X2_COMM ÿ	hppp€€€È2˜
+stack_0_mha_d_wk@0_COMP ™
+ •
+0€€ˆ¯`€€€€À¸3™
+stack_0_mha_d_wk@0_X2_COMM ÿ	hppp€€€È2š
+stack_0_mha_d_wv@0_COMP ›
+ “
+0€€ˆ¯`€€€€À¸3›
+stack_0_mha_d_wv@0_X2_COMM ÿ	hppp€€€È2œ
+stack_0_mha_d_x1@0_COMP ”
+ €
+0€€ˆ¯`€€€€À¸2
+stack_0_mha_d_x2@0_COMP •
+ 
+0€€ˆ¯`€€€€À¸2
+stack_0_mha_d_x3@0_COMP “
+ ‚
+0€€ˆ¯`€€€€À¸)Ÿ
+stack_0_mha_d_x4@0_COMP 
+0€€€`
+1 
+stack_0_mha_d_x12@0_COMP ¡
+ ¢
+0€€€Ø`€€€È3¡
+stack_0_mha_d_x12@0_X1COMM œ
+hppp€€€À4¢
+stack_0_mha_d_x12@0_X2_COMM 
+hppp€€€À1£
+stack_0_mha_d_x34@0_COMP ¤
+ Ÿ
+0€€€Ø`€€€È3¤
+stack_0_mha_d_x34@0_X1COMM 
+hppp€€€À/¥
+stack_0_mha_d_x@0_COMP  
+ £
+0€€€Ø`€€€È'¦
+stack_0_ffn_x0@0_COMP 
+0€€€`
+$§
+stack_0_ffn_w1@0_COMP0€€À¸`
+0¨
+stack_0_ffn_x1@0_COMP ©
+ §
+0€€ ü`€€€€€â	0©
+stack_0_ffn_x1@0_X1COMM ¦
+hppp€€€È$ª
+stack_0_ffn_w2@0_COMP0€€À¸`
+0«
+stack_0_ffn_x2@0_COMP ¨
+ ª
+0€€ ü`€€€€€â	/¬
+stack_0_ffn_res@0_COMP ­
+ ¦
+0€€€Ø`€€€È1­
+stack_0_ffn_res@0_X1COMM «
+hppp€€€À-®
+stack_0_ffn_norm@0_COMP ¬
+0€€€`€€€è*¯
+stack_0_ffn_dnorm@0_COMP â
+0€€€`
+-°
+stack_0_ffn_dres@0_COMP ¯
+0€€€`€€€è(±
+stack_0_ffn_dx2@0_COMP °
+0€€€`
+1²
+stack_0_ffn_dw2@0_COMP ³
+ ¨
+0€€ ü`€€€€€â	1³
+stack_0_ffn_dw2@0_X1COMM ±
+hppp€€€È1´
+stack_0_ffn_dx1@0_COMP µ
+ ª
+0€€ ü`€€€€€â	1µ
+stack_0_ffn_dx1@0_X1COMM ±
+hppp€€€È1¶
+stack_0_ffn_dw1@0_COMP ·
+ ´
+0€€ ü`€€€€€â	2·
+stack_0_ffn_dw1@0_X2_COMM ¦
+hppp€€€È)¸
+stack_0_ffn_dx00@0_COMP °
+0€€€`
+2¹
+stack_0_ffn_dx01@0_COMP ´
+ §
+0€€ ü`€€€€€â	/º
+stack_0_ffn_dx0@0_COMP »
+ ¸
+0€€€Ø`€€€È2»
+stack_0_ffn_dx0@0_X2_COMM ¹
+hppp€€€À&¼
+stack_1_mha_x@0_COMP ®
+0€€€`
+#½
+stack_1_mha_wq@0_COMP0€€N`
+#¾
+stack_1_mha_wk@0_COMP0€€N`
+#¿
+stack_1_mha_wv@0_COMP0€€N`
+/À
+stack_1_mha_q@0_COMP Á
+ ½
+0€€ˆ¯`€€€€À¸/Á
+stack_1_mha_q@0_X1COMM ¼
+hppp€€€È/Â
+stack_1_mha_k@0_COMP Ã
+ ¾
+0€€ˆ¯`€€€€À¸/Ã
+stack_1_mha_k@0_X1COMM ¼
+hppp€€€È/Ä
+stack_1_mha_v@0_COMP Å
+ ¿
+0€€ˆ¯`€€€€À¸/Å
+stack_1_mha_v@0_X1COMM ¼
+hppp€€€È/Æ
+stack_1_mha_qk@0_COMP À
+ Â
+0€€€C`€€€€À0Ç
+stack_1_mha_qkv@0_COMP Æ
+ Ä
+0€€€C`€€€€À4È
+stack_1_mha_qkv_reshape@0_COMP Ç
+0€€€Ø`€€€È/É
+stack_1_mha_res@0_COMP È
+ ¼
+0€€€Ø`€€€È-Ê
+stack_1_mha_norm@0_COMP É
+0€€€`€€€è+Ë
+stack_1_mha_d_norm@0_COMP ÷
+0€€€`
+.Ì
+stack_1_mha_d_res@0_COMP Ë
+0€€€`€€€è2Í
+ stack_1_mha_d_qkv_reshape@0_COMP Ì
+0€€€`
+.Î
+stack_1_mha_d_qkv@0_COMP Í
+0€€€Ø`€€€È1Ï
+stack_1_mha_d_qk@0_COMP Î
+ Ä
+0€€€C`€€€€À0Ğ
+stack_1_mha_d_v@0_COMP Î
+ Æ
+0€€€C`€€€€À0Ñ
+stack_1_mha_d_q@0_COMP Ï
+ Â
+0€€€C`€€€€À0Ò
+stack_1_mha_d_k@0_COMP Ï
+ À
+0€€€C`€€€€À2Ó
+stack_1_mha_d_wq@0_COMP Ô
+ Ñ
+0€€ˆ¯`€€€€À¸3Ô
+stack_1_mha_d_wq@0_X2_COMM ¼
+hppp€€€È2Õ
+stack_1_mha_d_wk@0_COMP Ö
+ Ò
+0€€ˆ¯`€€€€À¸3Ö
+stack_1_mha_d_wk@0_X2_COMM ¼
+hppp€€€È2×
+stack_1_mha_d_wv@0_COMP Ø
+ Ğ
+0€€ˆ¯`€€€€À¸3Ø
+stack_1_mha_d_wv@0_X2_COMM ¼
+hppp€€€È2Ù
+stack_1_mha_d_x1@0_COMP Ñ
+ ½
+0€€ˆ¯`€€€€À¸2Ú
+stack_1_mha_d_x2@0_COMP Ò
+ ¾
+0€€ˆ¯`€€€€À¸2Û
+stack_1_mha_d_x3@0_COMP Ğ
+ ¿
+0€€ˆ¯`€€€€À¸)Ü
+stack_1_mha_d_x4@0_COMP Ì
+0€€€`
+1İ
+stack_1_mha_d_x12@0_COMP Ş
+ ß
+0€€€Ø`€€€È3Ş
+stack_1_mha_d_x12@0_X1COMM Ù
+hppp€€€À4ß
+stack_1_mha_d_x12@0_X2_COMM Ú
+hppp€€€À1à
+stack_1_mha_d_x34@0_COMP á
+ Ü
+0€€€Ø`€€€È3á
+stack_1_mha_d_x34@0_X1COMM Û
+hppp€€€À/â
+stack_1_mha_d_x@0_COMP İ
+ à
+0€€€Ø`€€€È'ã
+stack_1_ffn_x0@0_COMP Ê
+0€€€`
+$ä
+stack_1_ffn_w1@0_COMP0€€À¸`
+0å
+stack_1_ffn_x1@0_COMP æ
+ ä
+0€€ ü`€€€€€â	0æ
+stack_1_ffn_x1@0_X1COMM ã
+hppp€€€È$ç
+stack_1_ffn_w2@0_COMP0€€À¸`
+0è
+stack_1_ffn_x2@0_COMP å
+ ç
+0€€ ü`€€€€€â	/é
+stack_1_ffn_res@0_COMP ê
+ ã
+0€€€Ø`€€€È1ê
+stack_1_ffn_res@0_X1COMM è
+hppp€€€À-ë
+stack_1_ffn_norm@0_COMP é
+0€€€`€€€è'ì
+stack_1_ffn_dnorm@0_COMP0€€€`
+-í
+stack_1_ffn_dres@0_COMP ì
+0€€€`€€€è(î
+stack_1_ffn_dx2@0_COMP í
+0€€€`
+1ï
+stack_1_ffn_dw2@0_COMP ğ
+ å
+0€€ ü`€€€€€â	1ğ
+stack_1_ffn_dw2@0_X1COMM î
+hppp€€€È1ñ
+stack_1_ffn_dx1@0_COMP ò
+ ç
+0€€ ü`€€€€€â	1ò
+stack_1_ffn_dx1@0_X1COMM î
+hppp€€€È1ó
+stack_1_ffn_dw1@0_COMP ô
+ ñ
+0€€ ü`€€€€€â	2ô
+stack_1_ffn_dw1@0_X2_COMM ã
+hppp€€€È)õ
+stack_1_ffn_dx00@0_COMP í
+0€€€`
+2ö
+stack_1_ffn_dx01@0_COMP ñ
+ ä
+0€€ ü`€€€€€â	/÷
+stack_1_ffn_dx0@0_COMP ø
+ õ
+0€€€Ø`€€€È2ø
+stack_1_ffn_dx0@0_X2_COMM ö
+hppp€€€À,ù
+stack_0_mha_wq@1_COMP ú
+ €
+0€€˜u`€€ˆ'0ú
+stack_0_mha_wq@1_X2_COMM –
+hppp€€ˆ',û
+stack_0_mha_wk@1_COMP ü
+ 
+0€€˜u`€€ˆ'0ü
+stack_0_mha_wk@1_X2_COMM ˜
+hppp€€ˆ',ı
+stack_0_mha_wv@1_COMP ş
+ ‚
+0€€˜u`€€ˆ'0ş
+stack_0_mha_wv@1_X2_COMM š
+hppp€€ˆ'.ÿ
+stack_0_ffn_w1@1_COMP € §
+0€€àÔ`€€ œ1€stack_0_ffn_w1@1_X2_COMM ¶
+hppp€€ œ.stack_0_ffn_w2@1_COMP ‚ ª
+0€€àÔ`€€ œ1‚stack_0_ffn_w2@1_X2_COMM ²
+hppp€€ œ,ƒstack_1_mha_wq@1_COMP „ ½
+0€€˜u`€€ˆ'0„stack_1_mha_wq@1_X2_COMM Ó
+hppp€€ˆ',…stack_1_mha_wk@1_COMP † ¾
+0€€˜u`€€ˆ'0†stack_1_mha_wk@1_X2_COMM Õ
+hppp€€ˆ',‡stack_1_mha_wv@1_COMP ˆ ¿
+0€€˜u`€€ˆ'0ˆstack_1_mha_wv@1_X2_COMM ×
+hppp€€ˆ'.‰stack_1_ffn_w1@1_COMP Š ä
+0€€àÔ`€€ œ1Šstack_1_ffn_w1@1_X2_COMM ó
+hppp€€ œ.‹stack_1_ffn_w2@1_COMP Œ ç
+0€€àÔ`€€ œ1Œstack_1_ffn_w2@1_X2_COMM ï
+hppp€€ œ
