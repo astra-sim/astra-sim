@@ -7,7 +7,7 @@ LICENSE file in the root directory of this source tree.
 #define __RENDEZVOUS_RECV_DATA_HH__
 
 #include "astra-sim/system/BasicEventHandlerData.hh"
-#include "astra-sim/system/Common.hh"
+#include "astra-sim/utils/Common.hh"
 #include "astra-sim/system/SimRecvCaller.hh"
 #include "astra-sim/system/Sys.hh"
 

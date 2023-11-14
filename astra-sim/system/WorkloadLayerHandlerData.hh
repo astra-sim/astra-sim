@@ -6,7 +6,7 @@ LICENSE file in the root directory of this source tree.
 #ifndef __WORKLOAD_LAYER_HANDLER_DATA_HH__
 #define __WORKLOAD_LAYER_HANDLER_DATA_HH__
 
-#include "astra-sim/system/AstraNetworkAPI.hh"
+#include "astra-sim/utils/AstraNetworkAPI.hh"
 #include "astra-sim/system/BasicEventHandlerData.hh"
 
 namespace AstraSim {

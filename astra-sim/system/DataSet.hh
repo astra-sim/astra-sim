@@ -8,7 +8,7 @@ LICENSE file in the root directory of this source tree.
 
 #include "astra-sim/system/CallData.hh"
 #include "astra-sim/system/Callable.hh"
-#include "astra-sim/system/Common.hh"
+#include "astra-sim/utils/Common.hh"
 #include "astra-sim/system/StreamStat.hh"
 
 namespace AstraSim {

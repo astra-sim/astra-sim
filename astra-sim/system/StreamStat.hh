@@ -8,7 +8,7 @@ LICENSE file in the root directory of this source tree.
 
 #include <list>
 
-#include "astra-sim/system/Common.hh"
+#include "astra-sim/utils/Common.hh"
 #include "astra-sim/system/NetworkStat.hh"
 #include "astra-sim/system/SharedBusStat.hh"
 

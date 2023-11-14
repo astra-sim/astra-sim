@@ -7,7 +7,7 @@ LICENSE file in the root directory of this source tree.
 #define __BASIC_EVENT_HANDLER_DATA_HH__
 
 #include "astra-sim/system/CallData.hh"
-#include "astra-sim/system/Common.hh"
+#include "astra-sim/utils/Common.hh"
 
 namespace AstraSim {
 

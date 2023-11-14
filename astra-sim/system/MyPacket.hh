@@ -7,7 +7,7 @@ LICENSE file in the root directory of this source tree.
 #define __MY_PACKET_HH__
 
 #include "astra-sim/system/Callable.hh"
-#include "astra-sim/system/Common.hh"
+#include "astra-sim/utils/Common.hh"
 
 namespace AstraSim {
 

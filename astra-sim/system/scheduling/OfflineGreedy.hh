@@ -8,7 +8,7 @@ LICENSE file in the root directory of this source tree.
 
 #include <vector>
 
-#include "astra-sim/system/Common.hh"
+#include "astra-sim/utils/Common.hh"
 #include "astra-sim/system/Sys.hh"
 
 namespace AstraSim {

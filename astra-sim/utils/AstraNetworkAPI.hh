@@ -6,7 +6,7 @@ LICENSE file in the root directory of this source tree.
 #ifndef __ASTRA_NETWORK_API_HH__
 #define __ASTRA_NETWORK_API_HH__
 
-#include "astra-sim/system/Common.hh"
+#include "astra-sim/utils/Common.hh"
 
 namespace AstraSim {
 

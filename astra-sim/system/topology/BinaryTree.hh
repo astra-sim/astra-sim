@@ -8,7 +8,7 @@ LICENSE file in the root directory of this source tree.
 
 #include <map>
 
-#include "astra-sim/system/Common.hh"
+#include "astra-sim/utils/Common.hh"
 #include "astra-sim/system/topology/BasicLogicalTopology.hh"
 #include "astra-sim/system/topology/Node.hh"
 

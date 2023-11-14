@@ -11,7 +11,7 @@ LICENSE file in the root directory of this source tree.
 
 #include "astra-sim/system/Callable.hh"
 #include "astra-sim/system/CollectivePhase.hh"
-#include "astra-sim/system/Common.hh"
+#include "astra-sim/utils/Common.hh"
 #include "astra-sim/system/DataSet.hh"
 #include "astra-sim/system/StreamStat.hh"
 #include "astra-sim/system/Sys.hh"

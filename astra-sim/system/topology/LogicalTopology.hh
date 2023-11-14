@@ -6,7 +6,7 @@ LICENSE file in the root directory of this source tree.
 #ifndef __LOGICAL_TOPOLOGY_HH__
 #define __LOGICAL_TOPOLOGY_HH__
 
-#include "astra-sim/system/Common.hh"
+#include "astra-sim/utils/Common.hh"
 
 namespace AstraSim {
 

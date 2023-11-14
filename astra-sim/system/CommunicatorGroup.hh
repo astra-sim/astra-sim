@@ -10,7 +10,7 @@ LICENSE file in the root directory of this source tree.
 #include <map>
 #include <vector>
 
-#include "astra-sim/system/Common.hh"
+#include "astra-sim/utils/Common.hh"
 
 namespace AstraSim {
 

@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "astra-sim/system/Common.hh"
+#include "astra-sim/utils/Common.hh"
 #include "astra-sim/system/topology/LogicalTopology.hh"
 
 namespace AstraSim {

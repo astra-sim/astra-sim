@@ -8,7 +8,7 @@ LICENSE file in the root directory of this source tree.
 
 #include "astra-sim/system/BaseStream.hh"
 #include "astra-sim/system/Callable.hh"
-#include "astra-sim/system/Common.hh"
+#include "astra-sim/utils/Common.hh"
 #include "astra-sim/system/MemBus.hh"
 #include "astra-sim/system/MyPacket.hh"
 

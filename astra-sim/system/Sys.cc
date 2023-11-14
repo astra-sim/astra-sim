@@ -154,7 +154,7 @@ Sys::Sys(
     double injection_scale,
     double comm_scale,
     bool rendezvous_enabled) {
-  if ((id + 1) > this->all_sys.size()) {
+  if (static_cast<size_t>(id + 1) > this->all_sys.size()) {
     this->all_sys.resize(id + 1);
   }
   this->all_sys[id] = this;
@@ -1067,7 +1067,8 @@ int Sys::break_dimension(int model_parallel_npu_group) {
     return -1;
   }
   int all_npus = 1;
-  for (; dimension_to_break < physical_dims.size(); dimension_to_break++) {
+  for (; static_cast<size_t>(dimension_to_break) < physical_dims.size();
+       dimension_to_break++) {
     if (all_npus * physical_dims[dimension_to_break] <
         model_parallel_npu_group) {
       all_npus *= physical_dims[dimension_to_break];
@@ -1107,7 +1108,8 @@ int Sys::break_dimension(int model_parallel_npu_group) {
 
       std::vector<CollectiveImpl*>::iterator it =
           all_reduce_implementation_per_dimension.begin();
-      if (all_reduce_implementation_per_dimension.size() > dimension_to_break) {
+      if (all_reduce_implementation_per_dimension.size() >
+          static_cast<size_t>(dimension_to_break)) {
         std::advance(it, dimension_to_break);
       } else {
         std::advance(it, all_reduce_implementation_per_dimension.size());
@@ -1117,7 +1119,7 @@ int Sys::break_dimension(int model_parallel_npu_group) {
 
       it = reduce_scatter_implementation_per_dimension.begin();
       if (reduce_scatter_implementation_per_dimension.size() >
-          dimension_to_break) {
+          static_cast<size_t>(dimension_to_break)) {
         std::advance(it, dimension_to_break);
       } else {
         std::advance(it, reduce_scatter_implementation_per_dimension.size());
@@ -1126,7 +1128,8 @@ int Sys::break_dimension(int model_parallel_npu_group) {
       reduce_scatter_implementation_per_dimension.insert(it, replicate);
 
       it = all_gather_implementation_per_dimension.begin();
-      if (all_gather_implementation_per_dimension.size() > dimension_to_break) {
+      if (all_gather_implementation_per_dimension.size() >
+          static_cast<size_t>(dimension_to_break)) {
         std::advance(it, dimension_to_break);
       } else {
         std::advance(it, all_gather_implementation_per_dimension.size());
@@ -1135,7 +1138,8 @@ int Sys::break_dimension(int model_parallel_npu_group) {
       all_gather_implementation_per_dimension.insert(it, replicate);
 
       it = all_to_all_implementation_per_dimension.begin();
-      if (all_to_all_implementation_per_dimension.size() > dimension_to_break) {
+      if (all_to_all_implementation_per_dimension.size() >
+          static_cast<size_t>(dimension_to_break)) {
         std::advance(it, dimension_to_break);
       } else {
         std::advance(it, all_to_all_implementation_per_dimension.size());
@@ -1278,13 +1282,14 @@ void Sys::insert_stream(std::list<BaseStream*>* queue, BaseStream* baseStream) {
 
 void Sys::ask_for_schedule(int max) {
   if (ready_list.size() == 0 ||
-      ready_list.front()->synchronizer[ready_list.front()->stream_id] <
+      static_cast<size_t>(
+          ready_list.front()->synchronizer[ready_list.front()->stream_id]) <
           all_sys.size()) {
     return;
   }
   int top = ready_list.front()->stream_id;
   uint64_t min = ready_list.size();
-  if (min > max) {
+  if (min > static_cast<size_t>(max)) {
     min = static_cast<uint64_t>(max);
   }
   for (auto& sys : all_sys) {
