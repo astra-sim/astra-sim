@@ -99,6 +99,10 @@ int main(int argc, char* argv[]) {
     event_queue->proceed();
   }
 
+  for (auto system : systems) {
+    delete system;
+  }
+
   // terminate simulation
   return 0;
 }

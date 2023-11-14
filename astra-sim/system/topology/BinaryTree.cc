@@ -6,9 +6,18 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/topology/BinaryTree.hh"
 
 #include <iostream>
+#include <memory>
+#include <sstream>
+
+#include "spdlog/logger.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
 
 using namespace std;
 using namespace AstraSim;
+
+static auto logger = spdlog::stdout_color_mt("system::topology::BinaryTree");
+static std::unique_ptr<std::stringstream> sstream_buffer =
+    std::make_unique<std::stringstream>();
 
 BinaryTree::BinaryTree(
     int id,
@@ -100,25 +109,26 @@ BinaryTree::Type BinaryTree::get_node_type(int id) {
 }
 
 void BinaryTree::print(Node* node) {
-  cout << "I am node: " << node->id;
+  sstream_buffer->str("");
+  (*sstream_buffer) << "I am node: " << node->id;
   if (node->left_child != nullptr) {
-    cout << " and my left child is: " << node->left_child->id;
+    (*sstream_buffer) << " and my left child is: " << node->left_child->id;
   }
   if (node->right_child != nullptr) {
-    cout << " and my right child is: " << node->right_child->id;
+    (*sstream_buffer) << " and my right child is: " << node->right_child->id;
   }
   if (node->parent != nullptr) {
-    cout << " and my parent is: " << node->parent->id;
+    (*sstream_buffer) << " and my parent is: " << node->parent->id;
   }
   BinaryTree::Type typ = get_node_type(node->id);
   if (typ == BinaryTree::Type::Root) {
-    cout << " and I am Root ";
+    (*sstream_buffer) << " and I am Root ";
   } else if (typ == BinaryTree::Type::Intermediate) {
-    cout << " and I am Intermediate ";
+    (*sstream_buffer) << " and I am Intermediate ";
   } else if (typ == BinaryTree::Type::Leaf) {
-    cout << " and I am Leaf ";
+    (*sstream_buffer) << " and I am Leaf ";
   }
-  cout << endl;
+  logger->debug(sstream_buffer->str());
   if (node->left_child != nullptr) {
     print(node->left_child);
   }

@@ -7,8 +7,8 @@ LICENSE file in the root directory of this source tree.
 
 #include <cstdlib>
 #include <iostream>
+#include <memory>
 
-#include <json/json.hpp>
 #include "astra-sim/system/BaseStream.hh"
 #include "astra-sim/system/CollectivePlan.hh"
 #include "astra-sim/system/DataSet.hh"
@@ -29,19 +29,26 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/scheduling/OfflineGreedy.hh"
 #include "astra-sim/system/topology/BasicLogicalTopology.hh"
 #include "astra-sim/system/topology/GeneralComplexTopology.hh"
+#include "json/json.hpp"
+#include "spdlog/logger.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
 
-using namespace std;
+// using namespace std;
 using namespace Chakra;
 using json = nlohmann::json;
 
+static auto logger = spdlog::stdout_color_mt("sys");
+static std::unique_ptr<std::stringstream> sstream_buffer =
+    std::make_unique<std::stringstream>();
+
 namespace AstraSim {
 uint8_t* Sys::dummy_data = new uint8_t[2];
-vector<Sys*> Sys::all_sys;
+std::vector<Sys*> Sys::all_sys;
 
 // SchedulerUnit --------------------------------------------------------------
 Sys::SchedulerUnit::SchedulerUnit(
     Sys* sys,
-    vector<int> queues,
+    std::vector<int> queues,
     int max_running_streams,
     int ready_list_threshold,
     int queue_threshold) {
@@ -58,7 +65,7 @@ Sys::SchedulerUnit::SchedulerUnit(
   for (auto q : queues) {
     for (int i = 0; i < q; i++) {
       this->running_streams[base] = 0;
-      list<BaseStream*>::iterator it;
+      std::list<BaseStream*>::iterator it;
       this->stream_pointer[base] = it;
       this->queue_id_to_dimension[base] = dimension;
       base++;
@@ -125,8 +132,8 @@ void Sys::SchedulerUnit::notify_stream_removed(int vnet, Tick running_time) {
   }
 }
 
-vector<double> Sys::SchedulerUnit::get_average_latency_per_dimension() {
-  vector<double> result;
+std::vector<double> Sys::SchedulerUnit::get_average_latency_per_dimension() {
+  std::vector<double> result;
   result.resize(latency_per_dimension.size(), -1);
   for (uint64_t i = 0; i < result.size(); i++) {
     result[i] = latency_per_dimension[i] / total_chunks_per_dimension[i];
@@ -137,13 +144,13 @@ vector<double> Sys::SchedulerUnit::get_average_latency_per_dimension() {
 
 Sys::Sys(
     int id,
-    string workload_configuration,
-    string comm_group_configuration,
-    string system_configuration,
+    std::string workload_configuration,
+    std::string comm_group_configuration,
+    std::string system_configuration,
     AstraRemoteMemoryAPI* remote_mem,
     AstraNetworkAPI* comm_NI,
-    vector<int> physical_dims,
-    vector<int> queues_per_dim,
+    std::vector<int> physical_dims,
+    std::vector<int> queues_per_dim,
     double injection_scale,
     double comm_scale,
     bool rendezvous_enabled) {
@@ -215,9 +222,9 @@ Sys::Sys(
       this->total_nodes *= physical_dims[current_dim];
     }
     for (int j = 0; j < queues_per_dim[current_dim]; j++) {
-      list<BaseStream*> temp;
+      std::list<BaseStream*> temp;
       active_Streams[element] = temp;
-      list<int> pri;
+      std::list<int> pri;
       stream_priorities[element] = pri;
       element++;
     }
@@ -330,12 +337,14 @@ Sys::~Sys() {
   }
 }
 
-bool Sys::initialize_sys(string name) {
-  ifstream inFile;
+bool Sys::initialize_sys(std::string name) {
+  std::ifstream inFile;
   inFile.open(name);
   if (!inFile) {
     if (id == 0) {
-      cerr << "Unable to open file: " << name << endl;
+      sstream_buffer->str("");
+      (*sstream_buffer) << "Unable to open file: " << name;
+      logger->critical(sstream_buffer->str());
     }
     exit(1);
   }
@@ -343,7 +352,7 @@ bool Sys::initialize_sys(string name) {
   json j;
   inFile >> j;
   if (j.contains("scheduling-policy")) {
-    string inp_scheduling_policy = j["scheduling-policy"];
+    std::string inp_scheduling_policy = j["scheduling-policy"];
     if (inp_scheduling_policy == "LIFO") {
       this->scheduling_policy = SchedulingPolicy::LIFO;
     } else if (inp_scheduling_policy == "FIFO") {
@@ -355,7 +364,8 @@ bool Sys::initialize_sys(string name) {
     }
   }
   if (j.contains("all-reduce-implementation")) {
-    vector<string> collective_impl_str_vec = j["all-reduce-implementation"];
+    std::vector<std::string> collective_impl_str_vec =
+        j["all-reduce-implementation"];
     for (auto collective_impl_str : collective_impl_str_vec) {
       CollectiveImpl* ci =
           generate_collective_impl_from_input(collective_impl_str);
@@ -363,7 +373,8 @@ bool Sys::initialize_sys(string name) {
     }
   }
   if (j.contains("reduce-scatter-implementation")) {
-    vector<string> collective_impl_str_vec = j["reduce-scatter-implementation"];
+    std::vector<std::string> collective_impl_str_vec =
+        j["reduce-scatter-implementation"];
     for (auto collective_impl_str : collective_impl_str_vec) {
       CollectiveImpl* ci =
           generate_collective_impl_from_input(collective_impl_str);
@@ -371,7 +382,8 @@ bool Sys::initialize_sys(string name) {
     }
   }
   if (j.contains("all-gather-implementation")) {
-    vector<string> collective_impl_str_vec = j["all-gather-implementation"];
+    std::vector<std::string> collective_impl_str_vec =
+        j["all-gather-implementation"];
     for (auto collective_impl_str : collective_impl_str_vec) {
       CollectiveImpl* ci =
           generate_collective_impl_from_input(collective_impl_str);
@@ -379,7 +391,8 @@ bool Sys::initialize_sys(string name) {
     }
   }
   if (j.contains("all-to-all-implementation")) {
-    vector<string> collective_impl_str_vec = j["all-to-all-implementation"];
+    std::vector<std::string> collective_impl_str_vec =
+        j["all-to-all-implementation"];
     for (auto collective_impl_str : collective_impl_str_vec) {
       CollectiveImpl* ci =
           generate_collective_impl_from_input(collective_impl_str);
@@ -387,7 +400,7 @@ bool Sys::initialize_sys(string name) {
     }
   }
   if (j.contains("collective-optimization")) {
-    string inp_collective_optimization = j["collective-optimization"];
+    std::string inp_collective_optimization = j["collective-optimization"];
     if (inp_collective_optimization == "baseline") {
       collectiveOptimization = CollectiveOptimization::Baseline;
     } else if (inp_collective_optimization == "localBWAware") {
@@ -459,7 +472,7 @@ bool Sys::initialize_sys(string name) {
 }
 
 CollectiveImpl* Sys::generate_collective_impl_from_input(
-    string collective_impl_str) {
+    std::string collective_impl_str) {
   if (collective_impl_str == "ring") {
     return new CollectiveImpl(CollectiveImplType::Ring);
   } else if (collective_impl_str == "oneRing") {
@@ -505,13 +518,13 @@ Tick Sys::boostedTick() {
   return tick;
 }
 
-void Sys::sys_panic(string msg) {
-  cerr << msg << endl;
+void Sys::sys_panic(std::string msg) {
+  logger->critical(msg);
   exit(1);
 }
 
-void Sys::exit_sim_loop(string msg) {
-  cout << msg << endl;
+void Sys::exit_sim_loop(std::string msg) {
+  logger->info(msg);
 }
 
 void Sys::call(EventType type, CallData* data) {}
@@ -520,9 +533,10 @@ void Sys::call_events() {
   for (auto& callable : event_queue[Sys::boostedTick()]) {
     try {
       pending_events--;
-      (get<0>(callable))->call(get<1>(callable), get<2>(callable));
+      (std::get<0>(callable))
+          ->call(std::get<1>(callable), std::get<2>(callable));
     } catch (...) {
-      cerr << "warning! a callable is removed before call" << endl;
+      logger->critical("warning! a callable is removed before call");
     }
   }
   if (event_queue[Sys::boostedTick()].size() > 0) {
@@ -547,11 +561,11 @@ void Sys::try_register_event(
   bool should_schedule = false;
   auto event_time = Sys::boostedTick() + delta_cycles;
   if (event_queue.find(event_time) == event_queue.end()) {
-    list<tuple<Callable*, EventType, CallData*>> tmp;
+    std::list<std::tuple<Callable*, EventType, CallData*>> tmp;
     event_queue[event_time] = tmp;
     should_schedule = true;
   }
-  event_queue[event_time].push_back(make_tuple(callable, event, callData));
+  event_queue[event_time].push_back(std::make_tuple(callable, event, callData));
   if (should_schedule) {
     timespec_t tmp;
     tmp.time_res = NS;
@@ -628,7 +642,8 @@ LogicalTopology* Sys::get_logical_topology(ComType comm_type) {
   }
 }
 
-vector<CollectiveImpl*> Sys::get_collective_implementation(ComType comm_type) {
+std::vector<CollectiveImpl*> Sys::get_collective_implementation(
+    ComType comm_type) {
   if (comm_type == ComType::All_Reduce)
     return all_reduce_implementation_per_dimension;
   else if (comm_type == ComType::All_to_All)
@@ -639,14 +654,14 @@ vector<CollectiveImpl*> Sys::get_collective_implementation(ComType comm_type) {
     return all_gather_implementation_per_dimension;
   else {
     sys_panic("no known collective implementation!");
-    vector<CollectiveImpl*> tmp;
+    std::vector<CollectiveImpl*> tmp;
     return tmp;
   }
 }
 
 DataSet* Sys::generate_all_reduce(
     uint64_t size,
-    vector<bool> involved_dimensions,
+    std::vector<bool> involved_dimensions,
     CommunicatorGroup* communicator_group,
     int explicit_priority) {
   if (communicator_group == nullptr) {
@@ -674,7 +689,7 @@ DataSet* Sys::generate_all_reduce(
 
 DataSet* Sys::generate_all_to_all(
     uint64_t size,
-    vector<bool> involved_dimensions,
+    std::vector<bool> involved_dimensions,
     CommunicatorGroup* communicator_group,
     int explicit_priority) {
   if (communicator_group == nullptr) {
@@ -702,7 +717,7 @@ DataSet* Sys::generate_all_to_all(
 
 DataSet* Sys::generate_all_gather(
     uint64_t size,
-    vector<bool> involved_dimensions,
+    std::vector<bool> involved_dimensions,
     CommunicatorGroup* communicator_group,
     int explicit_priority) {
   if (communicator_group == nullptr) {
@@ -730,7 +745,7 @@ DataSet* Sys::generate_all_gather(
 
 DataSet* Sys::generate_reduce_scatter(
     uint64_t size,
-    vector<bool> involved_dimensions,
+    std::vector<bool> involved_dimensions,
     CommunicatorGroup* communicator_group,
     int explicit_priority) {
   if (communicator_group == nullptr) {
@@ -759,8 +774,8 @@ DataSet* Sys::generate_reduce_scatter(
 DataSet* Sys::generate_collective(
     uint64_t size,
     LogicalTopology* topology,
-    vector<CollectiveImpl*> implementation_per_dimension,
-    vector<bool> dimensions_involved,
+    std::vector<CollectiveImpl*> implementation_per_dimension,
+    std::vector<bool> dimensions_involved,
     ComType collective_type,
     int explicit_priority,
     CommunicatorGroup* communicator_group) {
@@ -784,7 +799,7 @@ DataSet* Sys::generate_collective(
   while (size > 0) {
     count++;
 
-    vector<int> dim_mapper(topology->get_num_of_dimensions());
+    std::vector<int> dim_mapper(topology->get_num_of_dimensions());
     iota(begin(dim_mapper), end(dim_mapper), 0);
     if (collective_type == ComType::All_Gather) {
       reverse(dim_mapper.begin(), dim_mapper.end());
@@ -825,7 +840,7 @@ DataSet* Sys::generate_collective(
       size -= chunk_size;
     }
     remain_size = chunk_size;
-    list<CollectivePhase> vect;
+    std::list<CollectivePhase> vect;
 
     if (collective_type != ComType::All_Reduce ||
         collectiveOptimization == CollectiveOptimization::Baseline) {
@@ -834,7 +849,7 @@ DataSet* Sys::generate_collective(
             !dimensions_involved[dim_mapper[dim]]) {
           continue;
         }
-        pair<int, RingTopology::Direction> queue =
+        std::pair<int, RingTopology::Direction> queue =
             vLevels->get_next_queue_at_level(dim_mapper[dim]);
         CollectivePhase phase = generate_collective_phase(
             collective_type,
@@ -859,7 +874,7 @@ DataSet* Sys::generate_collective(
             !dimensions_involved[dim_mapper[dim]]) {
           continue;
         }
-        pair<int, RingTopology::Direction> queue =
+        std::pair<int, RingTopology::Direction> queue =
             vLevels->get_next_queue_at_level(dim_mapper[dim]);
         CollectivePhase phase = generate_collective_phase(
             ComType::Reduce_Scatter,
@@ -879,7 +894,7 @@ DataSet* Sys::generate_collective(
             !dimensions_involved[dim_mapper[dim]]) {
           continue;
         }
-        pair<int, RingTopology::Direction> queue =
+        std::pair<int, RingTopology::Direction> queue =
             vLevels->get_next_queue_at_level(dim_mapper[dim]);
         CollectivePhase phase = generate_collective_phase(
             ComType::All_Gather,
@@ -907,7 +922,7 @@ DataSet* Sys::generate_collective(
             !dimensions_involved[dim_mapper[dim]]) {
           continue;
         }
-        pair<int, RingTopology::Direction> queue =
+        std::pair<int, RingTopology::Direction> queue =
             vLevels->get_next_queue_at_level(dim_mapper[dim]);
         CollectivePhase phase = generate_collective_phase(
             ComType::Reduce_Scatter,
@@ -928,7 +943,7 @@ DataSet* Sys::generate_collective(
       }
       if (dimensions_involved[dim_mapper[dim]] &&
           topology->get_num_of_nodes_in_dimension(dim_mapper[dim]) > 1) {
-        pair<int, RingTopology::Direction> queue =
+        std::pair<int, RingTopology::Direction> queue =
             vLevels->get_next_queue_at_level(dim_mapper[dim]);
         CollectivePhase phase = generate_collective_phase(
             ComType::All_Reduce,
@@ -948,7 +963,7 @@ DataSet* Sys::generate_collective(
             !dimensions_involved[dim_mapper[dim]]) {
           continue;
         }
-        pair<int, RingTopology::Direction> queue =
+        std::pair<int, RingTopology::Direction> queue =
             vLevels->get_next_queue_at_level(dim_mapper[dim]);
         CollectivePhase phase = generate_collective_phase(
             ComType::All_Gather,
@@ -1035,8 +1050,8 @@ CollectivePhase Sys::generate_collective_phase(
             collective_type, id, (RingTopology*)topology, data_size));
     return vn;
   } else {
-    cerr << "Error: No known collective implementation for collective phase"
-         << endl;
+    logger->critical(
+        "Error: No known collective implementation for collective phase");
     exit(1);
   }
 }
@@ -1176,8 +1191,8 @@ void Sys::insert_into_ready_list(BaseStream* stream) {
   scheduler_unit->notify_stream_added_into_ready_list();
 }
 
-void Sys::insert_stream(list<BaseStream*>* queue, BaseStream* baseStream) {
-  list<BaseStream*>::iterator it = queue->begin();
+void Sys::insert_stream(std::list<BaseStream*>* queue, BaseStream* baseStream) {
+  std::list<BaseStream*>::iterator it = queue->begin();
   if (intra_dimension_scheduling == IntraDimensionScheduling::FIFO ||
       baseStream->current_queue_id < 0 ||
       baseStream->current_com_type == ComType::All_to_All ||
@@ -1231,9 +1246,11 @@ void Sys::insert_stream(list<BaseStream*>* queue, BaseStream* baseStream) {
         advance(it, 1);
         continue;
       } else if (
-          max((*it)->my_current_phase.initial_data_size,
+          std::max(
+              (*it)->my_current_phase.initial_data_size,
               (*it)->my_current_phase.final_data_size) <
-          max(baseStream->my_current_phase.initial_data_size,
+          std::max(
+              baseStream->my_current_phase.initial_data_size,
               baseStream->my_current_phase.final_data_size)) {
         advance(it, 1);
         continue;
@@ -1287,7 +1304,7 @@ void Sys::ask_for_schedule(int max) {
 
 void Sys::schedule(int num) {
   int ready_list_size = ready_list.size();
-  int counter = min(num, ready_list_size);
+  int counter = std::min(num, ready_list_size);
   while (counter > 0) {
     int top_vn = ready_list.front()->phases_to_go.front().queue_id;
     int total_waiting_streams = ready_list.size();
@@ -1298,12 +1315,14 @@ void Sys::schedule(int num) {
     if (ready_list.front()->current_queue_id == -1) {
       Sys::sys_panic(
           "should not happen! " +
-          to_string(BaseStream::synchronizer[ready_list.front()->stream_id]) +
+          std::to_string(
+              BaseStream::synchronizer[ready_list.front()->stream_id]) +
           " , " +
-          to_string(BaseStream::ready_counter[ready_list.front()->stream_id]) +
-          " , top queue id: " + to_string(top_vn) +
-          " , total phases: " + to_string(total_phases) +
-          " , waiting streams: " + to_string(total_waiting_streams));
+          std::to_string(
+              BaseStream::ready_counter[ready_list.front()->stream_id]) +
+          " , top queue id: " + std::to_string(top_vn) +
+          " , total phases: " + std::to_string(total_phases) +
+          " , waiting streams: " + std::to_string(total_waiting_streams));
     }
 
     ready_list.pop_front();
@@ -1329,9 +1348,10 @@ void Sys::proceed_to_next_vnet_baseline(StreamBaseline* stream) {
     stream->dataset->notify_stream_finished((StreamStat*)stream);
   }
   if (stream->current_queue_id >= 0 && stream->my_current_phase.enabled) {
-    list<BaseStream*>& target =
+    std::list<BaseStream*>& target =
         active_Streams.at(stream->my_current_phase.queue_id);
-    for (list<BaseStream*>::iterator it = target.begin(); it != target.end();
+    for (std::list<BaseStream*>::iterator it = target.begin();
+         it != target.end();
          ++it) {
       if (((StreamBaseline*)(*it))->stream_id == stream->stream_id) {
         target.erase(it);

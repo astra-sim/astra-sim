@@ -5,31 +5,42 @@ LICENSE file in the root directory of this source tree.
 
 #include "astra-sim/workload/Workload.hh"
 
-#include <json/json.hpp>
+#include <stdlib.h>
+#include <unistd.h>
+#include <iostream>
+#include <memory>
+#include <sstream>
+
 #include "astra-sim/system/IntData.hh"
 #include "astra-sim/system/MemEventHandlerData.hh"
 #include "astra-sim/system/RecvPacketEventHandlerData.hh"
 #include "astra-sim/system/SendPacketEventHandlerData.hh"
 #include "astra-sim/system/WorkloadLayerHandlerData.hh"
+#include "json/json.hpp"
+#include "spdlog/logger.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
 
-#include <stdlib.h>
-#include <unistd.h>
-#include <iostream>
-
-using namespace std;
 using namespace AstraSim;
 using namespace Chakra;
 using json = nlohmann::json;
+
+static auto logger = spdlog::stdout_color_mt("workload");
+static std::unique_ptr<std::stringstream> sstream_buffer =
+    std::make_unique<std::stringstream>();
 
 typedef ChakraProtoMsg::NodeType ChakraNodeType;
 typedef ChakraProtoMsg::MemoryType ChakraMemoryType;
 typedef ChakraProtoMsg::CollectiveCommType ChakraCollectiveCommType;
 
-Workload::Workload(Sys* sys, string eg_filename, string comm_group_filename) {
-  string workload_filename = eg_filename + "." + to_string(sys->id) + ".eg";
+Workload::Workload(
+    Sys* sys,
+    std::string eg_filename,
+    std::string comm_group_filename) {
+  std::string workload_filename =
+      eg_filename + "." + std::to_string(sys->id) + ".eg";
   // Check if workload filename exists
   if (access(workload_filename.c_str(), R_OK) < 0) {
-    string error_msg;
+    std::string error_msg;
     if (errno == ENOENT) {
       error_msg = "workload file: " + workload_filename + " does not exist";
     } else if (errno == EACCES) {
@@ -39,7 +50,7 @@ Workload::Workload(Sys* sys, string eg_filename, string comm_group_filename) {
       error_msg =
           "Unknown workload file: " + workload_filename + " access error";
     }
-    cerr << error_msg << endl;
+    std::cerr << error_msg << std::endl;
     exit(EXIT_FAILURE);
   }
   this->et_feeder = new ETFeeder(workload_filename);
@@ -58,14 +69,14 @@ Workload::~Workload() {
     delete this->et_feeder;
 }
 
-void Workload::initialize_comm_group(string comm_group_filename) {
+void Workload::initialize_comm_group(std::string comm_group_filename) {
   // communicator group input file is not given
   if (comm_group_filename.find("empty") != std::string::npos) {
     comm_group = nullptr;
     return;
   }
 
-  ifstream inFile;
+  std::ifstream inFile;
   json j;
   inFile.open(comm_group_filename);
   inFile >> j;
@@ -92,8 +103,8 @@ void Workload::initialize_comm_group(string comm_group_filename) {
 }
 
 void Workload::issue_dep_free_nodes() {
-  std::queue<shared_ptr<Chakra::ETFeederNode>> push_back_queue;
-  shared_ptr<Chakra::ETFeederNode> node = et_feeder->getNextIssuableNode();
+  std::queue<std::shared_ptr<Chakra::ETFeederNode>> push_back_queue;
+  std::shared_ptr<Chakra::ETFeederNode> node = et_feeder->getNextIssuableNode();
   while (node != nullptr) {
     if (hw_resource->is_available(node)) {
       issue(node);
@@ -104,7 +115,7 @@ void Workload::issue_dep_free_nodes() {
   }
 
   while (!push_back_queue.empty()) {
-    shared_ptr<Chakra::ETFeederNode> node = push_back_queue.front();
+    std::shared_ptr<Chakra::ETFeederNode> node = push_back_queue.front();
     et_feeder->pushBackIssuableNode(node->getChakraNode()->id());
     push_back_queue.pop();
   }
@@ -159,7 +170,7 @@ void Workload::node_sanity_check(std::shared_ptr<Chakra::ETFeederNode> node) {
   throw std::invalid_argument("Invalid node type");
 }
 
-void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
+void Workload::issue(std::shared_ptr<Chakra::ETFeederNode> node) {
   // In strict_mode, the node field check will be enforced, and the simulation
   // will stop if field check fails. Otherwise, just skip these invalid nodes
   // and continue run (default behavior)
@@ -179,10 +190,14 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
 
   // from here the node should be valid and following code should run well.
   if (sys->trace_enabled) {
-    cout << "issue,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
-         << ",node->id=" << node->getChakraNode()->id()
-         << ",node->name=" << node->getChakraNode()->name()
-         << ",node->node_type=" << node->getChakraNode()->node_type() << endl;
+    sstream_buffer->str("");
+    (*sstream_buffer) << "issue,sys->id=" << sys->id
+                      << ",tick=" << Sys::boostedTick()
+                      << ",node->id=" << node->getChakraNode()->id()
+                      << ",node->name=" << node->getChakraNode()->name()
+                      << ",node->node_type="
+                      << node->getChakraNode()->node_type();
+    logger->debug(sstream_buffer->str());
   }
 
   if ((node->getChakraNode()->node_type() == ChakraNodeType::MEM_LOAD_NODE) ||
@@ -198,7 +213,7 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
   }
 }
 
-void Workload::issue_remote_mem(shared_ptr<Chakra::ETFeederNode> node) {
+void Workload::issue_remote_mem(std::shared_ptr<Chakra::ETFeederNode> node) {
   hw_resource->occupy(node);
 
   WorkloadLayerHandlerData* wlhd = new WorkloadLayerHandlerData;
@@ -208,7 +223,7 @@ void Workload::issue_remote_mem(shared_ptr<Chakra::ETFeederNode> node) {
   sys->remote_mem->issue(node->getChakraNode()->tensor_size(), wlhd);
 }
 
-void Workload::issue_comp(shared_ptr<Chakra::ETFeederNode> node) {
+void Workload::issue_comp(std::shared_ptr<Chakra::ETFeederNode> node) {
   hw_resource->occupy(node);
 
   if (sys->roofline_enabled) {
@@ -236,10 +251,10 @@ void Workload::issue_comp(shared_ptr<Chakra::ETFeederNode> node) {
   }
 }
 
-void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
+void Workload::issue_comm(std::shared_ptr<Chakra::ETFeederNode> node) {
   hw_resource->occupy(node);
 
-  vector<bool> involved_dim;
+  std::vector<bool> involved_dim;
   for (int i = 0; i < node->getChakraNode()->involved_dim_size(); i++) {
     involved_dim.push_back(node->getChakraNode()->involved_dim(i));
   }
@@ -328,12 +343,12 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
         &Sys::handleEvent,
         rcehd);
   } else {
-    cerr << "Unknown communication node type" << endl;
+    std::cerr << "Unknown communication node type" << std::endl;
     exit(EXIT_FAILURE);
   }
 }
 
-void Workload::skip_invalid(shared_ptr<Chakra::ETFeederNode> node) {
+void Workload::skip_invalid(std::shared_ptr<Chakra::ETFeederNode> node) {
   et_feeder->freeChildrenNodes(node->getChakraNode()->id());
   et_feeder->removeNode(node->getChakraNode()->id());
 }
@@ -346,13 +361,17 @@ void Workload::call(EventType event, CallData* data) {
   if (event == EventType::CollectiveCommunicationFinished) {
     IntData* int_data = (IntData*)data;
     uint64_t node_id = collective_comm_node_id_map[int_data->data];
-    shared_ptr<Chakra::ETFeederNode> node = et_feeder->lookupNode(node_id);
+    std::shared_ptr<Chakra::ETFeederNode> node = et_feeder->lookupNode(node_id);
 
     if (sys->trace_enabled) {
-      cout << "callback,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
-           << ",node->id=" << node->getChakraNode()->id()
-           << ",node->name=" << node->getChakraNode()->name()
-           << ",node->node_type=" << node->getChakraNode()->node_type() << endl;
+      sstream_buffer->str("");
+      (*sstream_buffer) << "callback,sys->id=" << sys->id
+                        << ",tick=" << Sys::boostedTick()
+                        << ",node->id=" << node->getChakraNode()->id()
+                        << ",node->name=" << node->getChakraNode()->name()
+                        << ",node->node_type="
+                        << node->getChakraNode()->node_type();
+      logger->debug(sstream_buffer->str());
     }
 
     hw_resource->release(node);
@@ -368,15 +387,18 @@ void Workload::call(EventType event, CallData* data) {
       issue_dep_free_nodes();
     } else {
       WorkloadLayerHandlerData* wlhd = (WorkloadLayerHandlerData*)data;
-      shared_ptr<Chakra::ETFeederNode> node =
+      std::shared_ptr<Chakra::ETFeederNode> node =
           et_feeder->lookupNode(wlhd->node_id);
 
       if (sys->trace_enabled) {
-        cout << "callback,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
-             << ",node->id=" << node->getChakraNode()->id()
-             << ",node->name=" << node->getChakraNode()->name()
-             << ",node->node_type=" << node->getChakraNode()->node_type()
-             << endl;
+        sstream_buffer->str("");
+        (*sstream_buffer) << "callback,sys->id=" << sys->id
+                          << ",tick=" << Sys::boostedTick()
+                          << ",node->id=" << node->getChakraNode()->id()
+                          << ",node->name=" << node->getChakraNode()->name()
+                          << ",node->node_type="
+                          << node->getChakraNode()->node_type();
+        logger->debug(sstream_buffer->str());
       }
 
       hw_resource->release(node);
@@ -405,5 +427,8 @@ void Workload::fire() {
 
 void Workload::report() {
   Tick curr_tick = Sys::boostedTick();
-  cout << "sys[" << sys->id << "] finished, " << curr_tick << " cycles" << endl;
+  sstream_buffer->str("");
+  (*sstream_buffer) << "sys[" << sys->id << "] finished, " << curr_tick
+                    << " cycles";
+  logger->info(sstream_buffer->str());
 }

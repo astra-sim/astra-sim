@@ -12,11 +12,20 @@ LICENSE file in the root directory of this source tree.
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include <memory>
+#include <sstream>
 #include <utility>
 #include <vector>
 
+#include "spdlog/logger.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
+
 using namespace std;
 using namespace AstraSim;
+
+static auto logger = spdlog::stdout_color_mt("system::CSVWriter");
+static std::unique_ptr<std::stringstream> sstream_buffer =
+    std::make_unique<std::stringstream>();
 
 CSVWriter::CSVWriter(std::string path, std::string name) {
   this->path = path;
@@ -24,17 +33,23 @@ CSVWriter::CSVWriter(std::string path, std::string name) {
 }
 
 void CSVWriter::initialize_csv(int rows, int cols) {
-  std::cout << "CSV path and filename: " << path + name << std::endl;
+  sstream_buffer->str("");
+  (*sstream_buffer) << "CSV path and filename: " << path + name;
+  logger->info(sstream_buffer->str());
   int trial = 10000;
   do {
     myFile.open(path + name, std::fstream::out);
     trial--;
   } while (!myFile.is_open() && trial > 0);
   if (trial == 0) {
-    std::cerr << "Unable to create file: " << path << std::endl;
-    std::cerr
-        << "This error is fatal. Please make sure the CSV write path exists."
-        << std::endl;
+    sstream_buffer->str("");
+    (*sstream_buffer) << "Unable to create file: " << path;
+    logger->critical(sstream_buffer->str());
+
+    sstream_buffer->str("");
+    (*sstream_buffer)
+        << "This error is fatal. Please make sure the CSV write path exists.";
+    logger->critical(sstream_buffer->str());
     exit(1);
   }
   do {
@@ -46,14 +61,19 @@ void CSVWriter::initialize_csv(int rows, int cols) {
   } while (!myFile.is_open());
 
   if (!myFile) {
-    std::cerr << "Unable to open file: " << path << std::endl;
-    std::cerr
-        << "This error is fatal. Please make sure the CSV write path exists."
-        << std::endl;
+    sstream_buffer->str("");
+    (*sstream_buffer) << "Unable to open file: " << path;
+    logger->critical(sstream_buffer->str());
+
+    sstream_buffer->str("");
+    (*sstream_buffer)
+        << "This error is fatal. Please make sure the CSV write path exists.";
+    logger->critical(sstream_buffer->str());
     exit(1);
   } else {
-    std::cout << "Success in opening CSV file for writing the report."
-              << std::endl;
+    sstream_buffer->str("");
+    (*sstream_buffer) << "Success in opening CSV file for writing the report.";
+    logger->critical(sstream_buffer->str());
   }
 
   myFile.seekp(0, std::ios_base::beg);
@@ -71,17 +91,21 @@ void CSVWriter::initialize_csv(int rows, int cols) {
 
 void CSVWriter::finalize_csv(
     std::list<std::list<std::pair<uint64_t, double>>> dims) {
-  std::cout << "path to create csvs is: " << path << std::endl;
+  sstream_buffer->str("");
+  (*sstream_buffer) << "path to create csvs is: " << path;
+  logger->info(sstream_buffer->str());
   int trial = 10000;
   do {
     myFile.open(path + name, std::fstream::out);
     trial--;
   } while (!myFile.is_open() && trial > 0);
   if (trial == 0) {
-    std::cerr << "Unable to create file: " << path + name << std::endl;
-    std::cerr
-        << "This error is fatal. Please make sure the CSV write path exists."
-        << std::endl;
+    sstream_buffer->str("");
+    (*sstream_buffer) << "Unable to create file: " << path + name;
+    logger->critical(sstream_buffer->str());
+
+    logger->critical(
+        "This error is fatal. Please make sure the CSV write path exists.");
     exit(1);
   }
   do {
@@ -93,13 +117,17 @@ void CSVWriter::finalize_csv(
   } while (!myFile.is_open());
 
   if (!myFile) {
-    std::cerr << "Unable to open file: " << path + name << std::endl;
-    std::cerr
-        << "This error is fatal. Please make sure the CSV write path exists."
-        << std::endl;
+    sstream_buffer->str("");
+    (*sstream_buffer) << "Unable to open file: " << path + name;
+    logger->critical(sstream_buffer->str());
+
+    sstream_buffer->str("");
+    (*sstream_buffer)
+        << "This error is fatal. Please make sure the CSV write path exists.";
+    logger->critical(sstream_buffer->str());
     exit(1);
   } else {
-    std::cout << "success in openning file" << std::endl;
+    logger->info("success in openning file");
   }
   myFile.seekp(0, std::ios_base::beg);
   myFile.seekg(0, std::ios_base::beg);
@@ -177,7 +205,7 @@ void CSVWriter::write_cell(int row, int column, std::string data) {
       column--;
     }
     if (*buf == '\n') {
-      std::cerr << "fatal error in inserting cewll!" << std::endl;
+      logger->critical("fatal error in inserting cewll!");
       exit(1);
     }
   }

@@ -5,9 +5,18 @@ LICENSE file in the root directory of this source tree.
 
 #include "astra-sim/system/BaseStream.hh"
 
+#include <memory>
+#include <sstream>
+
 #include "astra-sim/system/StreamBaseline.hh"
+#include "spdlog/logger.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
 
 using namespace AstraSim;
+
+static auto logger = spdlog::stdout_color_mt("system::BaseStream");
+static std::unique_ptr<std::stringstream> sstream_buffer =
+    std::make_unique<std::stringstream>();
 
 std::map<int, int> BaseStream::synchronizer;
 std::map<int, int> BaseStream::ready_counter;
@@ -28,7 +37,7 @@ BaseStream::BaseStream(
   if (synchronizer.find(stream_id) != synchronizer.end()) {
     synchronizer[stream_id]++;
   } else {
-    // std::cout<<"synchronizer set!"<<std::endl;
+    logger->debug("synchronizer set!");
     synchronizer[stream_id] = 1;
     ready_counter[stream_id] = 0;
   }
