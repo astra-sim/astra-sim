@@ -18,10 +18,11 @@ LICENSE file in the root directory of this source tree.
 namespace AstraSim {
 
 class Sys;
+class DataSet;
 
 class Workload : public Callable {
  public:
-  Workload(Sys* sys, std::string eg_filename, std::string comm_group_filename);
+  Workload(Sys* sys, std::string et_filename, std::string comm_group_filename);
   ~Workload();
 
   // communicator groups
@@ -30,6 +31,7 @@ class Workload : public Callable {
   // event-based simulation
   void issue_dep_free_nodes();
   void issue(std::shared_ptr<Chakra::ETFeederNode> node);
+  void issue_replay(std::shared_ptr<Chakra::ETFeederNode> node);
   void issue_remote_mem(std::shared_ptr<Chakra::ETFeederNode> node);
   void issue_comp(std::shared_ptr<Chakra::ETFeederNode> node);
   void issue_comm(std::shared_ptr<Chakra::ETFeederNode> node);
@@ -45,6 +47,7 @@ class Workload : public Callable {
   HardwareResource* hw_resource;
   Sys* sys;
   std::unordered_map<int, uint64_t> collective_comm_node_id_map;
+  std::unordered_map<int, DataSet*> collective_comm_wrapper_map;
   bool is_finished;
 };
 

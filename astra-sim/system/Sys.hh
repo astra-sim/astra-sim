@@ -309,6 +309,9 @@ class Sys : public Callable {
 
   // statistics
   bool trace_enabled;
+
+  // skip simulation for all nodes and use current duration
+  bool replay_only;
 };
 
 } // namespace AstraSim
