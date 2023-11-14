@@ -253,7 +253,8 @@ $ mv ./test/data/dlrm_pytorch_et/*_plus.json ./test/data/et_plus/
 $ mv test/data/et_plus ../../../../../graph_frontend/chakra/
 $ cd ../../../../../graph_frontend/chakra/
 $ pip3 install -r requirements.txt
-$ sudo python3 setup.py install
+$ python3 setup.py install
+$ pip install protobuf==3.20.*
 
 # Almost there! The script below will make those enhanced PyTorch-ETs dance in Chakra format, getting them all prepped for a session with astrasim
 $ python3 -m et_converter.et_converter    --input_type PyTorch    --input_filename et_plus/dlrm_eg_0_plus.json    --output_filename et_plus/dlrm_chakra.0.et    --num_dims 1 
@@ -269,33 +270,30 @@ $ python3 -m et_converter.et_converter    --input_type PyTorch    --input_filena
 $ cd ../../../
 
 # Update network topology 
-$ vi ./inputs/network/analytical/fully_connected.json
+$ vi ./inputs/network/analytical/FullyConnected.yml
 
-"units-count": [8],
-"links-count": [7],
-
-# Update input file in the script
-$ vi ./run.sh 
-
-WORKLOAD="${SCRIPT_DIR:?}"/extern/graph_frontend/chakra/et_plus/dlrm_chakra
+npus_count: [ 8 ]  # number of NPUs
 ```
 
 Run the following command.
 
 ```bash
 # This is a sample script that runs astrasim with the sample chakra files of DLRM that we just created
-$ ./run.sh
+
+$ ./build/astra_analytical/build/bin/AstraSim_Analytical_Congestion_Unaware \
+  --workload-configuration=./extern/graph_frontend/chakra/et_plus/dlrm_chakra \
+  --system-configuration=./inputs/system/FullyConnected.json \
+  --network-configuration=./inputs/network/analytical/FullyConnected.yml \
+  --remote-memory-configuration=./inputs/remote_memory/analytical/no_memory_expansion.json
 ```
 
 Upon completion, ASTRA-sim will display the number of cycles it took to run the simulation.
 ```bash
-[CostModel] Adding (inter-Node, Link) bandwidth: 1, radix: 1, count: 28 (added cost: $112)
+ring of node 0, id: 0 dimension: local total nodes in ring: 8 index in ring: 0 offset: 1total nodes in ring: 8
 ring of node 0, id: 0 dimension: local total nodes in ring: 8 index in ring: 0 offset: 1total nodes in ring: 8
 ...
-sys[4] finished, 15355573 cycles
-sys[5] finished, 15355626 cycles
-sys[6] finished, 15355679 cycles
-sys[7] finished, 15355732 cycles
+sys[0] finished, 13271344 cycles
+sys[1] finished, 14249000 cycles
 ```
 
 ## Features Under Active Development
