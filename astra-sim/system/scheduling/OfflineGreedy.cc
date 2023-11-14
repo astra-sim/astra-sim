@@ -11,15 +11,12 @@ LICENSE file in the root directory of this source tree.
 #include <numeric>
 #include <sstream>
 
-#include "spdlog/logger.h"
-#include "spdlog/sinks/stdout_color_sinks.h"
+#include "astra-sim/utils/Logging.hh"
 
 using namespace AstraSim;
 
-static auto logger =
-    spdlog::stdout_color_mt("system::scheduling::OfflineGreedy");
-static std::unique_ptr<std::stringstream> sstream_buffer =
-    std::make_unique<std::stringstream>();
+static auto logger = Logger::getLogger("system::scheduling::OfflineGreedy");
+static std::stringstream sstream_buffer;
 std::map<long long, std::vector<int>> OfflineGreedy::chunk_schedule;
 std::map<long long, int> OfflineGreedy::schedule_consumer;
 std::map<long long, uint64_t> OfflineGreedy::global_chunk_size;
@@ -52,20 +49,19 @@ OfflineGreedy::OfflineGreedy(Sys* sys) {
   if (sys->id == 0) {
     logger->debug("Themis is configured with the following parameters: ");
 
-    sstream_buffer->str("");
-    (*sstream_buffer) << "Dim size: ";
+    sstream_buffer.str("");
+    sstream_buffer << "Dim size: ";
     for (uint64_t i = 0; i < this->dim_size.size(); i++) {
-      (*sstream_buffer) << this->dim_size[i] << ", ";
+      sstream_buffer << this->dim_size[i] << ", ";
     }
-    logger->debug(sstream_buffer->str());
+    logger->debug(sstream_buffer.str());
 
-    sstream_buffer->str("");
-    (*sstream_buffer) << "BW per dim: ";
+    sstream_buffer.str("");
+    sstream_buffer << "BW per dim: ";
     for (uint64_t i = 0; i < this->dim_BW.size(); i++) {
-      (*sstream_buffer) << this->dim_BW[i] << ", ";
+      sstream_buffer << this->dim_BW[i] << ", ";
     }
-    logger->debug(sstream_buffer->str());
-    sstream_buffer->str("");
+    logger->debug(sstream_buffer.str());
   }
 }
 uint64_t OfflineGreedy::get_chunk_size_from_elapsed_time(

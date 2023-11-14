@@ -16,17 +16,15 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/RecvPacketEventHandlerData.hh"
 #include "astra-sim/system/SendPacketEventHandlerData.hh"
 #include "astra-sim/system/WorkloadLayerHandlerData.hh"
+#include "astra-sim/utils/Logging.hh"
 #include "json/json.hpp"
-#include "spdlog/logger.h"
-#include "spdlog/sinks/stdout_color_sinks.h"
 
 using namespace AstraSim;
 using namespace Chakra;
 using json = nlohmann::json;
 
-static auto logger = spdlog::stdout_color_mt("workload");
-static std::unique_ptr<std::stringstream> sstream_buffer =
-    std::make_unique<std::stringstream>();
+static std::stringstream sstream_buffer;
+static std::shared_ptr<spdlog::logger> logger = Logger::getLogger("workload");
 
 typedef ChakraProtoMsg::NodeType ChakraNodeType;
 typedef ChakraProtoMsg::MemoryType ChakraMemoryType;
@@ -190,14 +188,13 @@ void Workload::issue(std::shared_ptr<Chakra::ETFeederNode> node) {
 
   // from here the node should be valid and following code should run well.
   if (sys->trace_enabled) {
-    sstream_buffer->str("");
-    (*sstream_buffer) << "issue,sys->id=" << sys->id
-                      << ",tick=" << Sys::boostedTick()
-                      << ",node->id=" << node->getChakraNode()->id()
-                      << ",node->name=" << node->getChakraNode()->name()
-                      << ",node->node_type="
-                      << node->getChakraNode()->node_type();
-    logger->debug(sstream_buffer->str());
+    sstream_buffer.str("");
+    sstream_buffer << "issue,sys->id=" << sys->id
+                   << ",tick=" << Sys::boostedTick()
+                   << ",node->id=" << node->getChakraNode()->id()
+                   << ",node->name=" << node->getChakraNode()->name()
+                   << ",node->node_type=" << node->getChakraNode()->node_type();
+    logger->debug(sstream_buffer.str());
   }
 
   if ((node->getChakraNode()->node_type() == ChakraNodeType::MEM_LOAD_NODE) ||
@@ -364,14 +361,14 @@ void Workload::call(EventType event, CallData* data) {
     std::shared_ptr<Chakra::ETFeederNode> node = et_feeder->lookupNode(node_id);
 
     if (sys->trace_enabled) {
-      sstream_buffer->str("");
-      (*sstream_buffer) << "callback,sys->id=" << sys->id
-                        << ",tick=" << Sys::boostedTick()
-                        << ",node->id=" << node->getChakraNode()->id()
-                        << ",node->name=" << node->getChakraNode()->name()
-                        << ",node->node_type="
-                        << node->getChakraNode()->node_type();
-      logger->debug(sstream_buffer->str());
+      sstream_buffer.str("");
+      sstream_buffer << "callback,sys->id=" << sys->id
+                     << ",tick=" << Sys::boostedTick()
+                     << ",node->id=" << node->getChakraNode()->id()
+                     << ",node->name=" << node->getChakraNode()->name()
+                     << ",node->node_type="
+                     << node->getChakraNode()->node_type();
+      logger->debug(sstream_buffer.str());
     }
 
     hw_resource->release(node);
@@ -391,14 +388,14 @@ void Workload::call(EventType event, CallData* data) {
           et_feeder->lookupNode(wlhd->node_id);
 
       if (sys->trace_enabled) {
-        sstream_buffer->str("");
-        (*sstream_buffer) << "callback,sys->id=" << sys->id
-                          << ",tick=" << Sys::boostedTick()
-                          << ",node->id=" << node->getChakraNode()->id()
-                          << ",node->name=" << node->getChakraNode()->name()
-                          << ",node->node_type="
-                          << node->getChakraNode()->node_type();
-        logger->debug(sstream_buffer->str());
+        sstream_buffer.str("");
+        sstream_buffer << "callback,sys->id=" << sys->id
+                       << ",tick=" << Sys::boostedTick()
+                       << ",node->id=" << node->getChakraNode()->id()
+                       << ",node->name=" << node->getChakraNode()->name()
+                       << ",node->node_type="
+                       << node->getChakraNode()->node_type();
+        logger->debug(sstream_buffer.str());
       }
 
       hw_resource->release(node);
@@ -427,8 +424,8 @@ void Workload::fire() {
 
 void Workload::report() {
   Tick curr_tick = Sys::boostedTick();
-  sstream_buffer->str("");
-  (*sstream_buffer) << "sys[" << sys->id << "] finished, " << curr_tick
-                    << " cycles";
-  logger->info(sstream_buffer->str());
+  sstream_buffer.str("");
+  sstream_buffer << "sys[" << sys->id << "] finished, " << curr_tick
+                 << " cycles";
+  logger->info(sstream_buffer.str());
 }

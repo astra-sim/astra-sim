@@ -10,15 +10,14 @@ LICENSE file in the root directory of this source tree.
 #include <memory>
 #include <sstream>
 
-#include "spdlog/logger.h"
-#include "spdlog/sinks/stdout_color_sinks.h"
+#include "astra-sim/utils/Logging.hh"
 
 using namespace std;
 using namespace AstraSim;
 
-static auto logger = spdlog::stdout_color_mt("system::topology::RingTopology");
-static std::unique_ptr<std::stringstream> sstream_buffer =
-    std::make_unique<std::stringstream>();
+static std::stringstream sstream_buffer;
+static std::shared_ptr<spdlog::logger> logger =
+    Logger::getLogger("system::topology::RingTopology");
 
 RingTopology::RingTopology(Dimension dimension, int id, std::vector<int> NPUs)
     : BasicLogicalTopology(BasicLogicalTopology::BasicTopology::Ring) {
@@ -41,13 +40,13 @@ RingTopology::RingTopology(Dimension dimension, int id, std::vector<int> NPUs)
     }
   }
 
-  sstream_buffer->str("");
-  (*sstream_buffer) << "custom ring, "
-                    << "id: " << id << " dimension: " << name
-                    << " total nodes in ring: " << total_nodes_in_ring
-                    << " index in ring: " << index_in_ring
-                    << "total nodes in ring: " << total_nodes_in_ring;
-  logger->info(sstream_buffer->str());
+  sstream_buffer.str("");
+  sstream_buffer << "custom ring, "
+                 << "id: " << id << " dimension: " << name
+                 << " total nodes in ring: " << total_nodes_in_ring
+                 << " index in ring: " << index_in_ring
+                 << "total nodes in ring: " << total_nodes_in_ring;
+  logger->info(sstream_buffer.str());
 
   assert(index_in_ring >= 0);
 }
@@ -65,14 +64,14 @@ RingTopology::RingTopology(
     name = "horizontal";
   }
   if (id == 0) {
-    sstream_buffer->str("");
-    (*sstream_buffer) << "ring of node 0, "
-                      << "id: " << id << " dimension: " << name
-                      << " total nodes in ring: " << total_nodes_in_ring
-                      << " index in ring: " << index_in_ring
-                      << " offset: " << offset
-                      << "total nodes in ring: " << total_nodes_in_ring;
-    logger->info(sstream_buffer->str());
+    sstream_buffer.str("");
+    sstream_buffer << "ring of node 0, "
+                   << "id: " << id << " dimension: " << name
+                   << " total nodes in ring: " << total_nodes_in_ring
+                   << " index in ring: " << index_in_ring
+                   << " offset: " << offset
+                   << "total nodes in ring: " << total_nodes_in_ring;
+    logger->info(sstream_buffer.str());
   }
   this->id = id;
   this->total_nodes_in_ring = total_nodes_in_ring;
@@ -104,13 +103,13 @@ int RingTopology::get_receiver_homogeneous(
       index++;
     }
     if (receiver < 0) {
-      sstream_buffer->str("");
-      (*sstream_buffer) << "at dim: " << name << "at id: " << id
-                        << "dimension: " << name << " index: " << index
-                        << " ,node id: " << node_id << " ,offset: " << offset
-                        << " ,index_in_ring: " << index_in_ring
-                        << " receiver: " << receiver;
-      logger->info(sstream_buffer->str());
+      sstream_buffer.str("");
+      sstream_buffer << "at dim: " << name << "at id: " << id
+                     << "dimension: " << name << " index: " << index
+                     << " ,node id: " << node_id << " ,offset: " << offset
+                     << " ,index_in_ring: " << index_in_ring
+                     << " receiver: " << receiver;
+      logger->info(sstream_buffer.str());
     }
     assert(receiver >= 0);
     id_to_index[receiver] = index;
@@ -125,13 +124,13 @@ int RingTopology::get_receiver_homogeneous(
       index--;
     }
     if (receiver < 0) {
-      sstream_buffer->str("");
-      (*sstream_buffer) << "at dim: " << name << "at id: " << id
-                        << "dimension: " << name << " index: " << index
-                        << " ,node id: " << node_id << " ,offset: " << offset
-                        << " ,index_in_ring: " << index_in_ring
-                        << " receiver: " << receiver;
-      logger->info(sstream_buffer->str());
+      sstream_buffer.str("");
+      sstream_buffer << "at dim: " << name << "at id: " << id
+                     << "dimension: " << name << " index: " << index
+                     << " ,node id: " << node_id << " ,offset: " << offset
+                     << " ,index_in_ring: " << index_in_ring
+                     << " receiver: " << receiver;
+      logger->info(sstream_buffer.str());
     }
     assert(receiver >= 0);
     id_to_index[receiver] = index;

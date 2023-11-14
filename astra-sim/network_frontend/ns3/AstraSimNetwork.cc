@@ -1,7 +1,8 @@
 #include <json/json.hpp>
-#include "astra-sim/utils/AstraNetworkAPI.hh"
 #include "astra-sim/system/Sys.hh"
+#include "astra-sim/utils/AstraNetworkAPI.hh"
 #include "extern/remote_memory_backend/analytical/AnalyticalRemoteMemory.hh"
+#include "spdlog/spdlog.h"
 
 #include <execinfo.h>
 #include <stdio.h>
@@ -272,5 +273,12 @@ int main(int argc, char* argv[]) {
   Simulator::Run();
   Simulator::Stop(Seconds(2000000000));
   Simulator::Destroy();
+
+  // cleanup
+  for (auto system : systems) {
+    delete system;
+  }
+  spdlog::shutdown();
+
   return 0;
 }

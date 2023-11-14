@@ -9,14 +9,11 @@ LICENSE file in the root directory of this source tree.
 #include <sstream>
 
 #include "astra-sim/system/StreamBaseline.hh"
-#include "spdlog/logger.h"
-#include "spdlog/sinks/stdout_color_sinks.h"
+#include "astra-sim/utils/Logging.hh"
 
 using namespace AstraSim;
-
-static auto logger = spdlog::stdout_color_mt("system::BaseStream");
-static std::unique_ptr<std::stringstream> sstream_buffer =
-    std::make_unique<std::stringstream>();
+static std::shared_ptr<spdlog::logger> logger =
+    Logger::getLogger("system::BaseStream");
 
 std::map<int, int> BaseStream::synchronizer;
 std::map<int, int> BaseStream::ready_counter;

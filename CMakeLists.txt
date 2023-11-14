@@ -20,6 +20,7 @@ find_package(Protobuf REQUIRED)
 file(GLOB srcs
         "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/*.cc"
         "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/workload/*.cc"
+        "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/utils/*.cc"
         "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/collective/*.cc"
         "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/topology/*.cc"
         "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/memory/*.cc"

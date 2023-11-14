@@ -9,6 +9,7 @@ LICENSE file in the root directory of this source tree.
 #include <remote_memory_backend/analytical/AnalyticalRemoteMemory.hh>
 #include "common/CmdLineParser.hh"
 #include "congestion_aware/CongestionAwareNetworkApi.hh"
+#include "spdlog/spdlog.h"
 
 using namespace AstraSim;
 using namespace Analytical;
@@ -99,9 +100,11 @@ int main(int argc, char* argv[]) {
     event_queue->proceed();
   }
 
+  // cleanup
   for (auto system : systems) {
     delete system;
   }
+  spdlog::shutdown();
 
   // terminate simulation
   return 0;

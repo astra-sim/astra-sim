@@ -12,14 +12,14 @@ LICENSE file in the root directory of this source tree.
 
 #include "astra-sim/system/topology/DoubleBinaryTreeTopology.hh"
 #include "astra-sim/system/topology/RingTopology.hh"
-#include "spdlog/logger.h"
-#include "spdlog/sinks/stdout_color_sinks.h"
+#include "astra-sim/utils/Logging.hh"
 
 using namespace std;
 using namespace AstraSim;
 
-auto logger =
-    spdlog::stdout_color_mt("system::topology::GeneralComplexTopology");
+static std::stringstream sstream_buffer;
+static std::shared_ptr<spdlog::logger> logger =
+    Logger::getLogger("system::topology::GeneralComplexTopology");
 
 GeneralComplexTopology::GeneralComplexTopology(
     int id,
@@ -82,12 +82,10 @@ int GeneralComplexTopology::get_num_of_dimensions() {
 
 int GeneralComplexTopology::get_num_of_nodes_in_dimension(int dimension) {
   if (static_cast<uint64_t>(dimension) >= dimension_topology.size()) {
-    static std::unique_ptr<std::stringstream> buffer =
-        std::make_unique<std::stringstream>();
-    buffer->str("");
-    (*buffer) << "dim: " << dimension << " requested! but max dim is: "
-              << dimension_topology.size() - 1;
-    logger->warn(buffer->str());
+    sstream_buffer.str("");
+    sstream_buffer << "dim: " << dimension << " requested! but max dim is: "
+                   << dimension_topology.size() - 1;
+    logger->warn(sstream_buffer.str());
   }
   assert(static_cast<uint64_t>(dimension) < dimension_topology.size());
   return dimension_topology[dimension]->get_num_of_nodes_in_dimension(0);

@@ -29,17 +29,16 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/scheduling/OfflineGreedy.hh"
 #include "astra-sim/system/topology/BasicLogicalTopology.hh"
 #include "astra-sim/system/topology/GeneralComplexTopology.hh"
+#include "astra-sim/utils/Logging.hh"
 #include "json/json.hpp"
-#include "spdlog/logger.h"
-#include "spdlog/sinks/stdout_color_sinks.h"
 
 // using namespace std;
 using namespace Chakra;
 using json = nlohmann::json;
 
-static auto logger = spdlog::stdout_color_mt("sys");
-static std::unique_ptr<std::stringstream> sstream_buffer =
-    std::make_unique<std::stringstream>();
+static std::stringstream sstream_buffer;
+static std::shared_ptr<spdlog::logger> logger =
+    AstraSim::Logger::getLogger("system");
 
 namespace AstraSim {
 uint8_t* Sys::dummy_data = new uint8_t[2];
@@ -342,9 +341,9 @@ bool Sys::initialize_sys(std::string name) {
   inFile.open(name);
   if (!inFile) {
     if (id == 0) {
-      sstream_buffer->str("");
-      (*sstream_buffer) << "Unable to open file: " << name;
-      logger->critical(sstream_buffer->str());
+      sstream_buffer.str("");
+      sstream_buffer << "Unable to open file: " << name;
+      logger->critical(sstream_buffer.str());
     }
     exit(1);
   }
