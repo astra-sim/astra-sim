@@ -36,10 +36,6 @@ LICENSE file in the root directory of this source tree.
 using namespace Chakra;
 using json = nlohmann::json;
 
-static std::stringstream sstream_buffer;
-static std::shared_ptr<spdlog::logger> logger =
-    AstraSim::Logger::getLogger("system");
-
 namespace AstraSim {
 uint8_t* Sys::dummy_data = new uint8_t[2];
 std::vector<Sys*> Sys::all_sys;
@@ -341,9 +337,9 @@ bool Sys::initialize_sys(std::string name) {
   inFile.open(name);
   if (!inFile) {
     if (id == 0) {
-      sstream_buffer.str("");
-      sstream_buffer << "Unable to open file: " << name;
-      logger->critical(sstream_buffer.str());
+      std::shared_ptr<spdlog::logger> logger =
+          AstraSim::Logger::getLogger("system");
+      logger->critical("unable to open file: " + name);
     }
     exit(1);
   }
@@ -518,12 +514,12 @@ Tick Sys::boostedTick() {
 }
 
 void Sys::sys_panic(std::string msg) {
-  logger->critical(msg);
+  AstraSim::Logger::getLogger("system")->critical(msg);
   exit(1);
 }
 
 void Sys::exit_sim_loop(std::string msg) {
-  logger->info(msg);
+  AstraSim::Logger::getLogger("system")->info(msg);
 }
 
 void Sys::call(EventType type, CallData* data) {}
@@ -535,7 +531,8 @@ void Sys::call_events() {
       (std::get<0>(callable))
           ->call(std::get<1>(callable), std::get<2>(callable));
     } catch (...) {
-      logger->critical("warning! a callable is removed before call");
+      AstraSim::Logger::getLogger("system")->warn(
+          "warning! a callable is removed before call");
     }
   }
   if (event_queue[Sys::boostedTick()].size() > 0) {
@@ -1049,7 +1046,7 @@ CollectivePhase Sys::generate_collective_phase(
             collective_type, id, (RingTopology*)topology, data_size));
     return vn;
   } else {
-    logger->critical(
+    AstraSim::Logger::getLogger("system")->critical(
         "Error: No known collective implementation for collective phase");
     exit(1);
   }
