@@ -12,8 +12,6 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/utils/Logging.hh"
 
 using namespace AstraSim;
-static std::shared_ptr<spdlog::logger> logger =
-    Logger::getLogger("system::BaseStream");
 
 std::map<int, int> BaseStream::synchronizer;
 std::map<int, int> BaseStream::ready_counter;
@@ -34,6 +32,8 @@ BaseStream::BaseStream(
   if (synchronizer.find(stream_id) != synchronizer.end()) {
     synchronizer[stream_id]++;
   } else {
+    std::shared_ptr<spdlog::logger> logger =
+        Logger::getLogger("system::BaseStream");
     logger->debug("synchronizer set!");
     synchronizer[stream_id] = 1;
     ready_counter[stream_id] = 0;

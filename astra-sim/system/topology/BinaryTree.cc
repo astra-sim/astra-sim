@@ -14,9 +14,6 @@ LICENSE file in the root directory of this source tree.
 using namespace std;
 using namespace AstraSim;
 
-static auto logger = Logger::getLogger("system::topology::BinaryTree");
-static std::stringstream sstream_buffer;
-
 BinaryTree::BinaryTree(
     int id,
     TreeType tree_type,
@@ -107,6 +104,9 @@ BinaryTree::Type BinaryTree::get_node_type(int id) {
 }
 
 void BinaryTree::print(Node* node) {
+  std::shared_ptr<spdlog::logger> logger =
+      Logger::getLogger("system::topology::BinaryTree");
+  std::stringstream sstream_buffer;
   sstream_buffer.str("");
   sstream_buffer << "I am node: " << node->id;
   if (node->left_child != nullptr) {

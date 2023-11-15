@@ -23,16 +23,15 @@ LICENSE file in the root directory of this source tree.
 using namespace std;
 using namespace AstraSim;
 
-static std::stringstream sstream_buffer;
-static std::shared_ptr<spdlog::logger> logger =
-    Logger::getLogger("system::CSVWriter");
-
 CSVWriter::CSVWriter(std::string path, std::string name) {
   this->path = path;
   this->name = name;
 }
 
 void CSVWriter::initialize_csv(int rows, int cols) {
+  std::stringstream sstream_buffer;
+  std::shared_ptr<spdlog::logger> logger =
+      Logger::getLogger("system::CSVWriter");
   sstream_buffer.str("");
   sstream_buffer << "CSV path and filename: " << path + name;
   logger->info(sstream_buffer.str());
@@ -91,18 +90,15 @@ void CSVWriter::initialize_csv(int rows, int cols) {
 
 void CSVWriter::finalize_csv(
     std::list<std::list<std::pair<uint64_t, double>>> dims) {
-  sstream_buffer.str("");
-  sstream_buffer << "path to create csvs is: " << path;
-  logger->info(sstream_buffer.str());
+  auto logger = Logger::getLogger("system::CSVWriter");
+  logger->info("path to create csvs is: {}", path);
   int trial = 10000;
   do {
     myFile.open(path + name, std::fstream::out);
     trial--;
   } while (!myFile.is_open() && trial > 0);
   if (trial == 0) {
-    sstream_buffer.str("");
-    sstream_buffer << "Unable to create file: " << path + name;
-    logger->critical(sstream_buffer.str());
+    logger->critical("Unable to create file: {}{}", path, name);
 
     logger->critical(
         "This error is fatal. Please make sure the CSV write path exists.");
@@ -117,14 +113,10 @@ void CSVWriter::finalize_csv(
   } while (!myFile.is_open());
 
   if (!myFile) {
-    sstream_buffer.str("");
-    sstream_buffer << "Unable to open file: " << path + name;
-    logger->critical(sstream_buffer.str());
+    logger->critical("Unable to create file: {}{}", path, name);
 
-    sstream_buffer.str("");
-    sstream_buffer
-        << "This error is fatal. Please make sure the CSV write path exists.";
-    logger->critical(sstream_buffer.str());
+    logger->critical(
+        "This error is fatal. Please make sure the CSV write path exists.");
     exit(1);
   } else {
     logger->info("success in openning file");
@@ -205,6 +197,8 @@ void CSVWriter::write_cell(int row, int column, std::string data) {
       column--;
     }
     if (*buf == '\n') {
+      std::shared_ptr<spdlog::logger> logger =
+          Logger::getLogger("system::CSVWriter");
       logger->critical("fatal error in inserting cewll!");
       exit(1);
     }

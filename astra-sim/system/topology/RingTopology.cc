@@ -15,10 +15,6 @@ LICENSE file in the root directory of this source tree.
 using namespace std;
 using namespace AstraSim;
 
-static std::stringstream sstream_buffer;
-static std::shared_ptr<spdlog::logger> logger =
-    Logger::getLogger("system::topology::RingTopology");
-
 RingTopology::RingTopology(Dimension dimension, int id, std::vector<int> NPUs)
     : BasicLogicalTopology(BasicLogicalTopology::BasicTopology::Ring) {
   name = "local";
@@ -39,6 +35,10 @@ RingTopology::RingTopology(Dimension dimension, int id, std::vector<int> NPUs)
       index_in_ring = i;
     }
   }
+
+  std::shared_ptr<spdlog::logger> logger =
+      Logger::getLogger("system::topology::RingTopology");
+  std::stringstream sstream_buffer;
 
   sstream_buffer.str("");
   sstream_buffer << "custom ring, "
@@ -64,6 +64,9 @@ RingTopology::RingTopology(
     name = "horizontal";
   }
   if (id == 0) {
+    std::shared_ptr<spdlog::logger> logger =
+        Logger::getLogger("system::topology::RingTopology");
+    std::stringstream sstream_buffer;
     sstream_buffer.str("");
     sstream_buffer << "ring of node 0, "
                    << "id: " << id << " dimension: " << name
@@ -94,6 +97,9 @@ int RingTopology::get_receiver_homogeneous(
     int offset) {
   assert(id_to_index.find(node_id) != id_to_index.end());
   int index = id_to_index[node_id];
+  std::shared_ptr<spdlog::logger> logger =
+      Logger::getLogger("system::topology::RingTopology");
+  std::stringstream sstream_buffer;
   if (direction == RingTopology::Direction::Clockwise) {
     int receiver = node_id + offset;
     if (index == total_nodes_in_ring - 1) {

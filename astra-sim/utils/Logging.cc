@@ -8,6 +8,7 @@
 namespace AstraSim {
 
 std::vector<spdlog::sink_ptr> Logger::sinks;
+std::vector<std::shared_ptr<spdlog::logger>> Logger::loggers;
 
 std::shared_ptr<spdlog::logger> Logger::getLogger(
     const std::string& loggerName) {
@@ -16,6 +17,16 @@ std::shared_ptr<spdlog::logger> Logger::getLogger(
     return logger;
   else
     return Logger::createLogger(loggerName);
+}
+
+void Logger::shutdown(void) {
+  spdlog::drop_all();
+  spdlog::shutdown();
+  for (auto logger : loggers) {
+    logger->sinks().clear();
+  }
+  Logger::sinks.clear();
+  Logger::loggers.clear();
 }
 
 std::shared_ptr<spdlog::logger> Logger::createLogger(
@@ -27,7 +38,9 @@ std::shared_ptr<spdlog::logger> Logger::createLogger(
   std::shared_ptr<spdlog::logger> logger = std::make_shared<spdlog::logger>(
       loggerName, std::begin(Logger::sinks), std::end(Logger::sinks));
   logger->set_level(spdlog::level::trace);
+  logger->flush_on(spdlog::level::info);
   spdlog::register_logger(logger);
+  loggers.push_back(logger);
   return logger;
 }
 

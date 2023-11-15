@@ -15,8 +15,6 @@ LICENSE file in the root directory of this source tree.
 
 using namespace AstraSim;
 
-static auto logger = Logger::getLogger("system::scheduling::OfflineGreedy");
-static std::stringstream sstream_buffer;
 std::map<long long, std::vector<int>> OfflineGreedy::chunk_schedule;
 std::map<long long, int> OfflineGreedy::schedule_consumer;
 std::map<long long, uint64_t> OfflineGreedy::global_chunk_size;
@@ -47,6 +45,8 @@ OfflineGreedy::OfflineGreedy(Sys* sys) {
     }
   }
   if (sys->id == 0) {
+    auto logger = Logger::getLogger("system::scheduling::OfflineGreedy");
+    std::stringstream sstream_buffer;
     logger->debug("Themis is configured with the following parameters: ");
 
     sstream_buffer.str("");

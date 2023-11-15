@@ -10,9 +10,11 @@
 #include <fstream>
 #include <iostream>
 #include <queue>
+#include <sstream>
 #include <string>
 #include <thread>
 #include <vector>
+#include "astra-sim/utils/Logging.hh"
 #include "entry.h"
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
@@ -162,7 +164,9 @@ void read_logical_topo_config(
   ifstream inFile;
   inFile.open(network_configuration);
   if (!inFile) {
-    cerr << "Unable to open file: " << network_configuration << endl;
+    auto logger =
+        AstraSim::Logger::getLogger("network_frontend::ns3::AstraSimNetwork");
+    logger->critical("Unable to open file: " + network_configuration);
     exit(1);
   }
 
@@ -278,7 +282,7 @@ int main(int argc, char* argv[]) {
   for (auto system : systems) {
     delete system;
   }
-  spdlog::shutdown();
+  AstraSim::Logger::shutdown();
 
   return 0;
 }

@@ -104,7 +104,7 @@ int main(int argc, char* argv[]) {
   for (auto system : systems) {
     delete system;
   }
-  spdlog::shutdown();
+  AstraSim::Logger::shutdown();
 
   // terminate simulation
   return 0;

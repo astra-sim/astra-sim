@@ -23,9 +23,6 @@ using namespace AstraSim;
 using namespace Chakra;
 using json = nlohmann::json;
 
-static std::stringstream sstream_buffer;
-static std::shared_ptr<spdlog::logger> logger = Logger::getLogger("workload");
-
 typedef ChakraProtoMsg::NodeType ChakraNodeType;
 typedef ChakraProtoMsg::MemoryType ChakraMemoryType;
 typedef ChakraProtoMsg::CollectiveCommType ChakraCollectiveCommType;
@@ -48,7 +45,7 @@ Workload::Workload(
       error_msg =
           "Unknown workload file: " + workload_filename + " access error";
     }
-    std::cerr << error_msg << std::endl;
+    Logger::getLogger("workload")->critical(error_msg);
     exit(EXIT_FAILURE);
   }
   this->et_feeder = new ETFeeder(workload_filename);
@@ -173,12 +170,14 @@ void Workload::issue(std::shared_ptr<Chakra::ETFeederNode> node) {
   // will stop if field check fails. Otherwise, just skip these invalid nodes
   // and continue run (default behavior)
   constexpr bool strict_mode = true;
+  std::shared_ptr<spdlog::logger> logger = Logger::getLogger("workload");
+  std::stringstream sstream_buffer;
   try {
     node_sanity_check(node);
   } catch (std::invalid_argument& e) {
     // conditional catch when not strict_mode
     if (!strict_mode) {
-      std::cerr << e.what() << std::endl;
+      logger->warn(e.what());
       skip_invalid(node);
       return;
     } else {
@@ -340,7 +339,7 @@ void Workload::issue_comm(std::shared_ptr<Chakra::ETFeederNode> node) {
         &Sys::handleEvent,
         rcehd);
   } else {
-    std::cerr << "Unknown communication node type" << std::endl;
+    Logger::getLogger("workload")->critical("Unknown communication node type");
     exit(EXIT_FAILURE);
   }
 }
@@ -354,6 +353,8 @@ void Workload::call(EventType event, CallData* data) {
   if (is_finished) {
     return;
   }
+  std::shared_ptr<spdlog::logger> logger = Logger::getLogger("workload");
+  std::stringstream sstream_buffer;
 
   if (event == EventType::CollectiveCommunicationFinished) {
     IntData* int_data = (IntData*)data;
@@ -424,8 +425,6 @@ void Workload::fire() {
 
 void Workload::report() {
   Tick curr_tick = Sys::boostedTick();
-  sstream_buffer.str("");
-  sstream_buffer << "sys[" << sys->id << "] finished, " << curr_tick
-                 << " cycles";
-  logger->info(sstream_buffer.str());
+  std::shared_ptr<spdlog::logger> logger = Logger::getLogger("workload");
+  logger->info("sys[{}] finished, {} cycles", sys->id, curr_tick);
 }
