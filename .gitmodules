@@ -6,8 +6,8 @@
 	url = git@github.com:astra-sim/astra-network-garnet.git
 [submodule "extern/graph_frontend/chakra"]
 	path = extern/graph_frontend/chakra
-	url = git@github.com:astra-sim/chakra.git
-	branch = PR-PyTorch-ET-simulation
+	url = git@github.com:mlcommons/chakra.git
+	branch = main
 [submodule "extern/graph_frontend/param"]
 	path = extern/graph_frontend/param
 	url = git@github.com:astra-sim/param.git
