@@ -1,4 +1,4 @@
-#include "astra-sim/utils/Logging.hh"
+#include "astra-sim/common/Logging.hh"
 
 #include <iostream>
 

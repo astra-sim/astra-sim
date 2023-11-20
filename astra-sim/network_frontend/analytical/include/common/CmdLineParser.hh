@@ -5,9 +5,10 @@ LICENSE file in the root directory of this source tree.
 
 #pragma once
 
-#include <cxxopts/cxxopts.hpp>
 #include <cstdlib>
 #include <iostream>
+#include "astra-sim/common/Logging.hh"
+#include "cxxopts/cxxopts.hpp"
 
 namespace AstraSimAnalytical {
 
@@ -46,8 +47,9 @@ class CmdLineParser {
       return parsed[name].as<T>();
     } catch (const cxxopts::OptionException& e) {
       // error occured
-      std::cerr << "[Error] (AstraSim/analytical/common) "
-                << "Error parsing options: " << e.what() << std::endl;
+      auto logger = AstraSim::Logger::getLogger(
+          "network_frontend::analytical::CmdLineParser");
+      logger->critical("Error parsing options: {}", e.what());
       exit(-1);
     }
   }
