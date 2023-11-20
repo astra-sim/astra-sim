@@ -7,6 +7,7 @@ LICENSE file in the root directory of this source tree.
 #include <astra-network-analytical/common/NetworkParser.hh>
 #include <astra-network-analytical/congestion_aware/Helper.hh>
 #include <remote_memory_backend/analytical/AnalyticalRemoteMemory.hh>
+#include "astra-sim/common/Logging.hh"
 #include "common/CmdLineParser.hh"
 #include "congestion_aware/CongestionAwareNetworkApi.hh"
 
@@ -98,6 +99,13 @@ int main(int argc, char* argv[]) {
   while (!event_queue->finished()) {
     event_queue->proceed();
   }
+
+  for (int i = 0; i < npus_count; i++) {
+    delete systems[i];
+  }
+  systems.clear();
+
+  AstraSim::Logger::shutdown();
 
   // terminate simulation
   return 0;

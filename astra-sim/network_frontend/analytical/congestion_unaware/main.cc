@@ -99,6 +99,13 @@ int main(int argc, char* argv[]) {
     event_queue->proceed();
   }
 
+  for (int i = 0; i < npus_count; i++) {
+    delete systems[i];
+  }
+  systems.clear();
+
+  AstraSim::Logger::shutdown();
+
   // terminate simulation
   return 0;
 }
