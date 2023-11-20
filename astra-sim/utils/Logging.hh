@@ -2,7 +2,6 @@
 #define ASTRASIM_LOGGING
 
 #include <map>
-#include <sstream>
 #include <string>
 #include <vector>
 

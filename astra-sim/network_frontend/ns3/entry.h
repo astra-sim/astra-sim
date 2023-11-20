@@ -244,19 +244,14 @@ void notify_sender_sending_finished(
     int tag,
     int src_port) {
   auto logger = AstraSim::Logger::getLogger("network_frontend::ns3::entry");
-  std::stringstream sstream_buffer;
   // Lookup the send_event registered at send_flow().
   pair<MsgEventKey, int> send_event_key =
       make_pair(make_pair(tag, make_pair(src_id, dst_id)), src_port);
   if (sim_send_waiting_hash.find(send_event_key) ==
       sim_send_waiting_hash.end()) {
-    sstream_buffer.str("");
-    sstream_bufffer
-        << "Cannot find send_event in sent_hash. Something is wrong."
-        << "tag, src_id, dst_id: " << tag << " " << src_id << " " << dst_id
-        << "\n";
-    logger->critical(sstream_buffer.str());
-    logger.flush();
+    logger->critical(
+        "Connot find send_event in sent_hash. Something is wrong.");
+    logger->critical("tag={} src_id={} dst_id={}", tag, src_id, dst_id);
     exit(1);
   }
 
@@ -264,15 +259,15 @@ void notify_sender_sending_finished(
   // expected by the system layer.
   MsgEvent send_event = sim_send_waiting_hash[send_event_key];
   if (send_event.remaining_msg_bytes != message_size) {
-    sstream_buffer.str("");
-    sstream_bufffer
-        << "The message size does not match what is expected. Something is "
-           "wrong."
-        << "tag, src_id, dst_id, expected msg_bytes, actual msg_bytes: " << tag
-        << " " << src_id << " " << dst_id << " "
-        << send_event.remaining_msg_bytes << " " << message_size << "\n";
-    logger->critical(sstream_buffer.str());
-    logger.flush();
+    logger->critical(
+        "The message size does not match what is expected/ Something is wrong.");
+    logger->critical(
+        "tag={}, src_id={}, expected msg_bytes={} actual msg_bytes={}",
+        tag,
+        src_id,
+        dst_id,
+        send_event.remaining_msg_bytes,
+        message_size);
     exit(1);
   }
   sim_send_waiting_hash.erase(send_event_key);
@@ -327,7 +322,8 @@ void qp_finish(FILE* fout, Ptr<RdmaQueuePair> q) {
   // Identify the tag of this message.
   if (sender_src_port_map.find(make_pair(q->sport, make_pair(sid, did))) ==
       sender_src_port_map.end()) {
-    cout << "could not find the tag, there must be something wrong" << endl;
+    auto logger = AstraSim::Logger::getLogger("network_frontend::ns3::entry");
+    logger->critical("could not find the tag, there must be something wrong");
     exit(-1);
   }
   int tag = sender_src_port_map[make_pair(q->sport, make_pair(sid, did))];

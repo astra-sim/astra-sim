@@ -13,7 +13,6 @@ LICENSE file in the root directory of this source tree.
 #include <cmath>
 #include <iostream>
 #include <memory>
-#include <sstream>
 #include <utility>
 #include <vector>
 
@@ -29,26 +28,17 @@ CSVWriter::CSVWriter(std::string path, std::string name) {
 }
 
 void CSVWriter::initialize_csv(int rows, int cols) {
-  std::stringstream sstream_buffer;
   std::shared_ptr<spdlog::logger> logger =
       Logger::getLogger("system::CSVWriter");
-  sstream_buffer.str("");
-  sstream_buffer << "CSV path and filename: " << path + name;
-  logger->info(sstream_buffer.str());
+  logger->info("CSV path and filename: {}{}", path, name);
   int trial = 10000;
   do {
     myFile.open(path + name, std::fstream::out);
     trial--;
   } while (!myFile.is_open() && trial > 0);
   if (trial == 0) {
-    sstream_buffer.str("");
-    sstream_buffer << "Unable to create file: " << path;
-    logger->critical(sstream_buffer.str());
-
-    sstream_buffer.str("");
-    sstream_buffer
-        << "This error is fatal. Please make sure the CSV write path exists.";
-    logger->critical(sstream_buffer.str());
+    logger->critical(
+        "This error is fatal. Please make sure the CSV write path exists.");
     exit(1);
   }
   do {
@@ -60,19 +50,12 @@ void CSVWriter::initialize_csv(int rows, int cols) {
   } while (!myFile.is_open());
 
   if (!myFile) {
-    sstream_buffer.str("");
-    sstream_buffer << "Unable to open file: " << path;
-    logger->critical(sstream_buffer.str());
-
-    sstream_buffer.str("");
-    sstream_buffer
-        << "This error is fatal. Please make sure the CSV write path exists.";
-    logger->critical(sstream_buffer.str());
+    logger->critical("Unable to open file: {}", path);
+    logger->critical(
+        "This error is fatal. Please make sure the CSV write path exists.");
     exit(1);
   } else {
-    sstream_buffer.str("");
-    sstream_buffer << "Success in opening CSV file for writing the report.";
-    logger->critical(sstream_buffer.str());
+    logger->critical("Success in opening CSV file for writing the report.");
   }
 
   myFile.seekp(0, std::ios_base::beg);

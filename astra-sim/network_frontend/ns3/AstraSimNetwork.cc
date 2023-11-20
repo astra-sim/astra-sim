@@ -10,7 +10,6 @@
 #include <fstream>
 #include <iostream>
 #include <queue>
-#include <sstream>
 #include <string>
 #include <thread>
 #include <vector>
@@ -33,16 +32,16 @@ class ASTRASimNetwork : public AstraSim::AstraNetworkAPI {
   ~ASTRASimNetwork() {}
 
   int sim_finish() {
+    auto logger =
+        AstraSim::Logger::getLogger("network_frontend::ns3::AstraSimNetwork");
     for (auto it = node_to_bytes_sent_map.begin();
          it != node_to_bytes_sent_map.end();
          it++) {
       pair<int, int> p = it->first;
       if (p.second == 0) {
-        cout << "All data sent from node " << p.first << " is " << it->second
-             << "\n";
+        logger->info("All data sent from node {} is {}", p.first, it->second);
       } else {
-        cout << "All data received by node " << p.first << " is " << it->second
-             << "\n";
+        logger->info("All data received by node {} is {}", p.first, it->second);
       }
     }
     exit(0);
@@ -186,7 +185,9 @@ void read_logical_topo_config(
     num_npus *= num_npus_per_dim;
     dimstr << num_npus_per_dim << ",";
   }
-  cout << "There are " << num_npus << " npus: " << dimstr.str() << "\n";
+  auto logger =
+      AstraSim::Logger::getLogger("network_frontend::ns3::AstraSimNetwork");
+  logger->info("There are {} npus: {}", num_npus, dimstr.str());
 
   queues_per_dim = vector<int>(logical_dims.size(), num_queues_per_dim);
 }
@@ -236,8 +237,9 @@ void parse_args(int argc, char* argv[]) {
 int main(int argc, char* argv[]) {
   LogComponentEnable("OnOffApplication", LOG_LEVEL_INFO);
   LogComponentEnable("PacketSink", LOG_LEVEL_INFO);
-
-  cout << "ASTRA-sim + NS3" << endl;
+  auto logger =
+      AstraSim::Logger::getLogger("network_frontend::ns3::AstraSimNetwork");
+  logger->info("ASTRA-sim + NS3");
 
   // Read network config and find logical dims.
   parse_args(argc, argv);

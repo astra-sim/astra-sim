@@ -8,7 +8,6 @@ LICENSE file in the root directory of this source tree.
 #include <cassert>
 #include <iostream>
 #include <memory>
-#include <sstream>
 
 #include "astra-sim/system/topology/DoubleBinaryTreeTopology.hh"
 #include "astra-sim/system/topology/RingTopology.hh"
@@ -80,11 +79,10 @@ int GeneralComplexTopology::get_num_of_nodes_in_dimension(int dimension) {
   if (static_cast<uint64_t>(dimension) >= dimension_topology.size()) {
     std::shared_ptr<spdlog::logger> logger =
         Logger::getLogger("system::topology::GeneralComplexTopology");
-    std::stringstream sstream_buffer;
-    sstream_buffer.str("");
-    sstream_buffer << "dim: " << dimension << " requested! but max dim is: "
-                   << dimension_topology.size() - 1;
-    logger->warn(sstream_buffer.str());
+    logger->warn(
+        "dim: {} requested! but max dim is: {}",
+        dimension,
+        dimension_topology.size() - 1);
   }
   assert(static_cast<uint64_t>(dimension) < dimension_topology.size());
   return dimension_topology[dimension]->get_num_of_nodes_in_dimension(0);

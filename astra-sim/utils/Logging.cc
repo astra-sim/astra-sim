@@ -2,8 +2,11 @@
 
 #include <iostream>
 
+#include "spdlog/async.h"
+#include "spdlog/sinks/null_sink.h"
 #include "spdlog/sinks/rotating_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
+#include "spdlog/spdlog.h"
 
 namespace AstraSim {
 
@@ -35,17 +38,21 @@ std::shared_ptr<spdlog::logger> Logger::createLogger(
   if (Logger::sinks.size() == 0) {
     Logger::initSinks();
   }
-  std::shared_ptr<spdlog::logger> logger = std::make_shared<spdlog::logger>(
-      loggerName, std::begin(Logger::sinks), std::end(Logger::sinks));
+  std::shared_ptr<spdlog::logger> logger =
+      spdlog::create_async<spdlog::sinks::null_sink_st>(loggerName);
+  for (spdlog::sink_ptr sink : Logger::sinks) {
+    logger->sinks().push_back(sink);
+  }
   logger->set_level(spdlog::level::trace);
   logger->flush_on(spdlog::level::info);
-  spdlog::register_logger(logger);
+  // spdlog::register_logger(logger);
   loggers.push_back(logger);
   return logger;
 }
 
 void Logger::initSinks() {
   const std::string log_filename = "log.log";
+  spdlog::init_thread_pool(65536, 1);
 
   spdlog::sink_ptr stdoutSink =
       std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
