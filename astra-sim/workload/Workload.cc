@@ -56,6 +56,8 @@ Workload::~Workload() {
     delete this->comm_group;
   if (this->et_feeder != nullptr)
     delete this->et_feeder;
+  if (this->hw_resource != nullptr)
+    delete this->hw_resource;
 }
 
 void Workload::initialize_comm_group(string comm_group_filename) {
@@ -121,6 +123,14 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
             node->name(),
             node->type());
   }
+  Logger::getLogger("workload")
+      ->trace(
+          "sys->id={},replay_only={},node->name={},time={}",
+          sys->id,
+          sys->replay_only,
+          node->name(),
+          node->runtime());
+  Logger::getLogger("workload")->flush();
   if (sys->replay_only) {
     hw_resource->occupy(node);
     issue_replay(node);
