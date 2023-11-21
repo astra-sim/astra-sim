@@ -51,7 +51,7 @@ For macOS, you can first install required dependencies using [homebrew](https://
 ```bash
 $ brew update
 $ brew upgrade
-$ brew install boost cmake coreutils 
+$ brew install boost cmake coreutils
 ```
 
 Then, you have to install protobuf 3.6.1 locally. You can download protobuf 3.6.1 here: [[GitHub]](https://github.com/protocolbuffers/protobuf/releases/tag/v3.6.1) [[protobuf-all-3.6.1.tar.gz]](https://github.com/protocolbuffers/protobuf/releases/download/v3.6.1/protobuf-all-3.6.1.tar.gz).
@@ -144,17 +144,17 @@ The et_generator can be used to define and generate any execution traces, functi
 ### Using the Execution Trace Generator
 You can generate execution traces with et_generator with the following commands.
 ```bash
-$ cd ./extern/graph_frontend/chakra/et_generator
-$ cmake . && make -j$(nproc)
-$ ./et_generator --num_npus 64 --num_dims 1
+$ cd ./extern/graph_frontend/chakra
+$ pip3 install .
+$ python3 -m chakra.et_generator.et_generator --num_npus 64 --num_dims 1
 ```
 
-To run one of the example traces (`oneCommNodeAllReduce`), execute the following command.
+To run one of the example traces (`one_comm_coll_node_allreduce`), execute the following command.
 ```bash
 # For the analytical network backend
 $ cd -
 $ ./build/astra_analytical/build/bin/AstraSim_Analytical_Congestion_Unaware \
-  --workload-configuration=./extern/graph_frontend/chakra/et_generator/oneCommNodeAllReduce \
+  --workload-configuration=./extern/graph_frontend/chakra/one_comm_coll_node_allreduce \
   --system-configuration=./inputs/system/Switch.json \
   --network-configuration=./inputs/network/analytical/Switch.yml \
   --remote-memory-configuration=./inputs/remote_memory/analytical/no_memory_expansion.json
@@ -166,7 +166,7 @@ $ ./build/astra_ns3/build.sh -r
 # Or, alternatively:
 $ cd ./extern/network_backend/ns3/simulation
 $ ./waf --run "scratch/AstraSimNetwork \
-  --workload-configuration=../../../../extern/graph_frontend/chakra/et_generator/oneCommNodeAllReduce \
+  --workload-configuration=../../../../extern/graph_frontend/chakra/one_comm_coll_node_allreduce \
   --system-configuration=../../../../inputs/system/Switch.json \
   --network-configuration=mix/config.txt \
   --remote-memory-configuration=../../../../inputs/remote_memory/analytical/no_memory_expansion.json \
@@ -188,8 +188,8 @@ sys[63] finished, 50904 cycles
 You can convert ASTRA-sim 1.0 text input files into Chakra traces with the following commands.
 ```bash
 $ cd ./extern/graph_frontend/chakra/
-$ python3 setup.py install --user
-$ python3 -m et_converter.et_converter \
+$ pip3 install .
+$ python3 -m chakra.et_converter.et_converter \
     --input_type Text \
     --input_filename ../../../inputs/workload/ASTRA-sim-1.0/Resnet50_DataParallel.txt \
     --output_filename ../../../inputs/workload/ASTRA-sim-2.0/Resnet50_DataParallel \
@@ -230,7 +230,7 @@ $ cd extern/graph_frontend/param/train/compute/python/
 $ pip3 install -r requirements.txt
 $ pip3 install .
 
-# Second, unzip the input files 
+# Second, unzip the input files
 $ cd ./test/data
 $ tar -xzf dlrm_kineto.tar.gz
 $ tar -xzf dlrm_pytorch_et.tar.gz
@@ -257,19 +257,19 @@ $ python3 setup.py install
 $ pip install protobuf==3.20.*
 
 # Almost there! The script below will make those enhanced PyTorch-ETs dance in Chakra format, getting them all prepped for a session with astrasim
-$ python3 -m et_converter.et_converter    --input_type PyTorch    --input_filename et_plus/dlrm_eg_0_plus.json    --output_filename et_plus/dlrm_chakra.0.et    --num_dims 1 
-$ python3 -m et_converter.et_converter    --input_type PyTorch    --input_filename et_plus/dlrm_eg_1_plus.json    --output_filename et_plus/dlrm_chakra.1.et    --num_dims 1 
-$ python3 -m et_converter.et_converter    --input_type PyTorch    --input_filename et_plus/dlrm_eg_2_plus.json    --output_filename et_plus/dlrm_chakra.2.et    --num_dims 1 
-$ python3 -m et_converter.et_converter    --input_type PyTorch    --input_filename et_plus/dlrm_eg_3_plus.json    --output_filename et_plus/dlrm_chakra.3.et    --num_dims 1 
-$ python3 -m et_converter.et_converter    --input_type PyTorch    --input_filename et_plus/dlrm_eg_4_plus.json    --output_filename et_plus/dlrm_chakra.4.et    --num_dims 1 
-$ python3 -m et_converter.et_converter    --input_type PyTorch    --input_filename et_plus/dlrm_eg_5_plus.json    --output_filename et_plus/dlrm_chakra.5.et    --num_dims 1 
-$ python3 -m et_converter.et_converter    --input_type PyTorch    --input_filename et_plus/dlrm_eg_6_plus.json    --output_filename et_plus/dlrm_chakra.6.et    --num_dims 1 
-$ python3 -m et_converter.et_converter    --input_type PyTorch    --input_filename et_plus/dlrm_eg_7_plus.json    --output_filename et_plus/dlrm_chakra.7.et    --num_dims 1 .
+$ python3 -m chakra.et_converter.et_converter --input_type PyTorch --input_filename et_plus/dlrm_eg_0_plus.json --output_filename et_plus/dlrm_chakra.0.et --num_dims 1
+$ python3 -m chakra.et_converter.et_converter --input_type PyTorch --input_filename et_plus/dlrm_eg_1_plus.json --output_filename et_plus/dlrm_chakra.1.et --num_dims 1
+$ python3 -m chakra.et_converter.et_converter --input_type PyTorch --input_filename et_plus/dlrm_eg_2_plus.json --output_filename et_plus/dlrm_chakra.2.et --num_dims 1
+$ python3 -m chakra.et_converter.et_converter --input_type PyTorch --input_filename et_plus/dlrm_eg_3_plus.json --output_filename et_plus/dlrm_chakra.3.et --num_dims 1
+$ python3 -m chakra.et_converter.et_converter --input_type PyTorch --input_filename et_plus/dlrm_eg_4_plus.json --output_filename et_plus/dlrm_chakra.4.et --num_dims 1
+$ python3 -m chakra.et_converter.et_converter --input_type PyTorch --input_filename et_plus/dlrm_eg_5_plus.json --output_filename et_plus/dlrm_chakra.5.et --num_dims 1
+$ python3 -m chakra.et_converter.et_converter --input_type PyTorch --input_filename et_plus/dlrm_eg_6_plus.json --output_filename et_plus/dlrm_chakra.6.et --num_dims 1
+$ python3 -m chakra.et_converter.et_converter --input_type PyTorch --input_filename et_plus/dlrm_eg_7_plus.json --output_filename et_plus/dlrm_chakra.7.et --num_dims 1
 
 # And, as all good things come to an end, head back home to the root directory of astrasim
 $ cd ../../../
 
-# Update network topology 
+# Update network topology
 $ vi ./inputs/network/analytical/FullyConnected.yml
 
 npus_count: [ 8 ]  # number of NPUs
@@ -300,13 +300,12 @@ sys[1] finished, 14249000 cycles
 We are constantly working to improve ASTRA-sim and expand its capabilities. Here are some of the features that are currently under active development:
 
 * Network Backends
-    * Congestion-aware Analytical
     * Garnet (for chiplet fabrics)
 * Detailed Statistics Report (Network Utilization)
-  
+ 
 Please note that these features are under active development and, while we aim to have them available as soon as possible, the completion timeline can vary. Check back regularly for updates on the progress of these and other features. This is an open-source project and we also value PRs from the community on features they have added.
 
-We appreciate your interest and support in ASTRA-sim! 
+We appreciate your interest and support in ASTRA-sim!
 
 
 ## Contact Us
