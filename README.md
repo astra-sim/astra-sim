@@ -313,12 +313,12 @@ To join the mailing list, please fill out the following form: https://forms.gle/
 
 This project is a collaboration of dedicated professionals. The core developers and contributors are acknowledged below.
 
-| Developer | Organization | Responsibility | Contact |
-|-----------|--------------|----------------|---------|
-| Saeed Rashidi | Hewlett Packard Labs | ASTRA-sim 1.0, system layer, collective communication | rashidi1saeid@gmail.com |
-| William Won | Georgia Tech | Network layer | william.won@gatech.edu |
-| Taekyung Heo | Georgia Tech | Chakra, workload layer, graph execution engine, memory API | taekyung@gatech.edu |
-| Changhai Man | Georgia Tech | Chakra | cman8@gatech.edu |
-| Jinsun Yoo   | Georgia Tech | NS3 Network Layer Integration | jinsun@gatech.edu |
-| Srinivas Sridharan | Meta | Chakra, General inquiries | srinivas@mlcommons.org |
-| Tushar Krishna | Georgia Tech | General inquiries | tushar@ece.gatech.edu |
+| Developer | Organization | Responsibility |
+|-----------|--------------|----------------|
+| Saeed Rashidi | Hewlett Packard Labs | ASTRA-sim 1.0, system layer, collective communication |
+| William Won | Georgia Tech | Network layer |
+| Taekyung Heo | Georgia Tech | Chakra, workload layer, graph execution engine, memory API |
+| Changhai Man | Georgia Tech | Chakra |
+| Jinsun Yoo   | Georgia Tech | NS3 Network Layer Integration |
+| Srinivas Sridharan | Meta | Chakra, General inquiries |
+| Tushar Krishna | Georgia Tech | General inquiries |
