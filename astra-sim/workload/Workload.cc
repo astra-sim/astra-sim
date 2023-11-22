@@ -191,8 +191,7 @@ void Workload::issue_comp(shared_ptr<Chakra::ETFeederNode> node) {
     double perf = sys->roofline->get_perf(operational_intensity);
     double elapsed_time =
         static_cast<double>(node->num_ops()) / perf;
-    uint64_t runtime =
-        static_cast<uint64_t>(elapsed_time * static_cast<double>(FREQ));
+    uint64_t runtime = static_cast<uint64_t>(elapsed_time);
     sys->register_event(this, EventType::General, wlhd, runtime);
   } else {
     // advance this node forward the recorded "replayed" time specificed in the ET.

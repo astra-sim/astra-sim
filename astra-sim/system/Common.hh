@@ -12,8 +12,8 @@ namespace AstraSim {
 
 typedef unsigned long long Tick;
 
-constexpr uint64_t CLOCK_PERIOD = 1;
-constexpr uint64_t FREQ = 1275 * 1000 * 1000;
+constexpr uint64_t CLOCK_PERIOD = 1; // 1ns
+constexpr uint64_t FREQ = 1000 * 1000 * 1000; // 1GHz
 
 enum time_type_e { SE = 0, MS, US, NS, FS };
 
