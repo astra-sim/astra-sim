@@ -252,9 +252,7 @@ $ mv ./test/data/dlrm_pytorch_et/*_plus.json ./test/data/et_plus/
 # Next, shuffle the enhanced ETs over to the chakra submodule for that transformation into Chakra goodness
 $ mv test/data/et_plus ../../../../../graph_frontend/chakra/
 $ cd ../../../../../graph_frontend/chakra/
-$ pip3 install -r requirements.txt
-$ python3 setup.py install
-$ pip install protobuf==3.20.*
+$ pip3 install .
 
 # Almost there! The script below will make those enhanced PyTorch-ETs dance in Chakra format, getting them all prepped for a session with astrasim
 $ python3 -m chakra.et_converter.et_converter --input_type PyTorch --input_filename et_plus/dlrm_eg_0_plus.json --output_filename et_plus/dlrm_chakra.0.et --num_dims 1
