@@ -320,5 +320,5 @@ This project is a collaboration of dedicated professionals. The core developers 
 | Taekyung Heo | Georgia Tech | Chakra, workload layer, graph execution engine, memory API |
 | Changhai Man | Georgia Tech | Chakra |
 | Jinsun Yoo   | Georgia Tech | NS3 Network Layer Integration |
-| Srinivas Sridharan | Meta | Chakra, General inquiries |
+| Srinivas Sridharan | NVIDIA | Chakra, General inquiries |
 | Tushar Krishna | Georgia Tech | General inquiries |
