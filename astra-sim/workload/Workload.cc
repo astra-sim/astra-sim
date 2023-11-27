@@ -113,6 +113,7 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
   if (sys->replay_only) {
       hw_resource->occupy(node);
       issue_replay(node);
+      et_feeder->addStartTime(node, Sys::boostedTick());
   } else {
     if ((node->type() == ChakraNodeType::MEM_LOAD_NODE)
         || (node->type() == ChakraNodeType::MEM_STORE_NODE)) {
@@ -123,6 +124,7 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
           << ",node->name=" << node->name() << endl;
       }
       issue_remote_mem(node);
+      // TODO
     } else if (
         node->is_cpu_op()
         || (!node->is_cpu_op() && node->type() == ChakraNodeType::COMP_NODE)) {
@@ -136,6 +138,7 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
                << ",node->name=" << node->name() << endl;
         }
         issue_comp(node);
+        et_feeder->addStartTime(node, Sys::boostedTick());
       }
     } else if (
         !node->is_cpu_op() &&
@@ -148,6 +151,7 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
              << ",node->name=" << node->name() << endl;
       }
       issue_comm(node);
+      et_feeder->addStartTime(node, Sys::boostedTick());
     } else if (
         node->type() == ChakraNodeType::INVALID_NODE) {
       skip_invalid(node);
@@ -337,6 +341,7 @@ void Workload::call(EventType event, CallData* data) {
     issue_dep_free_nodes();
 
     et_feeder->removeNode(node_id);
+    et_feeder->addEndTime(node, Sys::boostedTick());
 
     // The Dataset class provides statistics that should be used later to dump
     // more statistics in the workload layer
@@ -364,6 +369,7 @@ void Workload::call(EventType event, CallData* data) {
       issue_dep_free_nodes();
 
       et_feeder->removeNode(wlhd->node_id);
+      et_feeder->addEndTime(node, Sys::boostedTick());
       delete wlhd;
     }
   }
@@ -373,6 +379,7 @@ void Workload::call(EventType event, CallData* data) {
       (hw_resource->num_in_flight_gpu_comp_ops == 0) &&
       (hw_resource->num_in_flight_gpu_comm_ops == 0)) {
     report();
+    et_feeder->dumpUpdatedET();
     is_finished = true;
   }
 }
