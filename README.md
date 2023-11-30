@@ -271,6 +271,8 @@ $ cd ../../../
 $ vi ./inputs/network/analytical/FullyConnected.yml
 
 npus_count: [ 8 ]  # number of NPUs
+
+$ ./build/astra_analytical/build.sh
 ```
 
 Run the following command.
