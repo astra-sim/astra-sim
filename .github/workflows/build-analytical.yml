@@ -22,9 +22,7 @@ jobs:
       run: sudo apt install gcc g++ make cmake libboost-dev libboost-program-options-dev libprotobuf-dev protobuf-compiler python3 python3-pip
 
     - name: Install Python Packages
-      run: 
-        pip3 install --upgrade pip
-        pip3 install protobuf==3.6.1 pydot
+      run: pip3 install protobuf==3.6.1 pydot
         
     - name: Build
       run: bash ${{github.workspace}}/build/astra_analytical/build.sh
