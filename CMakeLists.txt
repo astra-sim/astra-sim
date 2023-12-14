@@ -30,7 +30,11 @@ file(GLOB srcs
         "${CMAKE_CURRENT_SOURCE_DIR}/extern/remote_memory_backend/analytical/*.cc")
 
 # Compile AstraSim Library
-add_library(AstraSim STATIC ${srcs})
+add_library(AstraSim STATIC ${srcs}
+        astra-sim/statistics/GStats.cc
+        astra-sim/statistics/GStats.hh
+        astra-sim/statistics/GStatsIoActivity.cc
+        astra-sim/statistics/GStatsIoActivity.hh)
 
 # Link libraries
 target_link_libraries(AstraSim PUBLIC ${Protobuf_LIBRARIES})

@@ -9,6 +9,7 @@ LICENSE file in the root directory of this source tree.
 #include <remote_memory_backend/analytical/AnalyticalRemoteMemory.hh>
 #include "common/CmdLineParser.hh"
 #include "congestion_aware/CongestionAwareNetworkApi.hh"
+#include <astra-sim/statistics/GStats.hh>
 
 using namespace AstraSim;
 using namespace Analytical;
@@ -16,6 +17,8 @@ using namespace AstraSimAnalytical;
 using namespace AstraSimAnalyticalCongestionAware;
 using namespace NetworkAnalytical;
 using namespace NetworkAnalyticalCongestionAware;
+
+Statistics stats;
 
 int main(int argc, char* argv[]) {
   // Parse command line arguments
@@ -98,6 +101,9 @@ int main(int argc, char* argv[]) {
   while (!event_queue->finished()) {
     event_queue->proceed();
   }
+
+  // Report all Stats here
+  stats.report();
 
   // terminate simulation
   return 0;

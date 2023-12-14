@@ -31,7 +31,11 @@ file(GLOB srcs_congestion_aware
 
 # Compile Congestion Unaware Backend
 if (BUILDTARGET STREQUAL "all" OR BUILDTARGET STREQUAL "congestion_unaware")
-    add_executable(AstraSim_Analytical_Congestion_Unaware ${srcs_congestion_unaware} ${srcs_common})
+    add_executable(AstraSim_Analytical_Congestion_Unaware ${srcs_congestion_unaware} ${srcs_common}
+            ../../statistics/GStats.cc
+            ../../statistics/GStats.hh
+            ../../statistics/GStatsIoActivity.cc
+            ../../statistics/GStatsIoActivity.hh)
     target_sources(AstraSim_Analytical_Congestion_Unaware PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/congestion_unaware/main.cc)
 
     # Link libraries
@@ -55,7 +59,11 @@ endif ()
 
 # Compile Congestion Aware Backend
 if (BUILDTARGET STREQUAL "all" OR BUILDTARGET STREQUAL "congestion_aware")
-    add_executable(AstraSim_Analytical_Congestion_Aware ${srcs_congestion_aware} ${srcs_common})
+    add_executable(AstraSim_Analytical_Congestion_Aware ${srcs_congestion_aware} ${srcs_common}
+            ../../statistics/GStats.cc
+            ../../statistics/GStats.hh
+            ../../statistics/GStatsIoActivity.cc
+            ../../statistics/GStatsIoActivity.hh)
     target_sources(AstraSim_Analytical_Congestion_Aware PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/congestion_aware/main.cc)
 
     # Link libraries
