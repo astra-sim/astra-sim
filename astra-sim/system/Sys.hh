@@ -152,7 +152,7 @@ class Sys : public Callable {
   //---------------------------------------------------------------------------
 
   // Middle-level Network Primitives ------------------------------------------
-  uint64_t determine_chunk_size(uint64_t size, ComType type);
+  uint64_t determine_chunk_size(uint64_t &size, ComType type);
   int get_priority(int explicit_priority);
   void insert_into_ready_list(BaseStream* stream);
   void insert_stream(std::list<BaseStream*>* queue, BaseStream* baseStream);
