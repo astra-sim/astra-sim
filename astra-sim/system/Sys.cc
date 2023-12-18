@@ -1188,7 +1188,7 @@ uint64_t Sys::determine_chunk_size(uint64_t size, ComType type) {
   // We want the collective size to have minimum size, otherwise, there is a possibility of
   // size overflow due to further dividing it to more fine-grained messages
   if (type != ComType::All_Gather)
-    size = std::max((uint64_t)this->total_nodes, size);
+    chunk_size = std::max((uint64_t)this->total_nodes, size);
   return chunk_size;
 }
 
