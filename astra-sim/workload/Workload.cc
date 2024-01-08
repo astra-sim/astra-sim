@@ -252,6 +252,7 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
       collective_comm_node_id_map[fp->my_id] = node->id();
       collective_comm_wrapper_map[fp->my_id] = fp;
       fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
+
     } else if (node->comm_type() ==
         ChakraCollectiveCommType::BROADCAST) {
       // broadcast colelctive has not been implemented in ASTRA-SIM yet.
@@ -259,12 +260,16 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
       assert(node->runtime() != 0);
       DataSet* fp = new DataSet(1);
       fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
+      collective_comm_node_id_map[fp->my_id] = node->id();
+      collective_comm_wrapper_map[fp->my_id] = fp;
       sys->register_event(
         fp,
         EventType::General,
         nullptr,
         // chakra runtimes are in microseconds and we should convert it into nanoseconds
         node->runtime() * 1000);
+      fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
+
       }
   } else if (node->type() == ChakraNodeType::COMM_SEND_NODE) {
     sim_request snd_req;
