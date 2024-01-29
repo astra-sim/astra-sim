@@ -11,7 +11,8 @@ NS3_DIR="${SCRIPT_DIR:?}"/../../extern/network_backend/ns3
 WORKLOAD="${SCRIPT_DIR:?}"/../../extern/graph_frontend/chakra/et_generator/oneCommNodeAllReduce
 SYSTEM="${SCRIPT_DIR:?}"/../../inputs/system/Switch.json
 MEMORY="${SCRIPT_DIR:?}"/../../inputs/remote_memory/analytical/no_memory_expansion.json
-LOGICAL_TOPOLOGY="${SCRIPT_DIR:?}"/../../inputs/network/ns3/sample_64nodes_1D.json
+COMM_GROUP_CONFIG="${SCRIPT_DIR:?}"/../../inputs/comm_group/comm_group_sample.json
+#COMM_GROUP_CONFIG="\"empty\""
 # Note that ONLY this file is relative to NS3_DIR/simulation
 NETWORK="mix/config.txt"
 
@@ -41,7 +42,7 @@ function run {
         --network-configuration=${NETWORK} \
         --remote-memory-configuration=${MEMORY} \
         --logical-topology-configuration=${LOGICAL_TOPOLOGY} \
-        --comm-group-configuration=\"empty\""
+        --comm-group-configuration=${COMM_GROUP_CONFIG}"
     cd "${SCRIPT_DIR:?}"
 }
 
@@ -65,7 +66,7 @@ function debug {
         --system-configuration=${SYSTEM} \
         --remote-memory-configuration=${MEMORY} \
         --logical-topology-configuration=${LOGICAL_TOPOLOGY} \
-        --comm-group-configuration=\"empty\""
+        --comm-group-configuration=${COMM_GROUP_CONFIG}"
 }
 
 # Main Script

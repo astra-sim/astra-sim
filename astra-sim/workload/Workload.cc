@@ -71,10 +71,13 @@ void Workload::initialize_comm_group(string comm_group_filename) {
 
   for (json::iterator it = j.begin(); it != j.end(); ++it) {
     bool in_comm_group = false;
+    int comm_group_id;
 
     for (auto id : it.value()) {
       if (id == sys->id) {
+        comm_group_id = stoi(it.key());
         in_comm_group = true;
+        break;
       }
     }
 
@@ -83,7 +86,7 @@ void Workload::initialize_comm_group(string comm_group_filename) {
       for (auto id : it.value()) {
         involved_NPUs.push_back(id);
       }
-      comm_group = new CommunicatorGroup(1, involved_NPUs, sys);
+      comm_group = new CommunicatorGroup(comm_group_id, involved_NPUs, sys);
       // Note: All NPUs should create comm group with identical ids if they want
       // to communicate with each other
     }

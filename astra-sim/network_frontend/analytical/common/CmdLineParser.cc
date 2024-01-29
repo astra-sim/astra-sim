@@ -21,7 +21,7 @@ void CmdLineParser::define_options() noexcept {
       "Workload configuration file",
       cxxopts::value<std::string>())(
       "comm-group-configuration",
-      "Communicator group configuration fi`le",
+      "Communicator group configuration file",
       cxxopts::value<std::string>()->default_value("empty"))(
       "system-configuration",
       "System configuration file",

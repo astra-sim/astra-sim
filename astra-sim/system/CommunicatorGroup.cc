@@ -32,6 +32,10 @@ CommunicatorGroup::~CommunicatorGroup() {
   }
 }
 
+int CommunicatorGroup::get_id() {
+  return this->id;
+}
+
 void CommunicatorGroup::set_id(int id) {
   assert(id > 0);
   this->id = id;
