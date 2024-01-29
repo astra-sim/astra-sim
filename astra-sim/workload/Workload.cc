@@ -100,7 +100,14 @@ Workload::Workload(Sys* sys, string workload_filename, string comm_group_filenam
       }
     }
   }
-  string trace_filename = et_filename + "." + to_string(sys->id) + ".et";
+
+  int et_idx;
+  if (this->comm_group != nullptr) {
+    et_idx = this->comm_group->get_offset(sys->id);
+  } else {
+    et_idx = sys->id;
+  }
+  string trace_filename = et_filename + "." + to_string(et_idx) + ".et";
   check_filename(trace_filename);
   this->et_feeder = new ETFeeder(trace_filename);
 }
@@ -124,6 +131,7 @@ void Workload::initialize_comm_group(string comm_group_filename) {
   inFile.open(comm_group_filename);
   inFile >> j;
 
+  bool found_comm_group = false;
   for (json::iterator it = j.begin(); it != j.end(); ++it) {
     bool in_comm_group = false;
     int comm_group_id;
@@ -142,9 +150,15 @@ void Workload::initialize_comm_group(string comm_group_filename) {
         involved_NPUs.push_back(id);
       }
       comm_group = new CommunicatorGroup(comm_group_id, involved_NPUs, sys);
+      found_comm_group = true;
+      break;
       // Note: All NPUs should create comm group with identical ids if they want
       // to communicate with each other
     }
+  }
+  if (!found_comm_group) {
+    cerr << "Could not find comm_group for node " << sys->id << " in comm_group file " << comm_group_filename << endl;
+    exit(EXIT_FAILURE);
   }
 }
 
