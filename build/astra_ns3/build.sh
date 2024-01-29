@@ -11,8 +11,9 @@ NS3_DIR="${SCRIPT_DIR:?}"/../../extern/network_backend/ns3
 WORKLOAD="${SCRIPT_DIR:?}"/../../inputs/workload/inputs/workload_input_sample_ns3.json
 SYSTEM="${SCRIPT_DIR:?}"/../../inputs/system/Switch.json
 MEMORY="${SCRIPT_DIR:?}"/../../inputs/remote_memory/analytical/no_memory_expansion.json
-COMM_GROUP_CONFIG="${SCRIPT_DIR:?}"/../../inputs/comm_group/comm_group_sample.json
-#COMM_GROUP_CONFIG="\"empty\""
+LOGICAL_TOPOLOGY="${SCRIPT_DIR:?}"/../../inputs/network/ns3/sample_16nodes_1D.json
+COMM_GROUP_CONFIG="\"empty\""
+#COMM_GROUP_CONFIG="${SCRIPT_DIR:?}"/../../inputs/comm_group/comm_group_sample.json
 # Note that ONLY this file is relative to NS3_DIR/simulation
 NETWORK="mix/config.txt"
 
