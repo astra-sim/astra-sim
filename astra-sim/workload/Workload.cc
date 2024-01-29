@@ -24,8 +24,20 @@ using json = nlohmann::json;
 typedef ChakraProtoMsg::NodeType ChakraNodeType;
 typedef ChakraProtoMsg::CollectiveCommType ChakraCollectiveCommType;
 
-Workload::Workload(Sys* sys, string et_filename, string comm_group_filename) {
-  string workload_filename = et_filename + "." + to_string(sys->id) + ".et";
+Workload::Workload(Sys* sys, string workload_filename, string comm_group_filename) {
+  this->comm_group = nullptr;
+  // TODO: parametrize the number of available hardware resources
+  this->hw_resource = new HardwareResource(1);
+  this->sys = sys;
+  this->is_finished = false;
+
+  initialize_comm_group(comm_group_filename);
+
+  int workload_id = 0;
+  if (this->comm_group != nullptr) {
+    workload_id = this->comm_group->get_id() - 1;
+  }
+
   // Check if workload filename exists
   if (access(workload_filename.c_str(), R_OK) < 0) {
     string error_msg;
@@ -41,13 +53,53 @@ Workload::Workload(Sys* sys, string et_filename, string comm_group_filename) {
     cerr << error_msg << endl;
     exit(EXIT_FAILURE);
   }
-  this->et_feeder = new ETFeeder(workload_filename);
-  this->comm_group = nullptr;
-  // TODO: parametrize the number of available hardware resources
-  this->hw_resource = new HardwareResource(1);
-  this->sys = sys;
-  initialize_comm_group(comm_group_filename);
-  this->is_finished = false;
+
+  // Read the et filename from the workload input. In multi-tenant scenarios, there are multiple workloads.
+  if (workload_filename.find(".json") == std::string::npos) {
+    string err_msg = "workload file: '" + workload_filename + "' does not contain '.json'. \nWORKLOAD_CONFIG now requires a json file which defines the execution trace prefix in it (instead of the prefix itself). Please refer to the documentation: https://astra-sim.github.io/astra-sim-docs/getting-started/argument-workload-config.html";
+    cerr << err_msg << endl;
+    exit(EXIT_FAILURE);
+  }
+  ifstream inFile;
+  json j;
+  inFile.open(workload_filename);
+  inFile >> j;
+  string et_filename; 
+
+  for (json::iterator it = j.begin(); it != j.end(); ++it) {
+    if (it.key() != "execution_trace_prefixes") {
+      string error_msg = "workload file: " + workload_filename + " key is wrong";
+      cerr << error_msg << endl;
+      exit(EXIT_FAILURE);
+    }
+
+    int idx = 0;
+    for (auto id : it.value()) {
+      if (idx == workload_id) {
+        et_filename = id;
+        break;
+      }
+      idx++;
+    }
+  }
+
+  string trace_filename = et_filename + "." + to_string(sys->id) + ".et";
+  // Check if trace filename exists
+  if (access(trace_filename.c_str(), R_OK) < 0) {
+    string error_msg;
+    if (errno == ENOENT) {
+      error_msg = "trace file: " + trace_filename + " does not exist";
+    } else if (errno == EACCES) {
+      error_msg =
+          "trace file: " + trace_filename + " exists but is not readable";
+    } else {
+      error_msg =
+          "Unknown trace file: " + trace_filename + " access error";
+    }
+    cerr << error_msg << endl;
+    exit(EXIT_FAILURE);
+  }
+  this->et_feeder = new ETFeeder(trace_filename);
 }
 
 Workload::~Workload() {

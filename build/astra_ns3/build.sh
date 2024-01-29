@@ -8,7 +8,7 @@ ASTRA_SIM_DIR="${SCRIPT_DIR:?}"/../../astra-sim
 NS3_DIR="${SCRIPT_DIR:?}"/../../extern/network_backend/ns3
 
 # Inputs - change as necessary.
-WORKLOAD="${SCRIPT_DIR:?}"/../../extern/graph_frontend/chakra/et_generator/oneCommNodeAllReduce
+WORKLOAD="${SCRIPT_DIR:?}"/../../inputs/workload/inputs/workload_input_sample_ns3.json
 SYSTEM="${SCRIPT_DIR:?}"/../../inputs/system/Switch.json
 MEMORY="${SCRIPT_DIR:?}"/../../inputs/remote_memory/analytical/no_memory_expansion.json
 COMM_GROUP_CONFIG="${SCRIPT_DIR:?}"/../../inputs/comm_group/comm_group_sample.json

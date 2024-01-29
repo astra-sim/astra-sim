@@ -1,0 +1,6 @@
+{
+    "execution_trace_prefixes": [
+        "../../../../extern/graph_frontend/chakra/one_comm_coll_node_allreduce",
+        "../../../../extern/graph_frontend/chakra/one_comm_coll_node_allreduce"
+    ]
+}
