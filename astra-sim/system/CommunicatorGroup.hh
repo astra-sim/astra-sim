@@ -22,6 +22,10 @@ class CommunicatorGroup {
   CollectivePlan* get_collective_plan(ComType comm_type);
   int get_id();
   void set_id(int id);
+
+  // Finds the offset of the node 'sys_id' among the involved NPUs (3th node among involved NPUs, etc.). 
+  // Starts with 0. Returns -1 when the given sys_id is not a member of involved_NPUs.
+  int get_offset(int sys_id);
   ~CommunicatorGroup();
 
   std::vector<int> involved_NPUs;

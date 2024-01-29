@@ -17,6 +17,7 @@ CommunicatorGroup::CommunicatorGroup(
     std::vector<int> involved_NPUs,
     Sys* generator) {
   set_id(id);
+  sort(involved_NPUs.begin(), involved_NPUs.end());
   this->involved_NPUs = involved_NPUs;
   this->generator = generator;
   std::sort(involved_NPUs.begin(), involved_NPUs.end());
@@ -40,6 +41,17 @@ void CommunicatorGroup::set_id(int id) {
   assert(id > 0);
   this->id = id;
   this->num_streams = id * 1000000;
+}
+
+int CommunicatorGroup::get_offset(int sys_id) {
+  int offset = 0;
+  for (auto id : involved_NPUs) {
+    if (sys_id == id) {
+      return offset;
+    }
+    offset ++;
+  }
+  return -1;
 }
 
 CollectivePlan* CommunicatorGroup::get_collective_plan(ComType comm_type) {
