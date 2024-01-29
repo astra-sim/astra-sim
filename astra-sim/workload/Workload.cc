@@ -24,6 +24,24 @@ using json = nlohmann::json;
 typedef ChakraProtoMsg::NodeType ChakraNodeType;
 typedef ChakraProtoMsg::CollectiveCommType ChakraCollectiveCommType;
 
+// TODO: Create a common library.
+void check_filename(string filename) {
+  if (access(filename.c_str(), R_OK) < 0) {
+    string error_msg;
+    if (errno == ENOENT) {
+      error_msg = "file: " + filename + " does not exist";
+    } else if (errno == EACCES) {
+      error_msg =
+          "file: " + filename + " exists but is not readable";
+    } else {
+      error_msg =
+          "Unknown file: " + filename + " access error";
+    }
+    cerr << error_msg << endl;
+    exit(EXIT_FAILURE);
+  }
+}
+
 Workload::Workload(Sys* sys, string workload_filename, string comm_group_filename) {
   this->comm_group = nullptr;
   // TODO: parametrize the number of available hardware resources
@@ -35,70 +53,55 @@ Workload::Workload(Sys* sys, string workload_filename, string comm_group_filenam
 
   int workload_id = 0;
   if (this->comm_group != nullptr) {
+    // Comm group ID starts at 1. Workload ID starts at 0.
     workload_id = this->comm_group->get_id() - 1;
   }
 
-  // Check if workload filename exists
-  if (access(workload_filename.c_str(), R_OK) < 0) {
-    string error_msg;
-    if (errno == ENOENT) {
-      error_msg = "workload file: " + workload_filename + " does not exist";
-    } else if (errno == EACCES) {
-      error_msg =
-          "workload file: " + workload_filename + " exists but is not readable";
-    } else {
-      error_msg =
-          "Unknown workload file: " + workload_filename + " access error";
-    }
-    cerr << error_msg << endl;
-    exit(EXIT_FAILURE);
-  }
-
-  // Read the et filename from the workload input. In multi-tenant scenarios, there are multiple workloads.
+  string et_filename;
   if (workload_filename.find(".json") == std::string::npos) {
-    string err_msg = "workload file: '" + workload_filename + "' does not contain '.json'. \nWORKLOAD_CONFIG now requires a json file which defines the execution trace prefix in it (instead of the prefix itself). Please refer to the documentation: https://astra-sim.github.io/astra-sim-docs/getting-started/argument-workload-config.html";
-    cerr << err_msg << endl;
-    exit(EXIT_FAILURE);
-  }
-  ifstream inFile;
-  json j;
-  inFile.open(workload_filename);
-  inFile >> j;
-  string et_filename; 
-
-  for (json::iterator it = j.begin(); it != j.end(); ++it) {
-    if (it.key() != "execution_trace_prefixes") {
-      string error_msg = "workload file: " + workload_filename + " key is wrong";
+    // Traditional case where only the et trace prefix is provided. For backward compatability.
+    et_filename = workload_filename;
+    if (workload_id != 0) {
+      string error_msg = "multiple communicator groups defined with single-tenant workload";
       cerr << error_msg << endl;
       exit(EXIT_FAILURE);
     }
+  } else {
+    // Workload file is provided. Read through workload file to find the et prefix for this node. In multi-tenant scenarios, there should be multiple et prefixes
+    check_filename(workload_filename);
+    ifstream inFile;
+    json j;
+    inFile.open(workload_filename);
+    inFile >> j;
 
-    int idx = 0;
-    for (auto id : it.value()) {
-      if (idx == workload_id) {
-        et_filename = id;
-        break;
+    for (json::iterator it = j.begin(); it != j.end(); ++it) {
+      // There is only one valid key to this file - therefore, this for loop will exit immediately
+      if (it.key() != "execution_trace_prefixes") {
+        string error_msg = "workload file: " + workload_filename + " has wrong json key";
+        cerr << error_msg << endl;
+        exit(EXIT_FAILURE);
       }
-      idx++;
-    }
-  }
 
-  string trace_filename = et_filename + "." + to_string(sys->id) + ".et";
-  // Check if trace filename exists
-  if (access(trace_filename.c_str(), R_OK) < 0) {
-    string error_msg;
-    if (errno == ENOENT) {
-      error_msg = "trace file: " + trace_filename + " does not exist";
-    } else if (errno == EACCES) {
-      error_msg =
-          "trace file: " + trace_filename + " exists but is not readable";
-    } else {
-      error_msg =
-          "Unknown trace file: " + trace_filename + " access error";
+      int idx = 0;
+      bool found_et_filename = false;
+      // Iterate through the list of execution trace prefix
+      for (auto et_filename_input : it.value()) {
+        if (idx == workload_id) {
+          et_filename = et_filename_input;
+          found_et_filename = true;
+          break;
+        }
+        idx++;
+      }
+
+      if (!found_et_filename) {
+        cerr << "Could not find et_filename for node " << sys->id << " with workload " << workload_id << " in workload file " << workload_filename << endl;
+        exit(EXIT_FAILURE);
+      }
     }
-    cerr << error_msg << endl;
-    exit(EXIT_FAILURE);
   }
+  string trace_filename = et_filename + "." + to_string(sys->id) + ".et";
+  check_filename(trace_filename);
   this->et_feeder = new ETFeeder(trace_filename);
 }
 
