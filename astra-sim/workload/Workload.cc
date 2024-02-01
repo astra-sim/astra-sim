@@ -113,6 +113,7 @@ void Workload::issue_dep_free_nodes() {
 }
 
 void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
+  constexpr bool STRICT_MODE = true;
   if (sys->trace_enabled) {
     Logger::getLogger("workload")
         ->debug(
@@ -126,35 +127,42 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
   const auto& node_type = node->type();
 
   hw_resource->occupy(node);
+  try {
+    if (sys->replay_only) {
+      issue_replay(node);
+      return;
+    }
 
-  if (sys->replay_only) {
-    issue_replay(node);
-    return;
-  }
-
-  // else not replay_only
-  if ((node_type == ChakraNodeType::MEM_LOAD_NODE) ||
-      (node_type == ChakraNodeType::MEM_STORE_NODE)) {
-    issue_remote_mem(node);
-  } else if (node_type == ChakraNodeType::COMP_NODE) {
-    if (node->is_cpu_op(true))
-      issue_cpu_comp(node);
-    else
-      issue_gpu_comp(node);
-  } else if (
-      (node_type == ChakraNodeType::COMM_COLL_NODE) ||
-      (node_type == ChakraNodeType::COMM_SEND_NODE) ||
-      (node_type == ChakraNodeType::COMM_RECV_NODE)) {
-    issue_comm(node);
-  } else if (node_type == ChakraNodeType::INVALID_NODE) {
-    skip_invalid(node);
-  } else {
+    // else not replay_only
+    if ((node_type == ChakraNodeType::MEM_LOAD_NODE) ||
+        (node_type == ChakraNodeType::MEM_STORE_NODE)) {
+      issue_remote_mem(node);
+    } else if (node_type == ChakraNodeType::COMP_NODE) {
+      if (node->is_cpu_op(true))
+        issue_cpu_comp(node);
+      else
+        issue_gpu_comp(node);
+    } else if (
+        (node_type == ChakraNodeType::COMM_COLL_NODE) ||
+        (node_type == ChakraNodeType::COMM_SEND_NODE) ||
+        (node_type == ChakraNodeType::COMM_RECV_NODE)) {
+      issue_comm(node);
+    } else if (node_type == ChakraNodeType::INVALID_NODE) {
+      skip_invalid(node);
+    } else {
+      Logger::getLogger("workload")
+          ->critical(
+              "Invalid node_type, node.id={}, node.type={}",
+              node->id(),
+              static_cast<uint64_t>(node->type()));
+      assert(false);
+    }
+  } catch (const MissingAttrException& e) {
+    if (STRICT_MODE)
+      throw(e);
     Logger::getLogger("workload")
-        ->critical(
-            "Invalid node_type, node.id={}, node.type={}",
-            node->id(),
-            static_cast<uint64_t>(node->type()));
-    assert(false);
+        ->warn("Invalid node issue with message \"{}\", skiped", e.what());
+    skip_invalid(node);
   }
   return;
 }
@@ -337,6 +345,7 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
 void Workload::skip_invalid(shared_ptr<Chakra::ETFeederNode> node) {
   et_feeder->freeChildrenNodes(node->id());
   et_feeder->removeNode(node->id());
+  hw_resource->release(node);
 }
 
 void Workload::call(EventType event, CallData* data) {
