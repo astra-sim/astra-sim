@@ -96,10 +96,14 @@ void Workload::initialize_comm_group(string comm_group_filename) {
 void Workload::issue_dep_free_nodes() {
   std::queue<shared_ptr<Chakra::ETFeederNode>> push_back_queue;
   shared_ptr<Chakra::ETFeederNode> node = et_feeder->getNextIssuableNode();
+  auto logger = Logger::getLogger("workload");
   while (node != nullptr) {
+    logger->trace("try issue node.id={}", node->id());
     if (hw_resource->is_available(node)) {
+      logger->trace("issue success node.id={}", node->id());
       issue(node);
     } else {
+      logger->trace("issue fail node.id={}", node->id());
       push_back_queue.push(node);
     }
     node = et_feeder->getNextIssuableNode();
@@ -125,6 +129,9 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
             static_cast<uint64_t>(node->type()));
   }
   const auto& node_type = node->type();
+
+  if (node->name() == "stack_22_mha_d_x1@0_X2_COMM")
+    int hook = 0;
 
   hw_resource->occupy(node);
   try {
@@ -238,7 +245,7 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
     if (!node->has_comm_type())
       throw MissingAttrException("comm_type", node->id(), "issue_comm");
   } else if (node->type() == ChakraNodeType::COMM_SEND_NODE) {
-    if (!node->comm_src(sys->id) != sys->id) {
+    if (node->comm_src(sys->id) != sys->id) {
       Logger::getLogger("workload")
           ->critical(
               "sys issue a send comm node {} with src{} != sys.id{}",
@@ -410,10 +417,6 @@ void Workload::call(EventType event, CallData* data) {
       et_feeder->removeNode(wlhd->node_id);
       delete wlhd;
     }
-  }
-
-  if (!et_feeder->hasNodesToIssue()) {
-    int hook = 0;
   }
 
   if (!et_feeder->hasNodesToIssue() &&
