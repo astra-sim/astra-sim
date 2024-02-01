@@ -7,6 +7,9 @@ LICENSE file in the root directory of this source tree.
 #define __COMMON_HH__
 
 #include <cstdint>
+#include <stdexcept>
+
+#include "spdlog/fmt/fmt.h"
 
 namespace AstraSim {
 
@@ -156,6 +159,20 @@ class DirectCollectiveImpl : public CollectiveImpl {
   }
 
   int direct_collective_window;
+};
+
+class MissingAttrException : public std::runtime_error {
+ public:
+  MissingAttrException(
+      const std::string& attr,
+      const uint64_t& id,
+      const std::string& requester)
+      : std::runtime_error(fmt::format(
+            "Missing Attr of \"{}\" from node.id={}, which is asked by \"{}\"",
+            attr,
+            id,
+            requester)){};
+  MissingAttrException(const std::string& msg) : std::runtime_error(msg){};
 };
 
 } // namespace AstraSim
