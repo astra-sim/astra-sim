@@ -144,6 +144,7 @@ string workload_configuration;
 string system_configuration;
 string network_configuration;
 string memory_configuration;
+string log_file = "log.log";
 string comm_group_configuration;
 string logical_topology_configuration;
 int num_queues_per_dim = 1;
@@ -202,6 +203,7 @@ void parse_args(int argc, char* argv[]) {
       "network-configuration",
       "Network configuration file",
       network_configuration);
+  cmd.AddValue("log-path", "Path to log file", log_file);
   cmd.AddValue(
       "remote-memory-configuration",
       "Memory configuration file",
@@ -232,11 +234,14 @@ void parse_args(int argc, char* argv[]) {
 int main(int argc, char* argv[]) {
   LogComponentEnable("OnOffApplication", LOG_LEVEL_INFO);
   LogComponentEnable("PacketSink", LOG_LEVEL_INFO);
-  auto logger = Logger::getLogger("network_frontend::ns3::AstraSimNetwork");
-  logger->info("ASTRA-sim + NS3");
 
   // Read network config and find logical dims.
   parse_args(argc, argv);
+
+  Logger::setLogfilePath(log_file);
+  auto logger = Logger::getLogger("network_frontend::ns3::AstraSimNetwork");
+  logger->info("ASTRA-sim + NS3");
+
   read_logical_topo_config(logical_topology_configuration, logical_dims);
 
   // Setup network & System layer.

@@ -33,6 +33,9 @@ void CmdLineParser::define_options() noexcept {
       "network-configuration",
       "Network configuration file",
       cxxopts::value<std::string>())(
+      "log-path",
+      "Path to log file",
+      cxxopts::value<std::string>()->default_value("log.log"))(
       "num-queues-per-dim",
       "Number of queues per each dimension",
       cxxopts::value<int>()->default_value("1"))(

@@ -13,6 +13,12 @@ namespace AstraSim {
 std::vector<spdlog::sink_ptr> Logger::sinks;
 std::vector<std::shared_ptr<spdlog::logger>> Logger::loggers;
 
+std::string Logger::logFilePath = "log.log";
+
+void Logger::setLogFilePath(const std::string& logFilePath) {
+  Logger::logFilePath = logFilePath;
+}
+
 std::shared_ptr<spdlog::logger> Logger::getLogger(
     const std::string& loggerName) {
   std::shared_ptr<spdlog::logger> logger = spdlog::get(loggerName);
@@ -51,7 +57,7 @@ std::shared_ptr<spdlog::logger> Logger::createLogger(
 }
 
 void Logger::initSinks() {
-  const std::string log_filename = "log.log";
+  const std::string& log_filename = Logger::logFilePath;
   spdlog::init_thread_pool(65536, 1);
 
   spdlog::sink_ptr stdoutSink =

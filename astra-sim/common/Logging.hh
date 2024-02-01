@@ -13,12 +13,14 @@ namespace AstraSim {
 
 class Logger {
  public:
+  static void setLogFilePath(const std::string& logFilePath);
   static std::shared_ptr<spdlog::logger> getLogger(
       const std::string& loggerName);
 
   static void shutdown(void);
 
  private:
+  static std::string logFilePath;
   static std::shared_ptr<spdlog::logger> createLogger(
       const std::string& loggerName);
   static void initSinks();

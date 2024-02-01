@@ -34,12 +34,15 @@ int main(int argc, char* argv[]) {
       cmd_line_parser.get<std::string>("remote-memory-configuration");
   const auto network_configuration =
       cmd_line_parser.get<std::string>("network-configuration");
+  const auto log_path = cmd_line_parser.get<std::string>("log-path");
   const auto num_queues_per_dim =
       cmd_line_parser.get<int>("num-queues-per-dim");
   const auto comm_scale = cmd_line_parser.get<double>("comm-scale");
   const auto injection_scale = cmd_line_parser.get<double>("injection-scale");
   const auto rendezvous_protocol =
       cmd_line_parser.get<bool>("rendezvous-protocol");
+
+  Logger::setLogFilePath(log_path);
 
   // Instantiate event queue
   const auto event_queue = std::make_shared<EventQueue>();
