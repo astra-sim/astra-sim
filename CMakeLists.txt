@@ -18,6 +18,7 @@ find_package(Protobuf REQUIRED)
 
 # Files to compile
 file(GLOB srcs
+        "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/common/*.cc"
         "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/*.cc"
         "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/workload/*.cc"
         "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/collective/*.cc"

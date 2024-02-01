@@ -9,6 +9,8 @@ LICENSE file in the root directory of this source tree.
 #include <cmath>
 #include <iostream>
 #include <numeric>
+#include <sstream>
+#include "astra-sim/common/Logging.hh"
 
 using namespace AstraSim;
 
@@ -21,6 +23,7 @@ DimElapsedTime::DimElapsedTime(int dim_num) {
   this->elapsed_time = 0;
 }
 OfflineGreedy::OfflineGreedy(Sys* sys) {
+  auto logger = Logger::getLogger("system::scheduling::OfflineGreedy");
   this->sys = sys;
   if (sys->dim_to_break == -1) {
     this->dim_size = sys->physical_dims;
@@ -42,18 +45,20 @@ OfflineGreedy::OfflineGreedy(Sys* sys) {
     }
   }
   if (sys->id == 0) {
-    std::cout << "Themis is configured with the following parameters: "
-              << std::endl;
-    std::cout << "Dim size: ";
+    logger->debug("Themis is configured with the following parameters: ");
+    std::stringstream sstream_buffer;
+    sstream_buffer << "Dim size: ";
     for (uint64_t i = 0; i < this->dim_size.size(); i++) {
-      std::cout << this->dim_size[i] << ", ";
+      sstream_buffer << this->dim_size[i] << ", ";
     }
-    std::cout << std::endl;
-    std::cout << "BW per dim: ";
+    logger->debug(sstream_buffer.str());
+
+    sstream_buffer.str("");
+    sstream_buffer << "BW per dim: ";
     for (uint64_t i = 0; i < this->dim_BW.size(); i++) {
-      std::cout << this->dim_BW[i] << ", ";
+      sstream_buffer << this->dim_BW[i] << ", ";
     }
-    std::cout << std::endl << std::endl;
+    logger->debug(sstream_buffer.str());
   }
 }
 uint64_t OfflineGreedy::get_chunk_size_from_elapsed_time(
