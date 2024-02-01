@@ -277,8 +277,25 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
   const uint32_t comm_priority = node->comm_priority(0u);
 
   vector<bool> involved_dim;
-  for (int i = 0; i < node->involved_dim_size(); i++) {
-    involved_dim.push_back(node->involved_dim(i));
+  if (node->has_involved_dim()) {
+    // TODO: get topology dimension from network instead of
+    // all_reduce_implementation
+    if (node->involved_dim_size() !=
+        this->sys->all_reduce_implementation_per_dimension.size()) {
+      Logger::getLogger("workload")
+          ->critical(
+              "node.id={}. involved_dim.size unmatched to number of topology dimensions",
+              node->id);
+      exit(EXIT_FAILURE);
+    }
+    for (int i = 0; i < node->involved_dim_size(); i++) {
+      involved_dim.push_back(node->involved_dim(i));
+    }
+  } else {
+    // by default all dimension involved
+    for (int i = 0; i < all_reduce_implementation_per_dimension.size(); i++) {
+      involved_dim.push_back(true);
+    }
   }
 
   if (node->type() == ChakraNodeType::COMM_COLL_NODE) {
