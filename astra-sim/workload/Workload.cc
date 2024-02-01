@@ -245,8 +245,6 @@ void Workload::issue_gpu_comp(shared_ptr<Chakra::ETFeederNode> node) {
 void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
   if (!node->has_comm_size())
     throw MissingAttrException("comm_size", node->id(), "issue_comm");
-  if (!node->has_involved_dim_size())
-    throw MissingAttrException("involved_dim", node->id(), "issue_comm");
   if (node->type() == ChakraNodeType::COMM_COLL_NODE) {
     if (!node->has_comm_type())
       throw MissingAttrException("comm_type", node->id(), "issue_comm");
