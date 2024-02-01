@@ -24,3 +24,6 @@ build/astra_garnet/result/
 
 # logs
 **/*.log
+
+# runs
+runs
