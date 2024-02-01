@@ -44,7 +44,7 @@ class Workload : public Callable {
   void report();
 
   Chakra::ETFeeder* et_feeder;
-  CommunicatorGroup* comm_group;
+  std::unordered_map<int32_t, CommunicatorGroup> comm_groups;
   HardwareResource* hw_resource;
   Sys* sys;
   std::unordered_map<int, uint64_t> collective_comm_node_id_map;

@@ -43,7 +43,6 @@ Workload::Workload(Sys* sys, string et_filename, string comm_group_filename) {
     exit(EXIT_FAILURE);
   }
   this->et_feeder = new ETFeeder(workload_filename);
-  this->comm_group = nullptr;
   // TODO: parametrize the number of available hardware resources
   this->hw_resource = new HardwareResource(1);
   this->sys = sys;
@@ -52,8 +51,7 @@ Workload::Workload(Sys* sys, string et_filename, string comm_group_filename) {
 }
 
 Workload::~Workload() {
-  if (this->comm_group != nullptr)
-    delete this->comm_group;
+  this->comm_groups.clear();
   if (this->et_feeder != nullptr)
     delete this->et_feeder;
   if (this->hw_resource != nullptr)
@@ -63,7 +61,6 @@ Workload::~Workload() {
 void Workload::initialize_comm_group(string comm_group_filename) {
   // communicator group input file is not given
   if (comm_group_filename.find("empty") != std::string::npos) {
-    comm_group = nullptr;
     return;
   }
 
@@ -86,7 +83,9 @@ void Workload::initialize_comm_group(string comm_group_filename) {
       for (auto id : it.value()) {
         involved_NPUs.push_back(id);
       }
-      comm_group = new CommunicatorGroup(1, involved_NPUs, sys);
+      int group_id = std::stoi(it.key());
+      this->comm_groups.emplace(
+          group_id, CommunicatorGroup(group_id, involved_NPUs, sys));
       // Note: All NPUs should create comm group with identical ids if they want
       // to communicate with each other
     }
@@ -135,9 +134,6 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
             static_cast<uint64_t>(node->type()));
   }
   const auto& node_type = node->type();
-
-  if (node->name() == "stack_22_mha_d_x1@0_X2_COMM")
-    int hook = 0;
 
   hw_resource->occupy(node);
   try {
@@ -275,7 +271,7 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
   const uint32_t comm_priority = node->comm_priority(0u);
 
   vector<bool> involved_dim;
-  if (node->has_involved_dim()) {
+  if (node->has_involved_dim_size()) {
     // TODO: get topology dimension from network instead of
     // all_reduce_implementation
     if (node->involved_dim_size() !=
@@ -283,7 +279,7 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
       Logger::getLogger("workload")
           ->critical(
               "node.id={}. involved_dim.size unmatched to number of topology dimensions",
-              node->id);
+              node->id());
       exit(EXIT_FAILURE);
     }
     for (int i = 0; i < node->involved_dim_size(); i++) {
@@ -291,9 +287,27 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
     }
   } else {
     // by default all dimension involved
-    for (int i = 0; i < all_reduce_implementation_per_dimension.size(); i++) {
+    for (int i = 0;
+         i < this->sys->all_reduce_implementation_per_dimension.size();
+         i++) {
       involved_dim.push_back(true);
     }
+  }
+
+  CommunicatorGroup* comm_group = nullptr;
+  if (node->has_other_attr("comm_group")) {
+    int comm_group_id = node->get_other_attr("comm_group").int32_val();
+    auto it = this->comm_groups.find(comm_group_id);
+    if (it == this->comm_groups.end()) {
+      Logger::getLogger("workload")
+          ->critical(
+              "node.id={}. Request comm_group.id={}, which is not defined in sys.id={}",
+              node->id(),
+              comm_group_id,
+              this->sys->id);
+      exit(EXIT_FAILURE);
+    }
+    comm_group = &(it->second);
   }
 
   if (node->type() == ChakraNodeType::COMM_COLL_NODE) {
