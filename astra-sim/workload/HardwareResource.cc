@@ -28,11 +28,15 @@ void HardwareResource::occupy(const shared_ptr<Chakra::ETFeederNode> node) {
       if (node->is_cpu_op(true)) {
         assert(num_in_flight_cpu_comp_ops == 0);
         ++num_in_flight_cpu_comp_ops;
+#ifdef ASTRASIM_TRACE_HARDWARE_RESOURCES
         logger->trace("Node.id={} occupy cpu_comp_ops", node->id());
+#endif
       } else {
         assert(num_in_flight_gpu_comp_ops == 0);
         ++num_in_flight_gpu_comp_ops;
+#ifdef ASTRASIM_TRACE_HARDWARE_RESOURCES
         logger->trace("Node.id={} occupy gpu_comp_ops", node->id());
+#endif
       }
       break;
     case ChakraNodeType::COMM_COLL_NODE:
@@ -40,13 +44,17 @@ void HardwareResource::occupy(const shared_ptr<Chakra::ETFeederNode> node) {
     case ChakraNodeType::COMM_RECV_NODE:
       assert(num_in_flight_comm_ops == 0);
       ++num_in_flight_comm_ops;
+#ifdef ASTRASIM_TRACE_HARDWARE_RESOURCES
       logger->trace("Node.id={} occupy comm_ops", node->id());
+#endif
       break;
     case ChakraNodeType::MEM_LOAD_NODE:
     case ChakraNodeType::MEM_STORE_NODE:
       assert(num_in_flight_mem_ops == 0);
       ++num_in_flight_mem_ops;
+#ifdef ASTRASIM_TRACE_HARDWARE_RESOURCES
       logger->trace("Node.id={} occupy mem_ops", node->id());
+#endif
       break;
     case ChakraNodeType::INVALID_NODE:
       break;
@@ -62,11 +70,15 @@ void HardwareResource::release(const shared_ptr<Chakra::ETFeederNode> node) {
       if (node->is_cpu_op(true)) {
         assert(num_in_flight_cpu_comp_ops > 0);
         --num_in_flight_cpu_comp_ops;
+#ifdef ASTRASIM_TRACE_HARDWARE_RESOURCES
         logger->trace("Node.id={} release cpu_comp_ops", node->id());
+#endif
       } else {
         assert(num_in_flight_gpu_comp_ops > 0);
         --num_in_flight_gpu_comp_ops;
+#ifdef ASTRASIM_TRACE_HARDWARE_RESOURCES
         logger->trace("Node.id={} release gpu_comp_ops", node->id());
+#endif
       }
       break;
     case ChakraNodeType::COMM_COLL_NODE:
@@ -74,13 +86,17 @@ void HardwareResource::release(const shared_ptr<Chakra::ETFeederNode> node) {
     case ChakraNodeType::COMM_RECV_NODE:
       assert(num_in_flight_comm_ops > 0);
       --num_in_flight_comm_ops;
+#ifdef ASTRASIM_TRACE_HARDWARE_RESOURCES
       logger->trace("Node.id={} release comm_ops", node->id());
+#endif
       break;
     case ChakraNodeType::MEM_LOAD_NODE:
     case ChakraNodeType::MEM_STORE_NODE:
       assert(num_in_flight_mem_ops > 0);
       --num_in_flight_mem_ops;
+#ifdef ASTRASIM_TRACE_HARDWARE_RESOURCES
       logger->trace("Node.id={} release mem_ops", node->id());
+#endif
       break;
     case ChakraNodeType::INVALID_NODE:
       break;
@@ -92,12 +108,14 @@ void HardwareResource::release(const shared_ptr<Chakra::ETFeederNode> node) {
 bool HardwareResource::is_available(
     const shared_ptr<Chakra::ETFeederNode> node) const {
   auto logger = Logger::getLogger("workload::HardwareResource");
+#ifdef ASTRASIM_TRACE_HARDWARE_RESOURCES
   logger->trace(
       "Current hw resources: cpu_comp_ops={}, gpu_comp_ops={}, comm_ops={}, comm_ops={}",
       num_in_flight_cpu_comp_ops,
       num_in_flight_gpu_comp_ops,
       num_in_flight_comm_ops,
       num_in_flight_mem_ops);
+#endif
   switch (node->type()) {
     case ChakraNodeType::COMP_NODE:
       if (node->is_cpu_op(true))

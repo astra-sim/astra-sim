@@ -50,3 +50,6 @@ set_target_properties(AstraSim
         LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../lib/
         ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../lib/
 )
+
+# FLAGs about logs
+# target_compile_definitions(AstraSim PRIVATE -DASTRASIM_TRACE_HARDWARE_RESOURCES)

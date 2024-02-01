@@ -98,12 +98,18 @@ void Workload::issue_dep_free_nodes() {
   shared_ptr<Chakra::ETFeederNode> node = et_feeder->getNextIssuableNode();
   auto logger = Logger::getLogger("workload");
   while (node != nullptr) {
+#ifdef ASTRASIM_TRACE_HARDWARE_RESOURCES
     logger->trace("try issue node.id={}", node->id());
+#endif
     if (hw_resource->is_available(node)) {
+#ifdef ASTRASIM_TRACE_HARDWARE_RESOURCES
       logger->trace("issue success node.id={}", node->id());
+#endif
       issue(node);
     } else {
+#ifdef ASTRASIM_TRACE_HARDWARE_RESOURCES
       logger->trace("issue fail node.id={}", node->id());
+#endif
       push_back_queue.push(node);
     }
     node = et_feeder->getNextIssuableNode();
