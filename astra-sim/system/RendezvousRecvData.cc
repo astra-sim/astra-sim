@@ -19,6 +19,4 @@ RendezvousRecvData::RendezvousRecvData(
     void (*msg_handler)(void* fun_arg),
     void* fun_arg)
     : BasicEventHandlerData(sys_id, EventType::RendezvousRecv), recv(sys, buffer, count, type, src, tag, request, msg_handler, fun_arg, false) {
-  //this->recv = SimRecvCaller r(
-  //    sys, buffer, count, type, src, tag, request, msg_handler, fun_arg);
 }
