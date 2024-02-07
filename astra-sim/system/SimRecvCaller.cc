@@ -17,7 +17,8 @@ SimRecvCaller::SimRecvCaller(
     int tag,
     sim_request request,
     void (*msg_handler)(void* fun_arg),
-    void* fun_arg) {
+    void* fun_arg,
+    bool should_cleanup) {
   this->sys = sys;
   this->buffer = buffer;
   this->count = count;
@@ -27,6 +28,7 @@ SimRecvCaller::SimRecvCaller(
   this->request = request;
   this->msg_handler = msg_handler;
   this->fun_arg = fun_arg;
+  this->should_cleanup = should_cleanup;
 }
 
 void SimRecvCaller::call(EventType type, CallData* data) {
@@ -39,5 +41,6 @@ void SimRecvCaller::call(EventType type, CallData* data) {
       &this->request,
       this->msg_handler,
       this->fun_arg);
-  delete this;
+  if(should_cleanup)
+    delete this;
 }

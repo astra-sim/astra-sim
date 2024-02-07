@@ -589,11 +589,11 @@ void Sys::handleEvent(void* arg) {
     all_sys[id]->call_events();
   } else if (event == EventType::RendezvousSend) {
     RendezvousSendData* rsd = (RendezvousSendData*)ehd;
-    rsd->send->call(EventType::General, nullptr);
+    rsd->send.call(EventType::General, nullptr);
     delete rsd;
   } else if (event == EventType::RendezvousRecv) {
     RendezvousRecvData* rrd = (RendezvousRecvData*)ehd;
-    rrd->recv->call(EventType::General, nullptr);
+    rrd->recv.call(EventType::General, nullptr);
     delete rrd;
   } else if (
       (event == EventType::CompFinished) ||
@@ -1540,7 +1540,8 @@ int Sys::sim_send(
             tag,
             *request,
             msg_handler,
-            fun_arg),
+            fun_arg,
+            true),
         EventType::General,
         nullptr,
         delay);
@@ -1572,7 +1573,8 @@ int Sys::sim_recv(
             tag,
             *request,
             msg_handler,
-            fun_arg),
+            fun_arg,
+            true),
         EventType::General,
         nullptr,
         delay);
