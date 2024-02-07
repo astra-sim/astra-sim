@@ -17,7 +17,8 @@ SimSendCaller::SimSendCaller(
     int tag,
     sim_request request,
     void (*msg_handler)(void* fun_arg),
-    void* fun_arg) {
+    void* fun_arg,
+    bool should_cleanup) {
   this->sys = sys;
   this->buffer = buffer;
   this->count = count;
@@ -27,9 +28,11 @@ SimSendCaller::SimSendCaller(
   this->request = request;
   this->msg_handler = msg_handler;
   this->fun_arg = fun_arg;
+  this->should_cleanup = should_cleanup;
 }
 
 void SimSendCaller::call(EventType type, CallData* data) {
+  //std::cout<<"sysid: "<<sys->id<<std::endl;
   sys->comm_NI->sim_send(
       this->buffer,
       this->count,
@@ -39,5 +42,6 @@ void SimSendCaller::call(EventType type, CallData* data) {
       &this->request,
       this->msg_handler,
       this->fun_arg);
-  delete this;
+  if(should_cleanup)
+    delete this;
 }
