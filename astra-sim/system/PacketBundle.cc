@@ -13,7 +13,7 @@ PacketBundle::PacketBundle(
     std::list<MyPacket*> locked_packets,
     bool needs_processing,
     bool send_back,
-    int size,
+    uint64_t size,
     MemBus::Transmition transmition) {
   this->sys = sys;
   this->locked_packets = locked_packets;
@@ -30,7 +30,7 @@ PacketBundle::PacketBundle(
     BaseStream* stream,
     bool needs_processing,
     bool send_back,
-    int size,
+    uint64_t size,
     MemBus::Transmition transmition) {
   this->sys = sys;
   this->needs_processing = needs_processing;
