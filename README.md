@@ -10,14 +10,7 @@ For a comprehensive understanding of the tool, and to gain insights into its cap
 
 For information on how to use ASTRA-sim, please visit our [Wiki](https://astra-sim.github.io/astra-sim-docs/index.html).
 
-## Features Under Active Development
-We are constantly working to improve ASTRA-sim and expand its capabilities. Here are some of the features that are currently under active development:
-
-* Network Backends
-    * Garnet (for chiplet fabrics)
-* Detailed Statistics Report (Network Utilization)
- 
-Please note that these features are under active development and, while we aim to have them available as soon as possible, the completion timeline can vary. Check back regularly for updates on the progress of these and other features. This is an open-source project and we also value PRs from the community on features they have added.
+ASTRA-sim accepts Chakra Execution Traces as workload-layer inputs. For details, please visit [Chakra Github](https://github.com/mlcommons/chakra).
 
 We appreciate your interest and support in ASTRA-sim!
 
