@@ -6,6 +6,8 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/topology/BinaryTree.hh"
 
 #include <iostream>
+#include <sstream>
+#include "astra-sim/common/Logging.hh"
 
 using namespace std;
 using namespace AstraSim;
@@ -100,25 +102,28 @@ BinaryTree::Type BinaryTree::get_node_type(int id) {
 }
 
 void BinaryTree::print(Node* node) {
-  cout << "I am node: " << node->id;
+  static std::stringstream sstream_buffer;
+  auto logger = Logger::getLogger("topology::BinaryTree");
+  sstream_buffer.str("");
+  sstream_buffer << "I am node: " << node->id;
   if (node->left_child != nullptr) {
-    cout << " and my left child is: " << node->left_child->id;
+    sstream_buffer << " and my left child is: " << node->left_child->id;
   }
   if (node->right_child != nullptr) {
-    cout << " and my right child is: " << node->right_child->id;
+    sstream_buffer << " and my right child is: " << node->right_child->id;
   }
   if (node->parent != nullptr) {
-    cout << " and my parent is: " << node->parent->id;
+    sstream_buffer << " and my parent is: " << node->parent->id;
   }
   BinaryTree::Type typ = get_node_type(node->id);
   if (typ == BinaryTree::Type::Root) {
-    cout << " and I am Root ";
+    sstream_buffer << " and I am Root ";
   } else if (typ == BinaryTree::Type::Intermediate) {
-    cout << " and I am Intermediate ";
+    sstream_buffer << " and I am Intermediate ";
   } else if (typ == BinaryTree::Type::Leaf) {
-    cout << " and I am Leaf ";
+    sstream_buffer << " and I am Leaf ";
   }
-  cout << endl;
+  logger->info(sstream_buffer.str());
   if (node->left_child != nullptr) {
     print(node->left_child);
   }
