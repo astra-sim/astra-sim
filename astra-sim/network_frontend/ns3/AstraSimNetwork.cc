@@ -12,6 +12,7 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include "astra-sim/common/Logging.hh"
 #include "entry.h"
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
@@ -30,16 +31,15 @@ class ASTRASimNetwork : public AstraSim::AstraNetworkAPI {
   ~ASTRASimNetwork() {}
 
   int sim_finish() {
+    auto logger = Logger::getLogger("network_frontend::ns3::AstraSimNetwork");
     for (auto it = node_to_bytes_sent_map.begin();
          it != node_to_bytes_sent_map.end();
          it++) {
       pair<int, int> p = it->first;
       if (p.second == 0) {
-        cout << "All data sent from node " << p.first << " is " << it->second
-             << "\n";
+        logger->info("All data sent from node {} is {}", p.first, it->second);
       } else {
-        cout << "All data received by node " << p.first << " is " << it->second
-             << "\n";
+        logger->info("All data received by node {} is {}", p.first, it->second);
       }
     }
     exit(0);
@@ -144,6 +144,7 @@ string workload_configuration;
 string system_configuration;
 string network_configuration;
 string memory_configuration;
+string log_file = "log.log";
 string comm_group_configuration;
 string logical_topology_configuration;
 int num_queues_per_dim = 1;
@@ -158,10 +159,11 @@ auto queues_per_dim = vector<int>();
 void read_logical_topo_config(
     string network_configuration,
     vector<int>& logical_dims) {
+  auto logger = Logger::getLogger("network_frontend::ns3::AstraSimNetwork");
   ifstream inFile;
   inFile.open(network_configuration);
   if (!inFile) {
-    cerr << "Unable to open file: " << network_configuration << endl;
+    logger->critical("Unable to open file: {}", network_configuration);
     exit(1);
   }
 
@@ -181,7 +183,7 @@ void read_logical_topo_config(
     num_npus *= num_npus_per_dim;
     dimstr << num_npus_per_dim << ",";
   }
-  cout << "There are " << num_npus << " npus: " << dimstr.str() << "\n";
+  logger->info("There are {} npus: {}", num_npus, dimstr.str());
 
   queues_per_dim = vector<int>(logical_dims.size(), num_queues_per_dim);
 }
@@ -201,6 +203,7 @@ void parse_args(int argc, char* argv[]) {
       "network-configuration",
       "Network configuration file",
       network_configuration);
+  cmd.AddValue("log-path", "Path to log file", log_file);
   cmd.AddValue(
       "remote-memory-configuration",
       "Memory configuration file",
@@ -232,10 +235,13 @@ int main(int argc, char* argv[]) {
   LogComponentEnable("OnOffApplication", LOG_LEVEL_INFO);
   LogComponentEnable("PacketSink", LOG_LEVEL_INFO);
 
-  cout << "ASTRA-sim + NS3" << endl;
-
   // Read network config and find logical dims.
   parse_args(argc, argv);
+
+  Logger::setLogfilePath(log_file);
+  auto logger = Logger::getLogger("network_frontend::ns3::AstraSimNetwork");
+  logger->info("ASTRA-sim + NS3");
+
   read_logical_topo_config(logical_topology_configuration, logical_dims);
 
   // Setup network & System layer.
@@ -272,5 +278,12 @@ int main(int argc, char* argv[]) {
   Simulator::Run();
   Simulator::Stop(Seconds(2000000000));
   Simulator::Destroy();
+
+  for (int i = 0; i < npus_count; i++) {
+    delete systems[i];
+  }
+  systems.clear();
+
+  AstraSim::Logger::shutdown();
   return 0;
 }
