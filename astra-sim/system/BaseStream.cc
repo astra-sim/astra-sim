@@ -5,6 +5,7 @@ LICENSE file in the root directory of this source tree.
 
 #include "astra-sim/system/BaseStream.hh"
 
+#include "astra-sim/common/Logging.hh"
 #include "astra-sim/system/StreamBaseline.hh"
 
 using namespace AstraSim;
@@ -28,7 +29,7 @@ BaseStream::BaseStream(
   if (synchronizer.find(stream_id) != synchronizer.end()) {
     synchronizer[stream_id]++;
   } else {
-    // std::cout<<"synchronizer set!"<<std::endl;
+    Logger::getLogger("system::BaseStream")->debug("synchronizer set!");
     synchronizer[stream_id] = 1;
     ready_counter[stream_id] = 0;
   }

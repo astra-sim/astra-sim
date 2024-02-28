@@ -33,7 +33,8 @@ class Workload : public Callable {
   void issue(std::shared_ptr<Chakra::ETFeederNode> node);
   void issue_replay(std::shared_ptr<Chakra::ETFeederNode> node);
   void issue_remote_mem(std::shared_ptr<Chakra::ETFeederNode> node);
-  void issue_comp(std::shared_ptr<Chakra::ETFeederNode> node);
+  void issue_cpu_comp(std::shared_ptr<Chakra::ETFeederNode> node);
+  void issue_gpu_comp(std::shared_ptr<Chakra::ETFeederNode> node);
   void issue_comm(std::shared_ptr<Chakra::ETFeederNode> node);
   void skip_invalid(std::shared_ptr<Chakra::ETFeederNode> node);
   void call(EventType event, CallData* data);
@@ -43,7 +44,7 @@ class Workload : public Callable {
   void report();
 
   Chakra::ETFeeder* et_feeder;
-  CommunicatorGroup* comm_group;
+  std::unordered_map<int32_t, CommunicatorGroup> comm_groups;
   HardwareResource* hw_resource;
   Sys* sys;
   std::unordered_map<int, uint64_t> collective_comm_node_id_map;
