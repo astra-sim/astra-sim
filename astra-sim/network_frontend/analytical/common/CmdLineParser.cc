@@ -4,6 +4,7 @@ LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
 #include "common/CmdLineParser.hh"
+#include "astra-sim/common/Logging.hh"
 
 using namespace AstraSimAnalytical;
 
@@ -32,6 +33,9 @@ void CmdLineParser::define_options() noexcept {
       "network-configuration",
       "Network configuration file",
       cxxopts::value<std::string>())(
+      "log-path",
+      "Path to log file",
+      cxxopts::value<std::string>()->default_value("log.log"))(
       "num-queues-per-dim",
       "Number of queues per each dimension",
       cxxopts::value<int>()->default_value("1"))(
@@ -55,8 +59,9 @@ void CmdLineParser::parse(int argc, char* argv[]) noexcept {
     parsed = options.parse(argc, argv);
   } catch (const cxxopts::OptionException& e) {
     // error occurred
-    std::cerr << "[Error] (AstraSim/analytical/common) "
-              << "Error parsing options: " << e.what() << std::endl;
+    auto logger = AstraSim::Logger::getLogger(
+        "network_frontend::analytical::CmdLineParser");
+    logger->critical("Error parsing options: {}", e.what());
     exit(-1);
   }
 }
