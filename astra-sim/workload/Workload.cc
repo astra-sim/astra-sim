@@ -55,6 +55,8 @@ Workload::~Workload() {
     delete this->comm_group;
   if (this->et_feeder != nullptr)
     delete this->et_feeder;
+  if (this->hw_resource != nullptr)
+    delete this->hw_resource;
 }
 
 void Workload::initialize_comm_group(string comm_group_filename) {

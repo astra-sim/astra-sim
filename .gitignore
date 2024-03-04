@@ -18,3 +18,12 @@ build/astra_garnet/result/
 # Generated Chakra ET files
 *.eg
 *.et
+
+# vscode
+.vscode
+
+# logs
+**/*.log
+
+# runs
+runs
