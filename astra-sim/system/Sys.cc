@@ -1386,6 +1386,10 @@ void Sys::proceed_to_next_vnet_baseline(StreamBaseline* stream) {
     return;
   }
   stream->steps_finished++;
+  // This is hot fix for random failures of simulation.
+  // TODO: Need to find a better way for negative queue id occurrence.
+  if (stream->phases_to_go.front().queue_id < 0)
+    stream->phases_to_go.front().queue_id *= -1;
   stream->current_queue_id = stream->phases_to_go.front().queue_id;
   stream->current_com_type = stream->phases_to_go.front().comm_type;
 
