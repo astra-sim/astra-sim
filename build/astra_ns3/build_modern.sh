@@ -10,7 +10,7 @@ SYSTEM="${SCRIPT_DIR:?}"/../../inputs/system/Switch.json
 MEMORY="${SCRIPT_DIR:?}"/../../inputs/remote_memory/analytical/no_memory_expansion.json
 LOGICAL_TOPOLOGY="${SCRIPT_DIR:?}"/../../inputs/network/ns3/sample_8nodes_1D.json
 # Note that ONLY this file is relative to NS3_DIR/simulation
-NETWORK="../../../ns3/simulation/mix/config_modern.txt"
+NETWORK="../../../ns-3-dev/mix/config_modern.txt"
 # Functions
 function setup {
     protoc et_def.proto\
@@ -46,6 +46,8 @@ function cleanup_result {
     echo '0'
 }
 function debug {
+    cp "${ASTRA_SIM_DIR}"/network_frontend/ns3/AstraSimNetwork.cc "${NS3_DIR}"/scratch/
+    cp "${ASTRA_SIM_DIR}"/network_frontend/ns3/*.h "${NS3_DIR}"/scratch/
     cd "${NS3_DIR}"
     ./ns3 configure --enable-mpi --build-profile debug
     ./ns3 build AstraSimNetwork -j 12 -v

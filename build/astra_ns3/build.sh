@@ -8,10 +8,10 @@ ASTRA_SIM_DIR="${SCRIPT_DIR:?}"/../../astra-sim
 NS3_DIR="${SCRIPT_DIR:?}"/../../extern/network_backend/ns3
 
 # Inputs - change as necessary.
-WORKLOAD="${SCRIPT_DIR:?}"/../../extern/graph_frontend/chakra/et_generator/oneCommNodeAllReduce
+WORKLOAD="${SCRIPT_DIR:?}"/../../extern/graph_frontend/chakra/one_comm_coll_node_allgather
 SYSTEM="${SCRIPT_DIR:?}"/../../inputs/system/Switch.json
 MEMORY="${SCRIPT_DIR:?}"/../../inputs/remote_memory/analytical/no_memory_expansion.json
-LOGICAL_TOPOLOGY="${SCRIPT_DIR:?}"/../../inputs/network/ns3/sample_64nodes_1D.json
+LOGICAL_TOPOLOGY="${SCRIPT_DIR:?}"/../../inputs/network/ns3/sample_8nodes_1D.json
 # Note that ONLY this file is relative to NS3_DIR/simulation
 NETWORK="mix/config.txt"
 
@@ -60,9 +60,10 @@ function debug {
     cp "${ASTRA_SIM_DIR}"/network_frontend/ns3/*.h "${NS3_DIR}"/simulation/scratch/
     cd "${NS3_DIR}/simulation"
     CC='gcc-5' CXX='g++-5' ./waf configure
-    ./waf  --run 'scratch/AstraSimNetwork' --command-template="gdb --args %s ${NETWORK} \
+    ./waf  --run 'scratch/AstraSimNetwork' --command-template="gdb --args %s
         --workload-configuration=${WORKLOAD} \
         --system-configuration=${SYSTEM} \
+        --network-configuration=${NETWORK} \
         --remote-memory-configuration=${MEMORY} \
         --logical-topology-configuration=${LOGICAL_TOPOLOGY} \
         --comm-group-configuration=\"empty\""
