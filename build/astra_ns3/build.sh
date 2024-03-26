@@ -3,14 +3,14 @@
 SCRIPT_DIR=$(dirname "$(realpath $0)")
 # Absolute paths to useful directories
 ASTRA_SIM_DIR="${SCRIPT_DIR:?}"/../../astra-sim
-NS3_DIR="${SCRIPT_DIR:?}"/../../extern/network_backend/ns-3-dev
+NS3_DIR="${SCRIPT_DIR:?}"/../../extern/network_backend/ns-3
 # Inputs - change as necessary.
 WORKLOAD="${SCRIPT_DIR:?}"/../../extern/graph_frontend/chakra/one_comm_coll_node_allgather
 SYSTEM="${SCRIPT_DIR:?}"/../../inputs/system/Switch.json
 MEMORY="${SCRIPT_DIR:?}"/../../inputs/remote_memory/analytical/no_memory_expansion.json
 LOGICAL_TOPOLOGY="${SCRIPT_DIR:?}"/../../inputs/network/ns3/sample_8nodes_1D.json
 # Note that ONLY this file is relative to NS3_DIR/simulation
-NETWORK="../../../ns-3-dev/mix/config_modern.txt"
+NETWORK="../../../ns-3/scratch/config/config.txt"
 # Functions
 function setup {
     protoc et_def.proto\
@@ -18,9 +18,6 @@ function setup {
         --cpp_out ${SCRIPT_DIR}/../../extern/graph_frontend/chakra/et_def/
 }
 function compile {
-    # Only compile & Run the AstraSimNetwork ns3program
-    cp "${ASTRA_SIM_DIR}"/network_frontend/ns3/AstraSimNetwork.cc "${NS3_DIR}"/scratch/
-    cp "${ASTRA_SIM_DIR}"/network_frontend/ns3/*.h "${NS3_DIR}"/scratch/
     cd "${NS3_DIR}"
     ./ns3 configure --enable-mpi
     ./ns3 build AstraSimNetwork -j 12
@@ -46,8 +43,6 @@ function cleanup_result {
     echo '0'
 }
 function debug {
-    cp "${ASTRA_SIM_DIR}"/network_frontend/ns3/AstraSimNetwork.cc "${NS3_DIR}"/scratch/
-    cp "${ASTRA_SIM_DIR}"/network_frontend/ns3/*.h "${NS3_DIR}"/scratch/
     cd "${NS3_DIR}"
     ./ns3 configure --enable-mpi --build-profile debug
     ./ns3 build AstraSimNetwork -j 12 -v
