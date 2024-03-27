@@ -829,7 +829,8 @@ DataSet* Sys::generate_collective(
              InterDimensionScheduling::OfflineGreedy &&
          inter_dimension_scheduling !=
              InterDimensionScheduling::OfflineGreedyFlex)) {
-      size -= chunk_size;
+      if (chunk_size > size) size = 0;
+      else size -= chunk_size;
     }
     remain_size = chunk_size;
     list<CollectivePhase> vect;
