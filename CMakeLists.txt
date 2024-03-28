@@ -14,7 +14,7 @@ endif ()
 project(AstraSim)
 
 # Find Protobuf
-find_package(Protobuf REQUIRED)
+find_package(Protobuf REQUIRED CONFIG)
 
 # Files to compile
 file(GLOB srcs
@@ -33,7 +33,7 @@ file(GLOB srcs
 add_library(AstraSim STATIC ${srcs})
 
 # Link libraries
-target_link_libraries(AstraSim PUBLIC ${Protobuf_LIBRARIES})
+target_link_libraries(AstraSim PUBLIC protobuf::libprotobuf)
 
 # Include Directories
 target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
