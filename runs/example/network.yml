@@ -1,0 +1,17 @@
+# Analytical Network Input File
+
+# FullyConnected Topology with 64 NPUs
+# Each link BW is 50 GB/s (per each direction)
+# And each link latency is 500 ns.
+
+# FullyConnected Topology
+topology: [ FullyConnected ]  # Ring, Switch, FullyConnected
+
+# 64 NPUs
+npus_count: [ 64 ]  # number of NPUs
+
+# Bandwidth per each link (per direction)
+bandwidth: [ 50.0 ]  # GB/s
+
+# Latency per each link
+latency: [ 500.0 ]  # ns

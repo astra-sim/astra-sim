@@ -23,14 +23,14 @@ class PacketBundle : public Callable {
       std::list<MyPacket*> locked_packets,
       bool needs_processing,
       bool send_back,
-      int size,
+      uint64_t size,
       MemBus::Transmition transmition);
   PacketBundle(
       Sys* sys,
       BaseStream* stream,
       bool needs_processing,
       bool send_back,
-      int size,
+      uint64_t size,
       MemBus::Transmition transmition);
   void send_to_MA();
   void send_to_NPU();
@@ -40,7 +40,7 @@ class PacketBundle : public Callable {
   std::list<MyPacket*> locked_packets;
   bool needs_processing;
   bool send_back;
-  int size;
+  uint64_t size;
   BaseStream* stream;
   MemBus::Transmition transmition;
   Tick delay;

@@ -142,6 +142,7 @@ class ASTRASimNetwork : public AstraSim::AstraNetworkAPI {
 // Command line arguments and default values.
 string workload_configuration;
 string system_configuration;
+string network_configuration;
 string memory_configuration;
 string comm_group_configuration;
 string logical_topology_configuration;
@@ -149,14 +150,14 @@ int num_queues_per_dim = 1;
 double comm_scale = 1;
 double injection_scale = 1;
 bool rendezvous_protocol = false;
-auto physical_dims = vector<int>();
+auto logical_dims = vector<int>();
 int num_npus = 1;
 auto queues_per_dim = vector<int>();
 
 // TODO: Migrate to yaml
 void read_logical_topo_config(
     string network_configuration,
-    vector<int>& physical_dims) {
+    vector<int>& logical_dims) {
   ifstream inFile;
   inFile.open(network_configuration);
   if (!inFile) {
@@ -167,22 +168,22 @@ void read_logical_topo_config(
   // Find the size of each dimension.
   json j;
   inFile >> j;
-  if (j.contains("physical-dims")) {
-    vector<string> physical_dims_str_vec = j["physical-dims"];
-    for (auto physical_dims_str : physical_dims_str_vec) {
-      physical_dims.push_back(stoi(physical_dims_str));
+  if (j.contains("logical-dims")) {
+    vector<string> logical_dims_str_vec = j["logical-dims"];
+    for (auto logical_dims_str : logical_dims_str_vec) {
+      logical_dims.push_back(stoi(logical_dims_str));
     }
   }
 
   // Find the number of all npus.
   stringstream dimstr;
-  for (auto num_npus_per_dim : physical_dims) {
+  for (auto num_npus_per_dim : logical_dims) {
     num_npus *= num_npus_per_dim;
     dimstr << num_npus_per_dim << ",";
   }
   cout << "There are " << num_npus << " npus: " << dimstr.str() << "\n";
 
-  queues_per_dim = vector<int>(physical_dims.size(), num_queues_per_dim);
+  queues_per_dim = vector<int>(logical_dims.size(), num_queues_per_dim);
 }
 
 // Read command line arguments.
@@ -196,6 +197,10 @@ void parse_args(int argc, char* argv[]) {
       "system-configuration",
       "System configuration file",
       system_configuration);
+  cmd.AddValue(
+      "network-configuration",
+      "Network configuration file",
+      network_configuration);
   cmd.AddValue(
       "remote-memory-configuration",
       "Memory configuration file",
@@ -229,9 +234,9 @@ int main(int argc, char* argv[]) {
 
   cout << "ASTRA-sim + NS3" << endl;
 
-  // Read network config and find physical dims.
+  // Read network config and find logical dims.
   parse_args(argc, argv);
-  read_logical_topo_config(logical_topology_configuration, physical_dims);
+  read_logical_topo_config(logical_topology_configuration, logical_dims);
 
   // Setup network & System layer.
   vector<ASTRASimNetwork*> networks(num_npus, nullptr);
@@ -248,7 +253,7 @@ int main(int argc, char* argv[]) {
         system_configuration,
         mem,
         networks[npu_id],
-        physical_dims,
+        logical_dims,
         queues_per_dim,
         injection_scale,
         comm_scale,
@@ -256,7 +261,7 @@ int main(int argc, char* argv[]) {
   }
 
   // Initialize ns3 simulation.
-  setup_ns3_simulation(argc, argv);
+  setup_ns3_simulation(network_configuration);
 
   // Tell workload layer to schedule first events.
   for (int i = 0; i < num_npus; i++) {

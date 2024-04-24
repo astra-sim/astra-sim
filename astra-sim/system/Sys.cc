@@ -436,8 +436,7 @@ bool Sys::initialize_sys(string name) {
     peak_perf = peak_perf * 1000000000000; // TFLOPS
   }
   if (j.contains("local-mem-bw")) {
-    local_mem_bw = j["local-mem-bw"];
-    local_mem_bw = local_mem_bw * 1000000000; // GB/sec
+    local_mem_bw = j["local-mem-bw"]; // GB/sec
   }
   if (j.contains("roofline-enabled")) {
     if (j["roofline-enabled"] != 0) {
@@ -451,6 +450,14 @@ bool Sys::initialize_sys(string name) {
       this->trace_enabled = true;
     } else {
       this->trace_enabled = false;
+    }
+  }
+  this->replay_only = false;
+  if (j.contains("replay-only")) {
+    if (j["replay-only"] != 0) {
+      this->replay_only = true;
+    } else {
+      this->replay_only = false;
     }
   }
 
@@ -582,11 +589,11 @@ void Sys::handleEvent(void* arg) {
     all_sys[id]->call_events();
   } else if (event == EventType::RendezvousSend) {
     RendezvousSendData* rsd = (RendezvousSendData*)ehd;
-    rsd->send->call(EventType::General, nullptr);
+    rsd->send.call(EventType::General, nullptr);
     delete rsd;
   } else if (event == EventType::RendezvousRecv) {
     RendezvousRecvData* rrd = (RendezvousRecvData*)ehd;
-    rrd->recv->call(EventType::General, nullptr);
+    rrd->recv.call(EventType::General, nullptr);
     delete rrd;
   } else if (
       (event == EventType::CompFinished) ||
@@ -822,7 +829,8 @@ DataSet* Sys::generate_collective(
              InterDimensionScheduling::OfflineGreedy &&
          inter_dimension_scheduling !=
              InterDimensionScheduling::OfflineGreedyFlex)) {
-      size -= chunk_size;
+      if (chunk_size > size) size = 0;
+      else size -= chunk_size;
     }
     remain_size = chunk_size;
     list<CollectivePhase> vect;
@@ -854,13 +862,15 @@ DataSet* Sys::generate_collective(
             InterDimensionScheduling::OfflineGreedyFlex ||
         inter_dimension_scheduling == InterDimensionScheduling::OnlineGreedy) {
       int dim = 0;
+        
+      // Create collective phase for each dimension in ascending order.
       for (dim = 0; dim < topology->get_num_of_dimensions(); dim++) {
         if (topology->get_num_of_nodes_in_dimension(dim_mapper[dim]) == 1 ||
             !dimensions_involved[dim_mapper[dim]]) {
           continue;
         }
         pair<int, RingTopology::Direction> queue =
-            vLevels->get_next_queue_at_level(dim_mapper[dim]);
+            vLevels->get_next_queue_at_level_first(dim_mapper[dim]);
         CollectivePhase phase = generate_collective_phase(
             ComType::Reduce_Scatter,
             topology->get_basic_topology_at_dimension(
@@ -874,13 +884,15 @@ DataSet* Sys::generate_collective(
         remain_size = phase.final_data_size;
       }
       dim--;
+
+      // Create collective phases for each dimension in descending order.  
       for (; dim >= 0; dim--) {
         if (topology->get_num_of_nodes_in_dimension(dim_mapper[dim]) == 1 ||
             !dimensions_involved[dim_mapper[dim]]) {
           continue;
         }
         pair<int, RingTopology::Direction> queue =
-            vLevels->get_next_queue_at_level(dim_mapper[dim]);
+            vLevels->get_next_queue_at_level_last(dim_mapper[dim]);
         CollectivePhase phase = generate_collective_phase(
             ComType::All_Gather,
             topology->get_basic_topology_at_dimension(
@@ -894,6 +906,15 @@ DataSet* Sys::generate_collective(
         remain_size = phase.final_data_size;
       }
     } else {
+      // In this branch, and the branch directly above, a collective visits each dimension (excluding the last dimension) twice.
+      // Specifically, for example, in 2D AllReduce, there would be 3 collective phases:
+      // Phase 0: Reduce Scatter in dim 0, Phase 1: All Gather in dim 1, Phase 2: All Reduce in dim 2
+      // Similarly, in 3D AllReduce, there would be 5 collective phases: RS in dim 0, RS in dim 1, AG in dim 2, AR in dim 3, AR in dim 4. 
+      // Currently, queues are allocated per dimension. If we allocate all queues in a dimension to both phases of a single dimension, a race / deadlock condition may occur. 
+      // Therefore, in these cases, we have to allocate half of the queues to the first phase, and the remaining half to the second phase.
+      // (For example, in the above 2D case, if we have 4 queues per dim, queues 0~1 are allocated to phase 0, queues 2~3 are allocated to phase 2.  
+      // For details, refer to https://github.com/astra-sim/astra-sim/issues/137 and the linked document. 
+        
       int dim = 0;
       int last_active_dim = 0;
       for (dim = 0; dim < topology->get_num_of_dimensions(); dim++) {
@@ -902,13 +923,16 @@ DataSet* Sys::generate_collective(
           last_active_dim = dim;
         }
       }
+        
+      // Create collective phase for each dimension, excluding the last dimension, in ascending order.
       for (dim = 0; dim < last_active_dim; dim++) {
         if (topology->get_num_of_nodes_in_dimension(dim_mapper[dim]) == 1 ||
             !dimensions_involved[dim_mapper[dim]]) {
           continue;
         }
+        // Allocate the first half of queues available to this dimension.
         pair<int, RingTopology::Direction> queue =
-            vLevels->get_next_queue_at_level(dim_mapper[dim]);
+            vLevels->get_next_queue_at_level_first(dim_mapper[dim]);
         CollectivePhase phase = generate_collective_phase(
             ComType::Reduce_Scatter,
             topology->get_basic_topology_at_dimension(
@@ -926,10 +950,15 @@ DataSet* Sys::generate_collective(
               topology->get_num_of_nodes_in_dimension(dim_mapper[dim]) == 1)) {
         dim--;
       }
+
+      // The last dimension is the 'turning point'. Only one collective phase is created.
       if (dimensions_involved[dim_mapper[dim]] &&
           topology->get_num_of_nodes_in_dimension(dim_mapper[dim]) > 1) {
+        // Despite only one collective phase being allocated to the last dimension, we only allocate half of the queues available to this dimension. 
+        // This is because we want to match the number of queues allocated to each collective phase.
+        // Processing phases for this dim in n parallel queues, and queueing the next phases in n/2 parallel queues could cause another deadlock. Refer to the PR #135 for more details.
         pair<int, RingTopology::Direction> queue =
-            vLevels->get_next_queue_at_level(dim_mapper[dim]);
+            vLevels->get_next_queue_at_level_first(dim_mapper[dim]);
         CollectivePhase phase = generate_collective_phase(
             ComType::All_Reduce,
             topology->get_basic_topology_at_dimension(
@@ -943,13 +972,16 @@ DataSet* Sys::generate_collective(
         remain_size = phase.final_data_size;
       }
       dim--;
+
+      // Create collective phases for each dimension, excluding the last dimension, in descending order.  
       for (; dim >= 0; dim--) {
         if (topology->get_num_of_nodes_in_dimension(dim_mapper[dim]) == 1 ||
             !dimensions_involved[dim_mapper[dim]]) {
           continue;
         }
+        // Allocate the second half of queues available to this dimension.
         pair<int, RingTopology::Direction> queue =
-            vLevels->get_next_queue_at_level(dim_mapper[dim]);
+            vLevels->get_next_queue_at_level_last(dim_mapper[dim]);
         CollectivePhase phase = generate_collective_phase(
             ComType::All_Gather,
             topology->get_basic_topology_at_dimension(
@@ -1152,8 +1184,14 @@ int Sys::break_dimension(int model_parallel_npu_group) {
   return -1;
 }
 
-uint64_t Sys::determine_chunk_size(uint64_t size, ComType type) {
+uint64_t Sys::determine_chunk_size(uint64_t &size, ComType type) {
   uint64_t chunk_size = size / preferred_dataset_splits;
+  // We want the collective size to have minimum size, otherwise, there is a possibility of
+  // size overflow due to further dividing it to more fine-grained messages
+  if(type!=ComType::All_Gather && this->total_nodes>chunk_size){
+    chunk_size=this->total_nodes; 
+    size=preferred_dataset_splits*chunk_size;
+  }
   return chunk_size;
 }
 
@@ -1349,6 +1387,10 @@ void Sys::proceed_to_next_vnet_baseline(StreamBaseline* stream) {
     return;
   }
   stream->steps_finished++;
+  // This is hot fix for random failures of simulation.
+  // TODO: Need to find a better way for negative queue id occurrence.
+  if (stream->phases_to_go.front().queue_id < 0)
+    stream->phases_to_go.front().queue_id *= -1;
   stream->current_queue_id = stream->phases_to_go.front().queue_id;
   stream->current_com_type = stream->phases_to_go.front().comm_type;
 
@@ -1503,7 +1545,8 @@ int Sys::sim_send(
             tag,
             *request,
             msg_handler,
-            fun_arg),
+            fun_arg,
+            true),
         EventType::General,
         nullptr,
         delay);
@@ -1535,7 +1578,8 @@ int Sys::sim_recv(
             tag,
             *request,
             msg_handler,
-            fun_arg),
+            fun_arg,
+            true),
         EventType::General,
         nullptr,
         delay);

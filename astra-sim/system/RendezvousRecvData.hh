@@ -26,7 +26,7 @@ class RendezvousRecvData : public BasicEventHandlerData, public MetaData {
       sim_request request,
       void (*msg_handler)(void* fun_arg),
       void* fun_arg);
-  SimRecvCaller* recv;
+  SimRecvCaller recv;
 };
 
 } // namespace AstraSim
