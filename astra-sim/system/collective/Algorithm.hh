@@ -32,7 +32,6 @@ class Algorithm : public Callable {
   uint64_t final_data_size;
   ComType comType;
   bool enabled;
-  static const int32_t TAG_OFFSET = 500000000;
 };
 
 } // namespace AstraSim

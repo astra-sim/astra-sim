@@ -255,11 +255,6 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
       fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
     }
   } else if (node->type() == ChakraNodeType::COMM_SEND_NODE) {
-    if (node->comm_tag() >= Algorithm::TAG_OFFSET) {
-      this->sys->sys_panic(
-          "comm_tag should be less than " +
-          std::to_string(Algorithm::TAG_OFFSET) + " for comm_send_node");
-    }
     sim_request snd_req;
     snd_req.srcRank = node->comm_src();
     snd_req.dstRank = node->comm_dst();
@@ -277,14 +272,10 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
         node->comm_dst(),
         node->comm_tag(),
         &snd_req,
+        Sys::FrontEndSendRecvType::NATIVE,
         &Sys::handleEvent,
         sehd);
   } else if (node->type() == ChakraNodeType::COMM_RECV_NODE) {
-    if (node->comm_tag() >= Algorithm::TAG_OFFSET) {
-      this->sys->sys_panic(
-          "comm_tag should be less than " +
-          std::to_string(Algorithm::TAG_OFFSET) + " for comm_recv_node");
-    }
     sim_request rcv_req;
     RecvPacketEventHandlerData* rcehd = new RecvPacketEventHandlerData;
     rcehd->wlhd = new WorkloadLayerHandlerData;
@@ -299,6 +290,7 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
         node->comm_src(),
         node->comm_tag(),
         &rcv_req,
+        Sys::FrontEndSendRecvType::NATIVE,
         &Sys::handleEvent,
         rcehd);
   } else {

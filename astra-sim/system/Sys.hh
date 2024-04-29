@@ -152,7 +152,7 @@ class Sys : public Callable {
   //---------------------------------------------------------------------------
 
   // Middle-level Network Primitives ------------------------------------------
-  uint64_t determine_chunk_size(uint64_t &size, ComType type);
+  uint64_t determine_chunk_size(uint64_t& size, ComType type);
   int get_priority(int explicit_priority);
   void insert_into_ready_list(BaseStream* stream);
   void insert_stream(std::list<BaseStream*>* queue, BaseStream* baseStream);
@@ -162,6 +162,19 @@ class Sys : public Callable {
   //---------------------------------------------------------------------------
 
   // Low-level Network Primitives ---------------------------------------------
+  enum FrontEndSendRecvType {
+    // NATIVE means send/recv is issued directly by workload input
+    // COLLECTIVE means send/recv is caused by a collective communication
+    // RENDEZVOUS means send/recv is a rendezvous shake hand
+    // The value here presents the offset of the tag. The tag range for
+    // different type is as follows
+    // NATIVE: [0, 500000000)
+    // COLLECTIVE: [500000000, 1000000000)
+    // RENDEZVOUS: [1000000000, 2000000000)
+    NATIVE = 0,
+    COLLECTIVE = 500000000,
+    RENDEZVOUS = 1000000000
+  };
   int front_end_sim_send(
       Tick delay,
       void* buffer,
@@ -170,6 +183,7 @@ class Sys : public Callable {
       int dst,
       int tag,
       sim_request* request,
+      FrontEndSendRecvType send_type,
       void (*msg_handler)(void* fun_arg),
       void* fun_arg);
 
@@ -181,6 +195,7 @@ class Sys : public Callable {
       int src,
       int tag,
       sim_request* request,
+      FrontEndSendRecvType recv_type,
       void (*msg_handler)(void* fun_arg),
       void* fun_arg);
 
@@ -312,8 +327,6 @@ class Sys : public Callable {
 
   // skip simulation for all nodes and use current duration
   bool replay_only;
-
-  const int32_t RENDEZVOUS_COMM_TAG_OFFSET = 1000000000;
 };
 
 } // namespace AstraSim
