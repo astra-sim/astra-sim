@@ -158,19 +158,6 @@ class DirectCollectiveImpl : public CollectiveImpl {
 
   int direct_collective_window;
 };
-
-class MissingAttrException : public std::runtime_error {
- public:
-  MissingAttrException(
-      const std::string& attr,
-      const uint64_t& id,
-      const std::string& requester)
-      : std::runtime_error(
-            "Missing Attr of \"" + attr + "\" from node.id=" + id +
-            ", which is asked by \"" + requester + "\""){};
-  MissingAttrException(const std::string& msg) : std::runtime_error(msg){};
-};
-
 } // namespace AstraSim
 
 #endif /* __COMMON_HH__ */

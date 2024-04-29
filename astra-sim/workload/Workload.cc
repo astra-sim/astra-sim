@@ -123,40 +123,32 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
 
   hw_resource->occupy(node);
 
-  try {
-    if (sys->replay_only) {
-      issue_replay(node);
-      return;
-    }
+  if (sys->replay_only) {
+    issue_replay(node);
+    return;
+  }
 
-    // else not replay_only
-    if ((node_type == ChakraNodeType::MEM_LOAD_NODE) ||
-        (node_type == ChakraNodeType::MEM_STORE_NODE)) {
-      issue_remote_mem(node);
-    } else if (node_type == ChakraNodeType::COMP_NODE) {
-      if (node->is_cpu_op())
-        issue_cpu_comp(node);
-      else
-        issue_gpu_comp(node);
-    } else if (
-        (node_type == ChakraNodeType::COMM_COLL_NODE) ||
-        (node_type == ChakraNodeType::COMM_SEND_NODE) ||
-        (node_type == ChakraNodeType::COMM_RECV_NODE)) {
-      issue_comm(node);
-    } else if (node_type == ChakraNodeType::INVALID_NODE) {
-      skip_invalid(node);
-    } else {
-      std::cerr << "Invalid node_type, node.id=" << node->id()
-                << ", node.type=" << static_cast<uint64_t>(node->type())
-                << std::endl;
-      assert(false);
-    }
-  } catch (MissingAttrException& e) {
-    std::cerr << e.what() << std::endl;
-    if (STRICT_MODE)
-      exit(EXIT_FAILURE);
+  // else not replay_only
+  if ((node_type == ChakraNodeType::MEM_LOAD_NODE) ||
+      (node_type == ChakraNodeType::MEM_STORE_NODE)) {
+    issue_remote_mem(node);
+  } else if (node_type == ChakraNodeType::COMP_NODE) {
+    if (node->is_cpu_op())
+      issue_cpu_comp(node);
     else
-      skip_invalid(node);
+      issue_gpu_comp(node);
+  } else if (
+      (node_type == ChakraNodeType::COMM_COLL_NODE) ||
+      (node_type == ChakraNodeType::COMM_SEND_NODE) ||
+      (node_type == ChakraNodeType::COMM_RECV_NODE)) {
+    issue_comm(node);
+  } else if (node_type == ChakraNodeType::INVALID_NODE) {
+    skip_invalid(node);
+  } else {
+    std::cerr << "Invalid node_type, node.id=" << node->id()
+              << ", node.type=" << static_cast<uint64_t>(node->type())
+              << std::endl;
+    assert(false);
   }
   return;
 }
@@ -173,9 +165,6 @@ void Workload::issue_replay(shared_ptr<Chakra::ETFeederNode> node) {
 }
 
 void Workload::issue_remote_mem(shared_ptr<Chakra::ETFeederNode> node) {
-  if (node->tensor_size() == 0)
-    throw MissingAttrException("tensor_size", node->id(), "issue_remote_mem");
-
   WorkloadLayerHandlerData* wlhd = new WorkloadLayerHandlerData;
   wlhd->sys_id = sys->id;
   wlhd->workload = this;
@@ -189,11 +178,6 @@ void Workload::issue_cpu_comp(shared_ptr<Chakra::ETFeederNode> node) {
     issue_replay(node);
     return;
   }
-
-  if (node->num_ops() == 0)
-    throw MissingAttrException("num_ops", node->id(), "issue_cpu_comp");
-  if (node->tensor_size == 0)
-    throw MissingAttrException("tensor_size", node->id(), "issue_cpu_comp");
 
   WorkloadLayerHandlerData* wlhd = new WorkloadLayerHandlerData;
   wlhd->node_id = node->id();
@@ -217,33 +201,26 @@ void Workload::issue_gpu_comp(shared_ptr<Chakra::ETFeederNode> node) {
 }
 
 void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
-  if (node->comm_size() == 0)
-    throw MissingAttrException("comm_size", node->id(), "issue_comm");
-  if (node->involved_dim_size() == 0)
-    throw MissingAttrException("involved_dim", node->id(), "issue_comm");
   if (node->type() == ChakraNodeType::COMM_COLL_NODE) {
     // check if comm_type is filled instead of default value.
   } else if (node->type() == ChakraNodeType::COMM_SEND_NODE) {
-    if (!node->comm_src(sys->id) != sys->id) {
+    if (!node->comm_src() != sys->id) {
       std::cerr << "sys issue a send comm node " << node->id() << " with src"
                 << node->comm_src() << " != sys.id" << sys->id << std::endl;
       exit(EXIT_FAILURE);
     }
-    if (node->comm_dst() == 0)
-      throw MissingAttrException("comm_dst", node->id(), "issue_comm");
-    if (node->comm_tag() == 0)
-      throw MissingAttrException("comm_tag", node->id(), "issue_comm");
   } else if (node->type() == ChakraNodeType::COMM_RECV_NODE) {
-    if (node->comm_src() == 0)
-      throw MissingAttrException("comm_src", node->id(), "issue_comm");
-    if (node->comm_tag() == 0)
-      throw MissingAttrException("comm_tag", node->id(), "issue_comm");
+    if (!node->comm_dst() != sys->id) {
+      std::cerr << "sys issue a recv comm node " << node->id() << " with dst"
+                << node->comm_dst() << " != sys.id" << sys->id << std::endl;
+      exit(EXIT_FAILURE);
+    }
   } else {
     std::cerr << "Unknown communication node type" << std::endl;
     exit(EXIT_FAILURE);
   }
 
-  const uint32_t comm_priority = node->comm_priority(0u);
+  const uint32_t comm_priority = node->comm_priority();
 
   vector<bool> involved_dim;
   for (int i = 0; i < node->involved_dim_size(); i++) {
