@@ -1483,6 +1483,11 @@ int Sys::rendezvous_sim_send(
     sim_request* request,
     void (*msg_handler)(void* fun_arg),
     void* fun_arg) {
+  if (tag >= this->RENDEZVOUS_COMM_TAG_OFFSET) {
+    sys_panic(
+        "tag is bigger than RENDEZVOUS_COMM_TAG_OFFSET, \
+        which means it might be mistakenly used as a rendezvous tag.");
+  }
   RendezvousSendData* rsd = new RendezvousSendData(
       id, this, buffer, count, type, dst, tag, *request, msg_handler, fun_arg);
   sim_request newReq = *request;
@@ -1490,7 +1495,7 @@ int Sys::rendezvous_sim_send(
   newReq.dstRank = request->srcRank;
   newReq.srcRank = request->dstRank;
   newReq.reqCount = rendevouz_size;
-  int newTag = tag + 500000000;
+  int newTag = tag + this->RENDEZVOUS_COMM_TAG_OFFSET;
   newReq.tag = newTag;
   sim_recv(
       delay,
@@ -1515,6 +1520,11 @@ int Sys::rendezvous_sim_recv(
     sim_request* request,
     void (*msg_handler)(void* fun_arg),
     void* fun_arg) {
+  if (tag >= this->RENDEZVOUS_COMM_TAG_OFFSET) {
+    sys_panic(
+        "tag is bigger than RENDEZVOUS_COMM_TAG_OFFSET, \
+        which means it might be mistakenly used as a rendezvous tag.");
+  }
   RendezvousRecvData* rrd = new RendezvousRecvData(
       id, this, buffer, count, type, src, tag, *request, msg_handler, fun_arg);
   sim_request newReq = *request;
@@ -1522,7 +1532,7 @@ int Sys::rendezvous_sim_recv(
   newReq.dstRank = request->srcRank;
   newReq.srcRank = request->dstRank;
   newReq.reqCount = rendevouz_size;
-  int newTag = tag + 500000000;
+  int newTag = tag + this->RENDEZVOUS_COMM_TAG_OFFSET;
   newReq.tag = newTag;
   sim_send(
       delay,

@@ -48,7 +48,7 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData* data) {
     sim_request snd_req;
     snd_req.srcRank = stream->owner->id;
     snd_req.dstRank = parent;
-    snd_req.tag = stream->stream_id;
+    snd_req.tag = stream->stream_id % this->TAG_OFFSET + this->TAG_OFFSET;
     snd_req.reqType = UINT8;
     snd_req.vnet = this->stream->current_queue_id;
     stream->owner->front_end_sim_send(
@@ -57,7 +57,7 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData* data) {
         data_size,
         UINT8,
         parent,
-        stream->stream_id,
+        stream->stream_id % this->TAG_OFFSET + this->TAG_OFFSET,
         &snd_req,
         &Sys::handleEvent,
         nullptr);
@@ -69,14 +69,14 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData* data) {
         stream->owner->id,
         EventType::PacketReceived,
         stream->current_queue_id,
-        stream->stream_id);
+        stream->stream_id % this->TAG_OFFSET + this->TAG_OFFSET);
     stream->owner->front_end_sim_recv(
         0,
         Sys::dummy_data,
         data_size,
         UINT8,
         parent,
-        stream->stream_id,
+        stream->stream_id % this->TAG_OFFSET + this->TAG_OFFSET,
         &rcv_req,
         &Sys::handleEvent,
         ehd);
@@ -108,14 +108,14 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData* data) {
         stream->owner->id,
         EventType::PacketReceived,
         stream->current_queue_id,
-        stream->stream_id);
+        stream->stream_id % this->TAG_OFFSET + this->TAG_OFFSET);
     stream->owner->front_end_sim_recv(
         0,
         Sys::dummy_data,
         data_size,
         UINT8,
         left_child,
-        stream->stream_id,
+        stream->stream_id % this->TAG_OFFSET + this->TAG_OFFSET,
         &rcv_req,
         &Sys::handleEvent,
         ehd);
@@ -126,14 +126,14 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData* data) {
         stream->owner->id,
         EventType::PacketReceived,
         stream->current_queue_id,
-        stream->stream_id);
+        stream->stream_id % this->TAG_OFFSET + this->TAG_OFFSET);
     stream->owner->front_end_sim_recv(
         0,
         Sys::dummy_data,
         data_size,
         UINT8,
         right_child,
-        stream->stream_id,
+        stream->stream_id % this->TAG_OFFSET + this->TAG_OFFSET,
         &rcv_req2,
         &Sys::handleEvent,
         ehd2);
@@ -179,7 +179,7 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData* data) {
     sim_request snd_req;
     snd_req.srcRank = stream->owner->id;
     snd_req.dstRank = parent;
-    snd_req.tag = stream->stream_id;
+    snd_req.tag = stream->stream_id % this->TAG_OFFSET + this->TAG_OFFSET;
     snd_req.reqType = UINT8;
     snd_req.vnet = this->stream->current_queue_id;
     stream->owner->front_end_sim_send(
@@ -188,7 +188,7 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData* data) {
         data_size,
         UINT8,
         parent,
-        stream->stream_id,
+        stream->stream_id % this->TAG_OFFSET + this->TAG_OFFSET,
         &snd_req,
         &Sys::handleEvent,
         nullptr);
@@ -200,14 +200,14 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData* data) {
         stream->owner->id,
         EventType::PacketReceived,
         stream->current_queue_id,
-        stream->stream_id);
+        stream->stream_id % this->TAG_OFFSET + this->TAG_OFFSET);
     stream->owner->front_end_sim_recv(
         0,
         Sys::dummy_data,
         data_size,
         UINT8,
         parent,
-        stream->stream_id,
+        stream->stream_id % this->TAG_OFFSET + this->TAG_OFFSET,
         &rcv_req,
         &Sys::handleEvent,
         ehd);
@@ -233,7 +233,7 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData* data) {
     sim_request snd_req;
     snd_req.srcRank = stream->owner->id;
     snd_req.dstRank = left_child;
-    snd_req.tag = stream->stream_id;
+    snd_req.tag = stream->stream_id % this->TAG_OFFSET + this->TAG_OFFSET;
     snd_req.reqType = UINT8;
     snd_req.vnet = this->stream->current_queue_id;
     stream->owner->front_end_sim_send(
@@ -242,14 +242,14 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData* data) {
         data_size,
         UINT8,
         left_child,
-        stream->stream_id,
+        stream->stream_id % this->TAG_OFFSET + this->TAG_OFFSET,
         &snd_req,
         &Sys::handleEvent,
         nullptr);
     sim_request snd_req2;
     snd_req2.srcRank = stream->owner->id;
     snd_req2.dstRank = left_child;
-    snd_req2.tag = stream->stream_id;
+    snd_req2.tag = stream->stream_id % this->TAG_OFFSET + this->TAG_OFFSET;
     snd_req2.reqType = UINT8;
     snd_req2.vnet = this->stream->current_queue_id;
     stream->owner->front_end_sim_send(
@@ -258,7 +258,7 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData* data) {
         data_size,
         UINT8,
         right_child,
-        stream->stream_id,
+        stream->stream_id % this->TAG_OFFSET + this->TAG_OFFSET,
         &snd_req2,
         &Sys::handleEvent,
         nullptr);
@@ -275,14 +275,14 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData* data) {
         stream->owner->id,
         EventType::PacketReceived,
         stream->current_queue_id,
-        stream->stream_id);
+        stream->stream_id % this->TAG_OFFSET + this->TAG_OFFSET);
     stream->owner->front_end_sim_recv(
         0,
         Sys::dummy_data,
         data_size,
         UINT8,
         only_child_id,
-        stream->stream_id,
+        stream->stream_id % this->TAG_OFFSET + this->TAG_OFFSET,
         &rcv_req,
         &Sys::handleEvent,
         ehd);
@@ -309,7 +309,7 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData* data) {
     sim_request snd_req;
     snd_req.srcRank = stream->owner->id;
     snd_req.dstRank = only_child_id;
-    snd_req.tag = stream->stream_id;
+    snd_req.tag = stream->stream_id % this->TAG_OFFSET + this->TAG_OFFSET;
     snd_req.reqType = UINT8;
     snd_req.vnet = this->stream->current_queue_id;
     stream->owner->front_end_sim_send(
@@ -318,7 +318,7 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData* data) {
         data_size,
         UINT8,
         only_child_id,
-        stream->stream_id,
+        stream->stream_id % this->TAG_OFFSET + this->TAG_OFFSET,
         &snd_req,
         &Sys::handleEvent,
         nullptr);

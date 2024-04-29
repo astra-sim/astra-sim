@@ -238,7 +238,7 @@ bool Ring::ready() {
   sim_request snd_req;
   snd_req.srcRank = id;
   snd_req.dstRank = packet.preferred_dest;
-  snd_req.tag = stream->stream_id;
+  snd_req.tag = stream->stream_id % this->TAG_OFFSET + this->TAG_OFFSET;
   snd_req.reqType = UINT8;
   snd_req.vnet = this->stream->current_queue_id;
   stream->owner->front_end_sim_send(
@@ -247,7 +247,7 @@ bool Ring::ready() {
       msg_size,
       UINT8,
       packet.preferred_dest,
-      stream->stream_id,
+      stream->stream_id % this->TAG_OFFSET + this->TAG_OFFSET,
       &snd_req,
       &Sys::handleEvent,
       nullptr); // stream_id+(packet.preferred_dest*50)
@@ -258,14 +258,14 @@ bool Ring::ready() {
       stream->owner->id,
       EventType::PacketReceived,
       packet.preferred_vnet,
-      packet.stream_id);
+      packet.stream_id % this->TAG_OFFSET + this->TAG_OFFSET);
   stream->owner->front_end_sim_recv(
       0,
       Sys::dummy_data,
       msg_size,
       UINT8,
       packet.preferred_src,
-      stream->stream_id,
+      stream->stream_id % this->TAG_OFFSET + this->TAG_OFFSET,
       &rcv_req,
       &Sys::handleEvent,
       ehd); // stream_id+(owner->id*50)
