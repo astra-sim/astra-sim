@@ -112,6 +112,7 @@ void Workload::issue_dep_free_nodes() {
 }
 
 void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
+  constexpr bool STRICT_MODE = true;
   if (sys->trace_enabled) {
     std::cout << "issue,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
               << ",node->id=" << node->id() << ",node->name=" << node->name()
@@ -152,7 +153,10 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
     }
   } catch (MissingAttrException& e) {
     std::cerr << e.what() << std::endl;
-    exit(EXIT_FAILURE);
+    if (STRICT_MODE)
+      exit(EXIT_FAILURE);
+    else
+      skip_invalid(node);
   }
   return;
 }
@@ -325,6 +329,7 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
 void Workload::skip_invalid(shared_ptr<Chakra::ETFeederNode> node) {
   et_feeder->freeChildrenNodes(node->id());
   et_feeder->removeNode(node->id());
+  hw_resource->release(node);
 }
 
 void Workload::call(EventType event, CallData* data) {
