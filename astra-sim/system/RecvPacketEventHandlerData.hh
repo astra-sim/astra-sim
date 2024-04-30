@@ -8,6 +8,7 @@ LICENSE file in the root directory of this source tree.
 
 #include "astra-sim/system/BaseStream.hh"
 #include "astra-sim/system/BasicEventHandlerData.hh"
+#include "astra-sim/system/collective/ChakraImpl.hh"
 
 namespace AstraSim {
 
@@ -30,6 +31,7 @@ class RecvPacketEventHandlerData : public BasicEventHandlerData {
   int stream_id;
   bool message_end;
   Tick ready_time;
+  ChakraImpl* chakra;
 };
 
 } // namespace AstraSim

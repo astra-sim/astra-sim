@@ -7,6 +7,7 @@ LICENSE file in the root directory of this source tree.
 #define __COMMON_HH__
 
 #include <cstdint>
+#include <string>
 
 namespace AstraSim {
 
@@ -62,6 +63,7 @@ enum class CollectiveImplType {
   DoubleBinaryTree,
   HalvingDoubling,
   OneHalvingDoubling,
+  ChakraImpl,
 };
 
 enum class CollectiveBarrier { Blocking = 0, Non_Blocking };
@@ -133,6 +135,9 @@ class CloneInterface {
   virtual ~CloneInterface() = default;
 };
 
+/* 
+ * CollectiveImpl holds the user's description on how a collective algorithm is implemented, provided in the System layer input.
+ */
 class CollectiveImpl : public CloneInterface {
  public:
   CollectiveImpl(CollectiveImplType type) {
@@ -145,6 +150,10 @@ class CollectiveImpl : public CloneInterface {
   CollectiveImplType type;
 };
 
+/* 
+ * DirectCollectiveImpl contains user-specified information about Direct implementation of collective algorithms.
+ * We have a separte class for DirectCollectiveImpl, because of the collective window, which is also defined in the system layer input.
+ */
 class DirectCollectiveImpl : public CollectiveImpl {
  public:
   CloneInterface* clone() const {
@@ -158,6 +167,24 @@ class DirectCollectiveImpl : public CollectiveImpl {
   int direct_collective_window;
 };
 
+
+/* 
+ * ChakraCollectiveImpl contains information about a collective implementation represented using the Chakra ET format. 
+ * It containes the filename of the Chakra ET which holds the implementation, provided in the System layer input.
+ */
+ class ChakraCollectiveImpl : public CollectiveImpl {
+ public:
+  CloneInterface* clone() const {
+    return new ChakraCollectiveImpl(*this);
+  };
+  ChakraCollectiveImpl(CollectiveImplType type, std::string filename)
+      : CollectiveImpl(type) {
+    this->filename = filename;
+  }
+
+  /* The filename of the corresponding Chakra ET file */
+  std::string filename;
+};
 } // namespace AstraSim
 
 #endif /* __COMMON_HH__ */

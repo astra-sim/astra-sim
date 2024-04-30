@@ -10,8 +10,10 @@ LICENSE file in the root directory of this source tree.
 using namespace AstraSim;
 
 RecvPacketEventHandlerData::RecvPacketEventHandlerData() {
+  this->workload = nullptr;
   this->wlhd = nullptr;
   this->owner = nullptr;
+  this->chakra = nullptr;
 }
 
 RecvPacketEventHandlerData::RecvPacketEventHandlerData(
@@ -24,6 +26,7 @@ RecvPacketEventHandlerData::RecvPacketEventHandlerData(
   this->workload = nullptr;
   this->wlhd = nullptr;
   this->owner = owner;
+  this->chakra = nullptr;
   this->vnet = vnet;
   this->stream_id = stream_id;
   this->message_end = true;
