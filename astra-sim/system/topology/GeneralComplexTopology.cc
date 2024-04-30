@@ -24,7 +24,11 @@ GeneralComplexTopology::GeneralComplexTopology(
   for (uint64_t dim = 0; dim < collective_impl.size(); dim++) {
     if (collective_impl[dim]->type == CollectiveImplType::Ring ||
         collective_impl[dim]->type == CollectiveImplType::Direct ||
-        collective_impl[dim]->type == CollectiveImplType::HalvingDoubling) {
+        collective_impl[dim]->type == CollectiveImplType::HalvingDoubling || 
+        // Using default value as placeholder for Chakra Impl. 
+        // Will be okay since Chakra Impl won't even use topology info. 
+        // TODO: Still, verify it's okay to use this as is.
+        collective_impl[dim]->type == CollectiveImplType::ChakraImpl) {
       RingTopology* ring = new RingTopology(
           RingTopology::Dimension::NA,
           id,

@@ -7,6 +7,7 @@ LICENSE file in the root directory of this source tree.
 #define __COMMON_HH__
 
 #include <cstdint>
+#include <string>
 
 namespace AstraSim {
 
@@ -62,6 +63,7 @@ enum class CollectiveImplType {
   DoubleBinaryTree,
   HalvingDoubling,
   OneHalvingDoubling,
+  ChakraImpl,
 };
 
 enum class CollectiveBarrier { Blocking = 0, Non_Blocking };
@@ -158,6 +160,18 @@ class DirectCollectiveImpl : public CollectiveImpl {
   int direct_collective_window;
 };
 
+class MSCCLangCollectiveImpl : public CollectiveImpl {
+ public:
+  CloneInterface* clone() const {
+    return new MSCCLangCollectiveImpl(*this);
+  };
+  MSCCLangCollectiveImpl(CollectiveImplType type, std::string filename)
+      : CollectiveImpl(type) {
+    this->filename = filename;
+  }
+
+  std::string filename;
+};
 } // namespace AstraSim
 
 #endif /* __COMMON_HH__ */
