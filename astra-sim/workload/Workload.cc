@@ -162,6 +162,8 @@ void Workload::issue_replay(shared_ptr<Chakra::ETFeederNode> node) {
     // chakra runtimes are in microseconds and we should convert it into
     // nanoseconds
     runtime = node->runtime() * 1000;
+
+  // std::cout << "replay runtime = " << runtime << "\n";
   sys->register_event(this, EventType::General, wlhd, runtime);
 }
 
@@ -178,7 +180,22 @@ void Workload::issue_remote_mem(shared_ptr<Chakra::ETFeederNode> node) {
 void Workload::issue_comp(shared_ptr<Chakra::ETFeederNode> node) {
   hw_resource->occupy(node);
 
-  if (sys->roofline_enabled) {
+  if (node->has_other_attr("compute_sim_time_ns")) {
+    std::cout << "this node is running compute sim\n";
+    WorkloadLayerHandlerData* wlhd = new WorkloadLayerHandlerData;
+    wlhd->node_id = node->id();
+    
+    uint64_t runtime = node->get_other_attr("compute_sim_time_ns").uint64_val();
+    if (runtime == 0ul) {
+      runtime = 1ul;
+    }
+    // std::cout << "node name = " << node->name() << "\n";
+    std::cout << "sim runtime = " << runtime << "\n";
+    std::cout << "replay runtime = " << node->runtime() * 1000 << "\n";
+    sys->register_event(this, EventType::General, wlhd, runtime);
+  }
+  else if (sys->roofline_enabled && node->has_other_attr("compute_sim_time_ns")) {
+    std::cout << "this node is running roofline\n";
     WorkloadLayerHandlerData* wlhd = new WorkloadLayerHandlerData;
     wlhd->node_id = node->id();
 
@@ -187,6 +204,10 @@ void Workload::issue_comp(shared_ptr<Chakra::ETFeederNode> node) {
     double perf = sys->roofline->get_perf(operational_intensity);
     double elapsed_time = static_cast<double>(node->num_ops()) / perf;
     uint64_t runtime = static_cast<uint64_t>(elapsed_time);
+
+    // std::cout << "num_ops() = " << node->num_ops() << "\n";
+    // std::cout << "tensor_size() = " << node->tensor_size() << "\n";
+
     sys->register_event(this, EventType::General, wlhd, runtime);
   } else {
     // advance this node forward the recorded "replayed" time specificed in the
