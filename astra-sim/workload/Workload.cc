@@ -199,9 +199,9 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
   hw_resource->occupy(node);
 
   vector<bool> involved_dim;
-  for (int i = 0; i < node->involved_dim_size(); i++) {
-    involved_dim.push_back(node->involved_dim(i));
-  }
+  // involved_dim does not exist in ETFeeder anymore.
+  // We assume involved_dim equals 1, until Chakra supports communicator group.
+  involved_dim.push_back(true);
 
   if (!node->is_cpu_op() && (node->type() == ChakraNodeType::COMM_COLL_NODE)) {
     if (node->comm_type() == ChakraCollectiveCommType::ALL_REDUCE) {
