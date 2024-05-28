@@ -51,6 +51,8 @@ function compile_astrasim_analytical_as_debug() {
 
 function cleanup() {
   rm -rf "${BUILD_DIR:?}"
+  rm -f "${CHAKRA_ET_DIR}/et_def.pb.cc"
+  rm -f "${CHAKRA_ET_DIR}/et_def.pb.h"
 }
 
 function create_symlink_astrasim() {
