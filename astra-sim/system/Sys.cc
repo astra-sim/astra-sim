@@ -26,6 +26,7 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/collective/DoubleBinaryTreeAllReduce.hh"
 #include "astra-sim/system/collective/HalvingDoubling.hh"
 #include "astra-sim/system/collective/Ring.hh"
+#include "astra-sim/system/collective/ChakraImpl.hh"
 #include "astra-sim/system/scheduling/OfflineGreedy.hh"
 #include "astra-sim/system/topology/BasicLogicalTopology.hh"
 #include "astra-sim/system/topology/GeneralComplexTopology.hh"
@@ -386,6 +387,34 @@ bool Sys::initialize_sys(string name) {
       all_to_all_implementation_per_dimension.push_back(ci);
     }
   }
+  // TODO: Remove 'experimental', and simply combine with all-to-all-implementation, etc.
+  if (j.contains("all-to-all-implementation-chakra-experimental")) {
+    vector<string> collective_impl_str_vec = j["all-to-all-implementation-chakra-experimental"];
+    all_to_all_implementation_per_dimension.clear();
+    for (auto collective_impl_str : collective_impl_str_vec) {
+      CollectiveImpl* ci =
+          generate_collective_impl_from_chakra(collective_impl_str);
+      all_to_all_implementation_per_dimension.push_back(ci);
+    }
+  }
+  if (j.contains("all-gather-implementation-chakra-experimental")) {
+    vector<string> collective_impl_str_vec = j["all-gather-implementation-chakra-experimental"];
+    all_gather_implementation_per_dimension.clear();
+    for (auto collective_impl_str : collective_impl_str_vec) {
+      CollectiveImpl* ci =
+          generate_collective_impl_from_chakra(collective_impl_str);
+      all_gather_implementation_per_dimension.push_back(ci);
+    }
+  }
+  if (j.contains("all-reduce-implementation-chakra-experimental")) {
+    vector<string> collective_impl_str_vec = j["all-reduce-implementation-chakra-experimental"];
+    all_reduce_implementation_per_dimension.clear();
+    for (auto collective_impl_str : collective_impl_str_vec) {
+      CollectiveImpl* ci =
+          generate_collective_impl_from_chakra(collective_impl_str);
+      all_reduce_implementation_per_dimension.push_back(ci);
+    }
+  }
   if (j.contains("collective-optimization")) {
     string inp_collective_optimization = j["collective-optimization"];
     if (inp_collective_optimization == "baseline") {
@@ -495,6 +524,11 @@ CollectiveImpl* Sys::generate_collective_impl_from_input(
         "input file");
     return new CollectiveImpl(CollectiveImplType::Ring);
   }
+}
+
+CollectiveImpl* Sys::generate_collective_impl_from_chakra(
+    string collective_impl_str) {
+  return new MSCCLangCollectiveImpl(CollectiveImplType::ChakraImpl, collective_impl_str);
 }
 
 Tick Sys::boostedTick() {
@@ -612,6 +646,9 @@ void Sys::handleEvent(void* arg) {
     }
     if (rcehd->owner) {
       rcehd->owner->consume(rcehd);
+    }
+    if (rcehd->chakra) {
+      rcehd->chakra->call(event, rcehd->wlhd);
     }
     delete rcehd;
   } else if (event == EventType::PacketSent) {
@@ -1081,6 +1118,15 @@ CollectivePhase Sys::generate_collective_phase(
         new HalvingDoubling(
             collective_type, id, (RingTopology*)topology, data_size));
     return vn;
+  } else if (
+      collective_impl->type == CollectiveImplType::ChakraImpl) {
+    string filename = ((MSCCLangCollectiveImpl*)collective_impl)->filename;
+    filename = filename + "." + to_string(id) + ".et";
+    CollectivePhase vn(
+        this,
+        queue_id,
+        new ChakraImpl(filename, id));
+      return vn;      
   } else {
     cerr << "Error: No known collective implementation for collective phase"
          << endl;
