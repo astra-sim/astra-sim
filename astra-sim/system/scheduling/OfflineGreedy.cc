@@ -45,19 +45,19 @@ OfflineGreedy::OfflineGreedy(Sys* sys) {
   }
   if (sys->id == 0) {
     auto logger = LoggerFactory::get_logger("themis");
-    logger.info("Themis is configured with the following parameters:");
+    logger->info("Themis is configured with the following parameters:");
     std::stringstream buffer;
     buffer << "Dim size: ";
     for (uint64_t i = 0; i < this->dim_size.size(); i++) {
       buffer << this->dim_size[i] << ", ";
     }
-    logger.info(buffer.str());
-    buffer.str("";)
+    logger->info(buffer.str());
+    buffer.str("");
     buffer << "BW per dim: ";
     for (uint64_t i = 0; i < this->dim_BW.size(); i++) {
       buffer << this->dim_BW[i] << ", ";
     }
-    logger.info(buffer.str());
+    logger->info(buffer.str());
   }
 }
 uint64_t OfflineGreedy::get_chunk_size_from_elapsed_time(

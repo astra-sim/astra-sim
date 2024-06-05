@@ -5,8 +5,8 @@ LICENSE file in the root directory of this source tree.
 
 #include "astra-sim/system/CSVWriter.hh"
 
-#include "astra-sim/system/Common.hh"
 #include "astra-sim/common/Logging.hh"
+#include "astra-sim/system/Common.hh"
 
 #include <fcntl.h>
 #include <unistd.h>
@@ -34,7 +34,8 @@ void CSVWriter::initialize_csv(int rows, int cols) {
   } while (!myFile.is_open() && trial > 0);
   if (trial == 0) {
     logger->critical("Unable to create file: {}", path);
-    logger->critical("This error is fatal. Please make sure the CSV write path exists.");
+    logger->critical(
+        "This error is fatal. Please make sure the CSV write path exists.");
     exit(1);
   }
   do {
@@ -47,7 +48,8 @@ void CSVWriter::initialize_csv(int rows, int cols) {
 
   if (!myFile) {
     logger->critical("Unable to create file: {}", path);
-    logger->critical("This error is fatal. Please make sure the CSV write path exists.");
+    logger->critical(
+        "This error is fatal. Please make sure the CSV write path exists.");
     exit(1);
   } else {
     logger->info("Success in opening CSV file for writing the report.");
@@ -77,7 +79,8 @@ void CSVWriter::finalize_csv(
   } while (!myFile.is_open() && trial > 0);
   if (trial == 0) {
     logger->critical("Unable to create file: {}{}", path, name);
-    logger->critical("This error is fatal. Please make sure the CSV write path exists.");
+    logger->critical(
+        "This error is fatal. Please make sure the CSV write path exists.");
     exit(1);
   }
   do {
@@ -90,7 +93,8 @@ void CSVWriter::finalize_csv(
 
   if (!myFile) {
     logger->critical("Unable to create file: {}{}", path, name);
-    logger->critical("This error is fatal. Please make sure the CSV write path exists.");
+    logger->critical(
+        "This error is fatal. Please make sure the CSV write path exists.");
     exit(1);
   } else {
     logger->info("success in openning file");
@@ -171,7 +175,8 @@ void CSVWriter::write_cell(int row, int column, std::string data) {
       column--;
     }
     if (*buf == '\n') {
-      LoggerFactory::get_logger("system::CSVWriter")->critical("fatal error in inserting cewll!");
+      LoggerFactory::get_logger("system::CSVWriter")
+          ->critical("fatal error in inserting cewll!");
       exit(1);
     }
   }

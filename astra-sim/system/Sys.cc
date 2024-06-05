@@ -9,6 +9,7 @@ LICENSE file in the root directory of this source tree.
 #include <iostream>
 
 #include <json/json.hpp>
+#include "astra-sim/common/Logging.hh"
 #include "astra-sim/system/BaseStream.hh"
 #include "astra-sim/system/CollectivePlan.hh"
 #include "astra-sim/system/DataSet.hh"
@@ -29,7 +30,6 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/scheduling/OfflineGreedy.hh"
 #include "astra-sim/system/topology/BasicLogicalTopology.hh"
 #include "astra-sim/system/topology/GeneralComplexTopology.hh"
-#include "astra-sim/common/Logging.hh"
 
 using namespace std;
 using namespace Chakra;
@@ -336,7 +336,8 @@ bool Sys::initialize_sys(string name) {
   inFile.open(name);
   if (!inFile) {
     if (id == 0) {
-      LoggerFactory::get_logger("system")->critical("Unable to open file: {}", name);
+      LoggerFactory::get_logger("system")->critical(
+          "Unable to open file: {}", name);
     }
     exit(1);
   }
@@ -533,7 +534,8 @@ void Sys::call_events() {
       (get<0>(callable))->call(get<1>(callable), get<2>(callable));
     } catch (const std::exception& e) {
       auto logger = LoggerFactory::get_logger("system");
-      logger->critical("warning! a callable is removed before call {}", e.what());
+      logger->critical(
+          "warning! a callable is removed before call {}", e.what());
     }
   }
   if (event_queue[Sys::boostedTick()].size() > 0) {
@@ -1085,8 +1087,8 @@ CollectivePhase Sys::generate_collective_phase(
             collective_type, id, (RingTopology*)topology, data_size));
     return vn;
   } else {
-    LoggerFactory::get_logger("system")
-        ->critical("Error: No known collective implementation for collective phase");
+    LoggerFactory::get_logger("system")->critical(
+        "Error: No known collective implementation for collective phase");
     exit(1);
   }
 }
