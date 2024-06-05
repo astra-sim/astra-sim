@@ -39,7 +39,7 @@ Workload::Workload(Sys* sys, string et_filename, string comm_group_filename) {
       error_msg =
           "Unknown workload file: " + workload_filename + " access error";
     }
-    cerr << error_msg << endl;
+    LoggerFactory::get_logger("workload")->critical(error_msg);
     exit(EXIT_FAILURE);
   }
   this->et_feeder = new ETFeeder(workload_filename);
@@ -298,7 +298,7 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
         &Sys::handleEvent,
         rcehd);
   } else {
-    cerr << "Unknown communication node type" << endl;
+    LoggerFactory::get_logger("workload")->critical("Unknown communication node type");
     exit(EXIT_FAILURE);
   }
 }

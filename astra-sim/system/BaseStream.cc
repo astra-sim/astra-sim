@@ -28,7 +28,6 @@ BaseStream::BaseStream(
   if (synchronizer.find(stream_id) != synchronizer.end()) {
     synchronizer[stream_id]++;
   } else {
-    // std::cout<<"synchronizer set!"<<std::endl;
     synchronizer[stream_id] = 1;
     ready_counter[stream_id] = 0;
   }
