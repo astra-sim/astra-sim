@@ -27,6 +27,7 @@ file(GLOB srcs
         "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/topology/*.cc"
         "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/memory/*.cc"
         "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/scheduling/*.cc"
+        "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/common/*.cc"
         "${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/third_party/utils/*.cc"
         "${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/et_def/*.cc"
         "${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/et_feeder/*.cpp"
