@@ -17,3 +17,9 @@
 [submodule "extern/network_backend/ns-3"]
 	path = extern/network_backend/ns-3
 	url = git@github.com:astra-sim/astra-network-ns3.git
+[submodule "extern/helper/fmt"]
+	path = extern/helper/fmt
+	url = git@github.com:fmtlib/fmt.git
+[submodule "extern/helper/spdlog"]
+	path = extern/helper/spdlog
+	url = git@github.com:gabime/spdlog.git
