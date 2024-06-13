@@ -1,3 +1,6 @@
+#ifndef __COMMON_LOGGING_HH__
+#define __COMMON_LOGGING_HH__
+
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -22,3 +25,5 @@ class LoggerFactory {
 };
 
 } // namespace AstraSim
+
+#endif
