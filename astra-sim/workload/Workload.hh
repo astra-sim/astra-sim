@@ -19,6 +19,7 @@ namespace AstraSim {
 
 class Sys;
 class DataSet;
+class LocalMemoryTracker;
 
 class Workload : public Callable {
  public:
@@ -49,6 +50,7 @@ class Workload : public Callable {
   std::unordered_map<int, uint64_t> collective_comm_node_id_map;
   std::unordered_map<int, DataSet*> collective_comm_wrapper_map;
   bool is_finished;
+  LocalMemoryTracker* local_memory_tracker;
 };
 
 } // namespace AstraSim
