@@ -397,5 +397,6 @@ void Workload::fire() {
 void Workload::report() {
   Tick curr_tick = Sys::boostedTick();
   cout << "sys[" << sys->id << "] finished, " << curr_tick << " cycles" << endl;
-  this->local_memory_tracker->report(this->sys->memory_report_dir);
+  if (this->local_memory_tracker != nullptr)
+    this->local_memory_tracker->report(this->sys->memory_report_dir);
 }
