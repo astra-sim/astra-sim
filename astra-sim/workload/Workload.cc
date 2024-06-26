@@ -49,7 +49,12 @@ Workload::Workload(Sys* sys, string et_filename, string comm_group_filename) {
   this->sys = sys;
   initialize_comm_group(comm_group_filename);
   this->is_finished = false;
-  this->local_memory_tracker = new LocalMemoryTracker(this, false);
+  if (this->sys->local_mem_tracker_enabled) {
+    this->local_memory_tracker =
+        new LocalMemoryTracker(this, this->sys->track_mem_activities);
+  } else {
+    this->local_memory_tracker = nullptr;
+  }
 }
 
 Workload::~Workload() {
@@ -59,6 +64,8 @@ Workload::~Workload() {
     delete this->et_feeder;
   if (this->hw_resource != nullptr)
     delete this->hw_resource;
+  if (this->local_memory_tracker != nullptr)
+    delete this->local_memory_tracker;
 }
 
 void Workload::initialize_comm_group(string comm_group_filename) {
@@ -114,7 +121,6 @@ void Workload::issue_dep_free_nodes() {
 }
 
 void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
-  this->local_memory_tracker->issueNode(this->et_feeder, node);
   if (sys->replay_only) {
     hw_resource->occupy(node);
     issue_replay(node);
@@ -155,6 +161,9 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
       skip_invalid(node);
     }
   }
+  if (this->local_memory_tracker != nullptr) {
+    this->local_memory_tracker->issueNode(this->et_feeder, node);
+  }
 }
 
 void Workload::issue_replay(shared_ptr<Chakra::ETFeederNode> node) {
@@ -185,8 +194,14 @@ void Workload::issue_comp(shared_ptr<Chakra::ETFeederNode> node) {
     WorkloadLayerHandlerData* wlhd = new WorkloadLayerHandlerData;
     wlhd->node_id = node->id();
 
-    double operational_intensity = static_cast<double>(node->num_ops()) /
-        static_cast<double>(node->tensor_size());
+    uint64_t io_size = node->tensor_size();
+    for (const auto& parent_id : node->getChakraNode()->data_deps()) {
+      auto parent = this->et_feeder->lookupNode(parent_id);
+      io_size += parent->tensor_size();
+    }
+
+    double operational_intensity =
+        static_cast<double>(node->num_ops()) / static_cast<double>(io_size);
     double perf = sys->roofline->get_perf(operational_intensity);
     double elapsed_time = static_cast<double>(node->num_ops()) / perf;
     uint64_t runtime = static_cast<uint64_t>(elapsed_time);
@@ -202,9 +217,14 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
   hw_resource->occupy(node);
 
   vector<bool> involved_dim;
-  for (int i = 0; i < node->involved_dim_size(); i++) {
-    involved_dim.push_back(node->involved_dim(i));
+  for (size_t i = 0;
+       i < this->sys->all_reduce_implementation_per_dimension.size();
+       i++) {
+    involved_dim.push_back(true);
   }
+  // for (int i = 0; i < node->involved_dim_size(); i++) {
+  // involved_dim.push_back(node->involved_dim(i));
+  // }
 
   if (!node->is_cpu_op() && (node->type() == ChakraNodeType::COMM_COLL_NODE)) {
     if (node->comm_type() == ChakraCollectiveCommType::ALL_REDUCE) {
@@ -301,7 +321,8 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
 
 void Workload::skip_invalid(shared_ptr<Chakra::ETFeederNode> node) {
   et_feeder->freeChildrenNodes(node->id());
-  et_feeder->removeNode(node->id());
+  if (this->local_memory_tracker == nullptr || node->getChildren().size() == 0)
+    et_feeder->removeNode(node->id());
 }
 
 void Workload::call(EventType event, CallData* data) {
@@ -319,14 +340,18 @@ void Workload::call(EventType event, CallData* data) {
            << ",node->id=" << node->id() << ",node->name=" << node->name()
            << endl;
     }
+    if (this->local_memory_tracker != nullptr) {
+      this->local_memory_tracker->finishedNode(this->et_feeder, node);
+    }
 
     hw_resource->release(node);
 
     et_feeder->freeChildrenNodes(node_id);
 
     issue_dep_free_nodes();
-    this->local_memory_tracker->finishedNode(this->et_feeder, node);
-    et_feeder->removeNode(node_id);
+    if (this->local_memory_tracker == nullptr ||
+        node->getChildren().size() == 0)
+      et_feeder->removeNode(node_id);
 
     // The Dataset class provides statistics that should be used later to dump
     // more statistics in the workload layer
@@ -346,14 +371,18 @@ void Workload::call(EventType event, CallData* data) {
              << ",node->id=" << node->id() << ",node->name=" << node->name()
              << endl;
       }
+      if (this->local_memory_tracker != nullptr) {
+        this->local_memory_tracker->finishedNode(this->et_feeder, node);
+      }
 
       hw_resource->release(node);
 
       et_feeder->freeChildrenNodes(node->id());
 
       issue_dep_free_nodes();
-      this->local_memory_tracker->finishedNode(this->et_feeder, node);
-      et_feeder->removeNode(wlhd->node_id);
+      if (this->local_memory_tracker == nullptr ||
+          node->getChildren().size() == 0)
+        et_feeder->removeNode(wlhd->node_id);
       delete wlhd;
     }
   }
@@ -374,5 +403,5 @@ void Workload::fire() {
 void Workload::report() {
   Tick curr_tick = Sys::boostedTick();
   cout << "sys[" << sys->id << "] finished, " << curr_tick << " cycles" << endl;
-  this->local_memory_tracker->report("");
+  this->local_memory_tracker->report(this->sys->memory_report_dir);
 }
