@@ -28,6 +28,8 @@ void LocalMemoryTracker::issueNode(
     std::shared_ptr<Chakra::ETFeederNode> node) {
   Tick now = Sys::boostedTick();
   size_t tensorSize = node->tensor_size();
+  if (node->type() == ChakraProtoMsg::NodeType::COMM_RECV_NODE)
+    return;
   this->memoryContentSize += tensorSize;
   memoryUsageTimeline.insert({now, this->memoryContentSize});
   if (this->trackMemoryActivities) {
@@ -51,6 +53,27 @@ void LocalMemoryTracker::finishedNode(
     Chakra::ETFeeder* etFeeder,
     std::shared_ptr<Chakra::ETFeederNode> node) {
   Tick now = Sys::boostedTick();
+  size_t tensorSize = node->tensor_size();
+  if (node->type() == ChakraProtoMsg::NodeType::COMM_RECV_NODE) {
+    this->memoryContentSize += tensorSize;
+    memoryUsageTimeline.insert({now, this->memoryContentSize});
+    if (this->trackMemoryActivities) {
+      MemoryActivity writeActivity = {
+          MemoryActivityType::WRITE_START, node, node, now - 100};
+      this->memoryActivities.push_back(writeActivity);
+      MemoryActivity allocActivity = {
+          MemoryActivityType::ALLOC, node, node, now - 100};
+      this->memoryActivities.push_back(allocActivity);
+      for (auto parentId : node->getChakraNode()->data_deps()) {
+        auto parent = etFeeder->lookupNode(parentId);
+        MemoryActivity readActivity = {
+            MemoryActivityType::READ_START, parent, node, now};
+        this->memoryActivities.push_back(readActivity);
+      }
+    }
+    if (this->memoryContentSize > this->peakMemoryUsage)
+      this->peakMemoryUsage = this->memoryContentSize;
+  }
   if (this->trackMemoryActivities) {
     MemoryActivity writeActivity = {
         MemoryActivityType::WRITE_END, node, node, now};
@@ -64,14 +87,28 @@ void LocalMemoryTracker::finishedNode(
   }
 
   releasedNodes.emplace(node);
+  if (node->getChildren().size() == 0 && this->trackMemoryActivities) {
+    MemoryActivity freeActivity = {MemoryActivityType::FREE, node, node, now};
+    this->memoryActivities.push_back(freeActivity);
+  }
   for (auto parentId : node->getChakraNode()->data_deps()) {
     auto parent = etFeeder->lookupNode(parentId);
     bool depResolved = true;
-    for (auto child : parent->getChildren())
+    for (auto child : parent->getChildren()) {
+      bool in_data_deps = false;
+      for (const auto& id : child->getChakraNode()->data_deps()) {
+        if (id == parentId) {
+          in_data_deps = true;
+          break;
+        }
+      }
+      if (!in_data_deps)
+        continue;
       if (releasedNodes.count(child) == 0) {
         depResolved = false;
         break;
       }
+    }
     if (depResolved) {
       this->memoryContentSize -= parent->tensor_size();
       this->memoryUsageTimeline.insert({now, this->memoryContentSize});
@@ -79,7 +116,6 @@ void LocalMemoryTracker::finishedNode(
         MemoryActivity freeActivity = {
             MemoryActivityType::FREE, parent, node, now};
         this->memoryActivities.push_back(freeActivity);
-        etFeeder->removeNode(parent->id());
       }
     }
   }

@@ -277,6 +277,13 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
       fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
     }
   } else if (node->type() == ChakraNodeType::COMM_SEND_NODE) {
+    LoggerFactory::get_logger("workload_SR_debug")
+        ->debug(
+            "sys.id={}, node.id={} src={} dst={}",
+            this->sys->id,
+            node->id(),
+            node->comm_src(),
+            node->comm_dst());
     sim_request snd_req;
     snd_req.srcRank = node->comm_src();
     snd_req.dstRank = node->comm_dst();
@@ -297,6 +304,13 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
         &Sys::handleEvent,
         sehd);
   } else if (node->type() == ChakraNodeType::COMM_RECV_NODE) {
+    LoggerFactory::get_logger("workload_SR_debug")
+        ->debug(
+            "sys.id={}, node.id={} src={} dst={}",
+            this->sys->id,
+            node->id(),
+            node->comm_src(),
+            node->comm_dst());
     sim_request rcv_req;
     RecvPacketEventHandlerData* rcehd = new RecvPacketEventHandlerData;
     rcehd->wlhd = new WorkloadLayerHandlerData;
@@ -321,8 +335,6 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
 
 void Workload::skip_invalid(shared_ptr<Chakra::ETFeederNode> node) {
   et_feeder->freeChildrenNodes(node->id());
-  if (this->local_memory_tracker == nullptr || node->getChildren().size() == 0)
-    et_feeder->removeNode(node->id());
 }
 
 void Workload::call(EventType event, CallData* data) {
@@ -351,11 +363,10 @@ void Workload::call(EventType event, CallData* data) {
     issue_dep_free_nodes();
     if (this->local_memory_tracker == nullptr ||
         node->getChildren().size() == 0)
-      et_feeder->removeNode(node_id);
 
-    // The Dataset class provides statistics that should be used later to dump
-    // more statistics in the workload layer
-    delete collective_comm_wrapper_map[node_id];
+      // The Dataset class provides statistics that should be used later to dump
+      // more statistics in the workload layer
+      delete collective_comm_wrapper_map[node_id];
     collective_comm_wrapper_map.erase(node_id);
 
   } else {
@@ -380,9 +391,6 @@ void Workload::call(EventType event, CallData* data) {
       et_feeder->freeChildrenNodes(node->id());
 
       issue_dep_free_nodes();
-      if (this->local_memory_tracker == nullptr ||
-          node->getChildren().size() == 0)
-        et_feeder->removeNode(wlhd->node_id);
       delete wlhd;
     }
   }
