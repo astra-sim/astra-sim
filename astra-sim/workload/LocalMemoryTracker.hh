@@ -28,7 +28,8 @@ class LocalMemoryTracker {
 
   typedef struct {
     MemoryActivityType type;
-    std::shared_ptr<Chakra::ETFeederNode> node;
+    std::shared_ptr<Chakra::ETFeederNode> dataOwner;
+    std::shared_ptr<Chakra::ETFeederNode> caller;
     Tick tick;
   } MemoryActivity;
 
@@ -42,7 +43,9 @@ class LocalMemoryTracker {
       Chakra::ETFeeder* etFeeder,
       std::shared_ptr<Chakra::ETFeederNode> node);
 
-  void report(std::string reportPath);
+  void report(std::string reportFolder);
+
+  ~LocalMemoryTracker();
 
  private:
   Workload* workload;
