@@ -309,6 +309,9 @@ class Sys : public Callable {
 
   // statistics
   bool trace_enabled;
+  bool local_mem_tracker_enabled;
+  bool track_mem_activities;
+  std::string memory_report_dir;
 
   // skip simulation for all nodes and use current duration
   bool replay_only;
