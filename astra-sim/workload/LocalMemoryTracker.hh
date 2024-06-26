@@ -6,7 +6,6 @@
 #include <string>
 #include <unordered_set>
 #include "astra-sim/common/Common.hh"
-#include "astra-sim/common/Logging.hh"
 #include "astra-sim/system/Sys.hh"
 #include "et_feeder/et_feeder.h"
 #include "et_feeder/et_feeder_node.h"

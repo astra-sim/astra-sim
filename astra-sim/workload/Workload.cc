@@ -277,13 +277,6 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
       fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
     }
   } else if (node->type() == ChakraNodeType::COMM_SEND_NODE) {
-    LoggerFactory::get_logger("workload_SR_debug")
-        ->debug(
-            "sys.id={}, node.id={} src={} dst={}",
-            this->sys->id,
-            node->id(),
-            node->comm_src(),
-            node->comm_dst());
     sim_request snd_req;
     snd_req.srcRank = node->comm_src();
     snd_req.dstRank = node->comm_dst();
@@ -304,13 +297,6 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
         &Sys::handleEvent,
         sehd);
   } else if (node->type() == ChakraNodeType::COMM_RECV_NODE) {
-    LoggerFactory::get_logger("workload_SR_debug")
-        ->debug(
-            "sys.id={}, node.id={} src={} dst={}",
-            this->sys->id,
-            node->id(),
-            node->comm_src(),
-            node->comm_dst());
     sim_request rcv_req;
     RecvPacketEventHandlerData* rcehd = new RecvPacketEventHandlerData;
     rcehd->wlhd = new WorkloadLayerHandlerData;
