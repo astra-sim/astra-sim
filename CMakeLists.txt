@@ -17,7 +17,9 @@ project(AstraSim)
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/extern/helper/fmt")
 option(SPDLOG_FMT_EXTERNAL ON)    # override default option for spdlog.
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/extern/helper/spdlog")
-find_package(Protobuf REQUIRED)
+# Find Protobuf
+# find_package(Protobuf REQUIRED)
+find_package(protobuf CONFIG REQUIRED)
 
 # Files to compile
 file(GLOB srcs
@@ -37,16 +39,17 @@ file(GLOB srcs
 add_library(AstraSim STATIC ${srcs})
 
 # Link libraries
-target_link_libraries(AstraSim PUBLIC ${Protobuf_LIBRARIES})
 target_link_libraries(AstraSim PUBLIC fmt::fmt)
 target_link_libraries(AstraSim PUBLIC spdlog::spdlog)
+#target_link_libraries(AstraSim PUBLIC ${Protobuf_LIBRARIES})
+target_link_libraries(AstraSim PUBLIC protobuf::libprotobuf)
 
 # Include Directories
 target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/)
 target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/schema/protobuf)
 target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/src/third_party/utils)
-target_include_directories(AstraSim PUBLIC ${Protobuf_INCLUDE_DIRS})
+# target_include_directories(AstraSim PUBLIC ${Protobuf_INCLUDE_DIRS})
 target_include_directories(AstraSim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/extern/helper/)
 
 # Properties
