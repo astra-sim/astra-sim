@@ -19,10 +19,6 @@ RUN apt -y install \
 RUN python3 -m venv /opt/venv/astra-sim
 ENV PATH="/opt/venv/astra-sim/bin:$PATH"
 RUN pip3 install --upgrade pip
-
-## Prepare ssh key for Docker image build
-RUN mkdir -p -m 0600 /root/.ssh
-RUN ssh-keyscan github.com >> /root/.ssh/known_hosts
 ### ======================================================
 
 
@@ -68,15 +64,7 @@ RUN pip3 install protobuf==4.25.3
 ### ======================================================
 
 
-### ================== ASTRA-sim =========================
-## Clone ASTRA-sim
+### ================== Finalize ==========================
+## Move to the application directory
 WORKDIR /app
-RUN --mount=type=ssh git clone --recurse-submodules git@github.com:astra-sim/astra-sim.git
-
-## Install Chakra (Python module)
-WORKDIR /app/astra-sim/extern/graph_frontend/chakra
-RUN pip3 install .
-
-## Move to the top ASTRA-sim directory
-WORKDIR /app/astra-sim
 ### ======================================================
