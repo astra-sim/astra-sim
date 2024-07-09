@@ -4,7 +4,7 @@ LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
 #include "congestion_aware/CongestionAwareNetworkApi.hh"
-#include <astra-network-analytical/congestion_aware/Chunk.hh>
+#include <astra-network-analytical/congestion_aware/Chunk.h>
 #include <cassert>
 
 using namespace AstraSim;

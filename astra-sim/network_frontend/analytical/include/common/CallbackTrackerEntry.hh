@@ -5,8 +5,8 @@ LICENSE file in the root directory of this source tree.
 
 #pragma once
 
-#include <astra-network-analytical/common/Event.hh>
-#include <astra-network-analytical/common/Type.hh>
+#include <astra-network-analytical/common/Event.h>
+#include <astra-network-analytical/common/Type.h>
 #include <optional>
 
 using namespace NetworkAnalytical;

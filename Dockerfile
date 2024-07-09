@@ -10,7 +10,7 @@ RUN apt -y update
 RUN apt -y upgrade
 RUN apt -y install \
     coreutils wget vim git \
-    gcc g++ \
+    gcc g++ clang-format \
     make cmake \
     libboost-dev libboost-program-options-dev \
     python3.12 python3-pip python3-venv
