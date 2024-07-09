@@ -4,7 +4,7 @@ set -e
 # set paths
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 BUILD_DIR="${SCRIPT_DIR:?}"/build
-CHAKRA_ET_DIR="${SCRIPT_DIR:?}"/../../extern/graph_frontend/chakra/et_def
+CHAKRA_ET_DIR="${SCRIPT_DIR:?}"/../../extern/graph_frontend/chakra/schema/protobuf
 
 # set functions
 function compile_chakra_et() {
