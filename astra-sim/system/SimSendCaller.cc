@@ -8,40 +8,33 @@ LICENSE file in the root directory of this source tree.
 
 using namespace AstraSim;
 
-SimSendCaller::SimSendCaller(
-    Sys* sys,
-    void* buffer,
-    int count,
-    int type,
-    int dst,
-    int tag,
-    sim_request request,
-    void (*msg_handler)(void* fun_arg),
-    void* fun_arg,
-    bool should_cleanup) {
-  this->sys = sys;
-  this->buffer = buffer;
-  this->count = count;
-  this->type = type;
-  this->dst = dst;
-  this->tag = tag;
-  this->request = request;
-  this->msg_handler = msg_handler;
-  this->fun_arg = fun_arg;
-  this->should_cleanup = should_cleanup;
+SimSendCaller::SimSendCaller(Sys* sys,
+                             void* buffer,
+                             int count,
+                             int type,
+                             int dst,
+                             int tag,
+                             sim_request request,
+                             void (*msg_handler)(void* fun_arg),
+                             void* fun_arg,
+                             bool should_cleanup) {
+    this->sys = sys;
+    this->buffer = buffer;
+    this->count = count;
+    this->type = type;
+    this->dst = dst;
+    this->tag = tag;
+    this->request = request;
+    this->msg_handler = msg_handler;
+    this->fun_arg = fun_arg;
+    this->should_cleanup = should_cleanup;
 }
 
 void SimSendCaller::call(EventType type, CallData* data) {
-  //std::cout<<"sysid: "<<sys->id<<std::endl;
-  sys->comm_NI->sim_send(
-      this->buffer,
-      this->count,
-      this->type,
-      this->dst,
-      this->tag,
-      &this->request,
-      this->msg_handler,
-      this->fun_arg);
-  if(should_cleanup)
-    delete this;
+    // std::cout<<"sysid: "<<sys->id<<std::endl;
+    sys->comm_NI->sim_send(this->buffer, this->count, this->type, this->dst, this->tag, &this->request,
+                           this->msg_handler, this->fun_arg);
+    if (should_cleanup) {
+        delete this;
+    }
 }

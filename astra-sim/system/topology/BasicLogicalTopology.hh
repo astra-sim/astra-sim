@@ -11,30 +11,28 @@ LICENSE file in the root directory of this source tree.
 namespace AstraSim {
 
 class BasicLogicalTopology : public LogicalTopology {
- public:
-  enum class BasicTopology { Ring = 0, BinaryTree };
+  public:
+    enum class BasicTopology { Ring = 0, BinaryTree };
 
-  BasicLogicalTopology(BasicTopology basic_topology) {
-    this->basic_topology = basic_topology;
-  }
+    BasicLogicalTopology(BasicTopology basic_topology) {
+        this->basic_topology = basic_topology;
+    }
 
-  virtual ~BasicLogicalTopology() = default;
+    virtual ~BasicLogicalTopology() = default;
 
-  int get_num_of_dimensions() override {
-    return 1;
-  };
+    int get_num_of_dimensions() override {
+        return 1;
+    };
 
-  virtual int get_num_of_nodes_in_dimension(int dimension) override = 0;
+    virtual int get_num_of_nodes_in_dimension(int dimension) override = 0;
 
-  BasicLogicalTopology* get_basic_topology_at_dimension(
-      int dimension,
-      ComType type) override {
-    return this;
-  }
+    BasicLogicalTopology* get_basic_topology_at_dimension(int dimension, ComType type) override {
+        return this;
+    }
 
-  BasicTopology basic_topology;
+    BasicTopology basic_topology;
 };
 
-} // namespace AstraSim
+}  // namespace AstraSim
 
 #endif /* __BASIC_LOGICAL_TOPOLOGY_HH__ */

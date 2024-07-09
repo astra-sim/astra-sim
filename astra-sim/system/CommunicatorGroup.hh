@@ -17,21 +17,21 @@ namespace AstraSim {
 class Sys;
 class CollectivePlan;
 class CommunicatorGroup {
- public:
-  CommunicatorGroup(int id, std::vector<int> involved_NPUs, Sys* generator);
-  CollectivePlan* get_collective_plan(ComType comm_type);
-  void set_id(int id);
-  ~CommunicatorGroup();
+  public:
+    CommunicatorGroup(int id, std::vector<int> involved_NPUs, Sys* generator);
+    CollectivePlan* get_collective_plan(ComType comm_type);
+    void set_id(int id);
+    ~CommunicatorGroup();
 
-  std::vector<int> involved_NPUs;
-  int num_streams;
+    std::vector<int> involved_NPUs;
+    int num_streams;
 
- private:
-  int id;
-  Sys* generator;
-  std::map<ComType, CollectivePlan*> comm_plans;
+  private:
+    int id;
+    Sys* generator;
+    std::map<ComType, CollectivePlan*> comm_plans;
 };
 
-} // namespace AstraSim
+}  // namespace AstraSim
 
 #endif /* __COMMUNICATOR_GROUP_HH__ */
