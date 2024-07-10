@@ -452,6 +452,26 @@ bool Sys::initialize_sys(string name) {
       this->trace_enabled = false;
     }
   }
+  this->local_mem_tracker_enabled = false;
+  if (j.contains("local-mem-tracker-enabled")) {
+    if (j["local-mem-tracker-enabled"] != 0) {
+      this->local_mem_tracker_enabled = true;
+    } else {
+      this->local_mem_tracker_enabled = false;
+    }
+  }
+  this->track_mem_activities = false;
+  if (j.contains("track-mem-activities")) {
+    if (j["track-mem-activities"] != 0) {
+      this->track_mem_activities = true;
+    } else {
+      this->track_mem_activities = false;
+    }
+  }
+  this->memory_report_dir = ".";
+  if (j.contains("memory-report-dir")) {
+    this->memory_report_dir = j["memory-report-dir"];
+  }
   this->replay_only = false;
   if (j.contains("replay-only")) {
     if (j["replay-only"] != 0) {
