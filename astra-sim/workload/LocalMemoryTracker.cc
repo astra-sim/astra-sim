@@ -14,6 +14,8 @@
 using namespace AstraSim;
 using json = nlohmann::json;
 
+std::unordered_map<uint32_t, Tick> LocalMemoryTracker::communicationSendTick;
+
 LocalMemoryTracker::LocalMemoryTracker(
     Workload* workload,
     bool trackMemoryActivities) {
@@ -29,6 +31,10 @@ void LocalMemoryTracker::issueNode(
   Tick now = Sys::boostedTick();
   size_t tensorSize = node->tensor_size();
   // because we track the allocation when "send" issued
+  if (node->type() == ChakraProtoMsg::NodeType::COMM_SEND_NODE) {
+    auto tag = node->comm_tag();
+    LocalMemoryTracker::communicationSendTick.insert({tag, now});
+  }
   if (node->type() == ChakraProtoMsg::NodeType::COMM_RECV_NODE)
     return;
   this->memoryContentSize += tensorSize;
@@ -64,13 +70,14 @@ void LocalMemoryTracker::finishedNode(
     this->memoryContentSize += tensorSize;
     memoryUsageTimeline.insert({now, this->memoryContentSize});
     if (this->trackMemoryActivities) {
-      // offset 100 to simulate the allocation happening at "send", but not
-      // tracked due to complexity.
+      auto tag = node->comm_tag();
+      auto sendTick = LocalMemoryTracker::communicationSendTick.at(tag);
+      LocalMemoryTracker::communicationSendTick.erase(tag);
       MemoryActivity writeActivity = {
-          MemoryActivityType::WRITE_START, node, node, now - 100};
+          MemoryActivityType::WRITE_START, node, node, sendTick};
       this->memoryActivities.push_back(writeActivity);
       MemoryActivity allocActivity = {
-          MemoryActivityType::ALLOC, node, node, now - 100};
+          MemoryActivityType::ALLOC, node, node, sendTick};
       this->memoryActivities.push_back(allocActivity);
       if (node->getChakraNode()->data_deps().size() != 0) {
         std::cerr << "Recv node.id=" << node->id()
