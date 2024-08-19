@@ -283,6 +283,7 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
         node->comm_dst(),
         node->comm_tag(),
         &snd_req,
+        Sys::FrontEndSendRecvType::NATIVE,
         &Sys::handleEvent,
         sehd);
   } else if (node->type() == ChakraNodeType::COMM_RECV_NODE) {
@@ -300,6 +301,7 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
         node->comm_src(),
         node->comm_tag(),
         &rcv_req,
+        Sys::FrontEndSendRecvType::NATIVE,
         &Sys::handleEvent,
         rcehd);
   } else {

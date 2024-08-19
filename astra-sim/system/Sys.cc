@@ -1448,8 +1448,21 @@ int Sys::front_end_sim_send(
     int dst,
     int tag,
     sim_request* request,
+    Sys::FrontEndSendRecvType send_type,
     void (*msg_handler)(void* fun_arg),
     void* fun_arg) {
+  if (send_type == Sys::FrontEndSendRecvType::NATIVE)
+    tag = tag %
+            (Sys::FrontEndSendRecvType::COLLECTIVE -
+             Sys::FrontEndSendRecvType::NATIVE) +
+        Sys::FrontEndSendRecvType::NATIVE;
+  else if (send_type == Sys::FrontEndSendRecvType::COLLECTIVE)
+    tag = tag %
+            (Sys::FrontEndSendRecvType::RENDEZVOUS -
+             Sys::FrontEndSendRecvType::COLLECTIVE) +
+        Sys::FrontEndSendRecvType::COLLECTIVE;
+  else
+    sys_panic("A type of RENDZVOUS should never issued in frontend");
   if (rendezvous_enabled) {
     return rendezvous_sim_send(
         delay, buffer, count, type, dst, tag, request, msg_handler, fun_arg);
@@ -1467,8 +1480,21 @@ int Sys::front_end_sim_recv(
     int src,
     int tag,
     sim_request* request,
+    Sys::FrontEndSendRecvType recv_type,
     void (*msg_handler)(void* fun_arg),
     void* fun_arg) {
+  if (recv_type == Sys::FrontEndSendRecvType::NATIVE)
+    tag = tag %
+            (Sys::FrontEndSendRecvType::COLLECTIVE -
+             Sys::FrontEndSendRecvType::NATIVE) +
+        Sys::FrontEndSendRecvType::NATIVE;
+  else if (recv_type == Sys::FrontEndSendRecvType::COLLECTIVE)
+    tag = tag %
+            (Sys::FrontEndSendRecvType::RENDEZVOUS -
+             Sys::FrontEndSendRecvType::COLLECTIVE) +
+        Sys::FrontEndSendRecvType::COLLECTIVE;
+  else
+    sys_panic("A type of RENDZVOUS should never issued in frontend");
   if (rendezvous_enabled) {
     return rendezvous_sim_recv(
         delay, buffer, count, type, src, tag, request, msg_handler, fun_arg);
@@ -1488,6 +1514,11 @@ int Sys::rendezvous_sim_send(
     sim_request* request,
     void (*msg_handler)(void* fun_arg),
     void* fun_arg) {
+  if (tag >= Sys::FrontEndSendRecvType::RENDEZVOUS) {
+    sys_panic(
+        "tag is bigger than RENDEZVOUS_COMM_TAG_OFFSET, \
+        which means it might be mistakenly used as a rendezvous tag.");
+  }
   RendezvousSendData* rsd = new RendezvousSendData(
       id, this, buffer, count, type, dst, tag, *request, msg_handler, fun_arg);
   sim_request newReq = *request;
@@ -1495,7 +1526,7 @@ int Sys::rendezvous_sim_send(
   newReq.dstRank = request->srcRank;
   newReq.srcRank = request->dstRank;
   newReq.reqCount = rendevouz_size;
-  int newTag = tag + 500000000;
+  int newTag = tag + Sys::FrontEndSendRecvType::RENDEZVOUS;
   newReq.tag = newTag;
   sim_recv(
       delay,
@@ -1520,6 +1551,11 @@ int Sys::rendezvous_sim_recv(
     sim_request* request,
     void (*msg_handler)(void* fun_arg),
     void* fun_arg) {
+  if (tag >= Sys::FrontEndSendRecvType::RENDEZVOUS) {
+    sys_panic(
+        "tag is bigger than RENDEZVOUS_COMM_TAG_OFFSET, \
+        which means it might be mistakenly used as a rendezvous tag.");
+  }
   RendezvousRecvData* rrd = new RendezvousRecvData(
       id, this, buffer, count, type, src, tag, *request, msg_handler, fun_arg);
   sim_request newReq = *request;
@@ -1527,7 +1563,7 @@ int Sys::rendezvous_sim_recv(
   newReq.dstRank = request->srcRank;
   newReq.srcRank = request->dstRank;
   newReq.reqCount = rendevouz_size;
-  int newTag = tag + 500000000;
+  int newTag = tag + Sys::FrontEndSendRecvType::RENDEZVOUS;
   newReq.tag = newTag;
   sim_send(
       delay,
