@@ -9,6 +9,7 @@ LICENSE file in the root directory of this source tree.
 #include <iostream>
 
 #include <json/json.hpp>
+#include "astra-sim/common/Logging.hh"
 #include "astra-sim/system/BaseStream.hh"
 #include "astra-sim/system/CollectivePlan.hh"
 #include "astra-sim/system/DataSet.hh"
@@ -335,7 +336,8 @@ bool Sys::initialize_sys(string name) {
   inFile.open(name);
   if (!inFile) {
     if (id == 0) {
-      cerr << "Unable to open file: " << name << endl;
+      LoggerFactory::get_logger("system")->critical(
+          "Unable to open file: {}", name);
     }
     exit(1);
   }
@@ -513,12 +515,14 @@ Tick Sys::boostedTick() {
 }
 
 void Sys::sys_panic(string msg) {
-  cerr << msg << endl;
+  auto logger = LoggerFactory::get_logger("system");
+  logger->critical(msg);
   exit(1);
 }
 
 void Sys::exit_sim_loop(string msg) {
-  cout << msg << endl;
+  auto logger = LoggerFactory::get_logger("system");
+  logger->warn(msg);
 }
 
 void Sys::call(EventType type, CallData* data) {}
@@ -529,8 +533,9 @@ void Sys::call_events() {
       pending_events--;
       (get<0>(callable))->call(get<1>(callable), get<2>(callable));
     } catch (const std::exception& e) {
-      cerr << "warning! a callable is removed before call" << endl;
-      cerr << e.what() << endl;
+      auto logger = LoggerFactory::get_logger("system");
+      logger->critical(
+          "warning! a callable is removed before call {}", e.what());
     }
   }
   if (event_queue[Sys::boostedTick()].size() > 0) {
@@ -1082,8 +1087,8 @@ CollectivePhase Sys::generate_collective_phase(
             collective_type, id, (RingTopology*)topology, data_size));
     return vn;
   } else {
-    cerr << "Error: No known collective implementation for collective phase"
-         << endl;
+    LoggerFactory::get_logger("system")->critical(
+        "Error: No known collective implementation for collective phase");
     exit(1);
   }
 }
