@@ -10,7 +10,7 @@ LICENSE file in the root directory of this source tree.
 
 #include <cstdint>
 
-#include "extern/graph_frontend/chakra/et_feeder/et_feeder.h"
+#include "extern/graph_frontend/chakra/src/feeder/et_feeder.h"
 
 namespace AstraSim {
 

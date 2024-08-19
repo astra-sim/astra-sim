@@ -13,7 +13,7 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/Callable.hh"
 #include "astra-sim/system/CommunicatorGroup.hh"
 #include "astra-sim/workload/HardwareResource.hh"
-#include "extern/graph_frontend/chakra/et_feeder/et_feeder.h"
+#include "extern/graph_frontend/chakra/src/feeder/et_feeder.h"
 
 namespace AstraSim {
 
