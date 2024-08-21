@@ -7,9 +7,9 @@ LICENSE file in the root directory of this source tree.
 #include <astra-network-analytical/common/NetworkParser.hh>
 #include <astra-network-analytical/congestion_aware/Helper.hh>
 #include <remote_memory_backend/analytical/AnalyticalRemoteMemory.hh>
+#include "astra-sim/common/Logging.hh"
 #include "common/CmdLineParser.hh"
 #include "congestion_aware/CongestionAwareNetworkApi.hh"
-#include "astra-sim/common/Logging.hh"
 
 using namespace AstraSim;
 using namespace Analytical;
@@ -34,7 +34,7 @@ int main(int argc, char* argv[]) {
       cmd_line_parser.get<std::string>("remote-memory-configuration");
   const auto network_configuration =
       cmd_line_parser.get<std::string>("network-configuration");
-  const auto logging_configuration = 
+  const auto logging_configuration =
       cmd_line_parser.get<std::string>("logging-configuration");
   const auto num_queues_per_dim =
       cmd_line_parser.get<int>("num-queues-per-dim");
@@ -105,6 +105,11 @@ int main(int argc, char* argv[]) {
   }
 
   // terminate simulation
+  for (int i = 0; i < npus_count; i++) {
+    delete systems[i];
+  }
+  network_apis.clear();
+  systems.clear();
   AstraSim::LoggerFactory::shutdown();
   return 0;
 }
