@@ -195,6 +195,11 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
     for (int i = 0; i < node->involved_dim_size(); i++) {
         involved_dim.push_back(node->involved_dim(i));
     }
+    
+    // corner case: involved dim is not defined
+    if (involved_dim.empty()) {
+        involved_dim.push_back(true);
+    }
 
     if (!node->is_cpu_op() && (node->type() == ChakraNodeType::COMM_COLL_NODE)) {
         if (node->comm_type() == ChakraCollectiveCommType::ALL_REDUCE) {
