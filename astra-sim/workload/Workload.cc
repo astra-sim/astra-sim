@@ -15,7 +15,9 @@ LICENSE file in the root directory of this source tree.
 
 #include <stdlib.h>
 #include <unistd.h>
+#include <cassert>
 #include <iostream>
+#include <queue>
 
 using namespace std;
 using namespace AstraSim;
@@ -126,6 +128,11 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
   const auto& node_type = node->type();
 
   hw_resource->occupy(node);
+  auto stat_node_type = Statistics::OperatorStatistics::get_operator_type(node);
+  if (sys->replay_only)
+    stat_node_type = Statistics::OperatorStatistics::OperatorType::REPLAY;
+
+  stats.record_start(node->id(), Sys::boostedTick(), stat_node_type);
 
   if (sys->replay_only) {
     issue_replay(node);
@@ -193,6 +200,12 @@ void Workload::issue_cpu_comp(shared_ptr<Chakra::ETFeederNode> node) {
   double elapsed_time = static_cast<double>(node->num_ops()) / perf;
   uint64_t runtime = static_cast<uint64_t>(elapsed_time);
   sys->register_event(this, EventType::General, wlhd, runtime);
+
+  auto& op_stat = this->stats.get_operator_statistics(node->id());
+  op_stat.operation_intensity = operational_intensity;
+  op_stat.compute_utilization = perf / sys->peak_perf;
+  op_stat.memory_utilization = perf / operational_intensity;
+  op_stat.is_memory_bound = perf < sys->peak_perf;
 }
 
 void Workload::issue_gpu_comp(shared_ptr<Chakra::ETFeederNode> node) {
@@ -206,16 +219,17 @@ void Workload::issue_gpu_comp(shared_ptr<Chakra::ETFeederNode> node) {
 }
 
 void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
+  auto logger = LoggerFactory::get_logger("workload");
   if (node->type() == ChakraNodeType::COMM_COLL_NODE) {
     // check if comm_type is filled instead of default value.
   } else if (node->type() == ChakraNodeType::COMM_SEND_NODE) {
-    if (!node->comm_src() != sys->id) {
+    if (node->comm_src() != sys->id) {
       std::cerr << "sys issue a send comm node " << node->id() << " with src"
                 << node->comm_src() << " != sys.id" << sys->id << std::endl;
       exit(EXIT_FAILURE);
     }
   } else if (node->type() == ChakraNodeType::COMM_RECV_NODE) {
-    if (!node->comm_dst() != sys->id) {
+    if (node->comm_dst() != sys->id) {
       std::cerr << "sys issue a recv comm node " << node->id() << " with dst"
                 << node->comm_dst() << " != sys.id" << sys->id << std::endl;
       exit(EXIT_FAILURE);
@@ -225,7 +239,12 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
     exit(EXIT_FAILURE);
   }
 
-  const uint32_t comm_priority = node->comm_priority();
+  uint32_t comm_priority;
+  try {
+    comm_priority = node->comm_priority();
+  } catch (const std::out_of_range& e) {
+    comm_priority = 0;
+  }
 
   vector<bool> involved_dim;
   // involved_dim does not exist in ETFeeder anymore.
@@ -339,6 +358,7 @@ void Workload::call(EventType event, CallData* data) {
     }
 
     hw_resource->release(node);
+    stats.record_end(node->id(), Sys::boostedTick());
 
     et_feeder->freeChildrenNodes(node_id);
 
@@ -371,6 +391,7 @@ void Workload::call(EventType event, CallData* data) {
       }
 
       hw_resource->release(node);
+      stats.record_end(node->id(), Sys::boostedTick());
 
       et_feeder->freeChildrenNodes(node->id());
 
