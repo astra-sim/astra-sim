@@ -1,9 +1,13 @@
 #ifndef ASTRASIM_WORKLOAD_STATISTICS_HH
 #define ASTRASIM_WORKLOAD_STATISTICS_HH
 
+#include <map>
 #include <optional>
 #include <unordered_map>
 #include "astra-sim/common/Common.hh"
+#include "astra-sim/common/Logging.hh"
+#include "extern/graph_frontend/chakra/src/feeder_v2/et_feeder.h"
+typedef ChakraProtoMsg::NodeType ChakraNodeType;
 
 typedef uint64_t NodeId;
 
@@ -13,6 +17,8 @@ class Statistics {
   class OperatorStatistics {
    public:
     enum class OperatorType { CPU, GPU, COMM, REMOTE_MEM, REPLAY, INVALID };
+    static OperatorType get_operator_type(
+        const std::shared_ptr<Chakra::ETFeederNode> node);
     OperatorStatistics(
         NodeId node_id,
         Tick start_time,
@@ -69,8 +75,11 @@ class Statistics {
     operator_statistics.clear();
   }
 
+  void extract_type_time() const;
+
  private:
   std::unordered_map<NodeId, OperatorStatistics> operator_statistics;
+  std::multimap<Tick, NodeId> start_times;
 };
 
 } // namespace AstraSim
