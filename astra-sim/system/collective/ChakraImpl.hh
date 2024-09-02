@@ -46,7 +46,7 @@ class ChakraImpl : public Algorithm {
       std::string et_filename,
       int id);
 
-  // Runs the collective algorithm.
+  // Runs the collective algorithm. This function is only called once to start the algorithm.
   virtual void run(EventType event, CallData* data);
   void call(EventType event, CallData* data);
   
@@ -61,7 +61,7 @@ class ChakraImpl : public Algorithm {
 
   // Rank Id
   int id;
-  // Absolute path to the Chakra file for this specific rank.
+  // ET Feeder for the Chakra ET for this specific rank.
   Chakra::ETFeeder* et_feeder;
   // Tracks availability of hardware resources (e.g. prevent two send ET nodes at same time). 
   // TODO: merge with impl in Workload layer.

@@ -27,11 +27,11 @@ class RecvPacketEventHandlerData : public BasicEventHandlerData {
   Workload* workload;
   WorkloadLayerHandlerData* wlhd;
   BaseStream* owner;
+  ChakraImpl* chakra;
   int vnet;
   int stream_id;
   bool message_end;
   Tick ready_time;
-  ChakraImpl* chakra;
 };
 
 } // namespace AstraSim

@@ -122,7 +122,6 @@ void ChakraImpl::issue(shared_ptr<Chakra::ETFeederNode> node) {
         &Sys::handleEvent,
         sehd);
   } else if (type == ChakraNodeType::COMM_RECV_NODE) {
-    //cout << "at gpu " << id << "issue recv node for node " << node->id() << endl;
     sim_request rcv_req;
     RecvPacketEventHandlerData* rcehd = new RecvPacketEventHandlerData;
     rcehd->wlhd = new WorkloadLayerHandlerData;
@@ -140,14 +139,12 @@ void ChakraImpl::issue(shared_ptr<Chakra::ETFeederNode> node) {
         &Sys::handleEvent,
         rcehd);
   } else if (type == ChakraNodeType::COMP_NODE) {
-    // if (id == 0)
-    //   cout << "at gpu " << id << "issue comp node for node " << node->id() << endl;
+    // This Compute corresponds to a reduce operation. The computation time here is assumed to be trivial.
     WorkloadLayerHandlerData* wlhd = new WorkloadLayerHandlerData;
     wlhd->node_id = node->id();
     uint64_t runtime = 1ul;
     if (node->runtime() != 0ul)
-      // chakra runtimes are in microseconds and we should convert it into
-      // nanoseconds
+      // chakra runtimes are in microseconds and we should convert it into nanoseconds.
       runtime = node->runtime() * 1000;
     stream->owner->register_event(this, EventType::General, wlhd, runtime);
   }
@@ -161,25 +158,28 @@ void ChakraImpl::issue_dep_free_nodes() {
   }
 }
 
+// This is called when a SEND/RECV/COMP operator has completed.
+// Release the Chakra node for the completed operator and issue downstream nodes.
 void ChakraImpl::call(EventType event, CallData* data) {
   if (data == nullptr) {
-    issue_dep_free_nodes();
-  } else {
-    WorkloadLayerHandlerData* wlhd = (WorkloadLayerHandlerData*)data;
-    shared_ptr<Chakra::ETFeederNode> node =
-      et_feeder->lookupNode(wlhd->node_id);
-    hw_resource->release(node);
-    et_feeder->freeChildrenNodes(wlhd->node_id);
-    issue_dep_free_nodes();
-    et_feeder->removeNode(wlhd->node_id);
-    delete wlhd;
+    throw runtime_error("ChakraImpl::Call does not have node id encoded (CallData* data is null).");
   }
+
+  WorkloadLayerHandlerData* wlhd = (WorkloadLayerHandlerData*)data;
+  shared_ptr<Chakra::ETFeederNode> node = et_feeder->lookupNode(wlhd->node_id);
+  hw_resource->release(node);
+  et_feeder->freeChildrenNodes(wlhd->node_id);
+  issue_dep_free_nodes();
+  et_feeder->removeNode(wlhd->node_id);
+  delete wlhd;
+
   if (!et_feeder->hasNodesToIssue()) {
+    // There are no more nodes to execute, so we finish the collective algorithm.
     exit();
   }
 }
 
 void ChakraImpl::run(EventType event, CallData* data) {
+  // Start executing the collective algorithm implementation by issuing the root nodes.
   issue_dep_free_nodes();
-  // cout << "Hello for " << id <<  endl;
 }
