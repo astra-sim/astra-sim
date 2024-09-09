@@ -223,13 +223,13 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
   if (node->type() == ChakraNodeType::COMM_COLL_NODE) {
     // check if comm_type is filled instead of default value.
   } else if (node->type() == ChakraNodeType::COMM_SEND_NODE) {
-    if (node->comm_src() != sys->id) {
+    if (node->comm_src(sys->id) != sys->id) {
       std::cerr << "sys issue a send comm node " << node->id() << " with src"
                 << node->comm_src() << " != sys.id" << sys->id << std::endl;
       exit(EXIT_FAILURE);
     }
   } else if (node->type() == ChakraNodeType::COMM_RECV_NODE) {
-    if (node->comm_dst() != sys->id) {
+    if (node->comm_dst(sys->id) != sys->id) {
       std::cerr << "sys issue a recv comm node " << node->id() << " with dst"
                 << node->comm_dst() << " != sys.id" << sys->id << std::endl;
       exit(EXIT_FAILURE);
