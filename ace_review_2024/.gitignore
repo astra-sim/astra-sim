@@ -1,0 +1,12 @@
+.DS_Store
+*.pdf
+*.et
+*.log
+
+# Example 1
+generated_et/
+
+# Example 2
+workload_chakra/
+
+# Example 3
