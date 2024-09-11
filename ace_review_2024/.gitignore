@@ -10,3 +10,5 @@ generated_et/
 workload_chakra/
 
 # Example 3
+etplus_traces/
+chakra_traces/

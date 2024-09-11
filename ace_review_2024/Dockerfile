@@ -65,6 +65,16 @@ RUN pip3 install protobuf==4.25.3
 ### ======================================================
 
 
+### ============= Param Installation =====================
+# Clone PARAM
+WORKDIR /opt
+RUN git clone https://github.com/facebookresearch/param.git
+WORKDIR /opt/param/et_replay
+RUN git checkout 7b19f586dd8b267333114992833a0d7e0d601630
+RUN pip install .
+### ======================================================
+
+
 ### ================== Finalize ==========================
 ## Move to the application directory
 WORKDIR /app/astra-sim/ace_review_2024

@@ -1,4 +1,0 @@
-topology: [ FullyConnected ]
-npus_count: [ 2 ]
-bandwidth: [ 50.0 ]  # GB/s
-latency: [ 500.0 ]  # ns
