@@ -50,6 +50,7 @@ Workload::Workload(Sys* sys, string et_filename, string comm_group_filename) {
   this->hw_resource = new HardwareResource(1);
   this->sys = sys;
   initialize_comm_group(comm_group_filename);
+  this->stats = new Statistics(sys->id);
   this->is_finished = false;
 }
 
@@ -60,6 +61,8 @@ Workload::~Workload() {
     delete this->et_feeder;
   if (this->hw_resource != nullptr)
     delete this->hw_resource;
+  if (this->stats != nullptr)
+    delete this->stats;
 }
 
 void Workload::initialize_comm_group(string comm_group_filename) {
@@ -132,7 +135,7 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
   if (sys->replay_only)
     stat_node_type = Statistics::OperatorStatistics::OperatorType::REPLAY;
 
-  stats.record_start(node->id(), Sys::boostedTick(), stat_node_type);
+  stats->record_start(node->id(), Sys::boostedTick(), stat_node_type);
 
   if (sys->replay_only) {
     issue_replay(node);
@@ -199,14 +202,24 @@ void Workload::issue_cpu_comp(shared_ptr<Chakra::ETFeederNode> node) {
   double perf = sys->roofline->get_perf(operational_intensity);
   double elapsed_time = static_cast<double>(node->num_ops()) / perf; // sec
   uint64_t runtime = static_cast<uint64_t>(elapsed_time * 1e9); // sec -> ns
-  uint64_t runtime = static_cast<uint64_t>(elapsed_time);
   sys->register_event(this, EventType::General, wlhd, runtime);
 
-  auto& op_stat = this->stats.get_operator_statistics(node->id());
+  auto& op_stat = this->stats->get_operator_statistics(node->id());
   op_stat.operation_intensity = operational_intensity;
   op_stat.compute_utilization = perf / sys->peak_perf;
-  op_stat.memory_utilization = perf / operational_intensity;
+  op_stat.memory_utilization =
+      (perf / operational_intensity) / sys->local_mem_bw;
   op_stat.is_memory_bound = perf < sys->peak_perf;
+  LoggerFactory::get_logger("workload")
+      ->debug(
+          "operation_intensity={}, perf={}, elapsed_time={} compute_utilization={} memory_utilization={} tensor_size={} num_ops={}",
+          operational_intensity,
+          perf,
+          elapsed_time,
+          op_stat.compute_utilization.value(),
+          op_stat.memory_utilization.value(),
+          node->tensor_size(),
+          node->num_ops());
 }
 
 void Workload::issue_gpu_comp(shared_ptr<Chakra::ETFeederNode> node) {
@@ -359,7 +372,7 @@ void Workload::call(EventType event, CallData* data) {
     }
 
     hw_resource->release(node);
-    stats.record_end(node->id(), Sys::boostedTick());
+    stats->record_end(node->id(), Sys::boostedTick());
 
     et_feeder->freeChildrenNodes(node_id);
 
@@ -392,7 +405,7 @@ void Workload::call(EventType event, CallData* data) {
       }
 
       hw_resource->release(node);
-      stats.record_end(node->id(), Sys::boostedTick());
+      stats->record_end(node->id(), Sys::boostedTick());
 
       et_feeder->freeChildrenNodes(node->id());
 
@@ -421,4 +434,5 @@ void Workload::report() {
   Tick curr_tick = Sys::boostedTick();
   LoggerFactory::get_logger("workload")
       ->info("sys[{}] finished, {} cycles", sys->id, curr_tick);
+  stats->report();
 }

@@ -1,4 +1,8 @@
 #include "astra-sim/workload/Statistics.hh"
+#include <algorithm>
+#include <map>
+#include <unordered_map>
+#include <vector>
 
 using namespace AstraSim;
 
@@ -57,6 +61,170 @@ Statistics::OperatorStatistics::OperatorType Statistics::OperatorStatistics::
   return stat_node_type;
 }
 
-void Statistics::extract_type_time() const {
-  std::map<Tick, uint64_t> type_timeline;
+std::unordered_map<Statistics::OperatorStatistics::OperatorType, Tick>
+Statistics::extract_type_time() const {
+  std::unordered_map<
+      OperatorStatistics::OperatorType,
+      std::vector<std::pair<Tick, Tick>>>
+      interval_map;
+  for (const auto& [node_id, stat] : operator_statistics) {
+    interval_map[stat.type].push_back({stat.start_time, stat.end_time});
+  }
+
+  std::unordered_map<OperatorStatistics::OperatorType, Tick> type_total_time;
+  for (const auto& [type, intervals] : interval_map) {
+    type_total_time[type] = _calculateTotalRuntimeFromIntervals(intervals);
+  }
+  return type_total_time;
+}
+
+Tick Statistics::_calculateTotalRuntimeFromIntervals(
+    const std::vector<std::pair<Tick, Tick>>& intervals) const {
+  if (intervals.empty()) {
+    return 0;
+  }
+  std::vector<std::pair<Tick, Tick>> sorted_intervals = intervals;
+  sort(sorted_intervals.begin(), sorted_intervals.end());
+
+  Tick total_runtime = 0;
+  Tick merged_start = sorted_intervals[0].first;
+  Tick merged_end = sorted_intervals[0].second;
+  const auto& logger = LoggerFactory::get_logger("statistics");
+
+  for (const auto& [start, end] : sorted_intervals) {
+    if (start <= merged_end) {
+      merged_end = std::max(merged_end, end);
+    } else {
+      total_runtime += merged_end - merged_start;
+      merged_start = start;
+      merged_end = end;
+    }
+  }
+  total_runtime += merged_end - merged_start;
+  return total_runtime;
+}
+
+void Statistics::report(std::shared_ptr<spdlog::logger> logger) const {
+  Tick wall_time = 0;
+  for (const auto& [node_id, stat] : operator_statistics) {
+    if (stat.end_time == UINT64_MAX) {
+      logger->critical(
+          "Node {} did not finish, start_time={}", node_id, stat.start_time);
+      exit(EXIT_FAILURE);
+    } else {
+      wall_time = std::max(wall_time, stat.end_time);
+    }
+  }
+  logger->info("sys[{}], Wall time: {}", sys_id, wall_time);
+  for (const auto& [type, time] : extract_type_time()) {
+    switch (type) {
+      case OperatorStatistics::OperatorType::CPU:
+        logger->info("sys[{}], CPU time: {}", sys_id, time);
+        break;
+      case OperatorStatistics::OperatorType::GPU:
+        logger->info("sys[{}], GPU time: {}", sys_id, time);
+        break;
+      case OperatorStatistics::OperatorType::COMM:
+        logger->info("sys[{}], Comm time: {}", sys_id, time);
+        break;
+      case OperatorStatistics::OperatorType::REMOTE_MEM:
+        logger->info("sys[{}], Remote mem time: {}", sys_id, time);
+        break;
+      case OperatorStatistics::OperatorType::REPLAY:
+        logger->info("sys[{}], Replay time: {}", sys_id, time);
+        break;
+      case OperatorStatistics::OperatorType::INVALID:
+        logger->info("sys[{}], Invalid time: {}", sys_id, time);
+        break;
+    }
+  }
+  double compute_bound_percentage = this->compute_bound_percentage();
+  logger->info(
+      "sys[{}], Compute bound percentage: {:.6f}",
+      sys_id,
+      compute_bound_percentage);
+  double average_compute_utilization = this->average_compute_utilization();
+  logger->info(
+      "sys[{}], Average compute utilization: {:.6f}",
+      sys_id,
+      average_compute_utilization);
+  double average_memory_utilization = this->average_memory_utilization();
+  logger->info(
+      "sys[{}], Average memory utilization: {:.6f}",
+      sys_id,
+      average_memory_utilization);
+  double average_operation_intensity = this->average_operation_intensity();
+  logger->info(
+      "sys[{}], Average operation intensity: {:.6f}",
+      sys_id,
+      average_operation_intensity);
+}
+
+void Statistics::report() const {
+  report(LoggerFactory::get_logger("statistics"));
+}
+
+double Statistics::compute_bound_percentage() const {
+  Tick compute_bound_time = 0;
+  Tick total_time = 1ul;
+  for (const auto& [node_id, stat] : operator_statistics) {
+    if (stat.type != OperatorStatistics::OperatorType::CPU ||
+        stat.type != OperatorStatistics::OperatorType::GPU) {
+      if (!stat.is_memory_bound.has_value())
+        continue;
+      Tick duration = stat.end_time - stat.start_time;
+      if (!stat.is_memory_bound.value())
+        compute_bound_time += duration;
+      total_time += duration;
+    }
+  }
+  return static_cast<double>(compute_bound_time) / total_time;
+}
+
+double Statistics::average_compute_utilization() const {
+  double total_compute_utilization = 0;
+  Tick total_compute_time = 1ul;
+  for (const auto& [node_id, stat] : operator_statistics) {
+    if (stat.type == OperatorStatistics::OperatorType::CPU ||
+        stat.type == OperatorStatistics::OperatorType::GPU) {
+      if (!stat.compute_utilization.has_value())
+        continue;
+      Tick duration = stat.end_time - stat.start_time;
+      total_compute_utilization += stat.compute_utilization.value()*duration;
+      total_compute_time+=duration;
+    }
+  }
+  return total_compute_utilization / total_compute_time;
+}
+
+double Statistics::average_memory_utilization() const {
+  double total_memory_utilization = 0;
+  Tick total_compute_time = 1ul;
+  for (const auto& [node_id, stat] : operator_statistics) {
+    if (stat.type == OperatorStatistics::OperatorType::CPU ||
+        stat.type == OperatorStatistics::OperatorType::GPU) {
+      if (!stat.memory_utilization.has_value())
+        continue;
+      Tick duration = stat.end_time - stat.start_time;
+      total_memory_utilization += stat.memory_utilization.value()*duration;
+      total_compute_time+=duration;
+    }
+  }
+  return total_memory_utilization / total_compute_time;
+}
+
+double Statistics::average_operation_intensity() const {
+  double total_operation_intensity = 0;
+  Tick total_compute_time = 1ul;
+  for (const auto& [node_id, stat] : operator_statistics) {
+    if (stat.type == OperatorStatistics::OperatorType::CPU ||
+        stat.type == OperatorStatistics::OperatorType::GPU) {
+      if (!stat.operation_intensity.has_value())
+        continue;
+      Tick duration = stat.end_time - stat.start_time;
+      total_operation_intensity += stat.operation_intensity.value()*duration;
+      total_compute_time+=duration;
+    }
+  }
+  return total_operation_intensity / total_compute_time;
 }

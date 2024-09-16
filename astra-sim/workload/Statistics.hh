@@ -58,7 +58,7 @@ class Statistics {
   };
 
  public:
-  Statistics() {}
+  Statistics(int sys_id) : sys_id(sys_id) {}
 
   OperatorStatistics& get_operator_statistics(NodeId node_id);
 
@@ -75,9 +75,20 @@ class Statistics {
     operator_statistics.clear();
   }
 
-  void extract_type_time() const;
+  void report(std::shared_ptr<spdlog::logger> logger) const;
+
+  void report() const;
 
  private:
+  std::unordered_map<Statistics::OperatorStatistics::OperatorType, Tick>
+  extract_type_time() const;
+  Tick _calculateTotalRuntimeFromIntervals(
+      const std::vector<std::pair<Tick, Tick>>& intervals) const;
+  double compute_bound_percentage() const;
+  double average_compute_utilization() const;
+  double average_memory_utilization() const;
+  double average_operation_intensity() const;
+  int sys_id;
   std::unordered_map<NodeId, OperatorStatistics> operator_statistics;
   std::multimap<Tick, NodeId> start_times;
 };
