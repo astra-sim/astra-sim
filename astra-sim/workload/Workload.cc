@@ -197,7 +197,8 @@ void Workload::issue_cpu_comp(shared_ptr<Chakra::ETFeederNode> node) {
   double operational_intensity = static_cast<double>(node->num_ops()) /
       static_cast<double>(node->tensor_size());
   double perf = sys->roofline->get_perf(operational_intensity);
-  double elapsed_time = static_cast<double>(node->num_ops()) / perf;
+  double elapsed_time = static_cast<double>(node->num_ops()) / perf; // sec
+  uint64_t runtime = static_cast<uint64_t>(elapsed_time * 1e9); // sec -> ns
   uint64_t runtime = static_cast<uint64_t>(elapsed_time);
   sys->register_event(this, EventType::General, wlhd, runtime);
 
