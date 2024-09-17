@@ -6,12 +6,15 @@
 #include <unordered_map>
 #include "astra-sim/common/Common.hh"
 #include "astra-sim/common/Logging.hh"
+#include "astra-sim/workload/LocalMemoryTracker.hh"
 #include "extern/graph_frontend/chakra/src/feeder_v2/et_feeder.h"
 typedef ChakraProtoMsg::NodeType ChakraNodeType;
 
 typedef uint64_t NodeId;
 
 namespace AstraSim {
+class Workload;
+class LocalMemoryTracker;
 class Statistics {
  public:
   class OperatorStatistics {
@@ -58,18 +61,19 @@ class Statistics {
   };
 
  public:
-  Statistics(int sys_id) : sys_id(sys_id) {}
+  Statistics(Workload* workload, bool track_memory_activities)
+      : workload(workload),
+        local_memory_tracker(workload, track_memory_activities) {}
 
   OperatorStatistics& get_operator_statistics(NodeId node_id);
 
   const OperatorStatistics& get_operator_statistics(NodeId node_id) const;
 
   void record_start(
-      NodeId node_id,
-      Tick start_time,
-      OperatorStatistics::OperatorType type);
+      std::shared_ptr<Chakra::ETFeederNode> node,
+      Tick start_time);
 
-  void record_end(NodeId node_id, Tick end_time);
+  void record_end(std::shared_ptr<Chakra::ETFeederNode> node, Tick end_time);
 
   ~Statistics() {
     operator_statistics.clear();
@@ -88,9 +92,10 @@ class Statistics {
   double average_compute_utilization() const;
   double average_memory_utilization() const;
   double average_operation_intensity() const;
-  int sys_id;
+  Workload* workload;
   std::unordered_map<NodeId, OperatorStatistics> operator_statistics;
   std::multimap<Tick, NodeId> start_times;
+  LocalMemoryTracker local_memory_tracker;
 };
 
 } // namespace AstraSim

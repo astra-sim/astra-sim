@@ -1,8 +1,11 @@
 #include "astra-sim/workload/Statistics.hh"
 #include <algorithm>
+#include <cassert>
 #include <map>
 #include <unordered_map>
 #include <vector>
+#include "astra-sim/system/Sys.hh"
+#include "astra-sim/workload/Workload.hh"
 
 using namespace AstraSim;
 
@@ -17,15 +20,21 @@ const Statistics::OperatorStatistics& Statistics::get_operator_statistics(
 }
 
 void Statistics::record_start(
-    NodeId node_id,
-    Tick start_time,
-    OperatorStatistics::OperatorType type) {
+    std::shared_ptr<Chakra::ETFeederNode> node,
+    Tick start_time) {
+  const NodeId& node_id = node->id();
+  const auto type = OperatorStatistics::get_operator_type(node);
   operator_statistics[node_id] = OperatorStatistics(node_id, start_time, type);
   start_times.insert({start_time, node_id});
+  this->local_memory_tracker.issueNode(this->workload->et_feeder, node);
 }
 
-void Statistics::record_end(NodeId node_id, Tick end_time) {
+void Statistics::record_end(
+    std::shared_ptr<Chakra::ETFeederNode> node,
+    Tick end_time) {
+  const NodeId& node_id = node->id();
   this->get_operator_statistics(node_id).end_time = end_time;
+  this->local_memory_tracker.finishedNode(this->workload->et_feeder, node);
 }
 
 Statistics::OperatorStatistics::OperatorType Statistics::OperatorStatistics::
@@ -115,6 +124,7 @@ void Statistics::report(std::shared_ptr<spdlog::logger> logger) const {
       wall_time = std::max(wall_time, stat.end_time);
     }
   }
+  const auto& sys_id = workload->sys->id;
   logger->info("sys[{}], Wall time: {}", sys_id, wall_time);
   for (const auto& [type, time] : extract_type_time()) {
     switch (type) {
@@ -158,6 +168,7 @@ void Statistics::report(std::shared_ptr<spdlog::logger> logger) const {
       "sys[{}], Average operation intensity: {:.6f}",
       sys_id,
       average_operation_intensity);
+  this->local_memory_tracker.report("");
 }
 
 void Statistics::report() const {
@@ -190,8 +201,8 @@ double Statistics::average_compute_utilization() const {
       if (!stat.compute_utilization.has_value())
         continue;
       Tick duration = stat.end_time - stat.start_time;
-      total_compute_utilization += stat.compute_utilization.value()*duration;
-      total_compute_time+=duration;
+      total_compute_utilization += stat.compute_utilization.value() * duration;
+      total_compute_time += duration;
     }
   }
   return total_compute_utilization / total_compute_time;
@@ -206,8 +217,8 @@ double Statistics::average_memory_utilization() const {
       if (!stat.memory_utilization.has_value())
         continue;
       Tick duration = stat.end_time - stat.start_time;
-      total_memory_utilization += stat.memory_utilization.value()*duration;
-      total_compute_time+=duration;
+      total_memory_utilization += stat.memory_utilization.value() * duration;
+      total_compute_time += duration;
     }
   }
   return total_memory_utilization / total_compute_time;
@@ -222,8 +233,8 @@ double Statistics::average_operation_intensity() const {
       if (!stat.operation_intensity.has_value())
         continue;
       Tick duration = stat.end_time - stat.start_time;
-      total_operation_intensity += stat.operation_intensity.value()*duration;
-      total_compute_time+=duration;
+      total_operation_intensity += stat.operation_intensity.value() * duration;
+      total_compute_time += duration;
     }
   }
   return total_operation_intensity / total_compute_time;

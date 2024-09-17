@@ -18,6 +18,7 @@ LICENSE file in the root directory of this source tree.
 #include <cassert>
 #include <iostream>
 #include <queue>
+#include <cassert>
 
 using namespace std;
 using namespace AstraSim;
@@ -50,7 +51,7 @@ Workload::Workload(Sys* sys, string et_filename, string comm_group_filename) {
   this->hw_resource = new HardwareResource(1);
   this->sys = sys;
   initialize_comm_group(comm_group_filename);
-  this->stats = new Statistics(sys->id);
+  this->stats = new Statistics(this, false);
   this->is_finished = false;
 }
 
@@ -135,7 +136,7 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
   if (sys->replay_only)
     stat_node_type = Statistics::OperatorStatistics::OperatorType::REPLAY;
 
-  stats->record_start(node->id(), Sys::boostedTick(), stat_node_type);
+  stats->record_start(node, Sys::boostedTick());
 
   if (sys->replay_only) {
     issue_replay(node);
@@ -254,11 +255,7 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
   }
 
   uint32_t comm_priority;
-  try {
-    comm_priority = node->comm_priority();
-  } catch (const std::out_of_range& e) {
-    comm_priority = 0;
-  }
+  comm_priority = node->comm_priority(0);
 
   vector<bool> involved_dim;
   // involved_dim does not exist in ETFeeder anymore.
@@ -372,7 +369,7 @@ void Workload::call(EventType event, CallData* data) {
     }
 
     hw_resource->release(node);
-    stats->record_end(node->id(), Sys::boostedTick());
+    stats->record_end(node, Sys::boostedTick());
 
     et_feeder->freeChildrenNodes(node_id);
 
@@ -405,7 +402,7 @@ void Workload::call(EventType event, CallData* data) {
       }
 
       hw_resource->release(node);
-      stats->record_end(node->id(), Sys::boostedTick());
+      stats->record_end(node, Sys::boostedTick());
 
       et_feeder->freeChildrenNodes(node->id());
 

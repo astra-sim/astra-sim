@@ -536,7 +536,7 @@ void Sys::call_events() {
     } catch (const std::exception& e) {
       auto logger = LoggerFactory::get_logger("system");
       logger->critical(
-          "warning! a callable is removed before call {}", e.what());
+          "warning! a callable is removed before call. Exception={}", e.what());
     }
   }
   if (event_queue[Sys::boostedTick()].size() > 0) {
