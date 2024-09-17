@@ -44,7 +44,7 @@ void LocalMemoryTracker::issueNode(
     this->memoryActivities.push_back(writeActivity);
     MemoryActivity allocActivity = {MemoryActivityType::ALLOC, node, node, now};
     this->memoryActivities.push_back(allocActivity);
-    for (auto parentId : node->getChakraNode()->data_deps()) {
+    for (auto parentId : node->getChakraNode().lock()->data_deps()) {
       auto parent = etFeeder->lookupNode(parentId);
       MemoryActivity readActivity = {
           MemoryActivityType::READ_START, parent, node, now};
@@ -72,7 +72,7 @@ void LocalMemoryTracker::finishedNode(
       MemoryActivity allocActivity = {
           MemoryActivityType::ALLOC, node, node, now - 100};
       this->memoryActivities.push_back(allocActivity);
-      for (auto parentId : node->getChakraNode()->data_deps()) {
+      for (auto parentId : node->getChakraNode().lock()->data_deps()) {
         auto parent = etFeeder->lookupNode(parentId);
         MemoryActivity readActivity = {
             MemoryActivityType::READ_START, parent, node, now};
@@ -86,7 +86,7 @@ void LocalMemoryTracker::finishedNode(
     MemoryActivity writeActivity = {
         MemoryActivityType::WRITE_END, node, node, now};
     this->memoryActivities.push_back(writeActivity);
-    for (auto parentId : node->getChakraNode()->data_deps()) {
+    for (auto parentId : node->getChakraNode().lock()->data_deps()) {
       auto parent = etFeeder->lookupNode(parentId);
       MemoryActivity readActivity = {
           MemoryActivityType::READ_END, parent, node, now};
@@ -99,7 +99,7 @@ void LocalMemoryTracker::finishedNode(
     MemoryActivity freeActivity = {MemoryActivityType::FREE, node, node, now};
     this->memoryActivities.push_back(freeActivity);
   }
-  const auto data_deps = node->getChakraNode()->data_deps();
+  const auto data_deps = node->getChakraNode().lock()->data_deps();
   for (auto parentId : data_deps) {
     auto parent = etFeeder->lookupNode(parentId);
     bool depResolved = true;
@@ -112,8 +112,12 @@ void LocalMemoryTracker::finishedNode(
     if (depResolved) {
       size_t parent_size = parent->tensor_size(0ul);
       this->memoryContentSize -= parent_size;
-      LoggerFactory::get_logger("local_memory_tracker")->critical("DEBUG: tensor_size={} memoryContentSize={}", parent->tensor_size(0ul), this->memoryContentSize);
-      LoggerFactory::get_logger("local_memory_tracker")->flush();
+      // LoggerFactory::get_logger("local_memory_tracker")
+      //     ->critical(
+      //         "DEBUG: tensor_size={} memoryContentSize={}",
+      //         parent->tensor_size(0ul),
+      //         this->memoryContentSize);
+      // LoggerFactory::get_logger("local_memory_tracker")->flush();
       // if (this->memoryContentSize > 1e12)
       //   Sys::sys_panic("memory content size exceeded 1TB");
       this->memoryUsageTimeline.insert({now, this->memoryContentSize});
