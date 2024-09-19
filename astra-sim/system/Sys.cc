@@ -9,6 +9,7 @@ LICENSE file in the root directory of this source tree.
 #include <iostream>
 
 #include <json/json.hpp>
+#include "astra-sim/common/Logging.hh"
 #include "astra-sim/system/BaseStream.hh"
 #include "astra-sim/system/CollectivePlan.hh"
 #include "astra-sim/system/DataSet.hh"
@@ -335,7 +336,8 @@ bool Sys::initialize_sys(string name) {
   inFile.open(name);
   if (!inFile) {
     if (id == 0) {
-      cerr << "Unable to open file: " << name << endl;
+      LoggerFactory::get_logger("system")->critical(
+          "Unable to open file: {}", name);
     }
     exit(1);
   }
@@ -436,7 +438,8 @@ bool Sys::initialize_sys(string name) {
     peak_perf = peak_perf * 1000000000000; // TFLOPS
   }
   if (j.contains("local-mem-bw")) {
-    local_mem_bw = j["local-mem-bw"]; // GB/sec
+    local_mem_bw = j["local-mem-bw"];
+    local_mem_bw = local_mem_bw * 1000000000; // GB/sec
   }
   if (j.contains("roofline-enabled")) {
     if (j["roofline-enabled"] != 0) {
@@ -513,12 +516,14 @@ Tick Sys::boostedTick() {
 }
 
 void Sys::sys_panic(string msg) {
-  cerr << msg << endl;
+  auto logger = LoggerFactory::get_logger("system");
+  logger->critical(msg);
   exit(1);
 }
 
 void Sys::exit_sim_loop(string msg) {
-  cout << msg << endl;
+  auto logger = LoggerFactory::get_logger("system");
+  logger->warn(msg);
 }
 
 void Sys::call(EventType type, CallData* data) {}
@@ -529,8 +534,9 @@ void Sys::call_events() {
       pending_events--;
       (get<0>(callable))->call(get<1>(callable), get<2>(callable));
     } catch (const std::exception& e) {
-      cerr << "warning! a callable is removed before call" << endl;
-      cerr << e.what() << endl;
+      auto logger = LoggerFactory::get_logger("system");
+      logger->critical(
+          "warning! a callable is removed before call. Exception={}", e.what());
     }
   }
   if (event_queue[Sys::boostedTick()].size() > 0) {
@@ -1082,8 +1088,8 @@ CollectivePhase Sys::generate_collective_phase(
             collective_type, id, (RingTopology*)topology, data_size));
     return vn;
   } else {
-    cerr << "Error: No known collective implementation for collective phase"
-         << endl;
+    LoggerFactory::get_logger("system")->critical(
+        "Error: No known collective implementation for collective phase");
     exit(1);
   }
 }
@@ -1443,8 +1449,21 @@ int Sys::front_end_sim_send(
     int dst,
     int tag,
     sim_request* request,
+    Sys::FrontEndSendRecvType send_type,
     void (*msg_handler)(void* fun_arg),
     void* fun_arg) {
+  if (send_type == Sys::FrontEndSendRecvType::NATIVE)
+    tag = tag %
+            (Sys::FrontEndSendRecvType::COLLECTIVE -
+             Sys::FrontEndSendRecvType::NATIVE) +
+        Sys::FrontEndSendRecvType::NATIVE;
+  else if (send_type == Sys::FrontEndSendRecvType::COLLECTIVE)
+    tag = tag %
+            (Sys::FrontEndSendRecvType::RENDEZVOUS -
+             Sys::FrontEndSendRecvType::COLLECTIVE) +
+        Sys::FrontEndSendRecvType::COLLECTIVE;
+  else
+    sys_panic("A type of RENDZVOUS should never issued in frontend");
   if (rendezvous_enabled) {
     return rendezvous_sim_send(
         delay, buffer, count, type, dst, tag, request, msg_handler, fun_arg);
@@ -1462,8 +1481,21 @@ int Sys::front_end_sim_recv(
     int src,
     int tag,
     sim_request* request,
+    Sys::FrontEndSendRecvType recv_type,
     void (*msg_handler)(void* fun_arg),
     void* fun_arg) {
+  if (recv_type == Sys::FrontEndSendRecvType::NATIVE)
+    tag = tag %
+            (Sys::FrontEndSendRecvType::COLLECTIVE -
+             Sys::FrontEndSendRecvType::NATIVE) +
+        Sys::FrontEndSendRecvType::NATIVE;
+  else if (recv_type == Sys::FrontEndSendRecvType::COLLECTIVE)
+    tag = tag %
+            (Sys::FrontEndSendRecvType::RENDEZVOUS -
+             Sys::FrontEndSendRecvType::COLLECTIVE) +
+        Sys::FrontEndSendRecvType::COLLECTIVE;
+  else
+    sys_panic("A type of RENDZVOUS should never issued in frontend");
   if (rendezvous_enabled) {
     return rendezvous_sim_recv(
         delay, buffer, count, type, src, tag, request, msg_handler, fun_arg);
@@ -1483,6 +1515,11 @@ int Sys::rendezvous_sim_send(
     sim_request* request,
     void (*msg_handler)(void* fun_arg),
     void* fun_arg) {
+  if (tag >= Sys::FrontEndSendRecvType::RENDEZVOUS) {
+    sys_panic(
+        "tag is bigger than RENDEZVOUS_COMM_TAG_OFFSET, \
+        which means it might be mistakenly used as a rendezvous tag.");
+  }
   RendezvousSendData* rsd = new RendezvousSendData(
       id, this, buffer, count, type, dst, tag, *request, msg_handler, fun_arg);
   sim_request newReq = *request;
@@ -1490,7 +1527,7 @@ int Sys::rendezvous_sim_send(
   newReq.dstRank = request->srcRank;
   newReq.srcRank = request->dstRank;
   newReq.reqCount = rendevouz_size;
-  int newTag = tag + 500000000;
+  int newTag = tag + Sys::FrontEndSendRecvType::RENDEZVOUS;
   newReq.tag = newTag;
   sim_recv(
       delay,
@@ -1515,6 +1552,11 @@ int Sys::rendezvous_sim_recv(
     sim_request* request,
     void (*msg_handler)(void* fun_arg),
     void* fun_arg) {
+  if (tag >= Sys::FrontEndSendRecvType::RENDEZVOUS) {
+    sys_panic(
+        "tag is bigger than RENDEZVOUS_COMM_TAG_OFFSET, \
+        which means it might be mistakenly used as a rendezvous tag.");
+  }
   RendezvousRecvData* rrd = new RendezvousRecvData(
       id, this, buffer, count, type, src, tag, *request, msg_handler, fun_arg);
   sim_request newReq = *request;
@@ -1522,7 +1564,7 @@ int Sys::rendezvous_sim_recv(
   newReq.dstRank = request->srcRank;
   newReq.srcRank = request->dstRank;
   newReq.reqCount = rendevouz_size;
-  int newTag = tag + 500000000;
+  int newTag = tag + Sys::FrontEndSendRecvType::RENDEZVOUS;
   newReq.tag = newTag;
   sim_send(
       delay,

@@ -7,6 +7,7 @@ LICENSE file in the root directory of this source tree.
 #define __COMMON_HH__
 
 #include <cstdint>
+#include <stdexcept>
 
 namespace AstraSim {
 
@@ -157,7 +158,6 @@ class DirectCollectiveImpl : public CollectiveImpl {
 
   int direct_collective_window;
 };
-
 } // namespace AstraSim
 
 #endif /* __COMMON_HH__ */

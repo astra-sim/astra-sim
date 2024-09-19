@@ -8,6 +8,7 @@ LICENSE file in the root directory of this source tree.
 #include <cmath>
 #include <iostream>
 
+#include "astra-sim/common/Logging.hh"
 #include "astra-sim/system/PacketBundle.hh"
 #include "astra-sim/system/RecvPacketEventHandlerData.hh"
 
@@ -71,9 +72,9 @@ HalvingDoubling::HalvingDoubling(
       this->offset_multiplier = 2;
       break;
     default:
-      std::cerr
-          << "######### Exiting because of unknown communication type for HalvingDoubling collective algorithm #########"
-          << std::endl;
+      LoggerFactory::get_logger("system::collective::HalvingDoubling")
+          ->critical(
+              "######### Exiting because of unknown communication type for HalvingDoubling collective algorithm #########");
       std::exit(1);
   }
   RingTopology::Direction direction = specify_direction();
@@ -274,6 +275,7 @@ bool HalvingDoubling::ready() {
       packet.preferred_dest,
       stream->stream_id,
       &snd_req,
+      Sys::FrontEndSendRecvType::COLLECTIVE,
       &Sys::handleEvent,
       nullptr); // stream_id+(packet.preferred_dest*50)
   sim_request rcv_req;
@@ -292,6 +294,7 @@ bool HalvingDoubling::ready() {
       packet.preferred_src,
       stream->stream_id,
       &rcv_req,
+      Sys::FrontEndSendRecvType::COLLECTIVE,
       &Sys::handleEvent,
       ehd); // stream_id+(owner->id*50)
   reduce();

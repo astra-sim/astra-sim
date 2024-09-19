@@ -10,7 +10,7 @@ LICENSE file in the root directory of this source tree.
 
 #include <cstdint>
 
-#include "extern/graph_frontend/chakra/et_feeder/et_feeder.h"
+#include "extern/graph_frontend/chakra/src/feeder_v2/et_feeder.h"
 
 namespace AstraSim {
 
@@ -22,9 +22,10 @@ class HardwareResource {
   bool is_available(const std::shared_ptr<Chakra::ETFeederNode> node) const;
 
   const uint32_t num_npus;
-  uint32_t num_in_flight_cpu_ops;
+  uint32_t num_in_flight_cpu_comp_ops;
   uint32_t num_in_flight_gpu_comp_ops;
-  uint32_t num_in_flight_gpu_comm_ops;
+  uint32_t num_in_flight_comm_ops;
+  uint32_t num_in_flight_mem_ops;
 };
 
 } // namespace AstraSim
