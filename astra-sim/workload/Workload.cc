@@ -18,7 +18,6 @@ LICENSE file in the root directory of this source tree.
 #include <cassert>
 #include <iostream>
 #include <queue>
-#include <cassert>
 
 using namespace std;
 using namespace AstraSim;
@@ -51,7 +50,7 @@ Workload::Workload(Sys* sys, string et_filename, string comm_group_filename) {
   this->hw_resource = new HardwareResource(1);
   this->sys = sys;
   initialize_comm_group(comm_group_filename);
-  this->stats = new Statistics(this, false);
+  this->stats = new Statistics(this);
   this->is_finished = false;
 }
 
@@ -431,5 +430,6 @@ void Workload::report() {
   Tick curr_tick = Sys::boostedTick();
   LoggerFactory::get_logger("workload")
       ->info("sys[{}] finished, {} cycles", sys->id, curr_tick);
+  stats->post_processing();
   stats->report();
 }

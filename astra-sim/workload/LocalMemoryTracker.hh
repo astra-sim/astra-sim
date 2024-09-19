@@ -13,6 +13,7 @@
 namespace AstraSim {
 
 class Workload;
+class Statistics;
 
 class LocalMemoryTracker {
  public:
@@ -27,33 +28,37 @@ class LocalMemoryTracker {
 
   typedef struct {
     MemoryActivityType type;
-    std::shared_ptr<Chakra::ETFeederNode> dataOwner;
-    std::shared_ptr<Chakra::ETFeederNode> caller;
+    NodeId dataOwner;
+    NodeId caller;
     Tick tick;
   } MemoryActivity;
 
-  LocalMemoryTracker(Workload* workload, bool trackMemoryActivities);
+  LocalMemoryTracker(Statistics* statistics, Chakra::ETFeeder* et_feeder);
 
-  void issueNode(
-      Chakra::ETFeeder* etFeeder,
-      std::shared_ptr<Chakra::ETFeederNode> node);
+  void extractMemoryActivities();
 
-  void finishedNode(
-      Chakra::ETFeeder* etFeeder,
-      std::shared_ptr<Chakra::ETFeederNode> node);
+  const std::unordered_map<NodeId, std::vector<MemoryActivity>>&
+  getReadWriteActivities() const;
 
-  void report(std::string reportFolder) const;
+  const std::vector<MemoryActivity>& getAllocFreeActivities() const;
 
-  ~LocalMemoryTracker();
+  void extractMemoryUsage();
+
+  const std::map<Tick, uint64_t>& getMemoryUsage() const;
+
+  void extractAvgPeakUsage();
+
+  const uint64_t getAverageMemoryUsage() const;
+  const uint64_t getPeakMemoryUsage() const;
 
  private:
-  Workload* workload;
-  bool trackMemoryActivities;
-  size_t memoryContentSize;
-  size_t peakMemoryUsage;
-  std::vector<MemoryActivity> memoryActivities;
-  std::map<Tick, size_t> memoryUsageTimeline;
-  std::unordered_set<std::shared_ptr<Chakra::ETFeederNode>> releasedNodes;
+  Statistics* statistics;
+  Chakra::ETFeeder* et_feeder;
+  std::unordered_map<NodeId, std::vector<MemoryActivity>> readWriteActivities;
+  std::vector<MemoryActivity> allocFreeActivities;
+  std::map<Tick, uint64_t> memory_usage;
+  uint64_t average_memory_usage;
+  uint64_t peak_memory_usage;
 };
 
 } // namespace AstraSim

@@ -1,208 +1,145 @@
 #include "astra-sim/workload/LocalMemoryTracker.hh"
-
-#include <filesystem>
-#include <map>
-#include <memory>
-#include <string>
-#include <unordered_set>
-#include "astra-sim/common/Common.hh"
-#include "astra-sim/common/Logging.hh"
+#include <algorithm>
 #include "astra-sim/system/Sys.hh"
+#include "astra-sim/workload/Workload.hh"
 #include "extern/graph_frontend/chakra/src/feeder_v2/et_feeder.h"
 #include "extern/graph_frontend/chakra/src/feeder_v2/et_feeder_node.h"
-#include "json/json.hpp"
 
 using namespace AstraSim;
-using json = nlohmann::json;
 
 LocalMemoryTracker::LocalMemoryTracker(
-    Workload* workload,
-    bool trackMemoryActivities) {
-  this->workload = workload;
-  this->trackMemoryActivities = trackMemoryActivities;
-  this->memoryContentSize = 0ul;
-  this->peakMemoryUsage = 0ul;
+    Statistics* statistics,
+    Chakra::ETFeeder* et_feeder)
+    : statistics(statistics), et_feeder(et_feeder) {
+  readWriteActivities.clear();
+  allocFreeActivities.clear();
 }
 
-void LocalMemoryTracker::issueNode(
-    Chakra::ETFeeder* etFeeder,
-    std::shared_ptr<Chakra::ETFeederNode> node) {
-  // if (this->memoryContentSize > 1e12)
-  //   Sys::sys_panic("memory content size exceeded 1TB");
-  Tick now = Sys::boostedTick();
-  size_t tensorSize = node->tensor_size(0ul);
-  if (node->type() == ChakraProtoMsg::NodeType::COMM_RECV_NODE)
-    return;
-  size_t old_memoryContentSize = this->memoryContentSize;
-  this->memoryContentSize += tensorSize;
-  // if (this->memoryContentSize > 1e12)
-  //   Sys::sys_panic("memory content size exceeded 1TB");
-  memoryUsageTimeline.insert({now, this->memoryContentSize});
-  if (this->trackMemoryActivities) {
-    MemoryActivity writeActivity = {
-        MemoryActivityType::WRITE_START, node, node, now};
-    this->memoryActivities.push_back(writeActivity);
-    MemoryActivity allocActivity = {MemoryActivityType::ALLOC, node, node, now};
-    this->memoryActivities.push_back(allocActivity);
-    for (auto parentId : node->getChakraNode().lock()->data_deps()) {
-      auto parent = etFeeder->lookupNode(parentId);
-      MemoryActivity readActivity = {
-          MemoryActivityType::READ_START, parent, node, now};
-      this->memoryActivities.push_back(readActivity);
+void LocalMemoryTracker::extractMemoryActivities() {
+  this->readWriteActivities.clear();
+  for (const auto& [node_id, operator_statistics] :
+       statistics->get_operator_statistics()) {
+    if (operator_statistics.type ==
+        Statistics::OperatorStatistics::OperatorType::REMOTE_MEM) {
+      Sys::sys_panic(
+          "REMOTE_MEM offloading/prefetching not supported yet by LocalMemoryTracker");
+    }
+    if (readWriteActivities.find(node_id) == readWriteActivities.end()) {
+      readWriteActivities[node_id] = std::vector<MemoryActivity>();
+    }
+    const std::shared_ptr<Chakra::ETFeederNode> node =
+        et_feeder->lookupNode(node_id);
+
+    // write
+    MemoryActivity write_start = {
+        MemoryActivityType::WRITE_START,
+        node_id,
+        node_id,
+        operator_statistics.start_time};
+    MemoryActivity write_end = {
+        MemoryActivityType::WRITE_END,
+        node_id,
+        node_id,
+        operator_statistics.end_time};
+    readWriteActivities[node_id].push_back(write_start);
+    readWriteActivities[node_id].push_back(write_end);
+
+    // read
+    const auto data_deps_ids = node->getChakraNode()->data_deps();
+    for (const auto& data_dep_id : data_deps_ids) {
+      if (readWriteActivities.find(data_dep_id) == readWriteActivities.end())
+        readWriteActivities[data_dep_id] = std::vector<MemoryActivity>();
+      MemoryActivity read_start = {
+          MemoryActivityType::READ_START,
+          data_dep_id,
+          node_id,
+          operator_statistics.start_time};
+      MemoryActivity read_end = {
+          MemoryActivityType::READ_END,
+          data_dep_id,
+          node_id,
+          operator_statistics.end_time};
+      readWriteActivities[data_dep_id].push_back(read_start);
+      readWriteActivities[data_dep_id].push_back(read_end);
     }
   }
-  if (this->memoryContentSize > this->peakMemoryUsage)
-    this->peakMemoryUsage = this->memoryContentSize;
+  for (auto& [node_id, activities] : this->readWriteActivities) {
+    std::sort(
+        activities.begin(),
+        activities.end(),
+        [](const MemoryActivity& a, const MemoryActivity& b) {
+          return a.tick < b.tick;
+        });
+    MemoryActivity alloc = {
+        MemoryActivityType::ALLOC, node_id, node_id, activities.front().tick};
+    MemoryActivity free = {
+        MemoryActivityType::FREE, node_id, node_id, activities.back().tick};
+    this->allocFreeActivities.push_back(alloc);
+    this->allocFreeActivities.push_back(free);
+  }
+  std::sort(
+      this->allocFreeActivities.begin(),
+      this->allocFreeActivities.end(),
+      [](const MemoryActivity& a, const MemoryActivity& b) {
+        return a.tick < b.tick;
+      });
 }
 
-void LocalMemoryTracker::finishedNode(
-    Chakra::ETFeeder* etFeeder,
-    std::shared_ptr<Chakra::ETFeederNode> node) {
-  Tick now = Sys::boostedTick();
-  size_t tensorSize = node->tensor_size(0ul);
-  if (node->type() == ChakraProtoMsg::NodeType::COMM_RECV_NODE) {
-    this->memoryContentSize += tensorSize;
-    // if (this->memoryContentSize > 1e12)
-    //   Sys::sys_panic("memory content size exceeded 1TB");
-    memoryUsageTimeline.insert({now, this->memoryContentSize});
-    if (this->trackMemoryActivities) {
-      MemoryActivity writeActivity = {
-          MemoryActivityType::WRITE_START, node, node, now - 100};
-      this->memoryActivities.push_back(writeActivity);
-      MemoryActivity allocActivity = {
-          MemoryActivityType::ALLOC, node, node, now - 100};
-      this->memoryActivities.push_back(allocActivity);
-      for (auto parentId : node->getChakraNode().lock()->data_deps()) {
-        auto parent = etFeeder->lookupNode(parentId);
-        MemoryActivity readActivity = {
-            MemoryActivityType::READ_START, parent, node, now};
-        this->memoryActivities.push_back(readActivity);
-      }
-    }
-    if (this->memoryContentSize > this->peakMemoryUsage)
-      this->peakMemoryUsage = this->memoryContentSize;
-  }
-  if (this->trackMemoryActivities) {
-    MemoryActivity writeActivity = {
-        MemoryActivityType::WRITE_END, node, node, now};
-    this->memoryActivities.push_back(writeActivity);
-    for (auto parentId : node->getChakraNode().lock()->data_deps()) {
-      auto parent = etFeeder->lookupNode(parentId);
-      MemoryActivity readActivity = {
-          MemoryActivityType::READ_END, parent, node, now};
-      this->memoryActivities.push_back(readActivity);
-    }
-  }
+const std::
+    unordered_map<NodeId, std::vector<LocalMemoryTracker::MemoryActivity>>&
+    LocalMemoryTracker::getReadWriteActivities() const {
+  return readWriteActivities;
+}
 
-  releasedNodes.emplace(node);
-  if (node->getDataChildren().size() == 0 && this->trackMemoryActivities) {
-    MemoryActivity freeActivity = {MemoryActivityType::FREE, node, node, now};
-    this->memoryActivities.push_back(freeActivity);
-  }
-  const auto data_deps = node->getChakraNode().lock()->data_deps();
-  for (auto parentId : data_deps) {
-    auto parent = etFeeder->lookupNode(parentId);
-    bool depResolved = true;
-    for (auto child : parent->getDataChildren()) {
-      if (releasedNodes.count(child) == 0) {
-        depResolved = false;
-        break;
-      }
-    }
-    if (depResolved) {
-      size_t parent_size = parent->tensor_size(0ul);
-      this->memoryContentSize -= parent_size;
-      // LoggerFactory::get_logger("local_memory_tracker")
-      //     ->critical(
-      //         "DEBUG: tensor_size={} memoryContentSize={}",
-      //         parent->tensor_size(0ul),
-      //         this->memoryContentSize);
-      // LoggerFactory::get_logger("local_memory_tracker")->flush();
-      // if (this->memoryContentSize > 1e12)
-      //   Sys::sys_panic("memory content size exceeded 1TB");
-      this->memoryUsageTimeline.insert({now, this->memoryContentSize});
-      if (this->trackMemoryActivities) {
-        MemoryActivity freeActivity = {
-            MemoryActivityType::FREE, parent, node, now};
-        this->memoryActivities.push_back(freeActivity);
-      }
-    }
+const std::vector<LocalMemoryTracker::MemoryActivity>& LocalMemoryTracker::
+    getAllocFreeActivities() const {
+  return allocFreeActivities;
+}
+
+void LocalMemoryTracker::extractMemoryUsage() {
+  memory_usage.clear();
+  uint64_t current_memory_usage = 0ul;
+  for (const auto& activity : allocFreeActivities) {
+    uint64_t tensor_size =
+        this->et_feeder->lookupNode(activity.dataOwner)->tensor_size(0ul);
+    if (tensor_size == 0ul)
+      LoggerFactory::get_logger("local_memory_tracker")
+          ->debug("Node {} has tensor size 0", activity.dataOwner);
+    if (activity.type == MemoryActivityType::ALLOC)
+      current_memory_usage += tensor_size;
+    else if (activity.type == MemoryActivityType::FREE)
+      current_memory_usage -= tensor_size;
+    memory_usage[activity.tick] = current_memory_usage;
   }
 }
 
-void LocalMemoryTracker::report(std::string reportFolder) const {
-  LoggerFactory::get_logger("local_memory_tracker")
-      ->info(
-          "sys[{}] peak memory usage: {}",
-          this->workload->sys->id,
-          this->peakMemoryUsage);
-  // report memory activities
-  if (this->trackMemoryActivities) {
-    assert(std::filesystem::exists(reportFolder));
-    json j;
-    j["traceEvents"] = std::vector<json>();
-    for (auto activity : this->memoryActivities) {
-      auto node = activity.dataOwner;
-      std::string ph, cat, type;
-      switch (activity.type) {
-        case READ_START:
-          ph = "B";
-          cat = "memory_activities";
-          type = "read";
-          break;
-        case WRITE_START:
-          ph = "B";
-          cat = "memory_activities";
-          type = "write";
-          break;
-        case ALLOC:
-          ph = "B";
-          cat = "memory_lifetime";
-          type = "alloc";
-          break;
-        case READ_END:
-          ph = "E";
-          cat = "memory_activities";
-          type = "read";
-          break;
-        case WRITE_END:
-          ph = "E";
-          cat = "memory_activities";
-          type = "write";
-          break;
-        case FREE:
-          ph = "E";
-          cat = "memory_lifetime";
-          type = "alloc";
-          break;
-        default:
-          Sys::sys_panic("");
-      }
-      json event = {
-          {"name", node->name()},
-          {"cat", "memory activities"},
-          {"ph", ph},
-          {"ts", 1e-3 * activity.tick},
-          {"pid", this->workload->sys->id},
-          {"tid", node->id()},
-          {"args",
-           json{
-               {"size", node->tensor_size(0ul)},
-               {"type", type},
-               {"caller", activity.caller->name()}}}};
-      j["traceEvents"].push_back(event);
-    }
-
-    auto chromeTracePath = reportFolder + "/" + "chrome_trace." +
-        std::to_string(this->workload->sys->id) + ".json";
-    std::ofstream file(chromeTracePath);
-    file << j.dump();
-    file.close();
-  }
+const std::map<Tick, uint64_t>& LocalMemoryTracker::getMemoryUsage() const {
+  return memory_usage;
 }
 
-LocalMemoryTracker::~LocalMemoryTracker() {
-  this->memoryActivities.clear();
-  this->memoryUsageTimeline.clear();
-  this->releasedNodes.clear();
+void LocalMemoryTracker::extractAvgPeakUsage() {
+  double weighted_average_memory_usage = 0.0;
+  uint64_t average_memory_usage;
+  Tick total_time = 0;
+  Tick& last_tick = total_time;
+  uint64_t peak_memory_usage = 0ul;
+
+  for (const auto& [tick, usage] : this->getMemoryUsage()) {
+    weighted_average_memory_usage +=
+        static_cast<double>(usage) * static_cast<double>(tick - last_tick);
+    peak_memory_usage = std::max(peak_memory_usage, usage);
+    total_time = tick;
+  }
+  average_memory_usage = static_cast<uint64_t>(
+      weighted_average_memory_usage / static_cast<double>(total_time));
+  this->average_memory_usage = average_memory_usage;
+  this->peak_memory_usage = peak_memory_usage;
+}
+
+const uint64_t LocalMemoryTracker::getAverageMemoryUsage() const {
+  return average_memory_usage;
+}
+
+const uint64_t LocalMemoryTracker::getPeakMemoryUsage() const {
+  return peak_memory_usage;
 }

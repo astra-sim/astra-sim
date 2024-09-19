@@ -19,6 +19,7 @@ class Statistics {
  public:
   class OperatorStatistics {
    public:
+    static const Tick INVALID_TICK = UINT64_MAX;
     enum class OperatorType { CPU, GPU, COMM, REMOTE_MEM, REPLAY, INVALID };
     static OperatorType get_operator_type(
         const std::shared_ptr<Chakra::ETFeederNode> node);
@@ -34,12 +35,12 @@ class Statistics {
     OperatorStatistics(NodeId node_id, Tick start_time, OperatorType type)
         : node_id(node_id),
           start_time(start_time),
-          end_time(UINT64_MAX),
+          end_time(INVALID_TICK),
           type(type) {}
     OperatorStatistics()
         : node_id(UINT64_MAX),
-          start_time(UINT64_MAX),
-          end_time(UINT64_MAX),
+          start_time(INVALID_TICK),
+          end_time(INVALID_TICK),
           type(OperatorType::INVALID) {}
 
     NodeId node_id;
@@ -61,13 +62,14 @@ class Statistics {
   };
 
  public:
-  Statistics(Workload* workload, bool track_memory_activities)
-      : workload(workload),
-        local_memory_tracker(workload, track_memory_activities) {}
+  Statistics(Workload* workload);
 
   OperatorStatistics& get_operator_statistics(NodeId node_id);
 
   const OperatorStatistics& get_operator_statistics(NodeId node_id) const;
+
+  const std::unordered_map<NodeId, OperatorStatistics>& get_operator_statistics()
+      const;
 
   void record_start(
       std::shared_ptr<Chakra::ETFeederNode> node,
@@ -79,19 +81,24 @@ class Statistics {
     operator_statistics.clear();
   }
 
+  void post_processing();
+
   void report(std::shared_ptr<spdlog::logger> logger) const;
 
   void report() const;
 
  private:
-  std::unordered_map<Statistics::OperatorStatistics::OperatorType, Tick>
-  extract_type_time() const;
+  void extract_type_time();
   Tick _calculateTotalRuntimeFromIntervals(
       const std::vector<std::pair<Tick, Tick>>& intervals) const;
-  double compute_bound_percentage() const;
-  double average_compute_utilization() const;
-  double average_memory_utilization() const;
-  double average_operation_intensity() const;
+  void extract_utilizations();
+
+  std::unordered_map<OperatorStatistics::OperatorType, Tick> type_time;
+  Tick wall_time;
+  double compute_bound_percentage_;
+  double average_compute_utilization_;
+  double average_memory_utilization_;
+  double average_operation_intensity_;
   Workload* workload;
   std::unordered_map<NodeId, OperatorStatistics> operator_statistics;
   std::multimap<Tick, NodeId> start_times;
