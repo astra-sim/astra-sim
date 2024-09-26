@@ -261,7 +261,8 @@ int main(int argc, char* argv[]) {
   }
 
   // Initialize ns3 simulation.
-  setup_ns3_simulation(network_configuration);
+  if (setup_ns3_simulation(network_configuration) == -1)
+    return 1;
 
   // Tell workload layer to schedule first events.
   for (int i = 0; i < num_npus; i++) {
