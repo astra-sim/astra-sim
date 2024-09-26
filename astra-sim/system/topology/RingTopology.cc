@@ -36,7 +36,7 @@ RingTopology::RingTopology(Dimension dimension, int id, std::vector<int> NPUs)
        << "id: " << id << " dimension: " << name
        << " total nodes in ring: " << total_nodes_in_ring
        << " index in ring: " << index_in_ring
-       << "total nodes in ring: " << total_nodes_in_ring << endl;
+       << " total nodes in ring: " << total_nodes_in_ring << endl;
 
   assert(index_in_ring >= 0);
 }
@@ -58,7 +58,7 @@ RingTopology::RingTopology(
          << "id: " << id << " dimension: " << name
          << " total nodes in ring: " << total_nodes_in_ring
          << " index in ring: " << index_in_ring << " offset: " << offset
-         << "total nodes in ring: " << total_nodes_in_ring << endl;
+         << " total nodes in ring: " << total_nodes_in_ring << endl;
   }
   this->id = id;
   this->total_nodes_in_ring = total_nodes_in_ring;
