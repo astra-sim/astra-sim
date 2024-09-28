@@ -17,88 +17,16 @@ using namespace Chakra;
 
 typedef ChakraProtoMsg::NodeType ChakraNodeType;
 
-HardwareResourceChakra::HardwareResourceChakra()
-    : num_in_flight_cpu_ops(0), num_in_flight_gpu_comm_ops(0), 
-    num_in_flight_gpu_comp_ops(0) {}
-
-void HardwareResourceChakra::occupy(const shared_ptr<Chakra::ETFeederNode> node) {
-  if (node->is_cpu_op()) {
-    //assert(num_in_flight_cpu_ops == 0);
-    ++num_in_flight_cpu_ops;
-  } else {
-    if (node->type() == ChakraNodeType::COMP_NODE){
-      //assert(num_in_flight_gpu_comp_ops == 0);
-      ++num_in_flight_gpu_comp_ops;
-    } else{
-      if (node->type() == ChakraNodeType::COMM_RECV_NODE) {
-        return; 
-      }
-      //assert(num_in_flight_gpu_comm_ops == 0);
-      ++num_in_flight_gpu_comm_ops;
-      }
-  }
-}
-
-void HardwareResourceChakra::release(const shared_ptr<Chakra::ETFeederNode> node) {
-  if (node->is_cpu_op()) {
-    --num_in_flight_cpu_ops;
-    //assert(num_in_flight_cpu_ops == 0);
-  } else {
-    if (node->type() == ChakraNodeType::COMP_NODE){
-      --num_in_flight_gpu_comp_ops;
-      //assert(num_in_flight_gpu_comp_ops == 0);
-    } else {
-      if (node->type() == ChakraNodeType::COMM_RECV_NODE) {
-        return;
-      }
-      --num_in_flight_gpu_comm_ops;
-      //assert(num_in_flight_gpu_comm_ops == 0);
-    }
-  }
-}
-
-bool HardwareResourceChakra::is_available(
-    const shared_ptr<Chakra::ETFeederNode> node) const {
-      return true;
-  if (node->is_cpu_op()) {
-      if (num_in_flight_cpu_ops == 0) {
-        return true;
-      } else {
-        return false;
-      }
-  } else {
-      if (node->type() == ChakraNodeType::COMP_NODE){
-        if (num_in_flight_gpu_comp_ops == 0) {
-          return true;
-        } else {
-          return false;
-        }
-      } else {
-        if (node->type() == ChakraNodeType::COMM_RECV_NODE){
-          return true;
-        }
-        if (num_in_flight_gpu_comm_ops == 0) {
-          return true;
-        } else {
-          return false;
-        }
-      }
-  }
-}
-
-
 ChakraImpl::ChakraImpl(
     std::string et_filename,
     int id)
     : Algorithm() {
   this->et_feeder = new Chakra::ETFeeder(et_filename);
   this->id = id;
-  this->hw_resource = new HardwareResourceChakra();
 }
 
 void ChakraImpl::issue(shared_ptr<Chakra::ETFeederNode> node) {
   ChakraNodeType type = node->type();
-  hw_resource->occupy(node);
   if (type == ChakraNodeType::COMM_SEND_NODE) {
     sim_request snd_req;
     snd_req.srcRank = node->comm_src();
@@ -167,7 +95,6 @@ void ChakraImpl::call(EventType event, CallData* data) {
 
   WorkloadLayerHandlerData* wlhd = (WorkloadLayerHandlerData*)data;
   shared_ptr<Chakra::ETFeederNode> node = et_feeder->lookupNode(wlhd->node_id);
-  hw_resource->release(node);
   et_feeder->freeChildrenNodes(wlhd->node_id);
   issue_dep_free_nodes();
   et_feeder->removeNode(wlhd->node_id);
