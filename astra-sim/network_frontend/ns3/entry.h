@@ -284,6 +284,13 @@ void qp_finish(FILE *fout, Ptr<RdmaQueuePair> q) {
 int setup_ns3_simulation(string network_configuration) {
   if (!ReadConf(network_configuration))
     return -1;
+
   SetConfig();
-  SetupNetwork(qp_finish);
+
+  if (!SetupNetwork(qp_finish)) {
+    return -1;
+  }
+
+  return 0;
+
 }
