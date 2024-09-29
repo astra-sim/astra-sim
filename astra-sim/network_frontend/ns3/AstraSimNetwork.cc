@@ -261,7 +261,10 @@ int main(int argc, char* argv[]) {
   }
 
   // Initialize ns3 simulation.
-  setup_ns3_simulation(network_configuration);
+  if (auto ok = setup_ns3_simulation(network_configuration); ok == -1) {
+    std::cerr << "Fail to setup ns3 simulation." << std::endl;
+    return -1;
+  }
 
   // Tell workload layer to schedule first events.
   for (int i = 0; i < num_npus; i++) {
