@@ -387,9 +387,8 @@ bool Sys::initialize_sys(string name) {
       all_to_all_implementation_per_dimension.push_back(ci);
     }
   }
-  // TODO: Remove 'experimental'.
-  if (j.contains("all-to-all-implementation-chakra-experimental")) {
-    vector<string> chakra_filepath_str_vec = j["all-to-all-implementation-chakra-experimental"];
+  if (j.contains("all-to-all-implementation-chakra")) {
+    vector<string> chakra_filepath_str_vec = j["all-to-all-implementation-chakra"];
     all_to_all_implementation_per_dimension.clear();
     if(chakra_filepath_str_vec.size() != 1) {
       throw logic_error("There should be 1 Chakra ET only. In multi-dim collectives, that 1 ET file covers all dimensions");
@@ -398,8 +397,8 @@ bool Sys::initialize_sys(string name) {
           generate_collective_impl_from_chakra(chakra_filepath_str_vec[0]);
     all_to_all_implementation_per_dimension.push_back(ci);
   }
-  if (j.contains("all-gather-implementation-chakra-experimental")) {
-    vector<string> chakra_filepath_str_vec = j["all-gather-implementation-chakra-experimental"];
+  if (j.contains("all-gather-implementation-chakra")) {
+    vector<string> chakra_filepath_str_vec = j["all-gather-implementation-chakra"];
     all_gather_implementation_per_dimension.clear();
     if(chakra_filepath_str_vec.size() != 1) {
       throw logic_error("There should be 1 Chakra ET only. In multi-dim collectives, that 1 ET file covers all dimensions");
@@ -408,8 +407,8 @@ bool Sys::initialize_sys(string name) {
           generate_collective_impl_from_chakra(chakra_filepath_str_vec[0]);
     all_gather_implementation_per_dimension.push_back(ci);
   }
-  if (j.contains("all-reduce-implementation-chakra-experimental")) {
-    vector<string> chakra_filepath_str_vec = j["all-reduce-implementation-chakra-experimental"];
+  if (j.contains("all-reduce-implementation-chakra")) {
+    vector<string> chakra_filepath_str_vec = j["all-reduce-implementation-chakra"];
     all_reduce_implementation_per_dimension.clear();
     if(chakra_filepath_str_vec.size() != 1) {
       throw logic_error("There should be 1 Chakra ET only. In multi-dim collectives, that 1 ET file covers all dimensions");

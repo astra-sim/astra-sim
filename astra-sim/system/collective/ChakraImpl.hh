@@ -35,7 +35,7 @@ class HardwareResourceChakra {
  * This Chakra trace consists of only COMM_SEND, COMM_RECV, COMP nodes to describe the messages that make up a Collective. (note: no verifier!) 
  * This allows us to easily define different implementations of the same algorithm, or, even define our own custom algorithms using tools such as MSCCLang.
  * To use this implementation, write the "ABSOLUTE" path to the Chakra trace file in the system layer input (instead of traditional `Ring`, etc.),
- *  under `{all-reduce|all-to-all|all-gather}-implementation-chakra-experimental`.
+ *  under `{all-reduce|all-to-all|all-gather}-implementation-chakra`.
  * 
  * For a detailed description on using a Chakra ET based representation, refer to the documentation.
  * TODO: Add a verifier to verify correct communication behavior.
