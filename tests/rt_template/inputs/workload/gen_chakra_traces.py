@@ -10,9 +10,7 @@ from chakra.et_def.et_def_pb2 import (
     ALL_REDUCE,
 )
 
-
 def main() -> None:
-    
     # metadata
     npus_count = 8  # 8 NPUs
     coll_size = 1_048_576  # 1 MB
@@ -32,12 +30,10 @@ def main() -> None:
             # assign attributes
             node.attr.append(ChakraAttr(name="is_cpu_op", bool_val=False))
             node.attr.append(ChakraAttr(name="comm_type", int64_val=ALL_REDUCE))
-            node.attr.append(ChakraAttr(name="comm_size", uint64_val=coll_size))
-            node.attr.append(ChakraAttr(name="involved_dim", bool_list=BoolList(values=[True])))
+            node.attr.append(ChakraAttr(name="comm_size", int64_val=coll_size))
 
             # store Chakra ET file
             encode_message(et, node)
-
 
 if __name__ == "__main__":
     main()
