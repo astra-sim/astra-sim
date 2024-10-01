@@ -199,8 +199,26 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
   hw_resource->occupy(node);
 
   vector<bool> involved_dim;
-  for (int i = 0; i < node->involved_dim_size(); i++) {
-    involved_dim.push_back(node->involved_dim(i));
+
+  if (node->has_other_attr("involved_dim")) {
+      const ChakraProtoMsg::AttributeProto& attr = node->get_other_attr("involved_dim");
+
+      // Ensure the attribute is of type bool_list before accessing
+      if (attr.has_bool_list()) {
+          const ChakraProtoMsg::BoolList& bool_list = attr.bool_list();
+
+          // Traverse bool_list and add values to involved_dim
+          for (int i = 0; i < bool_list.values_size(); ++i) {
+              involved_dim.push_back(bool_list.values(i));
+          }
+      } else {
+          cerr << "Expected bool_list in involved_dim but found another type." << endl;
+          exit(EXIT_FAILURE);
+      }
+  } else {
+      // involved_dim does not exist in ETFeeder.
+      // Assume involved_dim = [1]. Could use Process Group to build involved_dim later.
+      involved_dim.push_back(true);
   }
 
   if (!node->is_cpu_op() && (node->type() == ChakraNodeType::COMM_COLL_NODE)) {
