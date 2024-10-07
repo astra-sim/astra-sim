@@ -20,11 +20,15 @@ class HardwareResource {
   void occupy(const std::shared_ptr<Chakra::ETFeederNode> node);
   void release(const std::shared_ptr<Chakra::ETFeederNode> node);
   bool is_available(const std::shared_ptr<Chakra::ETFeederNode> node) const;
+  bool all_resources_released() const;
 
   const uint32_t num_npus;
-  uint32_t num_in_flight_cpu_ops;
+  uint32_t num_in_flight_cpu_comp_ops;
   uint32_t num_in_flight_gpu_comp_ops;
-  uint32_t num_in_flight_gpu_comm_ops;
+  uint32_t num_in_flight_comm_send_ops;
+  uint32_t num_in_flight_comm_recv_ops;
+  uint32_t num_in_flight_mem_load_ops;
+  uint32_t num_in_flight_mem_store_ops;
 };
 
 } // namespace AstraSim
