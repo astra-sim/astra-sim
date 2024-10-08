@@ -40,7 +40,9 @@ void DataSet::notify_stream_finished(StreamStat* data) {
       Callable* c = notifier->first;
       EventType ev = notifier->second;
       delete notifier;
-      c->call(ev, new IntData(my_id));
+      IntData* int_data = new IntData(my_id);
+      int_data->execution_time = finish_tick - creation_tick;
+      c->call(ev, int_data);
     }
   }
 }
