@@ -9,6 +9,7 @@ LICENSE file in the root directory of this source tree.
 #include <remote_memory_backend/analytical/AnalyticalRemoteMemory.hh>
 #include "common/CmdLineParser.hh"
 #include "congestion_aware/CongestionAwareNetworkApi.hh"
+#include "astra-sim/common/Logging.hh"
 
 using namespace AstraSim;
 using namespace Analytical;
@@ -33,12 +34,16 @@ int main(int argc, char* argv[]) {
       cmd_line_parser.get<std::string>("remote-memory-configuration");
   const auto network_configuration =
       cmd_line_parser.get<std::string>("network-configuration");
+  const auto logging_configuration = 
+      cmd_line_parser.get<std::string>("logging-configuration");
   const auto num_queues_per_dim =
       cmd_line_parser.get<int>("num-queues-per-dim");
   const auto comm_scale = cmd_line_parser.get<double>("comm-scale");
   const auto injection_scale = cmd_line_parser.get<double>("injection-scale");
   const auto rendezvous_protocol =
       cmd_line_parser.get<bool>("rendezvous-protocol");
+
+  AstraSim::LoggerFactory::init(logging_configuration);
 
   // Instantiate event queue
   const auto event_queue = std::make_shared<EventQueue>();
@@ -100,5 +105,6 @@ int main(int argc, char* argv[]) {
   }
 
   // terminate simulation
+  AstraSim::LoggerFactory::shutdown();
   return 0;
 }

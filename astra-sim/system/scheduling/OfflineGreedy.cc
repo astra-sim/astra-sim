@@ -4,11 +4,13 @@ LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
 #include "astra-sim/system/scheduling/OfflineGreedy.hh"
+#include "astra-sim/common/Logging.hh"
 
 #include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <numeric>
+#include <sstream>
 
 using namespace AstraSim;
 
@@ -42,18 +44,20 @@ OfflineGreedy::OfflineGreedy(Sys* sys) {
     }
   }
   if (sys->id == 0) {
-    std::cout << "Themis is configured with the following parameters: "
-              << std::endl;
-    std::cout << "Dim size: ";
+    auto logger = LoggerFactory::get_logger("themis");
+    logger->info("Themis is configured with the following parameters:");
+    std::stringstream buffer;
+    buffer << "Dim size: ";
     for (uint64_t i = 0; i < this->dim_size.size(); i++) {
-      std::cout << this->dim_size[i] << ", ";
+      buffer << this->dim_size[i] << ", ";
     }
-    std::cout << std::endl;
-    std::cout << "BW per dim: ";
+    logger->info(buffer.str());
+    buffer.str("");
+    buffer << "BW per dim: ";
     for (uint64_t i = 0; i < this->dim_BW.size(); i++) {
-      std::cout << this->dim_BW[i] << ", ";
+      buffer << this->dim_BW[i] << ", ";
     }
-    std::cout << std::endl << std::endl;
+    logger->info(buffer.str());
   }
 }
 uint64_t OfflineGreedy::get_chunk_size_from_elapsed_time(

@@ -14,8 +14,8 @@ class AstraNetworkAPI {
  public:
   enum class BackendType { NotSpecified = 0, Garnet, NS3, Analytical };
 
-  AstraNetworkAPI(int rank) : rank(rank){};
-  virtual ~AstraNetworkAPI(){};
+  AstraNetworkAPI(int rank) : rank(rank) {};
+  virtual ~AstraNetworkAPI() {};
 
   virtual int sim_send(
       void* buffer,
