@@ -234,7 +234,26 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
   } else {
       // involved_dim does not exist in ETFeeder.
       // Assume involved_dim = [1]. Could use Process Group to build involved_dim later.
-      involved_dim.push_back(true);
+      // involved_dim.push_back(true);
+      //issue_replay(node);
+      uint64_t runtime = 1ul;
+      if (node->runtime() != 0ul)
+        // chakra runtimes are in microseconds and we should convert it into
+        // nanoseconds
+        runtime = node->runtime() * 1000;
+      DataSet* fp = new DataSet(1);
+      //fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
+      collective_comm_node_id_map[fp->my_id] = node->id();
+      collective_comm_wrapper_map[fp->my_id] = fp;
+      sys->register_event(
+          fp,
+          EventType::General,
+          nullptr,
+          // chakra runtimes are in microseconds and we should convert it into
+          // nanoseconds
+          runtime);
+      fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
+      return;
   }
 
   if (!node->is_cpu_op() && (node->type() == ChakraNodeType::COMM_COLL_NODE)) {
