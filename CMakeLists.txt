@@ -42,6 +42,7 @@ target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/gr
 target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/src/third_party/utils)
 target_include_directories(AstraSim PUBLIC ${Protobuf_INCLUDE_DIRS})
 target_include_directories(AstraSim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/extern/helper/)
+target_include_directories(AstraSim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/extern/helper/spdlog/include/)
 
 # Properties
 set_target_properties(AstraSim PROPERTIES COMPILE_WARNING_AS_ERROR ON)

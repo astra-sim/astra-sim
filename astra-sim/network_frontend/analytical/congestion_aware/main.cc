@@ -9,6 +9,8 @@ LICENSE file in the root directory of this source tree.
 #include <remote_memory_backend/analytical/AnalyticalRemoteMemory.hh>
 #include "common/CmdLineParser.hh"
 #include "congestion_aware/CongestionAwareNetworkApi.hh"
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/basic_file_sink.h"
 
 using namespace AstraSim;
 using namespace Analytical;
@@ -39,6 +41,17 @@ int main(int argc, char* argv[]) {
   const auto injection_scale = cmd_line_parser.get<double>("injection-scale");
   const auto rendezvous_protocol =
       cmd_line_parser.get<bool>("rendezvous-protocol");
+
+  try {
+    auto logger =
+        spdlog::basic_logger_mt("trace", "log/simulated-trace.txt", true);
+    // Set an empty pattern to remove any formatting
+    logger->set_pattern("%v"); // '%v' is just the log message itself
+    logger->flush_on(
+        spdlog::level::info); // Automatically flush on 'info' or higher
+  } catch (const spdlog::spdlog_ex& ex) {
+    std::cout << "Log init failed: " << ex.what() << std::endl;
+  }
 
   // Instantiate event queue
   const auto event_queue = std::make_shared<EventQueue>();
