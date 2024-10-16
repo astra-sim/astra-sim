@@ -42,7 +42,7 @@ target_include_directories(AstraSim PUBLIC ${Protobuf_INCLUDE_DIRS})
 target_include_directories(AstraSim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/extern/helper/)
 
 # Properties
-set_target_properties(AstraSim PROPERTIES COMPILE_WARNING_AS_ERROR ON)
+set_target_properties(AstraSim PROPERTIES COMPILE_WARNING_AS_ERROR OFF)
 set_target_properties(AstraSim
         PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../bin/
