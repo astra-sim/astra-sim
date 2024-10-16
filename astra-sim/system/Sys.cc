@@ -909,11 +909,12 @@ DataSet* Sys::generate_collective(
     } else {
       // In this branch, and the branch directly above, a collective visits each
       // dimension (excluding the last dimension) twice. Specifically, for
-      // example, in 2D AllReduce, there would be 3 collective phases: Phase 0:
-      // Reduce Scatter in dim 0, Phase 1: All Gather in dim 1, Phase 2: All
-      // Reduce in dim 2 Similarly, in 3D AllReduce, there would be 5 collective
-      // phases: RS in dim 0, RS in dim 1, AG in dim 2, AR in dim 3, AR in
-      // dim 4. Currently, queues are allocated per dimension. If we allocate
+      // example, in 2D AllReduce, there would be 3 collective phases: 
+      // Phase 0: Reduce Scatter in dim 0, Phase 1: All Reduce in dim 1, 
+      // Phase 2: All Gather in dim 0
+      // Similarly, in 3D AllReduce, there would be 5 collective
+      // phases: RS in dim 0, RS in dim 1, AR in dim 2, AG in dim 1, AG in
+      // dim 0. Currently, queues are allocated per dimension. If we allocate
       // all queues in a dimension to both phases of a single dimension, a race
       // / deadlock condition may occur. Therefore, in these cases, we have to
       // allocate half of the queues to the first phase, and the remaining half
