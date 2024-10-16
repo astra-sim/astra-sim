@@ -12,6 +12,9 @@ endif ()
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -Wall -Wextra -Wuninitialized -Wunused-function -Wno-unused-parameter -Wno-empty-body -fsanitize=address,undefined,leak -g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
+# TODO: Remove this once binary_function deprecation is resolved.
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error")
+
 # Setup project
 project(AstraSim_Analytical)
 
