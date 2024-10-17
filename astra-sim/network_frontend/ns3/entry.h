@@ -286,4 +286,5 @@ int setup_ns3_simulation(string network_configuration) {
     return -1;
   SetConfig();
   SetupNetwork(qp_finish);
+  return 0;
 }

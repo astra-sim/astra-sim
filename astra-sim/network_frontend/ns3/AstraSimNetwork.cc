@@ -261,7 +261,8 @@ int main(int argc, char* argv[]) {
   }
 
   // Initialize ns3 simulation.
-  setup_ns3_simulation(network_configuration);
+  if (setup_ns3_simulation(network_configuration) == -1)
+    return 1;
 
   // Tell workload layer to schedule first events.
   for (int i = 0; i < num_npus; i++) {
@@ -269,8 +270,8 @@ int main(int argc, char* argv[]) {
   }
 
   // Run the simulation by triggering the ns3 event queue.
+  Simulator::Stop(Seconds(simulator_stop_time));
   Simulator::Run();
-  Simulator::Stop(Seconds(2000000000));
   Simulator::Destroy();
   return 0;
 }
