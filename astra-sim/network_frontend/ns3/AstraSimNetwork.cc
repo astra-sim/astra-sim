@@ -18,6 +18,8 @@
 #include "ns3/csma-module.h"
 #include "ns3/internet-module.h"
 #include "ns3/network-module.h"
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/basic_file_sink.h"
 
 using namespace std;
 using namespace ns3;
@@ -231,6 +233,15 @@ void parse_args(int argc, char* argv[]) {
 int main(int argc, char* argv[]) {
   LogComponentEnable("OnOffApplication", LOG_LEVEL_INFO);
   LogComponentEnable("PacketSink", LOG_LEVEL_INFO);
+
+  try {
+    auto logger = spdlog::basic_logger_mt("trace", "log/simulated-trace.txt", true);
+    // Set an empty pattern to remove any formatting
+    logger->set_pattern("%v"); // '%v' is just the log message itself
+    logger->flush_on(spdlog::level::info);  // Automatically flush on 'info' or higher
+  } catch (const spdlog::spdlog_ex& ex) {
+    std::cout << "Log init failed: " << ex.what() << std::endl;
+  }
 
   cout << "ASTRA-sim + NS3" << endl;
 

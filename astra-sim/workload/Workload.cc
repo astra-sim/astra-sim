@@ -12,6 +12,8 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/SendPacketEventHandlerData.hh"
 #include "astra-sim/system/WorkloadLayerHandlerData.hh"
 
+#include "spdlog/spdlog.h"
+
 #include <stdlib.h>
 #include <unistd.h>
 #include <iostream>
@@ -119,9 +121,10 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
     if ((node->type() == ChakraNodeType::MEM_LOAD_NODE) ||
         (node->type() == ChakraNodeType::MEM_STORE_NODE)) {
       if (sys->trace_enabled) {
-        cout << "issue,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
-             << ",node->id=" << node->id() << ",node->name=" << node->name()
-             << endl;
+        stringstream ss;
+        ss << "issue,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
+           << ",node->id=" << node->id() << ",node->name=" << node->name();
+        spdlog::get("trace")->info(ss.str());
       }
       issue_remote_mem(node);
     } else if (
@@ -131,9 +134,10 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
         skip_invalid(node);
       } else {
         if (sys->trace_enabled) {
-          cout << "issue,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
-               << ",node->id=" << node->id() << ",node->name=" << node->name()
-               << endl;
+          stringstream ss;
+          ss << "issue,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
+             << ",node->id=" << node->id() << ",node->name=" << node->name();
+          spdlog::get("trace")->info(ss.str());
         }
         issue_comp(node);
       }
@@ -143,9 +147,10 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
          (node->type() == ChakraNodeType::COMM_SEND_NODE) ||
          (node->type() == ChakraNodeType::COMM_RECV_NODE))) {
       if (sys->trace_enabled) {
-        cout << "issue,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
-             << ",node->id=" << node->id() << ",node->name=" << node->name()
-             << endl;
+        stringstream ss;
+        ss << "issue,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
+           << ",node->id=" << node->id() << ",node->name=" << node->name();
+        spdlog::get("trace")->info(ss.str());
       }
       issue_comm(node);
     } else if (node->type() == ChakraNodeType::INVALID_NODE) {
@@ -330,9 +335,10 @@ void Workload::call(EventType event, CallData* data) {
     shared_ptr<Chakra::ETFeederNode> node = et_feeder->lookupNode(node_id);
 
     if (sys->trace_enabled) {
-      cout << "callback,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
-           << ",node->id=" << node->id() << ",node->name=" << node->name()
-           << endl;
+      stringstream ss;
+      ss << "callback,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
+         << ",node->id=" << node->id() << ",node->name=" << node->name();
+      spdlog::get("trace")->info(ss.str());
     }
 
     hw_resource->release(node);
@@ -357,9 +363,10 @@ void Workload::call(EventType event, CallData* data) {
           et_feeder->lookupNode(wlhd->node_id);
 
       if (sys->trace_enabled) {
-        cout << "callback,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
-             << ",node->id=" << node->id() << ",node->name=" << node->name()
-             << endl;
+        stringstream ss;
+        ss << "callback,sys->id=" << sys->id << ",tick=" << Sys::boostedTick()
+           << ",node->id=" << node->id() << ",node->name=" << node->name();
+        spdlog::get("trace")->info(ss.str());
       }
 
       hw_resource->release(node);
