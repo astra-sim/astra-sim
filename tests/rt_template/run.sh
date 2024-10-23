@@ -27,10 +27,15 @@ ${ASTRA_SIM_BIN} \
 	| tee ${SCRIPT_DIR}/outputs/stdout.txt
 )
 
+clean_log() {
+    sed -E 's/\[[^]]+\] //; s/\[[^]]+\] //; s/\[[^]]+\] //'
+}
+
 # Compare outputs
 (
 echo "[$0] Comparing outputs..."
-diff ${SCRIPT_DIR}/outputs/stdout.txt ${SCRIPT_DIR}/refs/stdout.txt || (echo "Failed." ; exit 1)
+clean_log < ${SCRIPT_DIR}/outputs/stdout.txt > ${SCRIPT_DIR}/outputs/stdout_clean.txt
+diff ${SCRIPT_DIR}/outputs/stdout_clean.txt ${SCRIPT_DIR}/refs/stdout.txt || (echo "Failed." ; exit 1)
 )
 
 echo "[$0] Ok."
