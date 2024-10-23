@@ -32,7 +32,6 @@ SimSendCaller::SimSendCaller(
 }
 
 void SimSendCaller::call(EventType type, CallData* data) {
-  //std::cout<<"sysid: "<<sys->id<<std::endl;
   sys->comm_NI->sim_send(
       this->buffer,
       this->count,

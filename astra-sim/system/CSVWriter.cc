@@ -5,6 +5,7 @@ LICENSE file in the root directory of this source tree.
 
 #include "astra-sim/system/CSVWriter.hh"
 
+#include "astra-sim/common/Logging.hh"
 #include "astra-sim/system/Common.hh"
 
 #include <fcntl.h>
@@ -24,17 +25,17 @@ CSVWriter::CSVWriter(std::string path, std::string name) {
 }
 
 void CSVWriter::initialize_csv(int rows, int cols) {
-  std::cout << "CSV path and filename: " << path + name << std::endl;
+  auto logger = LoggerFactory::get_logger("system::CSVWriter");
+  logger->info("CSV path and filename: {}{}", path, name);
   int trial = 10000;
   do {
     myFile.open(path + name, std::fstream::out);
     trial--;
   } while (!myFile.is_open() && trial > 0);
   if (trial == 0) {
-    std::cerr << "Unable to create file: " << path << std::endl;
-    std::cerr
-        << "This error is fatal. Please make sure the CSV write path exists."
-        << std::endl;
+    logger->critical("Unable to create file: {}", path);
+    logger->critical(
+        "This error is fatal. Please make sure the CSV write path exists.");
     exit(1);
   }
   do {
@@ -46,14 +47,12 @@ void CSVWriter::initialize_csv(int rows, int cols) {
   } while (!myFile.is_open());
 
   if (!myFile) {
-    std::cerr << "Unable to open file: " << path << std::endl;
-    std::cerr
-        << "This error is fatal. Please make sure the CSV write path exists."
-        << std::endl;
+    logger->critical("Unable to create file: {}", path);
+    logger->critical(
+        "This error is fatal. Please make sure the CSV write path exists.");
     exit(1);
   } else {
-    std::cout << "Success in opening CSV file for writing the report."
-              << std::endl;
+    logger->info("Success in opening CSV file for writing the report.");
   }
 
   myFile.seekp(0, std::ios_base::beg);
@@ -71,17 +70,17 @@ void CSVWriter::initialize_csv(int rows, int cols) {
 
 void CSVWriter::finalize_csv(
     std::list<std::list<std::pair<uint64_t, double>>> dims) {
-  std::cout << "path to create csvs is: " << path << std::endl;
+  auto logger = LoggerFactory::get_logger("system::CSVWriter");
+  logger->info("path to create csvs is: {}", path);
   int trial = 10000;
   do {
     myFile.open(path + name, std::fstream::out);
     trial--;
   } while (!myFile.is_open() && trial > 0);
   if (trial == 0) {
-    std::cerr << "Unable to create file: " << path + name << std::endl;
-    std::cerr
-        << "This error is fatal. Please make sure the CSV write path exists."
-        << std::endl;
+    logger->critical("Unable to create file: {}{}", path, name);
+    logger->critical(
+        "This error is fatal. Please make sure the CSV write path exists.");
     exit(1);
   }
   do {
@@ -93,13 +92,12 @@ void CSVWriter::finalize_csv(
   } while (!myFile.is_open());
 
   if (!myFile) {
-    std::cerr << "Unable to open file: " << path + name << std::endl;
-    std::cerr
-        << "This error is fatal. Please make sure the CSV write path exists."
-        << std::endl;
+    logger->critical("Unable to create file: {}{}", path, name);
+    logger->critical(
+        "This error is fatal. Please make sure the CSV write path exists.");
     exit(1);
   } else {
-    std::cout << "success in openning file" << std::endl;
+    logger->info("success in openning file");
   }
   myFile.seekp(0, std::ios_base::beg);
   myFile.seekg(0, std::ios_base::beg);
@@ -177,7 +175,8 @@ void CSVWriter::write_cell(int row, int column, std::string data) {
       column--;
     }
     if (*buf == '\n') {
-      std::cerr << "fatal error in inserting cewll!" << std::endl;
+      LoggerFactory::get_logger("system::CSVWriter")
+          ->critical("fatal error in inserting cewll!");
       exit(1);
     }
   }

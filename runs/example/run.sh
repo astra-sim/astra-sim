@@ -6,9 +6,11 @@ WORKLOAD="${SCRIPT_DIR:?}"/workload/Resnet50_DataParallel
 SYSTEM="${SCRIPT_DIR:?}"/system.json
 NETWORK="${SCRIPT_DIR:?}"/network.yml
 MEMORY="${SCRIPT_DIR:?}"/memory.json
+LOGGING="${SCRIPT_DIR:?}"/log_conf.toml
 
 "${BINARY}" \
   --workload-configuration="${WORKLOAD}" \
   --system-configuration="${SYSTEM}" \
-  --network-configuration="${NETWORK}"\
-  --remote-memory-configuration="${MEMORY}"
+  --network-configuration="${NETWORK}" \
+  --remote-memory-configuration="${MEMORY}" \
+  --logging-configuration="${LOGGING}"

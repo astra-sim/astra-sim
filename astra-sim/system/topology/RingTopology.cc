@@ -4,6 +4,7 @@ LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
 #include "astra-sim/system/topology/RingTopology.hh"
+#include "astra-sim/common/Logging.hh"
 
 #include <cassert>
 #include <iostream>
@@ -32,11 +33,14 @@ RingTopology::RingTopology(Dimension dimension, int id, std::vector<int> NPUs)
     }
   }
 
-  cout << "custom ring, "
-       << "id: " << id << " dimension: " << name
-       << " total nodes in ring: " << total_nodes_in_ring
-       << " index in ring: " << index_in_ring
-       << "total nodes in ring: " << total_nodes_in_ring << endl;
+  LoggerFactory::get_logger("system::topology::RingTopology")
+      ->info(
+          "custom ring, id: {}, dimension: {} total nodes in ring: {} index in ring: {} total nodes in ring {}",
+          id,
+          name,
+          total_nodes_in_ring,
+          index_in_ring,
+          total_nodes_in_ring);
 
   assert(index_in_ring >= 0);
 }
@@ -54,11 +58,15 @@ RingTopology::RingTopology(
     name = "horizontal";
   }
   if (id == 0) {
-    cout << "ring of node 0, "
-         << "id: " << id << " dimension: " << name
-         << " total nodes in ring: " << total_nodes_in_ring
-         << " index in ring: " << index_in_ring << " offset: " << offset
-         << "total nodes in ring: " << total_nodes_in_ring << endl;
+    LoggerFactory::get_logger("system::topology::RingTopology")
+        ->info(
+            "ring of node 0, id: {} dimension: {} total nodes in ring: {} index in ring: {} offset: {} total nodes in ring: {}",
+            id,
+            name,
+            total_nodes_in_ring,
+            index_in_ring,
+            offset,
+            total_nodes_in_ring);
   }
   this->id = id;
   this->total_nodes_in_ring = total_nodes_in_ring;
@@ -90,10 +98,17 @@ int RingTopology::get_receiver_homogeneous(
       index++;
     }
     if (receiver < 0) {
-      cout << "at dim: " << name << "at id: " << id << "dimension: " << name
-           << " index: " << index << " ,node id: " << node_id
-           << " ,offset: " << offset << " ,index_in_ring: " << index_in_ring
-           << " receiver: " << receiver << endl;
+      LoggerFactory::get_logger("system::topology::RingTopology")
+          ->critical(
+              "at dim: {} at id: {} dimension: {} index: {}, node id: {}, offset: {}, index_in_ring {} receiver {}",
+              name,
+              id,
+              name,
+              index,
+              node_id,
+              offset,
+              index_in_ring,
+              receiver);
     }
     assert(receiver >= 0);
     id_to_index[receiver] = index;
@@ -108,10 +123,17 @@ int RingTopology::get_receiver_homogeneous(
       index--;
     }
     if (receiver < 0) {
-      cout << "at dim: " << name << "at id: " << id << "dimension: " << name
-           << " index: " << index << " ,node id: " << node_id
-           << " ,offset: " << offset << " ,index_in_ring: " << index_in_ring
-           << " receiver: " << receiver << endl;
+      LoggerFactory::get_logger("system::topology::RingTopology")
+          ->critical(
+              "at dim: {} at id: {} dimension: {} index: {}, node id: {}, offset: {}, index_in_ring {} receiver {}",
+              name,
+              id,
+              name,
+              index,
+              node_id,
+              offset,
+              index_in_ring,
+              receiver);
     }
     assert(receiver >= 0);
     id_to_index[receiver] = index;
