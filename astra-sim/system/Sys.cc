@@ -438,7 +438,8 @@ bool Sys::initialize_sys(string name) {
     peak_perf = peak_perf * 1000000000000; // TFLOPS
   }
   if (j.contains("local-mem-bw")) {
-    local_mem_bw = j["local-mem-bw"]; // GB/sec
+    local_mem_bw = j["local-mem-bw"];
+    local_mem_bw = local_mem_bw * 1000000000; // GB/sec
   }
   if (j.contains("roofline-enabled")) {
     if (j["roofline-enabled"] != 0) {
