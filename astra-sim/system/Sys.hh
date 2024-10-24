@@ -79,6 +79,8 @@ class Sys : public Callable {
   bool initialize_sys(std::string name);
   CollectiveImpl* generate_collective_impl_from_input(
       std::string collective_impl_str);
+  CollectiveImpl* generate_collective_impl_from_chakra(
+      std::string collective_impl_str);
   //---------------------------------------------------------------------------
 
   // Helper Functions ---------------------------------------------------------

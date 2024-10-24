@@ -25,7 +25,13 @@ GeneralComplexTopology::GeneralComplexTopology(
   for (uint64_t dim = 0; dim < collective_impl.size(); dim++) {
     if (collective_impl[dim]->type == CollectiveImplType::Ring ||
         collective_impl[dim]->type == CollectiveImplType::Direct ||
-        collective_impl[dim]->type == CollectiveImplType::HalvingDoubling) {
+        collective_impl[dim]->type == CollectiveImplType::HalvingDoubling || 
+        // While executing a collective according a Chakra ET representation does not need information on the logical topology, 
+        // The system layer's logic of defining and invoking "collective phase" objects (which in turn executes the 
+        // individual collective algorithm implementation) does rely on the existence (not the values) of the logical topology. 
+        // (Refer to functions involving 'Sys.cc::generate_collective')
+        // Therefore, we fill in the logical topology with a dummy, default value.
+        collective_impl[dim]->type == CollectiveImplType::ChakraImpl) {
       RingTopology* ring = new RingTopology(
           RingTopology::Dimension::NA,
           id,

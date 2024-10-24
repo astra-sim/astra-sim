@@ -27,6 +27,7 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/collective/DoubleBinaryTreeAllReduce.hh"
 #include "astra-sim/system/collective/HalvingDoubling.hh"
 #include "astra-sim/system/collective/Ring.hh"
+#include "astra-sim/system/collective/ChakraImpl.hh"
 #include "astra-sim/system/scheduling/OfflineGreedy.hh"
 #include "astra-sim/system/topology/BasicLogicalTopology.hh"
 #include "astra-sim/system/topology/GeneralComplexTopology.hh"
@@ -388,6 +389,36 @@ bool Sys::initialize_sys(string name) {
       all_to_all_implementation_per_dimension.push_back(ci);
     }
   }
+  if (j.contains("all-to-all-implementation-chakra")) {
+    vector<string> chakra_filepath_str_vec = j["all-to-all-implementation-chakra"];
+    all_to_all_implementation_per_dimension.clear();
+    if(chakra_filepath_str_vec.size() != 1) {
+      throw logic_error("There should be 1 Chakra ET only. In multi-dim collectives, that 1 ET file covers all dimensions");
+    }
+    CollectiveImpl* ci =
+          generate_collective_impl_from_chakra(chakra_filepath_str_vec[0]);
+    all_to_all_implementation_per_dimension.push_back(ci);
+  }
+  if (j.contains("all-gather-implementation-chakra")) {
+    vector<string> chakra_filepath_str_vec = j["all-gather-implementation-chakra"];
+    all_gather_implementation_per_dimension.clear();
+    if(chakra_filepath_str_vec.size() != 1) {
+      throw logic_error("There should be 1 Chakra ET only. In multi-dim collectives, that 1 ET file covers all dimensions");
+    }
+    CollectiveImpl* ci =
+          generate_collective_impl_from_chakra(chakra_filepath_str_vec[0]);
+    all_gather_implementation_per_dimension.push_back(ci);
+  }
+  if (j.contains("all-reduce-implementation-chakra")) {
+    vector<string> chakra_filepath_str_vec = j["all-reduce-implementation-chakra"];
+    all_reduce_implementation_per_dimension.clear();
+    if(chakra_filepath_str_vec.size() != 1) {
+      throw logic_error("There should be 1 Chakra ET only. In multi-dim collectives, that 1 ET file covers all dimensions");
+    }
+    CollectiveImpl* ci =
+          generate_collective_impl_from_chakra(chakra_filepath_str_vec[0]);
+    all_reduce_implementation_per_dimension.push_back(ci);
+  }
   if (j.contains("collective-optimization")) {
     string inp_collective_optimization = j["collective-optimization"];
     if (inp_collective_optimization == "baseline") {
@@ -498,6 +529,11 @@ CollectiveImpl* Sys::generate_collective_impl_from_input(
         "input file");
     return new CollectiveImpl(CollectiveImplType::Ring);
   }
+}
+
+CollectiveImpl* Sys::generate_collective_impl_from_chakra(string chakra_filepath) {
+  string filename = chakra_filepath + "." + to_string(id) + ".et";
+  return new ChakraCollectiveImpl(CollectiveImplType::ChakraImpl, filename);
 }
 
 Tick Sys::boostedTick() {
@@ -618,6 +654,9 @@ void Sys::handleEvent(void* arg) {
     }
     if (rcehd->owner) {
       rcehd->owner->consume(rcehd);
+    }
+    if (rcehd->chakra) {
+      rcehd->chakra->call(event, rcehd->wlhd);
     }
     delete rcehd;
   } else if (event == EventType::PacketSent) {
@@ -1088,6 +1127,14 @@ CollectivePhase Sys::generate_collective_phase(
         new HalvingDoubling(
             collective_type, id, (RingTopology*)topology, data_size));
     return vn;
+  } else if (
+      collective_impl->type == CollectiveImplType::ChakraImpl) {
+    string filename = ((ChakraCollectiveImpl*)collective_impl)->filename;
+    CollectivePhase vn(
+        this,
+        queue_id,
+        new ChakraImpl(filename, id));
+      return vn;      
   } else {
     LoggerFactory::get_logger("system")->critical(
         "Error: No known collective implementation for collective phase");
