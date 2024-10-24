@@ -113,7 +113,7 @@ void Workload::issue_dep_free_nodes() {
 }
 
 void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
-  auto logger = LoggerFactory::get_logger("workload");
+  auto logger = LoggerFactory::get_logger("trace");
   if (sys->replay_only) {
     hw_resource->occupy(node);
     issue_replay(node);
@@ -343,20 +343,21 @@ void Workload::call(EventType event, CallData* data) {
     return;
   }
 
+  auto logger = LoggerFactory::get_logger("trace");
+
   if (event == EventType::CollectiveCommunicationFinished) {
     IntData* int_data = (IntData*)data;
     uint64_t node_id = collective_comm_node_id_map[int_data->data];
     shared_ptr<Chakra::ETFeederNode> node = et_feeder->lookupNode(node_id);
 
     if (sys->trace_enabled) {
-      LoggerFactory::get_logger("workload")
-          ->debug(
-              "callback,sys->id={}, tick={}, node->id={}, node->name={}, node->type={}",
-              sys->id,
-              Sys::boostedTick(),
-              node->id(),
-              node->name(),
-              static_cast<uint64_t>(node->type()));
+      logger->debug(
+          "callback,sys->id={}, tick={}, node->id={}, node->name={}, node->type={}",
+          sys->id,
+          Sys::boostedTick(),
+          node->id(),
+          node->name(),
+          static_cast<uint64_t>(node->type()));
     }
 
     hw_resource->release(node);
@@ -381,14 +382,13 @@ void Workload::call(EventType event, CallData* data) {
           et_feeder->lookupNode(wlhd->node_id);
 
       if (sys->trace_enabled) {
-        LoggerFactory::get_logger("workload")
-            ->debug(
-                "callback,sys->id={}, tick={}, node->id={}, node->name={}, node->type={}",
-                sys->id,
-                Sys::boostedTick(),
-                node->id(),
-                node->name(),
-                static_cast<uint64_t>(node->type()));
+        logger->debug(
+            "callback,sys->id={}, tick={}, node->id={}, node->name={}, node->type={}",
+            sys->id,
+            Sys::boostedTick(),
+            node->id(),
+            node->name(),
+            static_cast<uint64_t>(node->type()));
       }
 
       hw_resource->release(node);

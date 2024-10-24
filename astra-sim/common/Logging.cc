@@ -8,11 +8,29 @@ std::shared_ptr<spdlog::logger> LoggerFactory::get_logger(
     const std::string& logger_name) {
   constexpr bool ENABLE_DEFAULT_SINK_FOR_OTHER_LOGGERS = true;
   auto logger = spdlog::get(logger_name);
-  if (logger == nullptr) {
-    logger = spdlog::create_async<spdlog::sinks::null_sink_mt>(logger_name);
-    logger->set_level(spdlog::level::trace);
-    logger->flush_on(spdlog::level::info);
+  if (logger != nullptr) {
+    return logger;
   }
+
+  // Create new logger.
+  if (logger_name == "trace") {
+    // Create a dedicated file sink for 'trace' that truncates the file on open
+    logger = spdlog::create_async<spdlog::sinks::rotating_file_sink_mt>(
+        logger_name, "log/trace.log", 1024 * 1024 * 10, 10, true);
+    logger->sinks().back()->set_pattern("%v");
+    logger->set_level(spdlog::level::trace);
+    logger->flush_on(spdlog::level::debug);
+
+    // This logger is dedicated for trace. No need to add default sinks.
+    // Directly return.
+    return logger;
+  }
+
+  // Create logger with default null sink
+  logger = spdlog::create_async<spdlog::sinks::null_sink_mt>(logger_name);
+  logger->set_level(spdlog::level::trace);
+  logger->flush_on(spdlog::level::info);
+
   if constexpr (!ENABLE_DEFAULT_SINK_FOR_OTHER_LOGGERS)
     return logger;
   auto& logger_sinks = logger->sinks();
