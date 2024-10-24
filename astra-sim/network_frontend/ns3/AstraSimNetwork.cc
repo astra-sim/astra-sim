@@ -272,8 +272,8 @@ int main(int argc, char* argv[]) {
   }
 
   // Run the simulation by triggering the ns3 event queue.
+  Simulator::Stop(Seconds(simulator_stop_time));
   Simulator::Run();
-  Simulator::Stop(Seconds(2000000000));
   Simulator::Destroy();
   return 0;
 }
