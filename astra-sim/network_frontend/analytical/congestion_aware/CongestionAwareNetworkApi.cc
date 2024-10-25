@@ -6,6 +6,8 @@ LICENSE file in the root directory of this source tree.
 #include "congestion_aware/CongestionAwareNetworkApi.hh"
 #include <astra-network-analytical/congestion_aware/Chunk.hh>
 #include <cassert>
+#include <iostream>
+#include <tuple>
 
 using namespace AstraSim;
 using namespace AstraSimAnalyticalCongestionAware;
@@ -73,6 +75,16 @@ int CongestionAwareNetworkApi::sim_send(
 
   // initiate transmission from src -> dst.
   topology->send(std::move(chunk));
+
+  // print sim_send log
+  const auto [_, current_time] = sim_get_time();
+  std::cout << "[sim_send] "
+            << "time: " << current_time << " (ns), "
+            << "src: " << src << ", "
+            << "dst: " << dst << ", "
+            << "tag: " << tag << ", "
+            << "count: " << count << " (bytes),"
+            << "chunk_id: " << chunk_id << std::endl;
 
   // return
   return 0;
