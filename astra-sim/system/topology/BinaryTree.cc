@@ -4,6 +4,7 @@ LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
 #include "astra-sim/system/topology/BinaryTree.hh"
+#include "astra-sim/common/Logging.hh"
 
 #include <iostream>
 
@@ -95,29 +96,29 @@ BinaryTree::Type BinaryTree::get_node_type(int id) {
 }
 
 void BinaryTree::print(Node* node) {
-    cout << "I am node: " << node->id;
-    if (node->left_child != nullptr) {
-        cout << " and my left child is: " << node->left_child->id;
-    }
-    if (node->right_child != nullptr) {
-        cout << " and my right child is: " << node->right_child->id;
-    }
-    if (node->parent != nullptr) {
-        cout << " and my parent is: " << node->parent->id;
-    }
-    BinaryTree::Type typ = get_node_type(node->id);
-    if (typ == BinaryTree::Type::Root) {
-        cout << " and I am Root ";
-    } else if (typ == BinaryTree::Type::Intermediate) {
-        cout << " and I am Intermediate ";
-    } else if (typ == BinaryTree::Type::Leaf) {
-        cout << " and I am Leaf ";
-    }
-    cout << endl;
-    if (node->left_child != nullptr) {
-        print(node->left_child);
-    }
-    if (node->right_child != nullptr) {
-        print(node->right_child);
-    }
+  auto logger = LoggerFactory::get_logger("system::topology::BinaryTree");
+  logger->debug("I am node: {}", node->id);
+  if (node->left_child != nullptr) {
+    logger->debug("and my left child is {}", node->left_child->id);
+  }
+  if (node->right_child != nullptr) {
+    logger->debug("and my right child is {}", node->right_child->id);
+  }
+  if (node->parent != nullptr) {
+    logger->debug("and my parent is {}", node->parent->id);
+  }
+  BinaryTree::Type typ = get_node_type(node->id);
+  if (typ == BinaryTree::Type::Root) {
+    logger->debug("and I am Root");
+  } else if (typ == BinaryTree::Type::Intermediate) {
+    logger->debug("and I am Intermediate");
+  } else if (typ == BinaryTree::Type::Leaf) {
+    logger->debug("and I am Leaf");
+  }
+  if (node->left_child != nullptr) {
+    print(node->left_child);
+  }
+  if (node->right_child != nullptr) {
+    print(node->right_child);
+  }
 }

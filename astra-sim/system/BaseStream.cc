@@ -17,17 +17,23 @@ void BaseStream::changeState(StreamState state) {
     this->state = state;
 }
 
-BaseStream::BaseStream(int stream_id, Sys* owner, std::list<CollectivePhase> phases_to_go) {
-    this->stream_id = stream_id;
-    this->owner = owner;
-    this->initialized = false;
-    this->phases_to_go = phases_to_go;
-    if (synchronizer.find(stream_id) != synchronizer.end()) {
-        synchronizer[stream_id]++;
-    } else {
-        // std::cout<<"synchronizer set!"<<std::endl;
-        synchronizer[stream_id] = 1;
-        ready_counter[stream_id] = 0;
+BaseStream::BaseStream(
+    int stream_id,
+    Sys* owner,
+    std::list<CollectivePhase> phases_to_go) {
+  this->stream_id = stream_id;
+  this->owner = owner;
+  this->initialized = false;
+  this->phases_to_go = phases_to_go;
+  if (synchronizer.find(stream_id) != synchronizer.end()) {
+    synchronizer[stream_id]++;
+  } else {
+    synchronizer[stream_id] = 1;
+    ready_counter[stream_id] = 0;
+  }
+  for (auto& vn : phases_to_go) {
+    if (vn.algorithm != nullptr) {
+      vn.init(this);
     }
     for (auto& vn : phases_to_go) {
         if (vn.algorithm != nullptr) {

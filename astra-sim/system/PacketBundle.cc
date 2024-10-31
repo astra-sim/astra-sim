@@ -48,18 +48,24 @@ void PacketBundle::send_to_NPU() {
 }
 
 void PacketBundle::call(EventType event, CallData* data) {
-    if (needs_processing == true) {
-        needs_processing = false;
-        this->delay = static_cast<uint64_t>(static_cast<double>(size) / sys->local_mem_bw)     // write
-                      + static_cast<uint64_t>(static_cast<double>(size) / sys->local_mem_bw)   // read
-                      + static_cast<uint64_t>(static_cast<double>(size) / sys->local_mem_bw);  // read
-        sys->try_register_event(this, EventType::CommProcessingFinished, data, this->delay);
-        return;
-    }
-    Tick current = Sys::boostedTick();
-    for (auto& packet : locked_packets) {
-        packet->ready_time = current;
-    }
-    stream->call(EventType::General, data);
-    delete this;
+  if (needs_processing == true) {
+    needs_processing = false;
+    // this->delay[ns], size[bytes] local_mem_bw[bytes/s]
+    this->delay =
+        static_cast<uint64_t>(
+            static_cast<double>(size) / sys->local_mem_bw * 1e9) // write
+        + static_cast<uint64_t>(
+              static_cast<double>(size) / sys->local_mem_bw * 1e9) // read
+        + static_cast<uint64_t>(
+              static_cast<double>(size) / sys->local_mem_bw * 1e9); // read
+    sys->try_register_event(
+        this, EventType::CommProcessingFinished, data, this->delay);
+    return;
+  }
+  Tick current = Sys::boostedTick();
+  for (auto& packet : locked_packets) {
+    packet->ready_time = current;
+  }
+  stream->call(EventType::General, data);
+  delete this;
 }

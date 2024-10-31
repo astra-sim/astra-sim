@@ -10,7 +10,7 @@ LICENSE file in the root directory of this source tree.
 #include <fstream>
 #include <list>
 #include <string>
-#include <sys/stat.h>
+#include <cstdint>
 
 namespace AstraSim {
 

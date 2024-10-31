@@ -4,7 +4,7 @@ set -e
 # set paths
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 BUILD_DIR="${SCRIPT_DIR:?}"/build
-CHAKRA_ET_DIR="${SCRIPT_DIR:?}"/../../extern/graph_frontend/chakra/et_def
+CHAKRA_ET_DIR="${SCRIPT_DIR:?}"/../../extern/graph_frontend/chakra/schema/protobuf
 
 # set functions
 function compile_chakra_et() {
@@ -51,6 +51,9 @@ function compile_astrasim_analytical_as_debug() {
 
 function cleanup() {
   rm -rf "${BUILD_DIR:?}"
+  rm -f "${CHAKRA_ET_DIR}/et_def.pb.cc"
+  rm -f "${CHAKRA_ET_DIR}/et_def.pb.h"
+  rm -f "${CHAKRA_ET_DIR}/et_def_pb2.py"
 }
 
 function create_symlink_astrasim() {

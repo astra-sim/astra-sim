@@ -143,26 +143,43 @@ class Sys : public Callable {
     void proceed_to_next_vnet_baseline(StreamBaseline* stream);
     //---------------------------------------------------------------------------
 
-    // Low-level Network Primitives ---------------------------------------------
-    int front_end_sim_send(Tick delay,
-                           void* buffer,
-                           uint64_t count,
-                           int type,
-                           int dst,
-                           int tag,
-                           sim_request* request,
-                           void (*msg_handler)(void* fun_arg),
-                           void* fun_arg);
+  // Low-level Network Primitives ---------------------------------------------
+  enum FrontEndSendRecvType {
+    // NATIVE means send/recv is issued directly by workload input
+    // COLLECTIVE means send/recv is caused by a collective communication
+    // RENDEZVOUS means send/recv is a rendezvous shake hand
+    // The value here presents the offset of the tag. The tag range for
+    // different type is as follows
+    // NATIVE: [0, 500000000)
+    // COLLECTIVE: [500000000, 1000000000)
+    // RENDEZVOUS: [1000000000, 2000000000)
+    NATIVE = 0,
+    COLLECTIVE = 500000000,
+    RENDEZVOUS = 1000000000
+  };
+  int front_end_sim_send(
+      Tick delay,
+      void* buffer,
+      uint64_t count,
+      int type,
+      int dst,
+      int tag,
+      sim_request* request,
+      FrontEndSendRecvType send_type,
+      void (*msg_handler)(void* fun_arg),
+      void* fun_arg);
 
-    int front_end_sim_recv(Tick delay,
-                           void* buffer,
-                           uint64_t count,
-                           int type,
-                           int src,
-                           int tag,
-                           sim_request* request,
-                           void (*msg_handler)(void* fun_arg),
-                           void* fun_arg);
+  int front_end_sim_recv(
+      Tick delay,
+      void* buffer,
+      uint64_t count,
+      int type,
+      int src,
+      int tag,
+      sim_request* request,
+      FrontEndSendRecvType recv_type,
+      void (*msg_handler)(void* fun_arg),
+      void* fun_arg);
 
     int rendezvous_sim_send(Tick delay,
                             void* buffer,

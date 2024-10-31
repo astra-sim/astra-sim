@@ -8,6 +8,8 @@ LICENSE file in the root directory of this source tree.
 #include <cstdlib>
 #include <iostream>
 
+#include <json/json.hpp>
+#include "astra-sim/common/Logging.hh"
 #include "astra-sim/system/BaseStream.hh"
 #include "astra-sim/system/CollectivePlan.hh"
 #include "astra-sim/system/DataSet.hh"
@@ -308,13 +310,12 @@ Sys::~Sys() {
 }
 
 bool Sys::initialize_sys(string name) {
-    ifstream inFile;
-    inFile.open(name);
-    if (!inFile) {
-        if (id == 0) {
-            cerr << "Unable to open file: " << name << endl;
-        }
-        exit(1);
+  ifstream inFile;
+  inFile.open(name);
+  if (!inFile) {
+    if (id == 0) {
+      LoggerFactory::get_logger("system")->critical(
+          "Unable to open file: {}", name);
     }
 
     json j;
@@ -463,6 +464,95 @@ bool Sys::initialize_sys(string name) {
             this->replay_only = false;
         }
     }
+    CollectiveImpl* ci =
+          generate_collective_impl_from_chakra(chakra_filepath_str_vec[0]);
+    all_gather_implementation_per_dimension.push_back(ci);
+  }
+  if (j.contains("all-reduce-implementation-chakra")) {
+    vector<string> chakra_filepath_str_vec = j["all-reduce-implementation-chakra"];
+    all_reduce_implementation_per_dimension.clear();
+    if(chakra_filepath_str_vec.size() != 1) {
+      throw logic_error("There should be 1 Chakra ET only. In multi-dim collectives, that 1 ET file covers all dimensions");
+    }
+    CollectiveImpl* ci =
+          generate_collective_impl_from_chakra(chakra_filepath_str_vec[0]);
+    all_reduce_implementation_per_dimension.push_back(ci);
+  }
+  if (j.contains("collective-optimization")) {
+    string inp_collective_optimization = j["collective-optimization"];
+    if (inp_collective_optimization == "baseline") {
+      collectiveOptimization = CollectiveOptimization::Baseline;
+    } else if (inp_collective_optimization == "localBWAware") {
+      collectiveOptimization = CollectiveOptimization::LocalBWAware;
+    } else {
+      sys_panic("unknown value for collective optimization in sys input file");
+    }
+  }
+  if (j.contains("local-reduction-delay")) {
+    local_reduction_delay = j["local-reduction-delay"];
+  }
+  if (j.contains("active-chunks-per-dimension")) {
+    active_chunks_per_dimension = j["active-chunks-per-dimension"];
+  }
+  if (j.contains("L")) {
+    inp_L = j["L"];
+  }
+  if (j.contains("o")) {
+    inp_o = j["o"];
+  }
+  if (j.contains("g")) {
+    inp_g = j["g"];
+  }
+  if (j.contains("G")) {
+    inp_G = j["G"];
+  }
+  if (j.contains("endpoint-delay")) {
+    communication_delay = j["endpoint-delay"];
+    communication_delay = communication_delay * injection_scale;
+  }
+  if (j.contains("model-shared-bus")) {
+    int inp_model_shared_bus = j["model-shared-bus"];
+    if (inp_model_shared_bus == 1) {
+      model_shared_bus = true;
+    } else {
+      model_shared_bus = false;
+    }
+  } else {
+    model_shared_bus = false;
+  }
+  if (j.contains("preferred-dataset-splits")) {
+    preferred_dataset_splits = j["preferred-dataset-splits"];
+  }
+  if (j.contains("peak-perf")) {
+    peak_perf = j["peak-perf"];
+    peak_perf = peak_perf * 1000000000000; // TFLOPS
+  }
+  if (j.contains("local-mem-bw")) {
+    local_mem_bw = j["local-mem-bw"];
+    local_mem_bw = local_mem_bw * 1000000000; // GB/sec
+  }
+  if (j.contains("roofline-enabled")) {
+    if (j["roofline-enabled"] != 0) {
+      roofline_enabled = true;
+      roofline = new Roofline(local_mem_bw, peak_perf);
+    }
+  }
+  this->trace_enabled = false;
+  if (j.contains("trace-enabled")) {
+    if (j["trace-enabled"] != 0) {
+      this->trace_enabled = true;
+    } else {
+      this->trace_enabled = false;
+    }
+  }
+  this->replay_only = false;
+  if (j.contains("replay-only")) {
+    if (j["replay-only"] != 0) {
+      this->replay_only = true;
+    } else {
+      this->replay_only = false;
+    }
+  }
 
     inFile.close();
     return true;
@@ -519,25 +609,27 @@ Tick Sys::boostedTick() {
 }
 
 void Sys::sys_panic(string msg) {
-    cerr << msg << endl;
-    exit(1);
+  auto logger = LoggerFactory::get_logger("system");
+  logger->critical(msg);
+  exit(1);
 }
 
 void Sys::exit_sim_loop(string msg) {
-    cout << msg << endl;
+  auto logger = LoggerFactory::get_logger("system");
+  logger->warn(msg);
 }
 
 void Sys::call(EventType type, CallData* data) {}
 
 void Sys::call_events() {
-    for (auto& callable : event_queue[Sys::boostedTick()]) {
-        try {
-            pending_events--;
-            (get<0>(callable))->call(get<1>(callable), get<2>(callable));
-        } catch (const std::exception& e) {
-            cerr << "warning! a callable is removed before call" << endl;
-            cerr << e.what() << endl;
-        }
+  for (auto& callable : event_queue[Sys::boostedTick()]) {
+    try {
+      pending_events--;
+      (get<0>(callable))->call(get<1>(callable), get<2>(callable));
+    } catch (const std::exception& e) {
+      auto logger = LoggerFactory::get_logger("system");
+      logger->critical(
+          "warning! a callable is removed before call {}", e.what());
     }
     if (event_queue[Sys::boostedTick()].size() > 0) {
         event_queue[Sys::boostedTick()].clear();
@@ -643,315 +735,176 @@ vector<CollectiveImpl*> Sys::get_collective_implementation(ComType comm_type) {
     } else if (comm_type == ComType::All_Gather) {
         return all_gather_implementation_per_dimension;
     } else {
-        sys_panic("no known collective implementation!");
-        vector<CollectiveImpl*> tmp;
-        return tmp;
+      // In this branch, and the branch directly above, a collective visits each
+      // dimension (excluding the last dimension) twice. Specifically, for
+      // example, in 2D AllReduce, there would be 3 collective phases: 
+      // Phase 0: Reduce Scatter in dim 0, Phase 1: All Reduce in dim 1, 
+      // Phase 2: All Gather in dim 0
+      // Similarly, in 3D AllReduce, there would be 5 collective
+      // phases: RS in dim 0, RS in dim 1, AR in dim 2, AG in dim 1, AG in
+      // dim 0. Currently, queues are allocated per dimension. If we allocate
+      // all queues in a dimension to both phases of a single dimension, a race
+      // / deadlock condition may occur. Therefore, in these cases, we have to
+      // allocate half of the queues to the first phase, and the remaining half
+      // to the second phase. (For example, in the above 2D case, if we have 4
+      // queues per dim, queues 0~1 are allocated to phase 0, queues 2~3 are
+      // allocated to phase 2. For details, refer to
+      // https://github.com/astra-sim/astra-sim/issues/137 and the linked
+      // document.
+
+      int dim = 0;
+      int last_active_dim = 0;
+      for (dim = 0; dim < topology->get_num_of_dimensions(); dim++) {
+        if (topology->get_num_of_nodes_in_dimension(dim_mapper[dim]) != 1 &&
+            dimensions_involved[dim_mapper[dim]]) {
+          last_active_dim = dim;
+        }
+      }
+
+      // Create collective phase for each dimension, excluding the last
+      // dimension, in ascending order.
+      for (dim = 0; dim < last_active_dim; dim++) {
+        if (topology->get_num_of_nodes_in_dimension(dim_mapper[dim]) == 1 ||
+            !dimensions_involved[dim_mapper[dim]]) {
+          continue;
+        }
+        // Allocate the first half of queues available to this dimension.
+        pair<int, RingTopology::Direction> queue =
+            vLevels->get_next_queue_at_level_first(dim_mapper[dim]);
+        CollectivePhase phase = generate_collective_phase(
+            ComType::Reduce_Scatter,
+            topology->get_basic_topology_at_dimension(
+                dim_mapper[dim], ComType::Reduce_Scatter),
+            remain_size,
+            queue.first,
+            queue.second,
+            InjectionPolicy::Normal,
+            implementation_per_dimension[dim_mapper[dim]]);
+        vect.push_back(phase);
+        remain_size = phase.final_data_size;
+      }
+      while (dim > 0 &&
+             (dimensions_involved[dim_mapper[dim]] == false ||
+              topology->get_num_of_nodes_in_dimension(dim_mapper[dim]) == 1)) {
+        dim--;
+      }
+
+      // The last dimension is the 'turning point'. Only one collective phase is
+      // created.
+      if (dimensions_involved[dim_mapper[dim]] &&
+          topology->get_num_of_nodes_in_dimension(dim_mapper[dim]) > 1) {
+        // Despite only one collective phase being allocated to the last
+        // dimension, we only allocate half of the queues available to this
+        // dimension. This is because we want to match the number of queues
+        // allocated to each collective phase. Processing phases for this dim in
+        // n parallel queues, and queueing the next phases in n/2 parallel
+        // queues could cause another deadlock. Refer to the PR #135 for more
+        // details.
+        pair<int, RingTopology::Direction> queue =
+            vLevels->get_next_queue_at_level_first(dim_mapper[dim]);
+        CollectivePhase phase = generate_collective_phase(
+            ComType::All_Reduce,
+            topology->get_basic_topology_at_dimension(
+                dim_mapper[dim], ComType::All_Reduce),
+            remain_size,
+            queue.first,
+            queue.second,
+            InjectionPolicy::Normal,
+            implementation_per_dimension[dim_mapper[dim]]);
+        vect.push_back(phase);
+        remain_size = phase.final_data_size;
+      }
+      dim--;
+
+      // Create collective phases for each dimension, excluding the last
+      // dimension, in descending order.
+      for (; dim >= 0; dim--) {
+        if (topology->get_num_of_nodes_in_dimension(dim_mapper[dim]) == 1 ||
+            !dimensions_involved[dim_mapper[dim]]) {
+          continue;
+        }
+        // Allocate the second half of queues available to this dimension.
+        pair<int, RingTopology::Direction> queue =
+            vLevels->get_next_queue_at_level_last(dim_mapper[dim]);
+        CollectivePhase phase = generate_collective_phase(
+            ComType::All_Gather,
+            topology->get_basic_topology_at_dimension(
+                dim_mapper[dim], ComType::All_Gather),
+            remain_size,
+            queue.first,
+            queue.second,
+            InjectionPolicy::Normal,
+            implementation_per_dimension[dim_mapper[dim]]);
+        vect.push_back(phase);
+        remain_size = phase.final_data_size;
+      }
     }
 }
 
-DataSet* Sys::generate_all_reduce(uint64_t size,
-                                  vector<bool> involved_dimensions,
-                                  CommunicatorGroup* communicator_group,
-                                  int explicit_priority) {
-    if (communicator_group == nullptr) {
-        return generate_collective(size, logical_topologies["AllReduce"], all_reduce_implementation_per_dimension,
-                                   involved_dimensions, ComType::All_Reduce, explicit_priority, communicator_group);
-    } else {
-        CollectivePlan* plan = communicator_group->get_collective_plan(ComType::All_Reduce);
-        return generate_collective(size, plan->topology, plan->implementation_per_dimension, plan->dimensions_involved,
-                                   ComType::All_Reduce, explicit_priority, communicator_group);
-    }
-}
-
-DataSet* Sys::generate_all_to_all(uint64_t size,
-                                  vector<bool> involved_dimensions,
-                                  CommunicatorGroup* communicator_group,
-                                  int explicit_priority) {
-    if (communicator_group == nullptr) {
-        return generate_collective(size, logical_topologies["AllToAll"], all_to_all_implementation_per_dimension,
-                                   involved_dimensions, ComType::All_to_All, explicit_priority, communicator_group);
-    } else {
-        CollectivePlan* plan = communicator_group->get_collective_plan(ComType::All_to_All);
-        return generate_collective(size, plan->topology, plan->implementation_per_dimension, plan->dimensions_involved,
-                                   ComType::All_to_All, explicit_priority, communicator_group);
-    }
-}
-
-DataSet* Sys::generate_all_gather(uint64_t size,
-                                  vector<bool> involved_dimensions,
-                                  CommunicatorGroup* communicator_group,
-                                  int explicit_priority) {
-    if (communicator_group == nullptr) {
-        return generate_collective(size, logical_topologies["AllGather"], all_gather_implementation_per_dimension,
-                                   involved_dimensions, ComType::All_Gather, explicit_priority, communicator_group);
-    } else {
-        CollectivePlan* plan = communicator_group->get_collective_plan(ComType::All_Gather);
-        return generate_collective(size, plan->topology, plan->implementation_per_dimension, plan->dimensions_involved,
-                                   ComType::All_Gather, explicit_priority, communicator_group);
-    }
-}
-
-DataSet* Sys::generate_reduce_scatter(uint64_t size,
-                                      vector<bool> involved_dimensions,
-                                      CommunicatorGroup* communicator_group,
-                                      int explicit_priority) {
-    if (communicator_group == nullptr) {
-        return generate_collective(size, logical_topologies["ReduceScatter"],
-                                   reduce_scatter_implementation_per_dimension, involved_dimensions,
-                                   ComType::Reduce_Scatter, explicit_priority, communicator_group);
-    } else {
-        CollectivePlan* plan = communicator_group->get_collective_plan(ComType::Reduce_Scatter);
-        return generate_collective(size, plan->topology, plan->implementation_per_dimension, plan->dimensions_involved,
-                                   ComType::Reduce_Scatter, explicit_priority, communicator_group);
-    }
-}
-
-DataSet* Sys::generate_collective(uint64_t size,
-                                  LogicalTopology* topology,
-                                  vector<CollectiveImpl*> implementation_per_dimension,
-                                  vector<bool> dimensions_involved,
-                                  ComType collective_type,
-                                  int explicit_priority,
-                                  CommunicatorGroup* communicator_group) {
-    uint64_t chunk_size = determine_chunk_size(size, collective_type);
-    uint64_t recommended_chunk_size = chunk_size;
-    int streams = ceil(((double)size) / chunk_size);
-    uint64_t remain_size;
-    DataSet* dataset = new DataSet(streams);
-    int pri = get_priority(explicit_priority);
-    int count = 0;
-    if (id == 0 && (inter_dimension_scheduling == InterDimensionScheduling::OfflineGreedy ||
-                    inter_dimension_scheduling == InterDimensionScheduling::OfflineGreedyFlex)) {
-        if (last_scheduled_collective != Sys::boostedTick()) {
-            offline_greedy->reset_loads();
-            last_scheduled_collective = Sys::boostedTick();
-        }
-    }
-
-    while (size > 0) {
-        count++;
-
-        vector<int> dim_mapper(topology->get_num_of_dimensions());
-        iota(begin(dim_mapper), end(dim_mapper), 0);
-        if (collective_type == ComType::All_Gather) {
-            reverse(dim_mapper.begin(), dim_mapper.end());
-        }
-
-        if (inter_dimension_scheduling == InterDimensionScheduling::RoundRobin) {
-            rotate(dim_mapper.begin(), dim_mapper.begin() + round_robin_inter_dimension_scheduler, dim_mapper.end());
-            round_robin_inter_dimension_scheduler++;
-            if (round_robin_inter_dimension_scheduler == topology->get_num_of_dimensions()) {
-                round_robin_inter_dimension_scheduler = 0;
-            }
-        } else if (collective_type != ComType::All_to_All &&
-                   (inter_dimension_scheduling == InterDimensionScheduling::OfflineGreedy ||
-                    inter_dimension_scheduling == InterDimensionScheduling::OfflineGreedyFlex)) {
-            uint64_t prev_size = size;
-            dim_mapper =
-                offline_greedy->get_chunk_scheduling(num_streams, size, recommended_chunk_size, dimensions_involved,
-                                                     inter_dimension_scheduling, collective_type);
-            chunk_size = prev_size - size;
-        }
-
-        if (collective_type == ComType::All_to_All ||
-            (inter_dimension_scheduling != InterDimensionScheduling::OfflineGreedy &&
-             inter_dimension_scheduling != InterDimensionScheduling::OfflineGreedyFlex)) {
-            if (chunk_size > size) {
-                size = 0;
-            } else {
-                size -= chunk_size;
-            }
-        }
-        remain_size = chunk_size;
-        list<CollectivePhase> vect;
-
-        if (collective_type != ComType::All_Reduce || collectiveOptimization == CollectiveOptimization::Baseline) {
-            for (int dim = 0; dim < topology->get_num_of_dimensions(); dim++) {
-                if (topology->get_num_of_nodes_in_dimension(dim_mapper[dim]) == 1 ||
-                    !dimensions_involved[dim_mapper[dim]]) {
-                    continue;
-                }
-                pair<int, RingTopology::Direction> queue = vLevels->get_next_queue_at_level(dim_mapper[dim]);
-                CollectivePhase phase = generate_collective_phase(
-                    collective_type, topology->get_basic_topology_at_dimension(dim_mapper[dim], collective_type),
-                    remain_size, queue.first, queue.second, InjectionPolicy::Normal,
-                    implementation_per_dimension[dim_mapper[dim]]);
-                vect.push_back(phase);
-                remain_size = phase.final_data_size;
-            }
-        } else if (inter_dimension_scheduling == InterDimensionScheduling::OfflineGreedy ||
-                   inter_dimension_scheduling == InterDimensionScheduling::OfflineGreedyFlex ||
-                   inter_dimension_scheduling == InterDimensionScheduling::OnlineGreedy) {
-            int dim = 0;
-
-            // Create collective phase for each dimension in ascending order.
-            for (dim = 0; dim < topology->get_num_of_dimensions(); dim++) {
-                if (topology->get_num_of_nodes_in_dimension(dim_mapper[dim]) == 1 ||
-                    !dimensions_involved[dim_mapper[dim]]) {
-                    continue;
-                }
-                pair<int, RingTopology::Direction> queue = vLevels->get_next_queue_at_level_first(dim_mapper[dim]);
-                CollectivePhase phase = generate_collective_phase(
-                    ComType::Reduce_Scatter,
-                    topology->get_basic_topology_at_dimension(dim_mapper[dim], ComType::Reduce_Scatter), remain_size,
-                    queue.first, queue.second, InjectionPolicy::Normal, implementation_per_dimension[dim_mapper[dim]]);
-                vect.push_back(phase);
-                remain_size = phase.final_data_size;
-            }
-            dim--;
-
-            // Create collective phases for each dimension in descending order.
-            for (; dim >= 0; dim--) {
-                if (topology->get_num_of_nodes_in_dimension(dim_mapper[dim]) == 1 ||
-                    !dimensions_involved[dim_mapper[dim]]) {
-                    continue;
-                }
-                pair<int, RingTopology::Direction> queue = vLevels->get_next_queue_at_level_last(dim_mapper[dim]);
-                CollectivePhase phase = generate_collective_phase(
-                    ComType::All_Gather,
-                    topology->get_basic_topology_at_dimension(dim_mapper[dim], ComType::All_Gather), remain_size,
-                    queue.first, queue.second, InjectionPolicy::Normal, implementation_per_dimension[dim_mapper[dim]]);
-                vect.push_back(phase);
-                remain_size = phase.final_data_size;
-            }
-        } else {
-            // In this branch, and the branch directly above, a collective visits each
-            // dimension (excluding the last dimension) twice. Specifically, for
-            // example, in 2D AllReduce, there would be 3 collective phases: Phase 0:
-            // Reduce Scatter in dim 0, Phase 1: All Gather in dim 1, Phase 2: All
-            // Reduce in dim 2 Similarly, in 3D AllReduce, there would be 5 collective
-            // phases: RS in dim 0, RS in dim 1, AG in dim 2, AR in dim 3, AR in
-            // dim 4. Currently, queues are allocated per dimension. If we allocate
-            // all queues in a dimension to both phases of a single dimension, a race
-            // / deadlock condition may occur. Therefore, in these cases, we have to
-            // allocate half of the queues to the first phase, and the remaining half
-            // to the second phase. (For example, in the above 2D case, if we have 4
-            // queues per dim, queues 0~1 are allocated to phase 0, queues 2~3 are
-            // allocated to phase 2. For details, refer to
-            // https://github.com/astra-sim/astra-sim/issues/137 and the linked
-            // document.
-
-            int dim = 0;
-            int last_active_dim = 0;
-            for (dim = 0; dim < topology->get_num_of_dimensions(); dim++) {
-                if (topology->get_num_of_nodes_in_dimension(dim_mapper[dim]) != 1 &&
-                    dimensions_involved[dim_mapper[dim]]) {
-                    last_active_dim = dim;
-                }
-            }
-
-            // Create collective phase for each dimension, excluding the last
-            // dimension, in ascending order.
-            for (dim = 0; dim < last_active_dim; dim++) {
-                if (topology->get_num_of_nodes_in_dimension(dim_mapper[dim]) == 1 ||
-                    !dimensions_involved[dim_mapper[dim]]) {
-                    continue;
-                }
-                // Allocate the first half of queues available to this dimension.
-                pair<int, RingTopology::Direction> queue = vLevels->get_next_queue_at_level_first(dim_mapper[dim]);
-                CollectivePhase phase = generate_collective_phase(
-                    ComType::Reduce_Scatter,
-                    topology->get_basic_topology_at_dimension(dim_mapper[dim], ComType::Reduce_Scatter), remain_size,
-                    queue.first, queue.second, InjectionPolicy::Normal, implementation_per_dimension[dim_mapper[dim]]);
-                vect.push_back(phase);
-                remain_size = phase.final_data_size;
-            }
-            while (dim > 0 && (dimensions_involved[dim_mapper[dim]] == false ||
-                               topology->get_num_of_nodes_in_dimension(dim_mapper[dim]) == 1)) {
-                dim--;
-            }
-
-            // The last dimension is the 'turning point'. Only one collective phase is
-            // created.
-            if (dimensions_involved[dim_mapper[dim]] && topology->get_num_of_nodes_in_dimension(dim_mapper[dim]) > 1) {
-                // Despite only one collective phase being allocated to the last
-                // dimension, we only allocate half of the queues available to this
-                // dimension. This is because we want to match the number of queues
-                // allocated to each collective phase. Processing phases for this dim in
-                // n parallel queues, and queueing the next phases in n/2 parallel
-                // queues could cause another deadlock. Refer to the PR #135 for more
-                // details.
-                pair<int, RingTopology::Direction> queue = vLevels->get_next_queue_at_level_first(dim_mapper[dim]);
-                CollectivePhase phase = generate_collective_phase(
-                    ComType::All_Reduce,
-                    topology->get_basic_topology_at_dimension(dim_mapper[dim], ComType::All_Reduce), remain_size,
-                    queue.first, queue.second, InjectionPolicy::Normal, implementation_per_dimension[dim_mapper[dim]]);
-                vect.push_back(phase);
-                remain_size = phase.final_data_size;
-            }
-            dim--;
-
-            // Create collective phases for each dimension, excluding the last
-            // dimension, in descending order.
-            for (; dim >= 0; dim--) {
-                if (topology->get_num_of_nodes_in_dimension(dim_mapper[dim]) == 1 ||
-                    !dimensions_involved[dim_mapper[dim]]) {
-                    continue;
-                }
-                // Allocate the second half of queues available to this dimension.
-                pair<int, RingTopology::Direction> queue = vLevels->get_next_queue_at_level_last(dim_mapper[dim]);
-                CollectivePhase phase = generate_collective_phase(
-                    ComType::All_Gather,
-                    topology->get_basic_topology_at_dimension(dim_mapper[dim], ComType::All_Gather), remain_size,
-                    queue.first, queue.second, InjectionPolicy::Normal, implementation_per_dimension[dim_mapper[dim]]);
-                vect.push_back(phase);
-                remain_size = phase.final_data_size;
-            }
-        }
-        if (vect.size() > 0) {
-            int stream_id = num_streams++;
-            if (communicator_group != nullptr) {
-                stream_id = communicator_group->num_streams++;
-            }
-            StreamBaseline* newStream = new StreamBaseline(this, dataset, stream_id, vect, pri);
-            newStream->current_queue_id = -1;
-            insert_into_ready_list(newStream);
-        } else {
-            dataset->active = false;
-            break;
-        }
-    }
-    if (dataset->active) {
-        dataset->total_streams = count;
-    }
-    return dataset;
-}
-
-CollectivePhase Sys::generate_collective_phase(ComType collective_type,
-                                               BasicLogicalTopology* topology,
-                                               uint64_t data_size,
-                                               int queue_id,
-                                               RingTopology::Direction direction,
-                                               InjectionPolicy injection_policy,
-                                               CollectiveImpl* collective_impl) {
-    if (collective_impl->type == CollectiveImplType::Ring || collective_impl->type == CollectiveImplType::OneRing) {
-        CollectivePhase vn(
-            this, queue_id,
-            new Ring(collective_type, id, (RingTopology*)topology, data_size, direction, injection_policy));
-        return vn;
-    } else if (collective_impl->type == CollectiveImplType::Direct ||
-               collective_impl->type == CollectiveImplType::OneDirect) {
-        CollectivePhase vn(this, queue_id,
-                           new AllToAll(collective_type,
-                                        ((DirectCollectiveImpl*)collective_impl)->direct_collective_window, id,
-                                        (RingTopology*)topology, data_size, direction, InjectionPolicy::Normal));
-        return vn;
-    } else if (collective_impl->type == CollectiveImplType::DoubleBinaryTree) {
-        CollectivePhase vn(this, queue_id, new DoubleBinaryTreeAllReduce(id, (BinaryTree*)topology, data_size));
-        return vn;
-    } else if (collective_impl->type == CollectiveImplType::HalvingDoubling ||
-               collective_impl->type == CollectiveImplType::OneHalvingDoubling) {
-        CollectivePhase vn(this, queue_id,
-                           new HalvingDoubling(collective_type, id, (RingTopology*)topology, data_size));
-        return vn;
-    } else if (collective_impl->type == CollectiveImplType::ChakraImpl) {
-        string filename = ((ChakraCollectiveImpl*)collective_impl)->filename;
-        CollectivePhase vn(this, queue_id, new ChakraImpl(filename, id));
-        return vn;
-    } else {
-        cerr << "Error: No known collective implementation for collective phase" << endl;
-        exit(1);
-    }
+CollectivePhase Sys::generate_collective_phase(
+    ComType collective_type,
+    BasicLogicalTopology* topology,
+    uint64_t data_size,
+    int queue_id,
+    RingTopology::Direction direction,
+    InjectionPolicy injection_policy,
+    CollectiveImpl* collective_impl) {
+  if (collective_impl->type == CollectiveImplType::Ring ||
+      collective_impl->type == CollectiveImplType::OneRing) {
+    CollectivePhase vn(
+        this,
+        queue_id,
+        new Ring(
+            collective_type,
+            id,
+            (RingTopology*)topology,
+            data_size,
+            direction,
+            injection_policy));
+    return vn;
+  } else if (
+      collective_impl->type == CollectiveImplType::Direct ||
+      collective_impl->type == CollectiveImplType::OneDirect) {
+    CollectivePhase vn(
+        this,
+        queue_id,
+        new AllToAll(
+            collective_type,
+            ((DirectCollectiveImpl*)collective_impl)->direct_collective_window,
+            id,
+            (RingTopology*)topology,
+            data_size,
+            direction,
+            InjectionPolicy::Normal));
+    return vn;
+  } else if (collective_impl->type == CollectiveImplType::DoubleBinaryTree) {
+    CollectivePhase vn(
+        this,
+        queue_id,
+        new DoubleBinaryTreeAllReduce(id, (BinaryTree*)topology, data_size));
+    return vn;
+  } else if (
+      collective_impl->type == CollectiveImplType::HalvingDoubling ||
+      collective_impl->type == CollectiveImplType::OneHalvingDoubling) {
+    CollectivePhase vn(
+        this,
+        queue_id,
+        new HalvingDoubling(
+            collective_type, id, (RingTopology*)topology, data_size));
+    return vn;
+  } else if (
+      collective_impl->type == CollectiveImplType::ChakraImpl) {
+    string filename = ((ChakraCollectiveImpl*)collective_impl)->filename;
+    CollectivePhase vn(
+        this,
+        queue_id,
+        new ChakraImpl(filename, id));
+      return vn;      
+  } else {
+    LoggerFactory::get_logger("system")->critical(
+        "Error: No known collective implementation for collective phase");
+    exit(1);
+  }
 }
 
 int Sys::break_dimension(int model_parallel_npu_group) {
@@ -1270,80 +1223,142 @@ void Sys::proceed_to_next_vnet_baseline(StreamBaseline* stream) {
     scheduler_unit->notify_stream_added(stream->current_queue_id);
 }
 
-int Sys::front_end_sim_send(Tick delay,
-                            void* buffer,
-                            uint64_t count,
-                            int type,
-                            int dst,
-                            int tag,
-                            sim_request* request,
-                            void (*msg_handler)(void* fun_arg),
-                            void* fun_arg) {
-    if (rendezvous_enabled) {
-        return rendezvous_sim_send(delay, buffer, count, type, dst, tag, request, msg_handler, fun_arg);
-    } else {
-        return sim_send(delay, buffer, count, type, dst, tag, request, msg_handler, fun_arg);
-    }
+int Sys::front_end_sim_send(
+    Tick delay,
+    void* buffer,
+    uint64_t count,
+    int type,
+    int dst,
+    int tag,
+    sim_request* request,
+    Sys::FrontEndSendRecvType send_type,
+    void (*msg_handler)(void* fun_arg),
+    void* fun_arg) {
+  if (send_type == Sys::FrontEndSendRecvType::NATIVE)
+    tag = tag %
+            (Sys::FrontEndSendRecvType::COLLECTIVE -
+             Sys::FrontEndSendRecvType::NATIVE) +
+        Sys::FrontEndSendRecvType::NATIVE;
+  else if (send_type == Sys::FrontEndSendRecvType::COLLECTIVE)
+    tag = tag %
+            (Sys::FrontEndSendRecvType::RENDEZVOUS -
+             Sys::FrontEndSendRecvType::COLLECTIVE) +
+        Sys::FrontEndSendRecvType::COLLECTIVE;
+  else
+    sys_panic("A type of RENDZVOUS should never issued in frontend");
+  if (rendezvous_enabled) {
+    return rendezvous_sim_send(
+        delay, buffer, count, type, dst, tag, request, msg_handler, fun_arg);
+  } else {
+    return sim_send(
+        delay, buffer, count, type, dst, tag, request, msg_handler, fun_arg);
+  }
 }
 
-int Sys::front_end_sim_recv(Tick delay,
-                            void* buffer,
-                            uint64_t count,
-                            int type,
-                            int src,
-                            int tag,
-                            sim_request* request,
-                            void (*msg_handler)(void* fun_arg),
-                            void* fun_arg) {
-    if (rendezvous_enabled) {
-        return rendezvous_sim_recv(delay, buffer, count, type, src, tag, request, msg_handler, fun_arg);
-    } else {
-        return sim_recv(delay, buffer, count, type, src, tag, request, msg_handler, fun_arg);
-    }
+int Sys::front_end_sim_recv(
+    Tick delay,
+    void* buffer,
+    uint64_t count,
+    int type,
+    int src,
+    int tag,
+    sim_request* request,
+    Sys::FrontEndSendRecvType recv_type,
+    void (*msg_handler)(void* fun_arg),
+    void* fun_arg) {
+  if (recv_type == Sys::FrontEndSendRecvType::NATIVE)
+    tag = tag %
+            (Sys::FrontEndSendRecvType::COLLECTIVE -
+             Sys::FrontEndSendRecvType::NATIVE) +
+        Sys::FrontEndSendRecvType::NATIVE;
+  else if (recv_type == Sys::FrontEndSendRecvType::COLLECTIVE)
+    tag = tag %
+            (Sys::FrontEndSendRecvType::RENDEZVOUS -
+             Sys::FrontEndSendRecvType::COLLECTIVE) +
+        Sys::FrontEndSendRecvType::COLLECTIVE;
+  else
+    sys_panic("A type of RENDZVOUS should never issued in frontend");
+  if (rendezvous_enabled) {
+    return rendezvous_sim_recv(
+        delay, buffer, count, type, src, tag, request, msg_handler, fun_arg);
+  } else {
+    return sim_recv(
+        delay, buffer, count, type, src, tag, request, msg_handler, fun_arg);
+  }
 }
 
-int Sys::rendezvous_sim_send(Tick delay,
-                             void* buffer,
-                             uint64_t count,
-                             int type,
-                             int dst,
-                             int tag,
-                             sim_request* request,
-                             void (*msg_handler)(void* fun_arg),
-                             void* fun_arg) {
-    RendezvousSendData* rsd =
-        new RendezvousSendData(id, this, buffer, count, type, dst, tag, *request, msg_handler, fun_arg);
-    sim_request newReq = *request;
-    uint64_t rendevouz_size = 8192;
-    newReq.dstRank = request->srcRank;
-    newReq.srcRank = request->dstRank;
-    newReq.reqCount = rendevouz_size;
-    int newTag = tag + 500000000;
-    newReq.tag = newTag;
-    sim_recv(delay, buffer, rendevouz_size, type, dst, newTag, &newReq, &Sys::handleEvent, rsd);
-    return 1;
+int Sys::rendezvous_sim_send(
+    Tick delay,
+    void* buffer,
+    uint64_t count,
+    int type,
+    int dst,
+    int tag,
+    sim_request* request,
+    void (*msg_handler)(void* fun_arg),
+    void* fun_arg) {
+  if (tag >= Sys::FrontEndSendRecvType::RENDEZVOUS) {
+    sys_panic(
+        "tag is bigger than RENDEZVOUS_COMM_TAG_OFFSET, \
+        which means it might be mistakenly used as a rendezvous tag.");
+  }
+  RendezvousSendData* rsd = new RendezvousSendData(
+      id, this, buffer, count, type, dst, tag, *request, msg_handler, fun_arg);
+  sim_request newReq = *request;
+  uint64_t rendevouz_size = 8192;
+  newReq.dstRank = request->srcRank;
+  newReq.srcRank = request->dstRank;
+  newReq.reqCount = rendevouz_size;
+  int newTag = tag + Sys::FrontEndSendRecvType::RENDEZVOUS;
+  newReq.tag = newTag;
+  sim_recv(
+      delay,
+      buffer,
+      rendevouz_size,
+      type,
+      dst,
+      newTag,
+      &newReq,
+      &Sys::handleEvent,
+      rsd);
+  return 1;
 }
 
-int Sys::rendezvous_sim_recv(Tick delay,
-                             void* buffer,
-                             uint64_t count,
-                             int type,
-                             int src,
-                             int tag,
-                             sim_request* request,
-                             void (*msg_handler)(void* fun_arg),
-                             void* fun_arg) {
-    RendezvousRecvData* rrd =
-        new RendezvousRecvData(id, this, buffer, count, type, src, tag, *request, msg_handler, fun_arg);
-    sim_request newReq = *request;
-    uint64_t rendevouz_size = 8192;
-    newReq.dstRank = request->srcRank;
-    newReq.srcRank = request->dstRank;
-    newReq.reqCount = rendevouz_size;
-    int newTag = tag + 500000000;
-    newReq.tag = newTag;
-    sim_send(delay, buffer, rendevouz_size, type, src, newTag, &newReq, &Sys::handleEvent, rrd);
-    return 1;
+int Sys::rendezvous_sim_recv(
+    Tick delay,
+    void* buffer,
+    uint64_t count,
+    int type,
+    int src,
+    int tag,
+    sim_request* request,
+    void (*msg_handler)(void* fun_arg),
+    void* fun_arg) {
+  if (tag >= Sys::FrontEndSendRecvType::RENDEZVOUS) {
+    sys_panic(
+        "tag is bigger than RENDEZVOUS_COMM_TAG_OFFSET, \
+        which means it might be mistakenly used as a rendezvous tag.");
+  }
+  RendezvousRecvData* rrd = new RendezvousRecvData(
+      id, this, buffer, count, type, src, tag, *request, msg_handler, fun_arg);
+  sim_request newReq = *request;
+  uint64_t rendevouz_size = 8192;
+  newReq.dstRank = request->srcRank;
+  newReq.srcRank = request->dstRank;
+  newReq.reqCount = rendevouz_size;
+  int newTag = tag + Sys::FrontEndSendRecvType::RENDEZVOUS;
+  newReq.tag = newTag;
+  sim_send(
+      delay,
+      buffer,
+      rendevouz_size,
+      type,
+      src,
+      newTag,
+      &newReq,
+      &Sys::handleEvent,
+      rrd);
+  return 1;
 }
 
 int Sys::sim_send(Tick delay,

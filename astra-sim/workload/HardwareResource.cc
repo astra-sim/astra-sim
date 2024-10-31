@@ -20,27 +20,31 @@ HardwareResource::HardwareResource(uint32_t num_npus)
       num_in_flight_gpu_comp_ops(0) {}
 
 void HardwareResource::occupy(const shared_ptr<Chakra::ETFeederNode> node) {
-    if (node->is_cpu_op()) {
-        assert(num_in_flight_cpu_ops == 0);
-        ++num_in_flight_cpu_ops;
+  if (node->is_cpu_op()) {
+    assert(num_in_flight_cpu_ops == 0);
+    ++num_in_flight_cpu_ops;
+  } else {
+    if (node->type() == ChakraNodeType::COMP_NODE) {
+      assert(num_in_flight_gpu_comp_ops == 0);
+      ++num_in_flight_gpu_comp_ops;
     } else {
-        if (node->type() == ChakraNodeType::COMP_NODE) {
-            assert(num_in_flight_gpu_comp_ops == 0);
-            ++num_in_flight_gpu_comp_ops;
-        } else {
-            if (node->type() == ChakraNodeType::COMM_RECV_NODE) {
-                return;
-            }
-            assert(num_in_flight_gpu_comm_ops == 0);
-            ++num_in_flight_gpu_comm_ops;
-        }
-    }
+      if (node->type() == ChakraNodeType::COMM_RECV_NODE) {
+        return; 
+      }
+      assert(num_in_flight_gpu_comm_ops == 0);
+      ++num_in_flight_gpu_comm_ops;
+      }
+  }
 }
 
 void HardwareResource::release(const shared_ptr<Chakra::ETFeederNode> node) {
-    if (node->is_cpu_op()) {
-        --num_in_flight_cpu_ops;
-        assert(num_in_flight_cpu_ops == 0);
+  if (node->is_cpu_op()) {
+    --num_in_flight_cpu_ops;
+    assert(num_in_flight_cpu_ops == 0);
+  } else {
+    if (node->type() == ChakraNodeType::COMP_NODE) {
+      --num_in_flight_gpu_comp_ops;
+      assert(num_in_flight_gpu_comp_ops == 0);
     } else {
         if (node->type() == ChakraNodeType::COMP_NODE) {
             --num_in_flight_gpu_comp_ops;
@@ -55,29 +59,33 @@ void HardwareResource::release(const shared_ptr<Chakra::ETFeederNode> node) {
     }
 }
 
-bool HardwareResource::is_available(const shared_ptr<Chakra::ETFeederNode> node) const {
-    if (node->is_cpu_op()) {
-        if (num_in_flight_cpu_ops == 0) {
-            return true;
-        } else {
-            return false;
-        }
+bool HardwareResource::is_available(
+    const shared_ptr<Chakra::ETFeederNode> node) const {
+  if (node->is_cpu_op()) {
+    if (num_in_flight_cpu_ops == 0) {
+      return true;
     } else {
-        if (node->type() == ChakraNodeType::COMP_NODE) {
-            if (num_in_flight_gpu_comp_ops == 0) {
-                return true;
-            } else {
-                return false;
-            }
-        } else {
-            if (node->type() == ChakraNodeType::COMM_RECV_NODE) {
-                return true;
-            }
-            if (num_in_flight_gpu_comm_ops == 0) {
-                return true;
-            } else {
-                return false;
-            }
-        }
+      return false;
     }
+  } else {
+    if (node->type() == ChakraNodeType::COMP_NODE) {
+      if (num_in_flight_gpu_comp_ops == 0) {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      if (num_in_flight_gpu_comm_ops == 0) {
+        return true;
+      } else {
+        if (node->type() == ChakraNodeType::COMM_RECV_NODE){
+          return true;
+        }
+        if (num_in_flight_gpu_comm_ops == 0) {
+          return true;
+        }
+        return false;
+      }
+    }
+  }
 }

@@ -25,7 +25,7 @@ function compile {
 }
 function run {
     cd "${NS3_DIR}/build/scratch"
-    ./ns3-dev-AstraSimNetwork-default \
+    ./ns3.42-AstraSimNetwork-default \
         --workload-configuration=${WORKLOAD} \
         --system-configuration=${SYSTEM} \
         --network-configuration=${NETWORK} \
@@ -47,7 +47,7 @@ function debug {
     ./ns3 configure --enable-mpi --build-profile debug
     ./ns3 build AstraSimNetwork -j 12 -v
     cd "${NS3_DIR}/build/scratch"
-    gdb --args "${NS3_DIR}/build/scratch/ns3-dev-AstraSimNetwork-debug" \
+    gdb --args "${NS3_DIR}/build/scratch/ns3.42-AstraSimNetwork-debug" \
         --workload-configuration=${WORKLOAD} \
         --system-configuration=${SYSTEM} \
         --network-configuration=${NETWORK} \
@@ -57,7 +57,7 @@ function debug {
 }
 function special_debug {
     cd "${NS3_DIR}/build/scratch"
-    valgrind --leak-check=yes "${NS3_DIR}/build/scratch/ns3-dev-AstraSimNetwork-default" \
+    valgrind --leak-check=yes "${NS3_DIR}/build/scratch/ns3.42-AstraSimNetwork-default" \
         --workload-configuration=${WORKLOAD} \
         --system-configuration=${SYSTEM} \
         --network-configuration=${NETWORK} \

@@ -1,16 +1,18 @@
 [submodule "extern/network_backend/analytical"]
 	path = extern/network_backend/analytical
 	url = git@github.com:astra-sim/astra-network-analytical.git
-[submodule "extern/graph_frontend/param"]
-	path = extern/graph_frontend/param
-	url = git@github.com:facebookresearch/param.git
-	branch = main
+[submodule "extern/network_backend/garnet/gem5_astra"]
+	path = extern/network_backend/garnet/gem5_astra
+	url = git@github.com:astra-sim/astra-network-garnet.git
 [submodule "extern/remote_memory_backend/analytical"]
 	path = extern/remote_memory_backend/analytical
 	url = git@github.com:astra-sim/astra-memory-analytical.git
 [submodule "extern/network_backend/ns-3"]
 	path = extern/network_backend/ns-3
 	url = git@github.com:astra-sim/astra-network-ns3.git
-[submodule "extern/graph_frontend/chakra"]
-	path = extern/graph_frontend/chakra
-	url = git@github.com:willjwon/chakra-tutorial
+[submodule "extern/helper/fmt"]
+	path = extern/helper/fmt
+	url = git@github.com:fmtlib/fmt.git
+[submodule "extern/helper/spdlog"]
+	path = extern/helper/spdlog
+	url = git@github.com:gabime/spdlog.git

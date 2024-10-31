@@ -31,10 +31,15 @@ SimSendCaller::SimSendCaller(Sys* sys,
 }
 
 void SimSendCaller::call(EventType type, CallData* data) {
-    // std::cout<<"sysid: "<<sys->id<<std::endl;
-    sys->comm_NI->sim_send(this->buffer, this->count, this->type, this->dst, this->tag, &this->request,
-                           this->msg_handler, this->fun_arg);
-    if (should_cleanup) {
-        delete this;
-    }
+  sys->comm_NI->sim_send(
+      this->buffer,
+      this->count,
+      this->type,
+      this->dst,
+      this->tag,
+      &this->request,
+      this->msg_handler,
+      this->fun_arg);
+  if(should_cleanup)
+    delete this;
 }

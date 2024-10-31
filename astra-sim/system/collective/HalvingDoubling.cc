@@ -8,6 +8,7 @@ LICENSE file in the root directory of this source tree.
 #include <cmath>
 #include <iostream>
 
+#include "astra-sim/common/Logging.hh"
 #include "astra-sim/system/PacketBundle.hh"
 #include "astra-sim/system/RecvPacketEventHandlerData.hh"
 
@@ -66,17 +67,18 @@ HalvingDoubling::HalvingDoubling(ComType type, int id, RingTopology* ring_topolo
         this->offset_multiplier = 2;
         break;
     default:
-        std::cerr << "######### Exiting because of unknown communication type for HalvingDoubling collective algorithm "
-                     "#########"
-                  << std::endl;
-        std::exit(1);
-    }
-    RingTopology::Direction direction = specify_direction();
-    this->curr_receiver = id;
-    for (int i = 0; i < rank_offset; i++) {
-        this->curr_receiver = ring_topology->get_receiver(this->curr_receiver, direction);
-        this->curr_sender = curr_receiver;
-    }
+      LoggerFactory::get_logger("system::collective::HalvingDoubling")
+          ->critical(
+              "######### Exiting because of unknown communication type for HalvingDoubling collective algorithm #########");
+      std::exit(1);
+  }
+  RingTopology::Direction direction = specify_direction();
+  this->curr_receiver = id;
+  for (int i = 0; i < rank_offset; i++) {
+    this->curr_receiver =
+        ring_topology->get_receiver(this->curr_receiver, direction);
+    this->curr_sender = curr_receiver;
+  }
 }
 
 int HalvingDoubling::get_non_zero_latency_packets() {
@@ -221,31 +223,52 @@ void HalvingDoubling::insert_packet(Callable* sender) {
 }
 
 bool HalvingDoubling::ready() {
-    if (stream->state == StreamState::Created || stream->state == StreamState::Ready) {
-        stream->changeState(StreamState::Executing);
-    }
-    if (packets.size() == 0 || stream_count == 0 || free_packets == 0) {
-        return false;
-    }
-    MyPacket packet = packets.front();
-    sim_request snd_req;
-    snd_req.srcRank = id;
-    snd_req.dstRank = packet.preferred_dest;
-    snd_req.tag = stream->stream_id;
-    snd_req.reqType = UINT8;
-    snd_req.vnet = this->stream->current_queue_id;
-    stream->owner->front_end_sim_send(0, Sys::dummy_data, packet.msg_size, UINT8, packet.preferred_dest,
-                                      stream->stream_id, &snd_req, &Sys::handleEvent,
-                                      nullptr);  // stream_id+(packet.preferred_dest*50)
-    sim_request rcv_req;
-    rcv_req.vnet = this->stream->current_queue_id;
-    RecvPacketEventHandlerData* ehd = new RecvPacketEventHandlerData(
-        stream, stream->owner->id, EventType::PacketReceived, packet.preferred_vnet, packet.stream_id);
-    stream->owner->front_end_sim_recv(0, Sys::dummy_data, packet.msg_size, UINT8, packet.preferred_src,
-                                      stream->stream_id, &rcv_req, &Sys::handleEvent,
-                                      ehd);  // stream_id+(owner->id*50)
-    reduce();
-    return true;
+  if (stream->state == StreamState::Created ||
+      stream->state == StreamState::Ready) {
+    stream->changeState(StreamState::Executing);
+  }
+  if (packets.size() == 0 || stream_count == 0 || free_packets == 0) {
+    return false;
+  }
+  MyPacket packet = packets.front();
+  sim_request snd_req;
+  snd_req.srcRank = id;
+  snd_req.dstRank = packet.preferred_dest;
+  snd_req.tag = stream->stream_id;
+  snd_req.reqType = UINT8;
+  snd_req.vnet = this->stream->current_queue_id;
+  stream->owner->front_end_sim_send(
+      0,
+      Sys::dummy_data,
+      packet.msg_size,
+      UINT8,
+      packet.preferred_dest,
+      stream->stream_id,
+      &snd_req,
+      Sys::FrontEndSendRecvType::COLLECTIVE,
+      &Sys::handleEvent,
+      nullptr); // stream_id+(packet.preferred_dest*50)
+  sim_request rcv_req;
+  rcv_req.vnet = this->stream->current_queue_id;
+  RecvPacketEventHandlerData* ehd = new RecvPacketEventHandlerData(
+      stream,
+      stream->owner->id,
+      EventType::PacketReceived,
+      packet.preferred_vnet,
+      packet.stream_id);
+  stream->owner->front_end_sim_recv(
+      0,
+      Sys::dummy_data,
+      packet.msg_size,
+      UINT8,
+      packet.preferred_src,
+      stream->stream_id,
+      &rcv_req,
+      Sys::FrontEndSendRecvType::COLLECTIVE,
+      &Sys::handleEvent,
+      ehd); // stream_id+(owner->id*50)
+  reduce();
+  return true;
 }
 
 void HalvingDoubling::exit() {
