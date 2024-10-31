@@ -12,10 +12,11 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/RecvPacketEventHandlerData.hh"
 #include "astra-sim/system/SendPacketEventHandlerData.hh"
 #include "astra-sim/system/WorkloadLayerHandlerData.hh"
+#include <json/json.hpp>
 
+#include <iostream>
 #include <stdlib.h>
 #include <unistd.h>
-#include <iostream>
 
 using namespace std;
 using namespace AstraSim;
@@ -26,18 +27,19 @@ typedef ChakraProtoMsg::NodeType ChakraNodeType;
 typedef ChakraProtoMsg::CollectiveCommType ChakraCollectiveCommType;
 
 Workload::Workload(Sys* sys, string et_filename, string comm_group_filename) {
-  string workload_filename = et_filename + "." + to_string(sys->id) + ".et";
-  // Check if workload filename exists
-  if (access(workload_filename.c_str(), R_OK) < 0) {
-    string error_msg;
-    if (errno == ENOENT) {
-      error_msg = "workload file: " + workload_filename + " does not exist";
-    } else if (errno == EACCES) {
-      error_msg =
-          "workload file: " + workload_filename + " exists but is not readable";
-    } else {
-      error_msg =
-          "Unknown workload file: " + workload_filename + " access error";
+    string workload_filename = et_filename + "." + to_string(sys->id) + ".et";
+    // Check if workload filename exists
+    if (access(workload_filename.c_str(), R_OK) < 0) {
+        string error_msg;
+        if (errno == ENOENT) {
+            error_msg = "workload file: " + workload_filename + " does not exist";
+        } else if (errno == EACCES) {
+            error_msg = "workload file: " + workload_filename + " exists but is not readable";
+        } else {
+            error_msg = "Unknown workload file: " + workload_filename + " access error";
+        }
+        cerr << error_msg << endl;
+        exit(EXIT_FAILURE);
     }
     LoggerFactory::get_logger("workload")->critical(error_msg);
     exit(EXIT_FAILURE);
@@ -52,64 +54,67 @@ Workload::Workload(Sys* sys, string et_filename, string comm_group_filename) {
 }
 
 Workload::~Workload() {
-  if (this->comm_group != nullptr)
-    delete this->comm_group;
-  if (this->et_feeder != nullptr)
-    delete this->et_feeder;
-  if (this->hw_resource != nullptr)
-    delete this->hw_resource;
+    if (this->comm_group != nullptr) {
+        delete this->comm_group;
+    }
+    if (this->et_feeder != nullptr) {
+        delete this->et_feeder;
+    }
+    if (this->hw_resource != nullptr) {
+        delete this->hw_resource;
+    }
 }
 
 void Workload::initialize_comm_group(string comm_group_filename) {
-  // communicator group input file is not given
-  if (comm_group_filename.find("empty") != std::string::npos) {
-    comm_group = nullptr;
-    return;
-  }
-
-  ifstream inFile;
-  json j;
-  inFile.open(comm_group_filename);
-  inFile >> j;
-
-  for (json::iterator it = j.begin(); it != j.end(); ++it) {
-    bool in_comm_group = false;
-
-    for (auto id : it.value()) {
-      if (id == sys->id) {
-        in_comm_group = true;
-      }
+    // communicator group input file is not given
+    if (comm_group_filename.find("empty") != std::string::npos) {
+        comm_group = nullptr;
+        return;
     }
 
-    if (in_comm_group) {
-      std::vector<int> involved_NPUs;
-      for (auto id : it.value()) {
-        involved_NPUs.push_back(id);
-      }
-      comm_group = new CommunicatorGroup(1, involved_NPUs, sys);
-      // Note: All NPUs should create comm group with identical ids if they want
-      // to communicate with each other
+    ifstream inFile;
+    json j;
+    inFile.open(comm_group_filename);
+    inFile >> j;
+
+    for (json::iterator it = j.begin(); it != j.end(); ++it) {
+        bool in_comm_group = false;
+
+        for (auto id : it.value()) {
+            if (id == sys->id) {
+                in_comm_group = true;
+            }
+        }
+
+        if (in_comm_group) {
+            std::vector<int> involved_NPUs;
+            for (auto id : it.value()) {
+                involved_NPUs.push_back(id);
+            }
+            comm_group = new CommunicatorGroup(1, involved_NPUs, sys);
+            // Note: All NPUs should create comm group with identical ids if they want
+            // to communicate with each other
+        }
     }
-  }
 }
 
 void Workload::issue_dep_free_nodes() {
-  std::queue<shared_ptr<Chakra::ETFeederNode>> push_back_queue;
-  shared_ptr<Chakra::ETFeederNode> node = et_feeder->getNextIssuableNode();
-  while (node != nullptr) {
-    if (hw_resource->is_available(node)) {
-      issue(node);
-    } else {
-      push_back_queue.push(node);
+    std::queue<shared_ptr<Chakra::ETFeederNode>> push_back_queue;
+    shared_ptr<Chakra::ETFeederNode> node = et_feeder->getNextIssuableNode();
+    while (node != nullptr) {
+        if (hw_resource->is_available(node)) {
+            issue(node);
+        } else {
+            push_back_queue.push(node);
+        }
+        node = et_feeder->getNextIssuableNode();
     }
-    node = et_feeder->getNextIssuableNode();
-  }
 
-  while (!push_back_queue.empty()) {
-    shared_ptr<Chakra::ETFeederNode> node = push_back_queue.front();
-    et_feeder->pushBackIssuableNode(node->id());
-    push_back_queue.pop();
-  }
+    while (!push_back_queue.empty()) {
+        shared_ptr<Chakra::ETFeederNode> node = push_back_queue.front();
+        et_feeder->pushBackIssuableNode(node->id());
+        push_back_queue.pop();
+    }
 }
 
 void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
@@ -167,34 +172,9 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
     } else if (node->type() == ChakraNodeType::INVALID_NODE) {
       skip_invalid(node);
     }
-  }
 }
 
 void Workload::issue_replay(shared_ptr<Chakra::ETFeederNode> node) {
-  WorkloadLayerHandlerData* wlhd = new WorkloadLayerHandlerData;
-  wlhd->node_id = node->id();
-  uint64_t runtime = 1ul;
-  if (node->runtime() != 0ul)
-    // chakra runtimes are in microseconds and we should convert it into
-    // nanoseconds
-    runtime = node->runtime() * 1000;
-  sys->register_event(this, EventType::General, wlhd, runtime);
-}
-
-void Workload::issue_remote_mem(shared_ptr<Chakra::ETFeederNode> node) {
-  hw_resource->occupy(node);
-
-  WorkloadLayerHandlerData* wlhd = new WorkloadLayerHandlerData;
-  wlhd->sys_id = sys->id;
-  wlhd->workload = this;
-  wlhd->node_id = node->id();
-  sys->remote_mem->issue(node->tensor_size(), wlhd);
-}
-
-void Workload::issue_comp(shared_ptr<Chakra::ETFeederNode> node) {
-  hw_resource->occupy(node);
-
-  if (sys->roofline_enabled) {
     WorkloadLayerHandlerData* wlhd = new WorkloadLayerHandlerData;
     wlhd->node_id = node->id();
 
@@ -274,18 +254,6 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
         // chakra runtimes are in microseconds and we should convert it into
         // nanoseconds
         runtime = node->runtime() * 1000;
-      DataSet* fp = new DataSet(1);
-      fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
-      collective_comm_node_id_map[fp->my_id] = node->id();
-      collective_comm_wrapper_map[fp->my_id] = fp;
-      sys->register_event(
-          fp,
-          EventType::General,
-          nullptr,
-          // chakra runtimes are in microseconds and we should convert it into
-          // nanoseconds
-          runtime);
-      fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
     }
   } else if (node->type() == ChakraNodeType::COMM_SEND_NODE) {
     sim_request snd_req;
@@ -334,8 +302,8 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
 }
 
 void Workload::skip_invalid(shared_ptr<Chakra::ETFeederNode> node) {
-  et_feeder->freeChildrenNodes(node->id());
-  et_feeder->removeNode(node->id());
+    et_feeder->freeChildrenNodes(node->id());
+    et_feeder->removeNode(node->id());
 }
 
 void Workload::call(EventType event, CallData* data) {
@@ -359,26 +327,35 @@ void Workload::call(EventType event, CallData* data) {
               static_cast<uint64_t>(node->type()));
     }
 
-    hw_resource->release(node);
+    if (event == EventType::CollectiveCommunicationFinished) {
+        IntData* int_data = (IntData*)data;
+        uint64_t node_id = collective_comm_node_id_map[int_data->data];
+        shared_ptr<Chakra::ETFeederNode> node = et_feeder->lookupNode(node_id);
 
-    et_feeder->freeChildrenNodes(node_id);
+        if (sys->trace_enabled) {
+            cout << "callback,sys->id=" << sys->id << ",tick=" << Sys::boostedTick() << ",node->id=" << node->id()
+                 << ",node->name=" << node->name() << endl;
+        }
 
-    issue_dep_free_nodes();
+        hw_resource->release(node);
 
-    et_feeder->removeNode(node_id);
+        et_feeder->freeChildrenNodes(node_id);
 
-    // The Dataset class provides statistics that should be used later to dump
-    // more statistics in the workload layer
-    delete collective_comm_wrapper_map[node_id];
-    collective_comm_wrapper_map.erase(node_id);
+        issue_dep_free_nodes();
 
-  } else {
-    if (data == nullptr) {
-      issue_dep_free_nodes();
+        et_feeder->removeNode(node_id);
+
+        // The Dataset class provides statistics that should be used later to dump
+        // more statistics in the workload layer
+        delete collective_comm_wrapper_map[node_id];
+        collective_comm_wrapper_map.erase(node_id);
+
     } else {
-      WorkloadLayerHandlerData* wlhd = (WorkloadLayerHandlerData*)data;
-      shared_ptr<Chakra::ETFeederNode> node =
-          et_feeder->lookupNode(wlhd->node_id);
+        if (data == nullptr) {
+            issue_dep_free_nodes();
+        } else {
+            WorkloadLayerHandlerData* wlhd = (WorkloadLayerHandlerData*)data;
+            shared_ptr<Chakra::ETFeederNode> node = et_feeder->lookupNode(wlhd->node_id);
 
       if (sys->trace_enabled) {
         LoggerFactory::get_logger("workload")
@@ -391,28 +368,26 @@ void Workload::call(EventType event, CallData* data) {
                 static_cast<uint64_t>(node->type()));
       }
 
-      hw_resource->release(node);
+            hw_resource->release(node);
 
-      et_feeder->freeChildrenNodes(node->id());
+            et_feeder->freeChildrenNodes(node->id());
 
-      issue_dep_free_nodes();
+            issue_dep_free_nodes();
 
-      et_feeder->removeNode(wlhd->node_id);
-      delete wlhd;
+            et_feeder->removeNode(wlhd->node_id);
+            delete wlhd;
+        }
     }
-  }
 
-  if (!et_feeder->hasNodesToIssue() &&
-      (hw_resource->num_in_flight_cpu_ops == 0) &&
-      (hw_resource->num_in_flight_gpu_comp_ops == 0) &&
-      (hw_resource->num_in_flight_gpu_comm_ops == 0)) {
-    report();
-    is_finished = true;
-  }
+    if (!et_feeder->hasNodesToIssue() && (hw_resource->num_in_flight_cpu_ops == 0) &&
+        (hw_resource->num_in_flight_gpu_comp_ops == 0) && (hw_resource->num_in_flight_gpu_comm_ops == 0)) {
+        report();
+        is_finished = true;
+    }
 }
 
 void Workload::fire() {
-  call(EventType::General, NULL);
+    call(EventType::General, NULL);
 }
 
 void Workload::report() {

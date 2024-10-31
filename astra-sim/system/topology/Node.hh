@@ -12,14 +12,14 @@ LICENSE file in the root directory of this source tree.
 namespace AstraSim {
 
 class Node : public ComputeNode {
- public:
-  int id;
-  Node* parent;
-  Node* left_child;
-  Node* right_child;
-  Node(int id, Node* parent, Node* left_child, Node* right_child);
+  public:
+    int id;
+    Node* parent;
+    Node* left_child;
+    Node* right_child;
+    Node(int id, Node* parent, Node* left_child, Node* right_child);
 };
 
-} // namespace AstraSim
+}  // namespace AstraSim
 
 #endif /* __NODE_HH__ */

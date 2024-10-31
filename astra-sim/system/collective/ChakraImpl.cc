@@ -81,11 +81,11 @@ void ChakraImpl::issue(shared_ptr<Chakra::ETFeederNode> node) {
 }
 
 void ChakraImpl::issue_dep_free_nodes() {
-  shared_ptr<Chakra::ETFeederNode> node = et_feeder->getNextIssuableNode();
-  while (node != nullptr) {
-    issue(node);
-    node = et_feeder->getNextIssuableNode();
-  }
+    shared_ptr<Chakra::ETFeederNode> node = et_feeder->getNextIssuableNode();
+    while (node != nullptr) {
+        issue(node);
+        node = et_feeder->getNextIssuableNode();
+    }
 }
 
 // This is called when a SEND/RECV/COMP operator has completed.
@@ -97,12 +97,12 @@ void ChakraImpl::call(EventType event, CallData* data) {
         "ChakraImpl::Call does not have node id encoded (CallData* data is null).");
   }
 
-  WorkloadLayerHandlerData* wlhd = (WorkloadLayerHandlerData*)data;
-  shared_ptr<Chakra::ETFeederNode> node = et_feeder->lookupNode(wlhd->node_id);
-  et_feeder->freeChildrenNodes(wlhd->node_id);
-  issue_dep_free_nodes();
-  et_feeder->removeNode(wlhd->node_id);
-  delete wlhd;
+    WorkloadLayerHandlerData* wlhd = (WorkloadLayerHandlerData*)data;
+    shared_ptr<Chakra::ETFeederNode> node = et_feeder->lookupNode(wlhd->node_id);
+    et_feeder->freeChildrenNodes(wlhd->node_id);
+    issue_dep_free_nodes();
+    et_feeder->removeNode(wlhd->node_id);
+    delete wlhd;
 
   if (!et_feeder->hasNodesToIssue()) {
     // There are no more nodes to execute, so we finish the collective

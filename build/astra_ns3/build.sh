@@ -78,10 +78,7 @@ case "$1" in
 -c|--compile|"")
     setup
     compile;;
--r|--run)
-    # setup
-    # compile
-    run;;
 -h|--help|*)
     printf "Prints help message";;
+
 esac

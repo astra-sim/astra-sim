@@ -17,15 +17,15 @@ LICENSE file in the root directory of this source tree.
 namespace AstraSim {
 
 class HardwareResourceChakra {
- public:
-  HardwareResourceChakra();
-  void occupy(const std::shared_ptr<Chakra::ETFeederNode> node);
-  void release(const std::shared_ptr<Chakra::ETFeederNode> node);
-  bool is_available(const std::shared_ptr<Chakra::ETFeederNode> node) const;
+  public:
+    HardwareResourceChakra();
+    void occupy(const std::shared_ptr<Chakra::ETFeederNode> node);
+    void release(const std::shared_ptr<Chakra::ETFeederNode> node);
+    bool is_available(const std::shared_ptr<Chakra::ETFeederNode> node) const;
 
-  uint32_t num_in_flight_cpu_ops;
-  uint32_t num_in_flight_gpu_comp_ops;
-  uint32_t num_in_flight_gpu_comm_ops;
+    uint32_t num_in_flight_cpu_ops;
+    uint32_t num_in_flight_gpu_comp_ops;
+    uint32_t num_in_flight_gpu_comm_ops;
 };
 
 /*
@@ -74,6 +74,6 @@ class ChakraImpl : public Algorithm {
   HardwareResourceChakra* hw_resource;
 };
 
-} // namespace AstraSim
+}  // namespace AstraSim
 
 #endif /* __CHAKRAIMPL__HH */
