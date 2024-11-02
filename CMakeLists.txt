@@ -18,8 +18,17 @@ add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/extern/helper/fmt")
 option(SPDLOG_FMT_EXTERNAL ON)    # override default option for spdlog.
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/extern/helper/spdlog")
 # Find Protobuf
-# find_package(Protobuf REQUIRED)
-find_package(protobuf CONFIG REQUIRED)
+# TODO: We want to use the advanced semantics 'protobuf CONFIG REQUIRED'.
+# However, this requires protobuf to be compiled from source,
+# which is enabled only in Docker containers. (Our documentation makes users install protobuc from apt-get)
+# Therefore, enable 'protobuf CONFIG REQUIRED' only when we are building in Docker.
+# TODO: Find a better way to detect if protobuf has been compiled by source, OR
+# find a way to enable 'protobuf CONFIG REQUIRED' regardless of how protubuf was installed.
+if(DEFINED ENV{PROTOBUF_FROM_SOURCE} AND "$ENV{PROTOBUF_FROM_SOURCE}" STREQUAL "True")
+    find_package(protobuf CONFIG REQUIRED)
+else()
+    find_package(Protobuf REQUIRED)
+endif()
 
 # Files to compile
 file(GLOB srcs
@@ -41,16 +50,25 @@ add_library(AstraSim STATIC ${srcs})
 # Link libraries
 target_link_libraries(AstraSim PUBLIC fmt::fmt)
 target_link_libraries(AstraSim PUBLIC spdlog::spdlog)
-#target_link_libraries(AstraSim PUBLIC ${Protobuf_LIBRARIES})
-target_link_libraries(AstraSim PUBLIC protobuf::libprotobuf)
+
+# Same as above.
+if(DEFINED ENV{PROTOBUF_FROM_SOURCE} AND "$ENV{PROTOBUF_FROM_SOURCE}" STREQUAL "True")
+    target_link_libraries(AstraSim PUBLIC protobuf::libprotobuf)
+else()
+    target_link_libraries(AstraSim PUBLIC ${Protobuf_LIBRARIES})
+endif()
 
 # Include Directories
 target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/)
 target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/schema/protobuf)
 target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/src/third_party/utils)
-# target_include_directories(AstraSim PUBLIC ${Protobuf_INCLUDE_DIRS})
 target_include_directories(AstraSim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/extern/helper/)
+
+# Same as above.
+if(DEFINED ENV{PROTOBUF_FROM_SOURCE} AND "$ENV{PROTOBUF_FROM_SOURCE}" STREQUAL "True")
+    target_link_libraries(AstraSim PUBLIC ${Protobuf_LIBRARIES})
+endif()
 
 # Properties
 set_target_properties(AstraSim PROPERTIES COMPILE_WARNING_AS_ERROR OFF)
