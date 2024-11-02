@@ -3,9 +3,9 @@ This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
-#include <astra-network-analytical/common/EventQueue.hh>
-#include <astra-network-analytical/common/NetworkParser.hh>
-#include <astra-network-analytical/congestion_aware/Helper.hh>
+#include <astra-network-analytical/common/EventQueue.h>
+#include <astra-network-analytical/common/NetworkParser.h>
+#include <astra-network-analytical/congestion_aware/Helper.h>
 #include <remote_memory_backend/analytical/AnalyticalRemoteMemory.hh>
 #include "common/CmdLineParser.hh"
 #include "congestion_aware/CongestionAwareNetworkApi.hh"
