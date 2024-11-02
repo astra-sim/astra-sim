@@ -12,14 +12,14 @@ LICENSE file in the root directory of this source tree.
 namespace AstraSim {
 
 class BasicEventHandlerData : public CallData {
- public:
-  BasicEventHandlerData();
-  BasicEventHandlerData(int sys_id, EventType event);
+  public:
+    BasicEventHandlerData();
+    BasicEventHandlerData(int sys_id, EventType event);
 
-  int sys_id;
-  EventType event;
+    int sys_id;
+    EventType event;
 };
 
-} // namespace AstraSim
+}  // namespace AstraSim
 
 #endif /* __BASIC_EVENT_HANDLER_DATA_HH__ */

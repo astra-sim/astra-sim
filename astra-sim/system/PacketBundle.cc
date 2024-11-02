@@ -7,48 +7,44 @@ LICENSE file in the root directory of this source tree.
 
 using namespace AstraSim;
 
-PacketBundle::PacketBundle(
-    Sys* sys,
-    BaseStream* stream,
-    std::list<MyPacket*> locked_packets,
-    bool needs_processing,
-    bool send_back,
-    uint64_t size,
-    MemBus::Transmition transmition) {
-  this->sys = sys;
-  this->locked_packets = locked_packets;
-  this->needs_processing = needs_processing;
-  this->send_back = send_back;
-  this->size = size;
-  this->stream = stream;
-  this->transmition = transmition;
-  creation_time = Sys::boostedTick();
+PacketBundle::PacketBundle(Sys* sys,
+                           BaseStream* stream,
+                           std::list<MyPacket*> locked_packets,
+                           bool needs_processing,
+                           bool send_back,
+                           uint64_t size,
+                           MemBus::Transmition transmition) {
+    this->sys = sys;
+    this->locked_packets = locked_packets;
+    this->needs_processing = needs_processing;
+    this->send_back = send_back;
+    this->size = size;
+    this->stream = stream;
+    this->transmition = transmition;
+    creation_time = Sys::boostedTick();
 }
 
-PacketBundle::PacketBundle(
-    Sys* sys,
-    BaseStream* stream,
-    bool needs_processing,
-    bool send_back,
-    uint64_t size,
-    MemBus::Transmition transmition) {
-  this->sys = sys;
-  this->needs_processing = needs_processing;
-  this->send_back = send_back;
-  this->size = size;
-  this->stream = stream;
-  this->transmition = transmition;
-  creation_time = Sys::boostedTick();
+PacketBundle::PacketBundle(Sys* sys,
+                           BaseStream* stream,
+                           bool needs_processing,
+                           bool send_back,
+                           uint64_t size,
+                           MemBus::Transmition transmition) {
+    this->sys = sys;
+    this->needs_processing = needs_processing;
+    this->send_back = send_back;
+    this->size = size;
+    this->stream = stream;
+    this->transmition = transmition;
+    creation_time = Sys::boostedTick();
 }
 
 void PacketBundle::send_to_MA() {
-  sys->memBus->send_from_NPU_to_MA(
-      transmition, size, needs_processing, send_back, this);
+    sys->memBus->send_from_NPU_to_MA(transmition, size, needs_processing, send_back, this);
 }
 
 void PacketBundle::send_to_NPU() {
-  sys->memBus->send_from_MA_to_NPU(
-      transmition, size, needs_processing, send_back, this);
+    sys->memBus->send_from_MA_to_NPU(transmition, size, needs_processing, send_back, this);
 }
 
 void PacketBundle::call(EventType event, CallData* data) {

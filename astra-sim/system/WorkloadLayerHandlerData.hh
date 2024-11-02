@@ -14,13 +14,13 @@ namespace AstraSim {
 class Workload;
 
 class WorkloadLayerHandlerData : public BasicEventHandlerData, public MetaData {
- public:
-  int sys_id;
-  Workload* workload;
-  uint64_t node_id;
-  WorkloadLayerHandlerData();
+  public:
+    int sys_id;
+    Workload* workload;
+    uint64_t node_id;
+    WorkloadLayerHandlerData();
 };
 
-} // namespace AstraSim
+}  // namespace AstraSim
 
 #endif /* __WORKLOAD_LAYER_HANDLER_DATA_HH__ */

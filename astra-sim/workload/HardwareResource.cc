@@ -28,9 +28,12 @@ void HardwareResource::occupy(const shared_ptr<Chakra::ETFeederNode> node) {
       assert(num_in_flight_gpu_comp_ops == 0);
       ++num_in_flight_gpu_comp_ops;
     } else {
+      if (node->type() == ChakraNodeType::COMM_RECV_NODE) {
+        return; 
+      }
       assert(num_in_flight_gpu_comm_ops == 0);
       ++num_in_flight_gpu_comm_ops;
-    }
+      }
   }
 }
 
@@ -43,10 +46,17 @@ void HardwareResource::release(const shared_ptr<Chakra::ETFeederNode> node) {
       --num_in_flight_gpu_comp_ops;
       assert(num_in_flight_gpu_comp_ops == 0);
     } else {
-      --num_in_flight_gpu_comm_ops;
-      assert(num_in_flight_gpu_comm_ops == 0);
+        if (node->type() == ChakraNodeType::COMP_NODE) {
+            --num_in_flight_gpu_comp_ops;
+            assert(num_in_flight_gpu_comp_ops == 0);
+        } else {
+            if (node->type() == ChakraNodeType::COMM_RECV_NODE) {
+                return;
+            }
+            --num_in_flight_gpu_comm_ops;
+            assert(num_in_flight_gpu_comm_ops == 0);
+        }
     }
-  }
 }
 
 bool HardwareResource::is_available(
@@ -68,6 +78,12 @@ bool HardwareResource::is_available(
       if (num_in_flight_gpu_comm_ops == 0) {
         return true;
       } else {
+        if (node->type() == ChakraNodeType::COMM_RECV_NODE){
+          return true;
+        }
+        if (num_in_flight_gpu_comm_ops == 0) {
+          return true;
+        }
         return false;
       }
     }

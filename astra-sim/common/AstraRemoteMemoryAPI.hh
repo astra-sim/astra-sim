@@ -14,12 +14,12 @@ class Sys;
 class WorkloadLayerHandlerData;
 
 class AstraRemoteMemoryAPI {
- public:
-  virtual ~AstraRemoteMemoryAPI() = default;
-  virtual void set_sys(int id, Sys* sys) = 0;
-  virtual void issue(uint64_t tensor_size, WorkloadLayerHandlerData* wlhd) = 0;
+  public:
+    virtual ~AstraRemoteMemoryAPI() = default;
+    virtual void set_sys(int id, Sys* sys) = 0;
+    virtual void issue(uint64_t tensor_size, WorkloadLayerHandlerData* wlhd) = 0;
 };
 
-} // namespace AstraSim
+}  // namespace AstraSim
 
 #endif /* __ASTRA_MEMORY_API_HH__ */
