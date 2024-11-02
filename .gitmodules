@@ -13,3 +13,6 @@
 [submodule "extern/helper/spdlog"]
 	path = extern/helper/spdlog
 	url = https://github.com/gabime/spdlog.git
+[submodule "extern/network_backend/ns-3"]
+	path = extern/network_backend/ns-3
+	url = https://github.com/astra-sim/astra-network-ns3.git
