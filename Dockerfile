@@ -74,6 +74,9 @@ ENV protobuf_DIR="/opt/protobuf-${PROTOBUF_VER}/install"
 
 # Also, install Python protobuf package
 RUN pip3 install protobuf==5.${PROTOBUF_VER}
+
+# Set the environment variable
+ENV PROTOBUF_FROM_SOURCE=True
 ### ======================================================
 
 

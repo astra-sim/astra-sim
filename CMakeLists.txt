@@ -1,22 +1,30 @@
+# # *****************************************************************************
+# # This source code is licensed under the MIT license found in the
+# # LICENSE file in the root directory of this source tree.
+# #
+# # Copyright (c) 2024 Georgia Institute of Technology
+# # *****************************************************************************
+
 # CMake Requirement
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.22)
 
 # C++ requirement
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Set the build type to Release if not specified
-if (NOT CMAKE_BUILD_TYPE)
+if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
-endif ()
+endif()
 
 # Setup project
 project(AstraSim)
 
 # Add libraries.
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/extern/helper/fmt")
-option(SPDLOG_FMT_EXTERNAL ON)    # override default option for spdlog.
+option(SPDLOG_FMT_EXTERNAL ON) # override default option for spdlog.
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/extern/helper/spdlog")
+
 # Find Protobuf
 # TODO: We want to use the advanced semantics 'protobuf CONFIG REQUIRED'.
 # However, this requires protobuf to be compiled from source,
@@ -32,17 +40,17 @@ endif()
 
 # Files to compile
 file(GLOB srcs
-        "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/*.cc"
-        "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/workload/*.cc"
-        "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/collective/*.cc"
-        "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/topology/*.cc"
-        "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/memory/*.cc"
-        "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/scheduling/*.cc"
-        "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/common/*.cc"
-        "${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/src/third_party/utils/*.cc"
-        "${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/schema/protobuf/*.cc"
-        "${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/src/feeder/*.cpp"
-        "${CMAKE_CURRENT_SOURCE_DIR}/extern/remote_memory_backend/analytical/*.cc")
+    "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/*.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/workload/*.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/collective/*.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/topology/*.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/memory/*.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/scheduling/*.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/common/*.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/src/third_party/utils/*.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/schema/protobuf/*.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/src/feeder/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/extern/remote_memory_backend/analytical/*.cc")
 
 # Compile AstraSim Library
 add_library(AstraSim STATIC ${srcs})
@@ -67,14 +75,14 @@ target_include_directories(AstraSim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/extern/h
 
 # Same as above.
 if(DEFINED ENV{PROTOBUF_FROM_SOURCE} AND "$ENV{PROTOBUF_FROM_SOURCE}" STREQUAL "True")
-    target_link_libraries(AstraSim PUBLIC ${Protobuf_LIBRARIES})
+    target_include_directories(AstraSim PUBLIC ${Protobuf_INCLUDE_DIRS})
 endif()
 
 # Properties
 set_target_properties(AstraSim PROPERTIES COMPILE_WARNING_AS_ERROR OFF)
 set_target_properties(AstraSim
-        PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../bin/
-        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../lib/
-        ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../lib/
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../bin/
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../lib/
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../lib/
 )
