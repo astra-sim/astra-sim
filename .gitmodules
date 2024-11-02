@@ -10,3 +10,9 @@
 [submodule "extern/remote_memory_backend/analytical"]
 	path = extern/remote_memory_backend/analytical
 	url = https://github.com/astra-sim/astra-memory-analytical.git
+[submodule "extern/helper/fmt"]
+	path = extern/helper/fmt
+	url = https://github.com/fmtlib/fmt.git
+[submodule "extern/helper/spdlog"]
+	path = extern/helper/spdlog
+	url = https://github.com/gabime/spdlog.git
