@@ -11,13 +11,13 @@ LICENSE file in the root directory of this source tree.
 namespace AstraSim {
 
 class Usage {
-  public:
-    int level;
-    uint64_t start;
-    uint64_t end;
-    Usage(int level, uint64_t start, uint64_t end);
+ public:
+  int level;
+  uint64_t start;
+  uint64_t end;
+  Usage(int level, uint64_t start, uint64_t end);
 };
 
-}  // namespace AstraSim
+} // namespace AstraSim
 
 #endif /* __USAGE_HH__ */

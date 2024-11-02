@@ -12,11 +12,11 @@ LICENSE file in the root directory of this source tree.
 namespace AstraSim {
 
 class Callable {
-  public:
-    virtual ~Callable() = default;
-    virtual void call(EventType type, CallData* data) = 0;
+ public:
+  virtual ~Callable() = default;
+  virtual void call(EventType type, CallData* data) = 0;
 };
 
-}  // namespace AstraSim
+} // namespace AstraSim
 
 #endif /* __CALLABLE_HH__ */

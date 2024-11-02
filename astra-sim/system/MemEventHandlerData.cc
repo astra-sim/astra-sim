@@ -8,6 +8,6 @@ LICENSE file in the root directory of this source tree.
 using namespace AstraSim;
 
 MemEventHandlerData::MemEventHandlerData() {
-    this->workload = nullptr;
-    this->wlhd = nullptr;
+  this->workload = nullptr;
+  this->wlhd = nullptr;
 }

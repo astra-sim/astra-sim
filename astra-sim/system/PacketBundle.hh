@@ -16,35 +16,37 @@ namespace AstraSim {
 
 class Sys;
 class PacketBundle : public Callable {
-  public:
-    PacketBundle(Sys* sys,
-                 BaseStream* stream,
-                 std::list<MyPacket*> locked_packets,
-                 bool needs_processing,
-                 bool send_back,
-                 uint64_t size,
-                 MemBus::Transmition transmition);
-    PacketBundle(Sys* sys,
-                 BaseStream* stream,
-                 bool needs_processing,
-                 bool send_back,
-                 uint64_t size,
-                 MemBus::Transmition transmition);
-    void send_to_MA();
-    void send_to_NPU();
-    void call(EventType event, CallData* data);
+ public:
+  PacketBundle(
+      Sys* sys,
+      BaseStream* stream,
+      std::list<MyPacket*> locked_packets,
+      bool needs_processing,
+      bool send_back,
+      uint64_t size,
+      MemBus::Transmition transmition);
+  PacketBundle(
+      Sys* sys,
+      BaseStream* stream,
+      bool needs_processing,
+      bool send_back,
+      uint64_t size,
+      MemBus::Transmition transmition);
+  void send_to_MA();
+  void send_to_NPU();
+  void call(EventType event, CallData* data);
 
-    Sys* sys;
-    std::list<MyPacket*> locked_packets;
-    bool needs_processing;
-    bool send_back;
-    uint64_t size;
-    BaseStream* stream;
-    MemBus::Transmition transmition;
-    Tick delay;
-    Tick creation_time;
+  Sys* sys;
+  std::list<MyPacket*> locked_packets;
+  bool needs_processing;
+  bool send_back;
+  uint64_t size;
+  BaseStream* stream;
+  MemBus::Transmition transmition;
+  Tick delay;
+  Tick creation_time;
 };
 
-}  // namespace AstraSim
+} // namespace AstraSim
 
 #endif /* __PACKET_BUNDLE_HH__ */

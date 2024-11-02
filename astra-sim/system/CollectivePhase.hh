@@ -15,20 +15,20 @@ class Algorithm;
 class BaseStream;
 
 class CollectivePhase {
-  public:
-    CollectivePhase(Sys* sys, int queue_id, Algorithm* algorithm);
-    CollectivePhase();
-    void init(BaseStream* stream);
+ public:
+  CollectivePhase(Sys* sys, int queue_id, Algorithm* algorithm);
+  CollectivePhase();
+  void init(BaseStream* stream);
 
-    Sys* sys;
-    int queue_id;
-    Algorithm* algorithm;
-    uint64_t initial_data_size;
-    uint64_t final_data_size;
-    bool enabled;
-    ComType comm_type;
+  Sys* sys;
+  int queue_id;
+  Algorithm* algorithm;
+  uint64_t initial_data_size;
+  uint64_t final_data_size;
+  bool enabled;
+  ComType comm_type;
 };
 
-}  // namespace AstraSim
+} // namespace AstraSim
 
 #endif /* __COLLECTIVE_PHASE_HH__ */

@@ -10,25 +10,36 @@ LICENSE file in the root directory of this source tree.
 
 using namespace AstraSim;
 
-DoubleBinaryTreeAllReduce::DoubleBinaryTreeAllReduce(int id, BinaryTree* tree, uint64_t data_size) : Algorithm() {
-    this->id = id;
-    this->logical_topo = tree;
-    this->data_size = data_size;
-    this->state = State::Begin;
-    this->reductions = 0;
-    this->parent = tree->get_parent_id(id);
-    this->left_child = tree->get_left_child_id(id);
-    this->right_child = tree->get_right_child_id(id);
-    this->type = tree->get_node_type(id);
-    this->final_data_size = data_size;
-    this->comType = ComType::All_Reduce;
-    this->name = Name::DoubleBinaryTree;
+DoubleBinaryTreeAllReduce::DoubleBinaryTreeAllReduce(
+    int id,
+    BinaryTree* tree,
+    uint64_t data_size)
+    : Algorithm() {
+  this->id = id;
+  this->logical_topo = tree;
+  this->data_size = data_size;
+  this->state = State::Begin;
+  this->reductions = 0;
+  this->parent = tree->get_parent_id(id);
+  this->left_child = tree->get_left_child_id(id);
+  this->right_child = tree->get_right_child_id(id);
+  this->type = tree->get_node_type(id);
+  this->final_data_size = data_size;
+  this->comType = ComType::All_Reduce;
+  this->name = Name::DoubleBinaryTree;
 }
 
 void DoubleBinaryTreeAllReduce::run(EventType event, CallData* data) {
-    if (state == State::Begin && type == BinaryTree::Type::Leaf) {  // leaf.1
-        (new PacketBundle(stream->owner, stream, false, false, data_size, MemBus::Transmition::Usual))->send_to_MA();
-        state = State::SendingDataToParent;
+  if (state == State::Begin && type == BinaryTree::Type::Leaf) { // leaf.1
+    (new PacketBundle(
+         stream->owner,
+         stream,
+         false,
+         false,
+         data_size,
+         MemBus::Transmition::Usual))
+        ->send_to_MA();
+    state = State::SendingDataToParent;
 
   } else if (
       state == State::SendingDataToParent &&
@@ -73,12 +84,21 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData* data) {
         ehd);
     state = State::WaitingDataFromParent;
 
-    } else if (state == State::WaitingDataFromParent && type == BinaryTree::Type::Leaf) {  // leaf.4
-        (new PacketBundle(stream->owner, stream, false, false, data_size, MemBus::Transmition::Usual))->send_to_NPU();
-        state = State::End;
+  } else if (
+      state == State::WaitingDataFromParent &&
+      type == BinaryTree::Type::Leaf) { // leaf.4
+    (new PacketBundle(
+         stream->owner,
+         stream,
+         false,
+         false,
+         data_size,
+         MemBus::Transmition::Usual))
+        ->send_to_NPU();
+    state = State::End;
 
-    } else if (state == State::End && type == BinaryTree::Type::Leaf) {  // leaf.5
-        exit();
+  } else if (state == State::End && type == BinaryTree::Type::Leaf) { // leaf.5
+    exit();
 
   } else if (
       state == State::Begin &&
@@ -123,18 +143,38 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData* data) {
         ehd2);
     state = State::WaitingForTwoChildData;
 
-    } else if (state == State::WaitingForTwoChildData && type == BinaryTree::Type::Intermediate &&
-               event == EventType::PacketReceived) {  // int.2
-        (new PacketBundle(stream->owner, stream, true, false, data_size, MemBus::Transmition::Usual))->send_to_NPU();
-        state = State::WaitingForOneChildData;
+  } else if (
+      state == State::WaitingForTwoChildData &&
+      type == BinaryTree::Type::Intermediate &&
+      event == EventType::PacketReceived) { // int.2
+    (new PacketBundle(
+         stream->owner,
+         stream,
+         true,
+         false,
+         data_size,
+         MemBus::Transmition::Usual))
+        ->send_to_NPU();
+    state = State::WaitingForOneChildData;
 
-    } else if (state == State::WaitingForOneChildData && type == BinaryTree::Type::Intermediate &&
-               event == EventType::PacketReceived) {  // int.3
-        (new PacketBundle(stream->owner, stream, true, true, data_size, MemBus::Transmition::Usual))->send_to_NPU();
-        state = State::SendingDataToParent;
+  } else if (
+      state == State::WaitingForOneChildData &&
+      type == BinaryTree::Type::Intermediate &&
+      event == EventType::PacketReceived) { // int.3
+    (new PacketBundle(
+         stream->owner,
+         stream,
+         true,
+         true,
+         data_size,
+         MemBus::Transmition::Usual))
+        ->send_to_NPU();
+    state = State::SendingDataToParent;
 
-    } else if (reductions < 1 && type == BinaryTree::Type::Intermediate && event == EventType::General) {  // int.4
-        reductions++;
+  } else if (
+      reductions < 1 && type == BinaryTree::Type::Intermediate &&
+      event == EventType::General) { // int.4
+    reductions++;
 
   } else if (
       state == State::SendingDataToParent &&
@@ -179,10 +219,19 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData* data) {
         ehd);
     state = State::WaitingDataFromParent;
 
-    } else if (state == State::WaitingDataFromParent && type == BinaryTree::Type::Intermediate &&
-               event == EventType::PacketReceived) {  // int.6
-        (new PacketBundle(stream->owner, stream, true, true, data_size, MemBus::Transmition::Usual))->send_to_NPU();
-        state = State::SendingDataToChilds;
+  } else if (
+      state == State::WaitingDataFromParent &&
+      type == BinaryTree::Type::Intermediate &&
+      event == EventType::PacketReceived) { // int.6
+    (new PacketBundle(
+         stream->owner,
+         stream,
+         true,
+         true,
+         data_size,
+         MemBus::Transmition::Usual))
+        ->send_to_NPU();
+    state = State::SendingDataToChilds;
 
   } else if (
       state == State::SendingDataToChilds &&
@@ -248,10 +297,19 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData* data) {
         ehd);
     state = State::WaitingForOneChildData;
 
-    } else if (state == State::WaitingForOneChildData && type == BinaryTree::Type::Root) {  // root.2
-        (new PacketBundle(stream->owner, stream, true, true, data_size, MemBus::Transmition::Usual))->send_to_NPU();
-        state = State::SendingDataToChilds;
-        return;
+  } else if (
+      state == State::WaitingForOneChildData &&
+      type == BinaryTree::Type::Root) { // root.2
+    (new PacketBundle(
+         stream->owner,
+         stream,
+         true,
+         true,
+         data_size,
+         MemBus::Transmition::Usual))
+        ->send_to_NPU();
+    state = State::SendingDataToChilds;
+    return;
 
   } else if (
       state == State::SendingDataToChilds &&

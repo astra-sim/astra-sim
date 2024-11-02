@@ -8,11 +8,11 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/common/Logging.hh"
 #include "astra-sim/system/Common.hh"
 
+#include <fcntl.h>
+#include <unistd.h>
 #include <cassert>
 #include <cmath>
-#include <fcntl.h>
 #include <iostream>
-#include <unistd.h>
 #include <utility>
 #include <vector>
 
@@ -20,8 +20,8 @@ using namespace std;
 using namespace AstraSim;
 
 CSVWriter::CSVWriter(std::string path, std::string name) {
-    this->path = path;
-    this->name = name;
+  this->path = path;
+  this->name = name;
 }
 
 void CSVWriter::initialize_csv(int rows, int cols) {
@@ -61,33 +61,11 @@ void CSVWriter::initialize_csv(int rows, int cols) {
     for (int j = 0; j < cols - 1; j++) {
       myFile << ',';
     }
-    do {
-        myFile.close();
-    } while (myFile.is_open());
-
-    do {
-        myFile.open(path + name, std::fstream::out | std::fstream::in);
-    } while (!myFile.is_open());
-
-    if (!myFile) {
-        std::cerr << "Unable to open file: " << path << std::endl;
-        std::cerr << "This error is fatal. Please make sure the CSV write path exists." << std::endl;
-        exit(1);
-    } else {
-        std::cout << "Success in opening CSV file for writing the report." << std::endl;
-    }
-
-    myFile.seekp(0, std::ios_base::beg);
-    myFile.seekg(0, std::ios_base::beg);
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols - 1; j++) {
-            myFile << ',';
-        }
-        myFile << '\n';
-    }
-    do {
-        myFile.close();
-    } while (myFile.is_open());
+    myFile << '\n';
+  }
+  do {
+    myFile.close();
+  } while (myFile.is_open());
 }
 
 void CSVWriter::finalize_csv(
@@ -109,9 +87,9 @@ void CSVWriter::finalize_csv(
     myFile.close();
   } while (myFile.is_open());
 
-    do {
-        myFile.open(path + name, std::fstream::out | std::fstream::in);
-    } while (!myFile.is_open());
+  do {
+    myFile.open(path + name, std::fstream::out | std::fstream::in);
+  } while (!myFile.is_open());
 
   if (!myFile) {
     logger->critical("Unable to create file: {}{}", path, name);
@@ -158,93 +136,70 @@ void CSVWriter::finalize_csv(
       } else {
         myFile << std::to_string((*dims_it[i]).second);
         myFile << ',';
-        dim_num++;
+        std::advance(dims_it[i], 1);
+      }
     }
     myFile << '\n';
-    while (true) {
-        uint64_t finished = 0;
-        uint64_t compare;
-        for (uint64_t i = 0; i < dims_it.size(); i++) {
-            if (dims_it[i] != dims_it_end[i]) {
-                if (i == 0) {
-                    myFile << std::to_string((*dims_it[i]).first / FREQ);
-                    myFile << ",";
-                    compare = (*dims_it[i]).first;
-                } else {
-                    assert(compare == (*dims_it[i]).first);
-                }
-            }
-            if (dims_it[i] == dims_it_end[i]) {
-                finished++;
-                myFile << ",";
-                continue;
-            } else {
-                myFile << std::to_string((*dims_it[i]).second);
-                myFile << ',';
-                std::advance(dims_it[i], 1);
-            }
-        }
-        myFile << '\n';
-        if (finished == dims_it_end.size()) {
-            break;
-        }
+    if (finished == dims_it_end.size()) {
+      break;
     }
-    myFile.close();
+  }
+  myFile.close();
 }
 
 void CSVWriter::write_cell(int row, int column, std::string data) {
-    std::string str = "";
-    std::string tmp;
+  std::string str = "";
+  std::string tmp;
 
-    int status = 1;
-    int fildes = -1;
-    do {
-        fildes = open((path + name).c_str(), O_RDWR);
-    } while (fildes == -1);
+  int status = 1;
+  int fildes = -1;
+  do {
+    fildes = open((path + name).c_str(), O_RDWR);
+  } while (fildes == -1);
 
-    do {
-        status = lockf(fildes, F_TLOCK, (off_t)1000000);
-    } while (status != 0);
-    char buf[1];
-    while (row > 0) {
-        status = read(fildes, buf, 1);
-        str = str + (*buf);
-        if (*buf == '\n') {
-            row--;
-        }
+  do {
+    status = lockf(fildes, F_TLOCK, (off_t)1000000);
+  } while (status != 0);
+  char buf[1];
+  while (row > 0) {
+    status = read(fildes, buf, 1);
+    str = str + (*buf);
+    if (*buf == '\n') {
+      row--;
     }
-    while (column > 0) {
-        status = read(fildes, buf, 1);
-        str = str + (*buf);
-        if (*buf == ',') {
-            column--;
-        }
-        if (*buf == '\n') {
-            std::cerr << "fatal error in inserting cewll!" << std::endl;
-            exit(1);
-        }
+  }
+  while (column > 0) {
+    status = read(fildes, buf, 1);
+    str = str + (*buf);
+    if (*buf == ',') {
+      column--;
     }
     if (*buf == '\n') {
       LoggerFactory::get_logger("system::CSVWriter")
           ->critical("fatal error in inserting cewll!");
       exit(1);
     }
+  }
+  str = str + data;
+  while (read(fildes, buf, 1)) {
+    str = str + (*buf);
+  }
 
-    do {
-        lseek(fildes, 0, SEEK_SET);
-        status = write(fildes, str.c_str(), str.length());
-    } while (status != str.length());
+  do {
+    lseek(fildes, 0, SEEK_SET);
+    status = write(fildes, str.c_str(), str.length());
+  } while (status != str.length());
 
-    do {
-        status = lseek(fildes, 0, SEEK_SET);
-    } while (status == -1);
+  do {
+    status = lseek(fildes, 0, SEEK_SET);
+  } while (status == -1);
 
-    do {
-        status = lockf(fildes, F_ULOCK, (off_t)1000000);
-    } while (status != 0);
+  do {
+    status = lockf(fildes, F_ULOCK, (off_t)1000000);
+  } while (status != 0);
 
-    do {
-        status = close(fildes);
-    } while (status == -1);
-    return;
+  do {
+    status = close(fildes);
+  } while (status == -1);
+  return;
 }

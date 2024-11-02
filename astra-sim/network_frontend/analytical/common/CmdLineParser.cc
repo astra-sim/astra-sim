@@ -7,11 +7,12 @@ LICENSE file in the root directory of this source tree.
 
 using namespace AstraSimAnalytical;
 
-CmdLineParser::CmdLineParser(const char* const argv0) noexcept : options(argv0, "ASTRA-sim") {
-    parsed = {};
+CmdLineParser::CmdLineParser(const char* const argv0) noexcept
+    : options(argv0, "ASTRA-sim") {
+  parsed = {};
 
-    // define options
-    define_options();
+  // define options
+  define_options();
 }
 
 void CmdLineParser::define_options() noexcept {
@@ -52,12 +53,13 @@ void CmdLineParser::define_options() noexcept {
 }
 
 void CmdLineParser::parse(int argc, char* argv[]) noexcept {
-    try {
-        // try parsing command line options
-        parsed = options.parse(argc, argv);
-    } catch (const cxxopts::OptionException& e) {
-        // error occurred
-        std::cerr << "[Error] (AstraSim/analytical/common) " << "Error parsing options: " << e.what() << std::endl;
-        exit(-1);
-    }
+  try {
+    // try parsing command line options
+    parsed = options.parse(argc, argv);
+  } catch (const cxxopts::OptionException& e) {
+    // error occurred
+    std::cerr << "[Error] (AstraSim/analytical/common) "
+              << "Error parsing options: " << e.what() << std::endl;
+    exit(-1);
+  }
 }

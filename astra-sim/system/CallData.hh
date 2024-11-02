@@ -9,10 +9,10 @@ LICENSE file in the root directory of this source tree.
 namespace AstraSim {
 
 class CallData {
-  public:
-    ~CallData() = default;
+ public:
+  ~CallData() = default;
 };
 
-}  // namespace AstraSim
+} // namespace AstraSim
 
 #endif /* __CALL_DATA_HH__ */

@@ -14,30 +14,31 @@ LICENSE file in the root directory of this source tree.
 namespace AstraSim {
 
 class SimRecvCaller : public Callable {
-  public:
-    void* buffer;
-    int count;
-    int type;
-    int src;
-    int tag;
-    sim_request request;
-    void (*msg_handler)(void* fun_arg);
-    void* fun_arg;
-    bool should_cleanup;
-    void call(EventType type, CallData* data);
-    Sys* sys;
-    SimRecvCaller(Sys* sys,
-                  void* buffer,
-                  int count,
-                  int type,
-                  int src,
-                  int tag,
-                  sim_request request,
-                  void (*msg_handler)(void* fun_arg),
-                  void* fun_arg,
-                  bool should_cleanup);
+ public:
+  void* buffer;
+  int count;
+  int type;
+  int src;
+  int tag;
+  sim_request request;
+  void (*msg_handler)(void* fun_arg);
+  void* fun_arg;
+  bool should_cleanup;
+  void call(EventType type, CallData* data);
+  Sys* sys;
+  SimRecvCaller(
+      Sys* sys,
+      void* buffer,
+      int count,
+      int type,
+      int src,
+      int tag,
+      sim_request request,
+      void (*msg_handler)(void* fun_arg),
+      void* fun_arg,
+      bool should_cleanup);
 };
 
-}  // namespace AstraSim
+} // namespace AstraSim
 
 #endif /* __SIM_RECV_CALLER_HH__ */

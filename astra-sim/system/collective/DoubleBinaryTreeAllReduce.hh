@@ -13,28 +13,28 @@ LICENSE file in the root directory of this source tree.
 namespace AstraSim {
 
 class DoubleBinaryTreeAllReduce : public Algorithm {
-  public:
-    enum class State {
-        Begin = 0,
-        WaitingForTwoChildData,
-        WaitingForOneChildData,
-        SendingDataToParent,
-        WaitingDataFromParent,
-        SendingDataToChilds,
-        End
-    };
+ public:
+  enum class State {
+    Begin = 0,
+    WaitingForTwoChildData,
+    WaitingForOneChildData,
+    SendingDataToParent,
+    WaitingDataFromParent,
+    SendingDataToChilds,
+    End
+  };
 
-    DoubleBinaryTreeAllReduce(int id, BinaryTree* tree, uint64_t data_size);
-    void run(EventType event, CallData* data);
+  DoubleBinaryTreeAllReduce(int id, BinaryTree* tree, uint64_t data_size);
+  void run(EventType event, CallData* data);
 
-    BinaryTree::Type type;
-    State state;
-    int parent;
-    int left_child;
-    int reductions;
-    int right_child;
+  BinaryTree::Type type;
+  State state;
+  int parent;
+  int left_child;
+  int reductions;
+  int right_child;
 };
 
-}  // namespace AstraSim
+} // namespace AstraSim
 
 #endif /* __DOUBLE_BINARY_TREE_ALL_REDUCE_HH__ */

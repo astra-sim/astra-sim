@@ -9,17 +9,17 @@ LICENSE file in the root directory of this source tree.
 namespace AstraSim {
 
 class Roofline {
-  public:
-    Roofline(double peak_perf);
-    Roofline(double bandwidth, double peak_perf);
-    void set_bandwidth(double bandwidth);
-    double get_perf(double operational_intensity);
+ public:
+  Roofline(double peak_perf);
+  Roofline(double bandwidth, double peak_perf);
+  void set_bandwidth(double bandwidth);
+  double get_perf(double operational_intensity);
 
-  private:
-    double bandwidth;
-    double peak_perf;
+ private:
+  double bandwidth;
+  double peak_perf;
 };
 
-}  // namespace AstraSim
+} // namespace AstraSim
 
 #endif /* __ROOFLINE_HH__ */

@@ -14,7 +14,7 @@ std::map<int, int> BaseStream::ready_counter;
 std::map<int, std::list<BaseStream*>> BaseStream::suspended_streams;
 
 void BaseStream::changeState(StreamState state) {
-    this->state = state;
+  this->state = state;
 }
 
 BaseStream::BaseStream(
@@ -35,15 +35,11 @@ BaseStream::BaseStream(
     if (vn.algorithm != nullptr) {
       vn.init(this);
     }
-    for (auto& vn : phases_to_go) {
-        if (vn.algorithm != nullptr) {
-            vn.init(this);
-        }
-    }
-    state = StreamState::Created;
-    preferred_scheduling = SchedulingPolicy::None;
-    creation_time = Sys::boostedTick();
-    total_packets_sent = 0;
-    current_queue_id = -1;
-    priority = 0;
+  }
+  state = StreamState::Created;
+  preferred_scheduling = SchedulingPolicy::None;
+  creation_time = Sys::boostedTick();
+  total_packets_sent = 0;
+  current_queue_id = -1;
+  priority = 0;
 }
