@@ -13,3 +13,6 @@
 [submodule "extern/helper/spdlog"]
 	path = extern/helper/spdlog
 	url = git@github.com:gabime/spdlog.git
+[submodule "extern/graph_frontend/chakra"]
+	path = extern/graph_frontend/chakra
+	url = https://github.com/astra-sim/chakra.git
