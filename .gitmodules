@@ -1,6 +1,3 @@
-[submodule "extern/network_backend/analytical"]
-	path = extern/network_backend/analytical
-	url = git@github.com:astra-sim/astra-network-analytical.git
 [submodule "extern/remote_memory_backend/analytical"]
 	path = extern/remote_memory_backend/analytical
 	url = git@github.com:astra-sim/astra-memory-analytical.git
