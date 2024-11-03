@@ -5,7 +5,7 @@ LICENSE file in the root directory of this source tree.
 
 #pragma once
 
-#include <astra-network-analytical/congestion_aware/Topology.hh>
+#include <astra-network-analytical/congestion_aware/Topology.h>
 #include "common/CommonNetworkApi.hh"
 
 using namespace AstraSim;

@@ -5,7 +5,7 @@ LICENSE file in the root directory of this source tree.
 
 #pragma once
 
-#include <astra-network-analytical/common/EventQueue.hh>
+#include <astra-network-analytical/common/EventQueue.h>
 #include <astra-sim/system/AstraNetworkAPI.hh>
 #include <astra-sim/system/Common.hh>
 #include <memory>

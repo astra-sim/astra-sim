@@ -5,7 +5,7 @@ LICENSE file in the root directory of this source tree.
 
 #pragma once
 
-#include <astra-network-analytical/common/Type.hh>
+#include <astra-network-analytical/common/Type.h>
 #include <map>
 #include <tuple>
 #include "common/ChunkIdGeneratorEntry.hh"

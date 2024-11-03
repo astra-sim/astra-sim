@@ -5,8 +5,8 @@ LICENSE file in the root directory of this source tree.
 
 #pragma once
 
-#include <astra-network-analytical/common/Type.hh>
-#include <astra-network-analytical/congestion_unaware/Topology.hh>
+#include <astra-network-analytical/common/Type.h>
+#include <astra-network-analytical/congestion_unaware/Topology.h>
 #include <vector>
 #include "common/CommonNetworkApi.hh"
 
