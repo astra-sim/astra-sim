@@ -445,7 +445,6 @@ void Workload::call(EventType event, CallData* data) {
       (hw_resource->num_in_flight_gpu_comp_ops == 0) &&
       (hw_resource->num_in_flight_gpu_comm_ops == 0)) {
     report();
-    hw_resource->report();
     is_finished = true;
   }
 }
@@ -457,5 +456,6 @@ void Workload::fire() {
 void Workload::report() {
   Tick curr_tick = Sys::boostedTick();
   LoggerFactory::get_logger("workload")
-      ->info("sys[{}] finished, {} cycles", sys->id, curr_tick);
+    ->info("sys[{}] finished, {} cycles, exposed communication {} cycles.",
+    sys->id, curr_tick, curr_tick - hw_resource->tics_gpu_ops);
 }
