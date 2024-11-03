@@ -21,7 +21,8 @@ RUN apt -y install \
     make cmake \
     libboost-dev libboost-program-options-dev \
     openmpi-bin openmpi-doc libopenmpi-dev \
-    python3.11 python3-pip python3-venv
+    python3.11 python3-pip python3-venv \
+    graphviz
 
 ## Create Python venv: Required for Python 3.11
 RUN python3 -m venv /opt/venv/astra-sim
