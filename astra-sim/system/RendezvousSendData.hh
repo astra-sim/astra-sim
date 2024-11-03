@@ -14,21 +14,20 @@ LICENSE file in the root directory of this source tree.
 namespace AstraSim {
 
 class RendezvousSendData : public BasicEventHandlerData, public MetaData {
- public:
-  RendezvousSendData(
-      int sys_id,
-      Sys* sys,
-      void* buffer,
-      uint64_t count,
-      int type,
-      int dst,
-      int tag,
-      sim_request request,
-      void (*msg_handler)(void* fun_arg),
-      void* fun_arg);
-  SimSendCaller send;
+  public:
+    RendezvousSendData(int sys_id,
+                       Sys* sys,
+                       void* buffer,
+                       uint64_t count,
+                       int type,
+                       int dst,
+                       int tag,
+                       sim_request request,
+                       void (*msg_handler)(void* fun_arg),
+                       void* fun_arg);
+    SimSendCaller send;
 };
 
-} // namespace AstraSim
+}  // namespace AstraSim
 
 #endif /* __RENDEZVOUS_SEND_DATA_HH__ */

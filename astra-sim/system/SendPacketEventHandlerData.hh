@@ -14,14 +14,14 @@ LICENSE file in the root directory of this source tree.
 namespace AstraSim {
 
 class SendPacketEventHandlerData : public BasicEventHandlerData {
- public:
-  int tag;
-  Callable* callable;
-  WorkloadLayerHandlerData* wlhd;
-  SendPacketEventHandlerData();
-  SendPacketEventHandlerData(Callable* callable, int tag);
+  public:
+    int tag;
+    Callable* callable;
+    WorkloadLayerHandlerData* wlhd;
+    SendPacketEventHandlerData();
+    SendPacketEventHandlerData(Callable* callable, int tag);
 };
 
-} // namespace AstraSim
+}  // namespace AstraSim
 
 #endif /* __SEND_PACKET_EVENT_HANDLER_DATA_HH__ */

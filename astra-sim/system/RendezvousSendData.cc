@@ -7,16 +7,24 @@ LICENSE file in the root directory of this source tree.
 
 using namespace AstraSim;
 
-RendezvousSendData::RendezvousSendData(
-    int sys_id,
-    Sys* sys,
-    void* buffer,
-    uint64_t count,
-    int type,
-    int dst,
-    int tag,
-    sim_request request,
-    void (*msg_handler)(void* fun_arg),
-    void* fun_arg)
-    : BasicEventHandlerData(sys_id, EventType::RendezvousSend), send(sys, buffer, count, type, dst, tag, request, msg_handler, fun_arg, false) {
-}
+RendezvousSendData::RendezvousSendData(int sys_id,
+                                       Sys* sys,
+                                       void* buffer,
+                                       uint64_t count,
+                                       int type,
+                                       int dst,
+                                       int tag,
+                                       sim_request request,
+                                       void (*msg_handler)(void* fun_arg),
+                                       void* fun_arg)
+    : BasicEventHandlerData(sys_id, EventType::RendezvousSend),
+      send(sys,
+           buffer,
+           count,
+           type,
+           dst,
+           tag,
+           request,
+           msg_handler,
+           fun_arg,
+           false) {}

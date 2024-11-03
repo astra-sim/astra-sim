@@ -10,6 +10,6 @@ namespace AstraSim {
 
 class ComputeNode {};
 
-} // namespace AstraSim
+}  // namespace AstraSim
 
 #endif /* __COMPUTE_NODE_HH__ */

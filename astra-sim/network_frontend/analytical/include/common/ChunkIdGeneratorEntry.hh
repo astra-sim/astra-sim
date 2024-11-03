@@ -13,42 +13,42 @@ namespace AstraSimAnalytical {
  * per each (tag, src, dest, chunk_size) tuple.
  */
 class ChunkIdGeneratorEntry {
- public:
-  /**
-   * Constructur.
-   */
-  ChunkIdGeneratorEntry() noexcept;
+  public:
+    /**
+     * Constructur.
+     */
+    ChunkIdGeneratorEntry() noexcept;
 
-  /**
-   * Get the chunk id for sim_send() call.
-   *
-   * @return chunk id for sim_send() call
-   */
-  [[nodiscard]] int get_send_id() const noexcept;
+    /**
+     * Get the chunk id for sim_send() call.
+     *
+     * @return chunk id for sim_send() call
+     */
+    [[nodiscard]] int get_send_id() const noexcept;
 
-  /**
-   * Get the chunk id for sim_recv() call.
-   *
-   * @return chunk id for sim_recv() call
-   */
-  [[nodiscard]] int get_recv_id() const noexcept;
+    /**
+     * Get the chunk id for sim_recv() call.
+     *
+     * @return chunk id for sim_recv() call
+     */
+    [[nodiscard]] int get_recv_id() const noexcept;
 
-  /**
-   * Increment the chunk id for sim_send() call.
-   */
-  void increment_send_id() noexcept;
+    /**
+     * Increment the chunk id for sim_send() call.
+     */
+    void increment_send_id() noexcept;
 
-  /**
-   * Increment the chunk id for sim_recv() call.
-   */
-  void increment_recv_id() noexcept;
+    /**
+     * Increment the chunk id for sim_recv() call.
+     */
+    void increment_recv_id() noexcept;
 
- private:
-  /// current available chunk id for sim_send() call
-  int send_id;
+  private:
+    /// current available chunk id for sim_send() call
+    int send_id;
 
-  /// current available chunk id for sim_recv() call
-  int recv_id;
+    /// current available chunk id for sim_recv() call
+    int recv_id;
 };
 
-} // namespace AstraSimAnalytical
+}  // namespace AstraSimAnalytical
