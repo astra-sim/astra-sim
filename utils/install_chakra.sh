@@ -12,7 +12,6 @@ set -e
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 PROJECT_DIR="${SCRIPT_DIR:?}/.."
 CHAKRA_DIR="${PROJECT_DIR:?}/extern/graph_frontend/chakra"
-PARAM_DIR="${CHAKRA_DIR:?}/libs/param"
 
 # start
 echo "[ASTRA-sim] Installing Chakra Package..."
@@ -20,7 +19,13 @@ echo "[ASTRA-sim] Installing Chakra Package..."
 # install param: Chakra dependency (required for real system trace conversion)
 echo "[ASTRA-sim] Installing param/et_replay..."
 echo ""
-pip3 install "${PARAM_DIR:?}/et_replay"
+(
+    cd "${PROJECT_DIR:?}"/extern/graph_frontend
+    git clone https://github.com/facebookresearch/param.git
+    cd param/et_replay
+    git checkout 7b19f586dd8b267333114992833a0d7e0d601630
+    pip3 install .
+)
 
 # install Chakra
 echo ""
