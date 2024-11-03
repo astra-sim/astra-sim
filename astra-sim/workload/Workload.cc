@@ -178,6 +178,10 @@ void Workload::issue_replay(shared_ptr<Chakra::ETFeederNode> node) {
     // chakra runtimes are in microseconds and we should convert it into
     // nanoseconds
     runtime = node->runtime() * 1000;
+  if (node->is_cpu_op())
+    hw_resource->tics_cpu_ops += runtime;
+  else
+    hw_resource->tics_gpu_ops += runtime;
   sys->register_event(this, EventType::General, wlhd, runtime);
 }
 
@@ -203,6 +207,10 @@ void Workload::issue_comp(shared_ptr<Chakra::ETFeederNode> node) {
     double perf = sys->roofline->get_perf(operational_intensity);
     double elapsed_time = static_cast<double>(node->num_ops()) / perf; // sec
     uint64_t runtime = static_cast<uint64_t>(elapsed_time * 1e9); // sec -> ns
+    if (node->is_cpu_op())
+      hw_resource->tics_cpu_ops += runtime;
+    else
+      hw_resource->tics_gpu_ops += runtime;
     sys->register_event(this, EventType::General, wlhd, runtime);
   } else {
     // advance this node forward the recorded "replayed" time specificed in the
@@ -215,6 +223,16 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
   hw_resource->occupy(node);
 
   vector<bool> involved_dim;
+
+  if (!node->is_cpu_op() && (node->type() == ChakraNodeType::COMM_COLL_NODE)) {
+    if(node->pg_name().empty() == false){
+      cout << "Node Name: " << node->name() << endl;
+      cout << "Process Group Name" << node->pg_name() << endl;
+    }
+    else {
+      cout << "Empty PG Name: " << node->name() << endl;
+    }
+  }
 
   if (node->has_other_attr("involved_dim")) {
       const ChakraProtoMsg::AttributeProto& attr = node->get_other_attr("involved_dim");
@@ -242,7 +260,7 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
         // nanoseconds
         runtime = node->runtime() * 1000;
       DataSet* fp = new DataSet(1);
-      //fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
+      fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
       collective_comm_node_id_map[fp->my_id] = node->id();
       collective_comm_wrapper_map[fp->my_id] = fp;
       sys->register_event(
@@ -252,7 +270,7 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
           // chakra runtimes are in microseconds and we should convert it into
           // nanoseconds
           runtime);
-      fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
+      //fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
       return;
   }
 
@@ -364,6 +382,7 @@ void Workload::call(EventType event, CallData* data) {
 
   if (event == EventType::CollectiveCommunicationFinished) {
     IntData* int_data = (IntData*)data;
+    hw_resource->tics_gpu_comms += int_data->execution_time;
     uint64_t node_id = collective_comm_node_id_map[int_data->data];
     shared_ptr<Chakra::ETFeederNode> node = et_feeder->lookupNode(node_id);
 
@@ -426,6 +445,7 @@ void Workload::call(EventType event, CallData* data) {
       (hw_resource->num_in_flight_gpu_comp_ops == 0) &&
       (hw_resource->num_in_flight_gpu_comm_ops == 0)) {
     report();
+    hw_resource->report();
     is_finished = true;
   }
 }
