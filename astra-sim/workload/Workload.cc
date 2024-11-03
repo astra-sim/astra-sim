@@ -178,6 +178,10 @@ void Workload::issue_replay(shared_ptr<Chakra::ETFeederNode> node) {
     // chakra runtimes are in microseconds and we should convert it into
     // nanoseconds
     runtime = node->runtime() * 1000;
+  if (node->is_cpu_op())
+    hw_resource->tics_cpu_ops += runtime;
+  else
+    hw_resource->tics_gpu_ops += runtime;
   sys->register_event(this, EventType::General, wlhd, runtime);
 }
 
@@ -203,6 +207,10 @@ void Workload::issue_comp(shared_ptr<Chakra::ETFeederNode> node) {
     double perf = sys->roofline->get_perf(operational_intensity);
     double elapsed_time = static_cast<double>(node->num_ops()) / perf; // sec
     uint64_t runtime = static_cast<uint64_t>(elapsed_time * 1e9); // sec -> ns
+    if (node->is_cpu_op())
+      hw_resource->tics_cpu_ops += runtime;
+    else
+      hw_resource->tics_gpu_ops += runtime;
     sys->register_event(this, EventType::General, wlhd, runtime);
   } else {
     // advance this node forward the recorded "replayed" time specificed in the
@@ -234,6 +242,7 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
   } else {
       // involved_dim does not exist in ETFeeder.
       // Assume involved_dim = [1]. Could use Process Group to build involved_dim later.
+      // Once process group is implemented, you should get that with node->pg_name()
       involved_dim.push_back(true);
   }
 
@@ -345,6 +354,7 @@ void Workload::call(EventType event, CallData* data) {
 
   if (event == EventType::CollectiveCommunicationFinished) {
     IntData* int_data = (IntData*)data;
+    hw_resource->tics_gpu_comms += int_data->execution_time;
     uint64_t node_id = collective_comm_node_id_map[int_data->data];
     shared_ptr<Chakra::ETFeederNode> node = et_feeder->lookupNode(node_id);
 
@@ -418,5 +428,6 @@ void Workload::fire() {
 void Workload::report() {
   Tick curr_tick = Sys::boostedTick();
   LoggerFactory::get_logger("workload")
-      ->info("sys[{}] finished, {} cycles", sys->id, curr_tick);
+    ->info("sys[{}] finished, {} cycles, exposed communication {} cycles.",
+    sys->id, curr_tick, curr_tick - hw_resource->tics_gpu_ops);
 }

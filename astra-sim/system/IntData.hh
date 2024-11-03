@@ -14,6 +14,7 @@ class IntData : public CallData {
     data = d;
   }
   int data;
+  uint64_t execution_time;
 };
 
 } // namespace AstraSim
