@@ -18,6 +18,7 @@
 #include <thread>
 #include <unistd.h>
 #include <vector>
+#include "astra-sim/common/Logging.hh"
 
 using namespace std;
 using namespace ns3;
@@ -142,8 +143,9 @@ string workload_configuration;
 string system_configuration;
 string network_configuration;
 string memory_configuration;
-string comm_group_configuration;
+string comm_group_configuration = "empty";
 string logical_topology_configuration;
+string logging_configuration = "empty";
 int num_queues_per_dim = 1;
 double comm_scale = 1;
 double injection_scale = 1;
@@ -200,6 +202,9 @@ void parse_args(int argc, char* argv[]) {
     cmd.AddValue("logical-topology-configuration",
                  "Logical topology configuration file",
                  logical_topology_configuration);
+    cmd.AddValue("logging-configuration",
+                 "Logging configuration file", 
+                 logging_configuration);
 
     cmd.AddValue("num-queues-per-dim", "Number of queues per each dimension",
                  num_queues_per_dim);
@@ -219,6 +224,7 @@ int main(int argc, char* argv[]) {
 
     // Read network config and find logical dims.
     parse_args(argc, argv);
+    AstraSim::LoggerFactory::init(logging_configuration);
     read_logical_topo_config(logical_topology_configuration, logical_dims);
 
     // Setup network & System layer.
