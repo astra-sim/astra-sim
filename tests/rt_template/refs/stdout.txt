@@ -2,11 +2,11 @@ ring of node 0, id: 0 dimension: local total nodes in ring: 8 index in ring: 0 o
 ring of node 0, id: 0 dimension: local total nodes in ring: 8 index in ring: 0 offset: 1 total nodes in ring: 8
 ring of node 0, id: 0 dimension: local total nodes in ring: 8 index in ring: 0 offset: 1 total nodes in ring: 8
 ring of node 0, id: 0 dimension: local total nodes in ring: 8 index in ring: 0 offset: 1 total nodes in ring: 8
-sys[0] finished, 117780 cycles
-sys[1] finished, 117780 cycles
-sys[2] finished, 117780 cycles
-sys[3] finished, 117780 cycles
-sys[4] finished, 117780 cycles
-sys[5] finished, 117780 cycles
-sys[6] finished, 117780 cycles
-sys[7] finished, 117780 cycles
+sys[0] finished, 117780 cycles, exposed communication 117780 cycles.
+sys[1] finished, 117780 cycles, exposed communication 117780 cycles.
+sys[2] finished, 117780 cycles, exposed communication 117780 cycles.
+sys[3] finished, 117780 cycles, exposed communication 117780 cycles.
+sys[4] finished, 117780 cycles, exposed communication 117780 cycles.
+sys[5] finished, 117780 cycles, exposed communication 117780 cycles.
+sys[6] finished, 117780 cycles, exposed communication 117780 cycles.
+sys[7] finished, 117780 cycles, exposed communication 117780 cycles.

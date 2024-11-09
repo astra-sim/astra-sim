@@ -1,7 +1,7 @@
 import os
 
-from chakra.third_party.utils.protolib import encodeMessage as encode_message
-from chakra.et_def.et_def_pb2 import (
+from chakra.src.third_party.utils.protolib import encodeMessage as encode_message
+from chakra.schema.protobuf.et_def_pb2 import (
     Node as ChakraNode,
     BoolList,
     GlobalMetadata,
