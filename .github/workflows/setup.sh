@@ -17,23 +17,16 @@ apt -y install libprotobuf-dev protobuf-compiler
 apt -y install openmpi-bin openmpi-doc libopenmpi-dev
 
 ## Create Python venv: Required for Python 3.12
-python3 -m venv ~/.astra_sim_env
-source ~/.astra_sim_env/bin/activate
+python3 -m venv ${PROJ_DIR}/.astra_sim_env
+source ${PROJ_DIR}/.astra_sim_env/bin/activate
 
 pip3 install --upgrade pip
 
 ## Install Python protobuf package
-pip3 install protobuf==4.25.3
-
-### ============= Build Analytical ==================
-${PROJ_DIR}/build/astra_analytical/build.sh
-
-### ============= Build NS3 ==================
-${PROJ_DIR}/build/astra_ns3/build.sh -c
+pip3 install protobuf==5.28.2
 
 ### ============= Install Chakra ==================
 cd ${PROJ_DIR}/extern/graph_frontend/chakra
 pip3 install .
-# pip3 install protobuf==5.28.2
 
 ### ======================================================

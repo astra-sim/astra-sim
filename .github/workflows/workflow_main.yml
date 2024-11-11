@@ -1,4 +1,4 @@
-name: Build All
+name: Main
 
 on:
   push:
@@ -17,7 +17,13 @@ jobs:
     - uses: actions/checkout@v3
       with:
         submodules: recursive
-        
+    
+    - name: Setup 
+      run: sudo ${{github.workspace}}/.github/workflows/setup.sh
+      
     - name: Build
-      run: sudo ${{github.workspace}}/.github/workflows/build_all.sh
+      run: ${{github.workspace}}/.github/workflows/build.sh
+      
+    - name: Test
+      run: ${{github.workspace}}/.github/workflows/test.sh
 
