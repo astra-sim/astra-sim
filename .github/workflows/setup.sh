@@ -12,13 +12,9 @@ apt -y install coreutils wget vim git
 apt -y install gcc-11 g++-11 make cmake 
 apt -y install clang-format 
 apt -y install libboost-dev libboost-program-options-dev
-apt -y install python3.12 python3-pip python3-venv
+apt -y install python3.10 python3-pip
 apt -y install libprotobuf-dev protobuf-compiler
 apt -y install openmpi-bin openmpi-doc libopenmpi-dev
-
-## Create Python venv: Required for Python 3.12
-python3 -m venv ${PROJ_DIR}/.astra_sim_env
-source ${PROJ_DIR}/.astra_sim_env/bin/activate
 
 pip3 install --upgrade pip
 
