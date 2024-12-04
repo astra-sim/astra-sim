@@ -29,6 +29,7 @@ class Workload : public Callable {
 
     // communicator groups
     void initialize_comm_group(std::string comm_group_filename);
+    void initialize_process_group(std::shared_ptr<Chakra::ETFeederNode> node);
 
     // event-based simulation
     void issue_dep_free_nodes();
@@ -50,6 +51,7 @@ class Workload : public Callable {
     Sys* sys;
     std::unordered_map<int, uint64_t> collective_comm_node_id_map;
     std::unordered_map<int, DataSet*> collective_comm_wrapper_map;
+    std::map<std::string, CommunicatorGroup*> process_group_map;
     bool is_finished;
 };
 

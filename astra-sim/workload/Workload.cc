@@ -97,6 +97,37 @@ void Workload::initialize_comm_group(string comm_group_filename) {
     }
 }
 
+void Workload::initialize_process_group(std::shared_ptr<Chakra::ETFeederNode> node) {
+
+    if (!this->process_group_map.empty()) return;
+
+    std::string pg_info = node->get_inputs_values();
+    if (pg_info.empty()) {
+        std::cerr << "Process Group Information is not encoded" << std::endl;
+        return;
+    }
+    pg_info = pg_info.substr(2, pg_info.size() - 4); // Strip first and last character
+    try {
+        json valuesRoot = json::parse(pg_info);
+
+        for (const auto& item : valuesRoot) {
+            std::string pgName = item.at("pg_name").get<std::string>();
+            std::vector<int> involved_NPUs = item.at("ranks").get<std::vector<int>>();
+
+            if (involved_NPUs.empty()) {
+                for (int i=0; i<sys->total_nodes; i++)
+                    involved_NPUs.push_back(i);
+            }
+
+            // To ensure pgName > 0
+            CommunicatorGroup* cg = new CommunicatorGroup(std::stoi(pgName)+1, involved_NPUs, sys);
+            process_group_map.insert(std::pair<std::string, CommunicatorGroup*>(pgName, cg));
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Error parsing or processing JSON: " << e.what() << std::endl;
+    }
+}
+
 void Workload::issue_dep_free_nodes() {
     std::queue<shared_ptr<Chakra::ETFeederNode>> push_back_queue;
     shared_ptr<Chakra::ETFeederNode> node = et_feeder->getNextIssuableNode();
@@ -122,6 +153,9 @@ void Workload::issue(shared_ptr<Chakra::ETFeederNode> node) {
         hw_resource->occupy(node);
         issue_replay(node);
     } else {
+        if ((node->type() == ChakraNodeType::METADATA_NODE)) {
+            initialize_process_group(node);
+        }
         if ((node->type() == ChakraNodeType::MEM_LOAD_NODE) ||
             (node->type() == ChakraNodeType::MEM_STORE_NODE)) {
             if (sys->trace_enabled) {
@@ -224,8 +258,54 @@ void Workload::issue_comp(shared_ptr<Chakra::ETFeederNode> node) {
 void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
     hw_resource->occupy(node);
 
+    if (node->pg_name().empty())
+        std::cerr << "Error: pg name is not specified "
+                  << node->name() << ":::" << node->pg_name() << endl;
+
+    auto it = process_group_map.find(node->pg_name());
+    comm_group = (it != process_group_map.end()) ? it->second : nullptr;
+
+    // Security
+    // broadcast colelctive has not been implemented in ASTRA-SIM yet.
+    // So, we just use its real system mesurements
+
+    int comm_index = node->comm_type();
+    if(node->type() == ChakraNodeType::COMM_SEND_NODE){
+        comm_index = 10;
+    }
+    else if (node->type() == ChakraNodeType::COMM_RECV_NODE) {
+        comm_index = 11;
+    }
+    else if (node->comm_type() < 0 || node->comm_type() > 9) {
+        // Code to handle the case where comm_type is out of range
+        std::cerr << "Error: comm_type is out of range (0-9), got "
+                  << node->name() << " time: " << node->runtime() * 1000 << std::endl;
+        return;
+    }
+
+    if (comm_index == 10 || comm_index == 11) {
+        std::cout << "Replaying : " << node->name() << std::endl;
+        uint64_t runtime = 1ul;
+        if (node->runtime() != 0ul) {
+            // chakra runtimes are in microseconds and we should convert it
+            // into nanoseconds
+            runtime = node->runtime() * 1000;
+        }
+        DataSet* fp = new DataSet(1);
+        //fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
+        collective_comm_node_id_map[fp->my_id] = node->id();
+        collective_comm_wrapper_map[fp->my_id] = fp;
+        sys->register_event(fp, EventType::General, nullptr,
+        // chakra runtimes are in microseconds and we
+        // should convert it into nanoseconds
+                runtime);
+        fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
+        return;
+    }
+
     vector<bool> involved_dim;
 
+    // We prioritize involved_dim if exists.
     if (node->has_other_attr("involved_dim")) {
         const ChakraProtoMsg::AttributeProto& attr =
             node->get_other_attr("involved_dim");
@@ -243,14 +323,11 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
                  << endl;
             exit(EXIT_FAILURE);
         }
-    } else {
-        // involved_dim does not exist in ETFeeder.
-        // Assume involved_dim = [1,1,1,1,1] which we could simulate 5-Dimension.
-	// Could use Process Group to build involved_dim later. 
-	// Once process group is implemented, you should get
-        // that with node->pg_name()
-	
-	for(int i = 0; i < 4; i++)
+    } else if (comm_group == nullptr) {
+        // involved_dim and comm_group do not exist in ETFeeder.
+        // Assume involved_dim = [1,1,1,1] which we could simulate at most 4-Dimension.
+
+    	for(int i = 0; i < 4; i++)
             involved_dim.push_back(true);
     }
 

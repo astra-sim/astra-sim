@@ -16,11 +16,13 @@ CommunicatorGroup::CommunicatorGroup(int id,
                                      std::vector<int> involved_NPUs,
                                      Sys* generator) {
     set_id(id);
+    std::sort(involved_NPUs.begin(), involved_NPUs.end());
     this->involved_NPUs = involved_NPUs;
     this->generator = generator;
-    std::sort(involved_NPUs.begin(), involved_NPUs.end());
-    assert(std::find(involved_NPUs.begin(), involved_NPUs.end(),
-                     generator->id) != involved_NPUs.end());
+
+    // Assert that generator->id is part of the sorted vector
+    assert(std::find(this->involved_NPUs.begin(), this->involved_NPUs.end(),
+                     generator->id) != this->involved_NPUs.end());
 }
 
 CommunicatorGroup::~CommunicatorGroup() {
