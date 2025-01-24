@@ -43,6 +43,7 @@ void DataSet::notify_stream_finished(StreamStat* data) {
             IntData* int_data = new IntData(my_id);
             int_data->execution_time = finish_tick - creation_tick;
             c->call(ev, int_data);
+            delete int_data;
         }
     }
 }
