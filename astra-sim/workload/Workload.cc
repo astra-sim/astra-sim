@@ -378,8 +378,8 @@ void Workload::call(EventType event, CallData* data) {
 
     // The Dataset class provides statistics that should be used later to dump
     // more statistics in the workload layer
-    delete collective_comm_wrapper_map[node_id];
-    collective_comm_wrapper_map.erase(node_id);
+    delete collective_comm_wrapper_map[int_data->data];
+    collective_comm_wrapper_map.erase(int_data->data);
 
   } else {
     if (data == nullptr) {
