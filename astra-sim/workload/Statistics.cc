@@ -119,49 +119,52 @@ Tick Statistics::_calculateTotalRuntimeFromIntervals(
 
 void Statistics::report(std::shared_ptr<spdlog::logger> logger) const {
   const auto& sys_id = workload->sys->id;
-  logger->info("sys[{}], Wall time: {}", sys_id, this->wall_time);
+  logger->info("sys[{}], Wall time={}", sys_id, this->wall_time);
   for (const auto& [type, time] : this->type_time) {
     switch (type) {
       case OperatorStatistics::OperatorType::CPU:
-        logger->info("sys[{}], CPU time: {}", sys_id, time);
+        logger->info("sys[{}], CPU time={}", sys_id, time);
         break;
       case OperatorStatistics::OperatorType::GPU:
-        logger->info("sys[{}], GPU time: {}", sys_id, time);
+        logger->info("sys[{}], GPU time={}", sys_id, time);
         break;
       case OperatorStatistics::OperatorType::COMM:
-        logger->info("sys[{}], Comm time: {}", sys_id, time);
+        logger->info("sys[{}], Comm time={}", sys_id, time);
         break;
       case OperatorStatistics::OperatorType::REMOTE_MEM:
-        logger->info("sys[{}], Remote mem time: {}", sys_id, time);
+        logger->info("sys[{}], Remote mem time={}", sys_id, time);
         break;
       case OperatorStatistics::OperatorType::REPLAY:
-        logger->info("sys[{}], Replay time: {}", sys_id, time);
+        logger->info("sys[{}], Replay time={}", sys_id, time);
         break;
       case OperatorStatistics::OperatorType::INVALID:
-        logger->info("sys[{}], Invalid time: {}", sys_id, time);
+        logger->info("sys[{}], Invalid time={}", sys_id, time);
         break;
     }
   }
   logger->info(
-      "sys[{}], Compute bound percentage: {:.6f}",
+      "sys[{}], Compute bound percentage={:.6f}",
       sys_id,
       this->compute_bound_percentage_);
   logger->info(
-      "sys[{}], Average compute utilization: {:.6f}",
+      "sys[{}], Average compute utilization={:.6f}",
       sys_id,
       this->average_compute_utilization_);
   logger->info(
-      "sys[{}], Average memory utilization: {:.6f}",
+      "sys[{}], Average memory utilization={:.6f}",
       sys_id,
       this->average_memory_utilization_);
   logger->info(
-      "sys[{}], Average operation intensity: {:.6f}",
+      "sys[{}], Average operation intensity={:.6f}",
       sys_id,
       this->average_operation_intensity_);
   logger->info(
-      "sys[{}], Average memory usage: {}, Peak memory usage: {}",
+      "sys[{}], Average memory usage={}",
       sys_id,
-      this->local_memory_tracker.getAverageMemoryUsage(),
+      this->local_memory_tracker.getAverageMemoryUsage());
+  logger->info(
+      "sys[{}], Peak memory usage={}",
+      sys_id,
       this->local_memory_tracker.getPeakMemoryUsage());
 }
 
