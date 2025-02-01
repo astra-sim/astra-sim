@@ -19,7 +19,7 @@ apt -y install openmpi-bin openmpi-doc libopenmpi-dev
 pip3 install --upgrade pip
 
 ## Install Python protobuf package
-pip3 install protobuf==5.28.2
+pip3 install protobuf==5.29.0
 
 ### ============= Install Chakra ==================
 cd ${PROJ_DIR}/extern/graph_frontend/chakra
