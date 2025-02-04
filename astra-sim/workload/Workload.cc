@@ -352,8 +352,10 @@ void Workload::call(EventType event, CallData* data) {
 
     if (event == EventType::CollectiveCommunicationFinished) {
         IntData* int_data = (IntData*)data;
+        uint64_t coll_comm_id = int_data->data;
+
         hw_resource->tics_gpu_comms += int_data->execution_time;
-        uint64_t node_id = collective_comm_node_id_map[int_data->data];
+        uint64_t node_id = collective_comm_node_id_map[coll_comm_id];
         shared_ptr<Chakra::ETFeederNode> node = et_feeder->lookupNode(node_id);
 
         if (sys->trace_enabled) {
@@ -374,8 +376,8 @@ void Workload::call(EventType event, CallData* data) {
 
         // The Dataset class provides statistics that should be used later to
         // dump more statistics in the workload layer
-        delete collective_comm_wrapper_map[node_id];
-        collective_comm_wrapper_map.erase(node_id);
+        delete collective_comm_wrapper_map[coll_comm_id];
+        collective_comm_wrapper_map.erase(coll_comm_id);
 
     } else {
         if (data == nullptr) {
