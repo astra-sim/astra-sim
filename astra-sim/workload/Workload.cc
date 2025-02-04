@@ -409,6 +409,7 @@ void Workload::call(EventType event, CallData* data) {
         (hw_resource->num_in_flight_gpu_comp_ops == 0) &&
         (hw_resource->num_in_flight_gpu_comm_ops == 0)) {
         report();
+        sys->comm_NI->sim_notify_finished();
         is_finished = true;
     }
 }
