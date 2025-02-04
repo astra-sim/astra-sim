@@ -14,12 +14,12 @@ class Workload;
 class WorkloadLayerHandlerData;
 
 class MemEventHandlerData : public BasicEventHandlerData {
- public:
-  MemEventHandlerData();
-  Workload* workload;
-  WorkloadLayerHandlerData* wlhd;
+  public:
+    MemEventHandlerData();
+    Workload* workload;
+    WorkloadLayerHandlerData* wlhd;
 };
 
-} // namespace AstraSim
+}  // namespace AstraSim
 
 #endif /* __MEM_EVENT_HANDLER_DATA_HH__ */

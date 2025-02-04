@@ -9,13 +9,14 @@ LICENSE file in the root directory of this source tree.
 namespace AstraSim {
 
 class IntData : public CallData {
- public:
-  IntData(int d) {
-    data = d;
-  }
-  int data;
+  public:
+    IntData(int d) {
+        data = d;
+    }
+    int data;
+    uint64_t execution_time;
 };
 
-} // namespace AstraSim
+}  // namespace AstraSim
 
 #endif /* __INT_DATA_HH__ */

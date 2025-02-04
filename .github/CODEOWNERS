@@ -1,0 +1,41 @@
+## ******************************************************************************
+## This source code is licensed under the MIT license found in the
+## LICENSE file in the root directory of this source tree.
+##
+## Copyright (c) 2024 Georgia Institute of Technology
+## ******************************************************************************
+
+## Affiliation as of 10/31/2024
+
+## =============================================================================
+## Georgia Tech
+
+# General Chair of ASTRA-sim
+* @tushar-krishna
+
+# Workload Layer
+* @JoongunPark
+
+# System Layer
+* @changhai0109
+
+# Network Layer (analytical)
+* @willjwon
+
+# Network Layer (ns-3)
+* @jinsun-yoo
+## =============================================================================
+
+
+## =============================================================================
+## Industry Collaborators and Liaisons
+
+# Meta
+* @rashidi1saeed
+
+# AMD
+* @feris-amd @bbeckman
+
+# NVIDIA
+* @TaekyungHeo
+## =============================================================================

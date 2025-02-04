@@ -16,19 +16,18 @@ namespace AstraSim {
 
 class Sys;
 class StreamBaseline : public BaseStream {
- public:
-  StreamBaseline(
-      Sys* owner,
-      DataSet* dataset,
-      int stream_id,
-      std::list<CollectivePhase> phases_to_go,
-      int priority);
+  public:
+    StreamBaseline(Sys* owner,
+                   DataSet* dataset,
+                   int stream_id,
+                   std::list<CollectivePhase> phases_to_go,
+                   int priority);
 
-  void init();
-  void call(EventType event, CallData* data);
-  void consume(RecvPacketEventHandlerData* message);
+    void init();
+    void call(EventType event, CallData* data);
+    void consume(RecvPacketEventHandlerData* message);
 };
 
-} // namespace AstraSim
+}  // namespace AstraSim
 
 #endif /* __STREAM_BASELINE_HH__ */

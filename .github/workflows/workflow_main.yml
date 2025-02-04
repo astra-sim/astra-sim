@@ -1,0 +1,29 @@
+name: Main
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+    
+    - name: Setup 
+      run: sudo ${{github.workspace}}/.github/workflows/setup.sh
+      
+    - name: Build
+      run: ${{github.workspace}}/.github/workflows/build.sh
+      
+    - name: Test
+      run: ${{github.workspace}}/.github/workflows/test.sh
+

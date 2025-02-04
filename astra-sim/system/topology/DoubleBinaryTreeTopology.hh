@@ -12,21 +12,23 @@ LICENSE file in the root directory of this source tree.
 namespace AstraSim {
 
 class DoubleBinaryTreeTopology : public ComplexLogicalTopology {
- public:
-  DoubleBinaryTreeTopology(int id, int total_tree_nodes, int start, int stride);
-  ~DoubleBinaryTreeTopology();
-  LogicalTopology* get_topology() override;
-  BasicLogicalTopology* get_basic_topology_at_dimension(
-      int dimension,
-      ComType type) override;
-  int get_num_of_dimensions() override;
-  int get_num_of_nodes_in_dimension(int dimension) override;
+  public:
+    DoubleBinaryTreeTopology(int id,
+                             int total_tree_nodes,
+                             int start,
+                             int stride);
+    ~DoubleBinaryTreeTopology();
+    LogicalTopology* get_topology() override;
+    BasicLogicalTopology* get_basic_topology_at_dimension(
+        int dimension, ComType type) override;
+    int get_num_of_dimensions() override;
+    int get_num_of_nodes_in_dimension(int dimension) override;
 
-  int counter;
-  BinaryTree* DBMAX;
-  BinaryTree* DBMIN;
+    int counter;
+    BinaryTree* DBMAX;
+    BinaryTree* DBMIN;
 };
 
-} // namespace AstraSim
+}  // namespace AstraSim
 
 #endif /* __DOUBLE_BINARY_TREE_TOPOLOGY_HH__ */

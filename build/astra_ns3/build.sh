@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 # Absolue path to this script
 SCRIPT_DIR=$(dirname "$(realpath $0)")
 # Absolute paths to useful directories
@@ -14,8 +15,8 @@ NETWORK="../../../ns-3/scratch/config/config.txt"
 # Functions
 function setup {
     protoc et_def.proto\
-        --proto_path ${SCRIPT_DIR}/../../extern/graph_frontend/chakra/et_def/\
-        --cpp_out ${SCRIPT_DIR}/../../extern/graph_frontend/chakra/et_def/
+        --proto_path ${SCRIPT_DIR}/../../extern/graph_frontend/chakra/schema/protobuf/\
+        --cpp_out ${SCRIPT_DIR}/../../extern/graph_frontend/chakra/schema/protobuf/
 }
 function compile {
     cd "${NS3_DIR}"
