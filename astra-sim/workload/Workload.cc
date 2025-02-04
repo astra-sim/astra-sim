@@ -369,13 +369,12 @@ void Workload::call(EventType event, CallData* data) {
         et_feeder->freeChildrenNodes(node_id);
 
         issue_dep_free_nodes();
-
+      
+        // The Dataset class provides statistics that should be used later to dump
+        // more statistics in the workload layer
+        delete collective_comm_wrapper_map[int_data->data];
+        collective_comm_wrapper_map.erase(int_data->data);
         et_feeder->removeNode(node_id);
-
-        // The Dataset class provides statistics that should be used later to
-        // dump more statistics in the workload layer
-        delete collective_comm_wrapper_map[node_id];
-        collective_comm_wrapper_map.erase(node_id);
 
     } else {
         if (data == nullptr) {
