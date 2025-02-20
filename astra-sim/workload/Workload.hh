@@ -29,12 +29,13 @@ class Workload : public Callable {
 
     // communicator groups
     void initialize_comm_group(std::string comm_group_filename);
-    void initialize_comm_group(
+    void issue_pytorch_pg_metadata(
         std::shared_ptr<Chakra::FeederV3::ETFeederNode> node);
 
     // event-based simulation
     void issue_dep_free_nodes();
     void issue(std::shared_ptr<Chakra::FeederV3::ETFeederNode> node);
+    void issue_metadata(std::shared_ptr<Chakra::FeederV3::ETFeederNode> node);
     void issue_replay(std::shared_ptr<Chakra::FeederV3::ETFeederNode> node);
     void issue_remote_mem(std::shared_ptr<Chakra::FeederV3::ETFeederNode> node);
     void issue_comp(std::shared_ptr<Chakra::FeederV3::ETFeederNode> node);
