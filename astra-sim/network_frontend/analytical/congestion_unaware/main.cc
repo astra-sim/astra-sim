@@ -97,6 +97,11 @@ int main(int argc, char* argv[]) {
         event_queue->proceed();
     }
 
+    for (auto it : systems) {
+        delete it;
+    }
+    systems.clear();
+
     // terminate simulation
     AstraSim::LoggerFactory::shutdown();
     return 0;

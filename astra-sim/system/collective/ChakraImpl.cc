@@ -18,11 +18,11 @@ using namespace Chakra;
 typedef ChakraProtoMsg::NodeType ChakraNodeType;
 
 ChakraImpl::ChakraImpl(std::string et_filename, int id) : Algorithm() {
-    this->et_feeder = new Chakra::ETFeeder(et_filename);
+    this->et_feeder = new Chakra::FeederV3::ETFeeder(et_filename);
     this->id = id;
 }
 
-void ChakraImpl::issue(shared_ptr<Chakra::ETFeederNode> node) {
+void ChakraImpl::issue(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
     ChakraNodeType type = node->type();
     if (type == ChakraNodeType::COMM_SEND_NODE) {
         sim_request snd_req;
@@ -69,7 +69,8 @@ void ChakraImpl::issue(shared_ptr<Chakra::ETFeederNode> node) {
 }
 
 void ChakraImpl::issue_dep_free_nodes() {
-    shared_ptr<Chakra::ETFeederNode> node = et_feeder->getNextIssuableNode();
+    shared_ptr<Chakra::FeederV3::ETFeederNode> node =
+        et_feeder->getNextIssuableNode();
     while (node != nullptr) {
         issue(node);
         node = et_feeder->getNextIssuableNode();
@@ -86,7 +87,7 @@ void ChakraImpl::call(EventType event, CallData* data) {
     }
 
     WorkloadLayerHandlerData* wlhd = (WorkloadLayerHandlerData*)data;
-    shared_ptr<Chakra::ETFeederNode> node =
+    shared_ptr<Chakra::FeederV3::ETFeederNode> node =
         et_feeder->lookupNode(wlhd->node_id);
     et_feeder->freeChildrenNodes(wlhd->node_id);
     issue_dep_free_nodes();

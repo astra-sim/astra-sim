@@ -12,16 +12,17 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/MemBus.hh"
 #include "astra-sim/system/MyPacket.hh"
 #include "astra-sim/system/collective/Algorithm.hh"
-#include "extern/graph_frontend/chakra/src/feeder/et_feeder.h"
+#include "extern/graph_frontend/chakra/src/feeder_v3/et_feeder.h"
 
 namespace AstraSim {
 
 class HardwareResourceChakra {
   public:
     HardwareResourceChakra();
-    void occupy(const std::shared_ptr<Chakra::ETFeederNode> node);
-    void release(const std::shared_ptr<Chakra::ETFeederNode> node);
-    bool is_available(const std::shared_ptr<Chakra::ETFeederNode> node) const;
+    void occupy(const std::shared_ptr<Chakra::FeederV3::ETFeederNode> node);
+    void release(const std::shared_ptr<Chakra::FeederV3::ETFeederNode> node);
+    bool is_available(
+        const std::shared_ptr<Chakra::FeederV3::ETFeederNode> node) const;
 
     uint32_t num_in_flight_cpu_ops;
     uint32_t num_in_flight_gpu_comp_ops;
@@ -61,13 +62,13 @@ class ChakraImpl : public Algorithm {
      * through the workload Chakra ET.
      * TODO: merge with impl in Workload layer.
      */
-    void issue(std::shared_ptr<Chakra::ETFeederNode> node);
+    void issue(std::shared_ptr<Chakra::FeederV3::ETFeederNode> node);
     void issue_dep_free_nodes();
 
     // Rank Id
     int id;
     // ET Feeder for the Chakra ET for this specific rank.
-    Chakra::ETFeeder* et_feeder;
+    Chakra::FeederV3::ETFeeder* et_feeder;
     // Tracks availability of hardware resources (e.g. prevent two send ET nodes
     // at same time).
     // TODO: merge with impl in Workload layer.
