@@ -13,7 +13,7 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/Callable.hh"
 #include "astra-sim/system/CommunicatorGroup.hh"
 #include "astra-sim/workload/HardwareResource.hh"
-#include "extern/graph_frontend/chakra/src/feeder/et_feeder.h"
+#include "extern/graph_frontend/chakra/src/feeder_v3/et_feeder.h"
 
 namespace AstraSim {
 
@@ -29,23 +29,28 @@ class Workload : public Callable {
 
     // communicator groups
     void initialize_comm_group(std::string comm_group_filename);
+    void initialize_comm_group(
+        std::shared_ptr<Chakra::FeederV3::ETFeederNode> node);
 
     // event-based simulation
     void issue_dep_free_nodes();
-    void issue(std::shared_ptr<Chakra::ETFeederNode> node);
-    void issue_replay(std::shared_ptr<Chakra::ETFeederNode> node);
-    void issue_remote_mem(std::shared_ptr<Chakra::ETFeederNode> node);
-    void issue_comp(std::shared_ptr<Chakra::ETFeederNode> node);
-    void issue_comm(std::shared_ptr<Chakra::ETFeederNode> node);
-    void skip_invalid(std::shared_ptr<Chakra::ETFeederNode> node);
+    void issue(std::shared_ptr<Chakra::FeederV3::ETFeederNode> node);
+    void issue_replay(std::shared_ptr<Chakra::FeederV3::ETFeederNode> node);
+    void issue_remote_mem(std::shared_ptr<Chakra::FeederV3::ETFeederNode> node);
+    void issue_comp(std::shared_ptr<Chakra::FeederV3::ETFeederNode> node);
+    void issue_comm(std::shared_ptr<Chakra::FeederV3::ETFeederNode> node);
+    void issue_coll_comm(std::shared_ptr<Chakra::FeederV3::ETFeederNode> node);
+    void issue_send_comm(std::shared_ptr<Chakra::FeederV3::ETFeederNode> node);
+    void issue_recv_comm(std::shared_ptr<Chakra::FeederV3::ETFeederNode> node);
+    void skip_invalid(std::shared_ptr<Chakra::FeederV3::ETFeederNode> node);
     void call(EventType event, CallData* data);
     void fire();
 
     // stats
     void report();
 
-    Chakra::ETFeeder* et_feeder;
-    CommunicatorGroup* comm_group;
+    Chakra::FeederV3::ETFeeder* et_feeder;
+    std::unordered_map<std::string, CommunicatorGroup*> comm_group;
     HardwareResource* hw_resource;
     Sys* sys;
     std::unordered_map<int, uint64_t> collective_comm_node_id_map;

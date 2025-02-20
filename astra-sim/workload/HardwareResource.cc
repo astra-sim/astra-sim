@@ -27,22 +27,25 @@ HardwareResource::HardwareResource(uint32_t num_npus)
     tics_gpu_ops = 0;
     tics_gpu_comms = 0;
 
-    cpu_ops_node = NULL;
-    gpu_ops_node = NULL;
-    gpu_comms_node = NULL;
+    // cpu_ops_node = NULL;
+    // gpu_ops_node = NULL;
+    // gpu_comms_node = NULL;
 }
 
-void HardwareResource::occupy(const shared_ptr<Chakra::ETFeederNode> node) {
+void HardwareResource::occupy(
+    const shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
     if (node->is_cpu_op()) {
         assert(num_in_flight_cpu_ops == 0);
         ++num_in_flight_cpu_ops;
         ++num_cpu_ops;
+        cpu_ops_node.emplace(node->id());
     } else {
         if (node->type() == ChakraNodeType::COMP_NODE) {
             assert(num_in_flight_gpu_comp_ops == 0);
             ++num_in_flight_gpu_comp_ops;
             ++num_gpu_ops;
-            gpu_ops_node = node;
+            // gpu_ops_node = node;
+            gpu_ops_node.emplace(node->id());
         } else {
             if (node->type() == ChakraNodeType::COMM_RECV_NODE) {
                 return;
@@ -50,31 +53,36 @@ void HardwareResource::occupy(const shared_ptr<Chakra::ETFeederNode> node) {
             assert(num_in_flight_gpu_comm_ops == 0);
             ++num_in_flight_gpu_comm_ops;
             ++num_gpu_comms;
-            gpu_comms_node = node;
+            // gpu_comms_node = node;
+            gpu_comms_node.emplace(node->id());
         }
     }
 }
 
-void HardwareResource::release(const shared_ptr<Chakra::ETFeederNode> node) {
+void HardwareResource::release(
+    const shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
     if (node->is_cpu_op()) {
         --num_in_flight_cpu_ops;
         assert(num_in_flight_cpu_ops == 0);
+        this->cpu_ops_node.erase(node->id());
     } else {
         if (node->type() == ChakraNodeType::COMP_NODE) {
             --num_in_flight_gpu_comp_ops;
             assert(num_in_flight_gpu_comp_ops == 0);
+            this->gpu_ops_node.erase(node->id());
         } else {
             if (node->type() == ChakraNodeType::COMM_RECV_NODE) {
                 return;
             }
             --num_in_flight_gpu_comm_ops;
             assert(num_in_flight_gpu_comm_ops == 0);
+            this->gpu_comms_node.erase(node->id());
         }
     }
 }
 
 bool HardwareResource::is_available(
-    const shared_ptr<Chakra::ETFeederNode> node) const {
+    const shared_ptr<Chakra::FeederV3::ETFeederNode> node) const {
     if (node->is_cpu_op()) {
         if (num_in_flight_cpu_ops == 0) {
             return true;
