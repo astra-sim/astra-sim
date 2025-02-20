@@ -9,21 +9,23 @@ LICENSE file in the root directory of this source tree.
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "astra-sim/system/MemBus.hh"
+#include "astra-sim/system/MyPacket.hh"
 #include "astra-sim/system/astraccl/Algorithm.hh"
-#include "extern/graph_frontend/chakra/src/feeder/et_feeder.h"
+#include "extern/graph_frontend/chakra/src/feeder_v3/et_feeder.h"
 
 namespace AstraSim {
 
 /*
  * CustomAlgorithm class allows users to simulate their own custom algorithms.
- * This class implements the Algorithm interface. The current implementation parses
- * a Chakra ET representation of the custom algorithm.
+ * This class implements the Algorithm interface. The current implementation
+ * parses a Chakra ET representation of the custom algorithm.
  *
- * The Chakra ET representation is a file that contains the nodes of the algorithm.
- * The nodes are either COMM_SEND, COMM_RECV, or COMP.
+ * The Chakra ET representation is a file that contains the nodes of the
+ * algorithm. The nodes are either COMM_SEND, COMM_RECV, or COMP.
  *
- * To use this implementation, write the "ABSOLUTE" path to the Chakra trace file
- * in the system layer input (instead of traditional `Ring`, etc.), under
+ * To use this implementation, write the "ABSOLUTE" path to the Chakra trace
+ * file in the system layer input (instead of traditional `Ring`, etc.), under
  * `{all-reduce|all-to-all|all-gather}-implementation-custom`.
  *
  * For a detailed description on using a Chakra ET based representation, refer
@@ -46,7 +48,7 @@ class CustomAlgorithm : public Algorithm {
      * through the workload Chakra ET.
      * TODO: merge with impl in Workload layer.
      */
-    void issue(std::shared_ptr<Chakra::ETFeederNode> node);
+    void issue(std::shared_ptr<Chakra::FeederV3::ETFeederNode> node);
     void issue_dep_free_nodes();
 
     // Rank Id
