@@ -463,7 +463,9 @@ void Workload::call(EventType event, CallData* data) {
         }
     }
 
-    if (!et_feeder->hasNodesToIssue() &&
+    const auto& dep_resolver = this->et_feeder->getDependancyResolver();
+    if ((dep_resolver.get_dependancy_free_nodes().empty()) &&
+        (dep_resolver.get_ongoing_nodes().empty()) &&
         (hw_resource->num_in_flight_cpu_ops == 0) &&
         (hw_resource->num_in_flight_gpu_comp_ops == 0) &&
         (hw_resource->num_in_flight_gpu_comm_ops == 0)) {
