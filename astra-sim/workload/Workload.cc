@@ -92,6 +92,40 @@ void Workload::initialize_comm_groups(string comm_group_filename) {
     }
 }
 
+void Workload::issue_pytorch_pg_metadata(
+    std::shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
+    // For read comm groups from torch, might overwrite previous.
+    std::string pg_info = node->get_inputs_values();
+    if (pg_info.empty()) {
+        return;
+    }
+    pg_info = pg_info.substr(2, pg_info.size() - 4);
+
+    try {
+        json valuesRoot = json::parse(pg_info);
+
+        for (const auto& item : valuesRoot) {
+            std::string pgName = item.at("pg_name").get<std::string>();
+            std::vector<int> involved_NPUs =
+                item.at("ranks").get<std::vector<int>>();
+
+            if (involved_NPUs.empty()) {
+                for (int i = 0; i < sys->total_nodes; i++) {
+                    involved_NPUs.push_back(i);
+                }
+            }
+
+            // To ensure pgName > 0
+            CommunicatorGroup* cg = new CommunicatorGroup(std::stoi(pgName) + 1,
+                                                          involved_NPUs, sys);
+            this->comm_group[pgName] = cg;
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Error parsing or processing JSON: " << e.what()
+                  << std::endl;
+    }
+}
+
 void Workload::issue_dep_free_nodes() {
     auto& dependancy_resolver = this->et_feeder->getDependancyResolver();
     auto dependancy_free_nodes =
@@ -142,11 +176,23 @@ void Workload::issue(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
             issue_comm(node);
         } else if (node->type() == ChakraNodeType::INVALID_NODE) {
             skip_invalid(node);
+        } else if (node->type() == ChakraNodeType::METADATA_NODE) {
+            issue_metadata(node);
         } else {
             logger->critical("Unknown node type");
             exit(EXIT_FAILURE);
         }
     }
+}
+
+void Workload::issue_metadata(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
+    // TODO: someway to identify this metadata node is a pytorch pg node
+    if (true) {
+        issue_pytorch_pg_metadata(node);
+    } else {
+        throw std::runtime_error("Unknown metadata node type");
+    }
+    this->skip_invalid(node);  // for proper dependancy resolving
 }
 
 void Workload::issue_replay(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
