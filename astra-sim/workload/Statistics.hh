@@ -57,6 +57,8 @@ class Statistics {
     std::optional<bool> is_memory_bound;
 
     // communication node
+    std::optional<uint64_t> comm_size; // Size of communication in bytes
+    std::optional<double> network_bandwidth; // Achieved bandwidth in bytes/ns
 
     // remote memory node
 

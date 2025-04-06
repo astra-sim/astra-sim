@@ -141,6 +141,36 @@ void Statistics::report(std::shared_ptr<spdlog::logger> logger) const {
         break;
     }
   }
+  
+  // Report network bandwidth for communication operations
+  logger->info("sys[{}], Network bandwidth details:", sys_id);
+  
+  double total_bandwidth = 0.0;
+  size_t num_comm_ops = 0;
+  
+  for (const auto& [node_id, stat] : operator_statistics) {
+    if (stat.type == OperatorStatistics::OperatorType::COMM && 
+        stat.network_bandwidth.has_value() && 
+        stat.comm_size.has_value()) {
+      // Convert from bytes/ns to GB/s (1 GB/s = 1 byte/ns)
+      double bandwidth_gbps = stat.network_bandwidth.value();
+      total_bandwidth += bandwidth_gbps;
+      num_comm_ops++;
+      
+      logger->info("  Node {}: Size: {} bytes, Duration: {} ns, Bandwidth: {:.3f} GB/s", 
+                  node_id, 
+                  stat.comm_size.value(),
+                  stat.end_time - stat.start_time,
+                  bandwidth_gbps);
+    }
+  }
+  
+  if (num_comm_ops > 0) {
+    double avg_bandwidth = total_bandwidth / num_comm_ops;
+    logger->info("sys[{}], Average network bandwidth: {:.3f} GB/s across {} communication operations", 
+                sys_id, avg_bandwidth, num_comm_ops);
+  }
+  
   // only report utilization statistics when roofline is enabled
   if(workload->sys->roofline_enabled){
     logger->info(
@@ -148,7 +178,7 @@ void Statistics::report(std::shared_ptr<spdlog::logger> logger) const {
         sys_id,
         this->compute_bound_percentage_ * 100);
     logger->info(
-        "sys[{}], Average compute utilization: {:.3f}$",
+        "sys[{}], Average compute utilization: {:.3f}%",
         sys_id,
         this->average_compute_utilization_ * 100);
     logger->info(

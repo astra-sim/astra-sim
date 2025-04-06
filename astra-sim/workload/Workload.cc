@@ -340,6 +340,8 @@ void Workload::issue_coll_comm(
     const auto comm_type =
         static_cast<ChakraCollectiveCommType>(node->comm_type<uint64_t>());
     const auto comm_size = node->comm_size<uint64_t>();
+    // Record communication size for bandwidth calculation
+    stats->get_operator_statistics(node->id()).comm_size = comm_size;
     // TODO: comm_tag? which is used to distinguish two different collective in
     // same pg
     const auto comm_priority = node->comm_priority<uint32_t>();  // default 0u
@@ -398,6 +400,8 @@ void Workload::issue_send_comm(
     }
     const auto dst = node->comm_dst<uint32_t>();
     const auto size = node->comm_size<uint64_t>();
+    // Record communication size for bandwidth calculation
+    stats->get_operator_statistics(node->id()).comm_size = size;
     const auto tag = node->comm_tag<uint32_t>();
 
     sim_request snd_req;
@@ -422,6 +426,8 @@ void Workload::issue_recv_comm(
         throw std::runtime_error("Recv node should be issued by the receiver");
     }
     const auto size = node->comm_size<uint64_t>();
+    // Record communication size for bandwidth calculation
+    stats->get_operator_statistics(node->id()).comm_size = size;
     const auto tag = node->comm_tag<uint32_t>();
 
     sim_request rcv_req;
@@ -473,6 +479,15 @@ void Workload::call(EventType event, CallData* data) {
 
         hw_resource->release(node);
         stats->record_end(node, Sys::boostedTick());
+        
+        // Calculate network bandwidth
+        auto& op_stat = stats->get_operator_statistics(node_id);
+        Tick execution_time = int_data->execution_time;
+        if (execution_time > 0 && op_stat.comm_size.has_value()) {
+            double bandwidth = static_cast<double>(op_stat.comm_size.value()) / execution_time;
+            op_stat.network_bandwidth = bandwidth;
+        }
+        
         if (this->sys->track_local_mem) this->local_mem_usage_tracker->recordEnd(node, Sys::boostedTick());
 
         this->et_feeder->getDependancyResolver().finish_node(node_id);
@@ -502,6 +517,18 @@ void Workload::call(EventType event, CallData* data) {
 
             hw_resource->release(node);
             stats->record_end(node, Sys::boostedTick());
+            
+            // Calculate network bandwidth for point-to-point communications
+            if (event == EventType::PacketSent || event == EventType::PacketReceived) {
+                auto& op_stat = stats->get_operator_statistics(wlhd->node_id);
+                Tick execution_time = stats->get_operator_statistics(wlhd->node_id).end_time - 
+                                     stats->get_operator_statistics(wlhd->node_id).start_time;
+                if (execution_time > 0 && op_stat.comm_size.has_value()) {
+                    double bandwidth = static_cast<double>(op_stat.comm_size.value()) / execution_time;
+                    op_stat.network_bandwidth = bandwidth;
+                }
+            }
+            
             if (this->sys->track_local_mem) this->local_mem_usage_tracker->recordEnd(node, Sys::boostedTick());
 
             this->et_feeder->getDependancyResolver().finish_node(wlhd->node_id);
