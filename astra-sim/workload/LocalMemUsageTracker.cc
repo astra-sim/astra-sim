@@ -12,6 +12,7 @@
 #include <map>
 #include <fstream>
 #include <algorithm>
+#include <limits>
 
 #include "astra-sim/common/Common.hh"
 #include "astra-sim/common/Logging.hh"
@@ -317,6 +318,143 @@ void LocalMemUsageTracker::buildMemoryTimeline() {
     this->serializedMemoryTrace.push_back(std::move(memoryTimelineEvent));
     this->memoryUsage.insert({*it, totalSizeBytes});
   }
+  
+  // Build the tensor lifetime heatmap after building the memory timeline
+  this->buildTensorLifetimeHeatmap();
+}
+
+void LocalMemUsageTracker::buildTensorLifetimeHeatmap() {
+  // Calculate lifetime for each tensor
+  std::vector<std::tuple<TensorId, Tick, Tick, uint64_t>> tensorLifetimes; // tensor, start, end, size
+  
+  for (const auto& item : this->memWrites) {
+    const TensorId& tensorName = item.first;
+    Tick start = item.second.start;
+    Tick end;
+    
+    // Find the last read time
+    if (this->memReads.find(tensorName) != this->memReads.end() && !this->memReads.at(tensorName).empty()) {
+      end = this->memReads.at(tensorName).back().end;
+    } else {
+      // No reads; tensor didn't end. Use simulation's last tick if available
+      if (!this->memoryUsage.empty()) {
+          end = this->memoryUsage.rbegin()->first;
+      } else {
+          end = item.second.end;
+      }
+    }
+    
+    uint64_t size = this->tensorSize.at(tensorName);
+    tensorLifetimes.emplace_back(tensorName, start, end, size);
+  }
+  
+  // Sort tensors by lifetime duration (longest first)
+  std::sort(tensorLifetimes.begin(), tensorLifetimes.end(), 
+    [](const auto& a, const auto& b) {
+      Tick durationA = std::get<2>(a) - std::get<1>(a);
+      Tick durationB = std::get<2>(b) - std::get<1>(b);
+      return durationA > durationB; // Longest lifetime first
+    });
+  
+  // Generate heatmap events for Perfetto
+  const uint64_t heatmapProcessId = this->sysId + 3000000ul; // Use a different process ID for the heatmap view
+  
+  // Add a process name metadata event to label the heatmap view in Perfetto
+  json processNameEvent = {
+    {"name", "process_name"},
+    {"ph", "M"},  // Metadata event
+    {"pid", heatmapProcessId},
+    {"args", json{{"name", "Tensor Lifetime Heap"}}}
+  };
+  this->serializedMemoryTrace.push_back(std::move(processNameEvent));
+  
+  // Add thread name metadata for the legend/scale
+  json threadNameEvent = {
+    {"name", "thread_name"},
+    {"ph", "M"},  // Metadata event
+    {"pid", heatmapProcessId},
+    {"tid", 0},
+    {"args", json{{"name", "Longest Lifetime → Shortest Lifetime"}}}
+  };
+  this->serializedMemoryTrace.push_back(std::move(threadNameEvent));
+  
+  // Determine max heap depth - limit to reasonable value to prevent overwhelming the UI
+  int maxHeapDepth = std::min(100, static_cast<int>(tensorLifetimes.size()));
+  int count = std::min(maxHeapDepth, static_cast<int>(tensorLifetimes.size()));
+  uint64_t minLifetime = std::numeric_limits<uint64_t>::max();
+  uint64_t maxLifetime = 0;
+  for (int i = 0; i < count; i++) {
+      uint64_t duration = std::get<2>(tensorLifetimes[i]) - std::get<1>(tensorLifetimes[i]);
+      if (duration < minLifetime) minLifetime = duration;
+      if (duration > maxLifetime) maxLifetime = duration;
+  }
+  
+  // Generate color gradient for size visualization
+  auto getSizeColor = [](uint64_t size, uint64_t maxSize) -> std::string {
+    // Simple heat gradient: small tensors are blue, large are red
+    int intensity = std::min(255, static_cast<int>((static_cast<double>(size) / maxSize) * 255));
+    char color[8];
+    sprintf(color, "#%02X%02X%02X", intensity, 100, 255 - intensity);
+    return std::string(color);
+  };
+  
+  // Find maximum tensor size for color scaling
+  uint64_t maxTensorSize = 0;
+  for (const auto& item : this->tensorSize) {
+    maxTensorSize = std::max(maxTensorSize, item.second);
+  }
+  
+  // Generate the heatmap events using tensor lifetime to compute heap position
+  for (int i = 0; i < count; i++) {
+    const auto& [tensorName, start, end, size] = tensorLifetimes[i];
+    uint64_t duration = end - start;
+    int heapPos = 0;
+    if (maxLifetime != minLifetime) {
+      heapPos = static_cast<int>((static_cast<double>(duration - minLifetime) / (maxLifetime - minLifetime)) * (count - 1));
+    }
+    std::string color = getSizeColor(size, maxTensorSize);
+    double sizeMB = static_cast<double>(size) / (1024.0 * 1024.0);
+    std::string displayName = tensorName;
+    if (displayName.length() > 20) {
+      displayName = displayName.substr(0, 17) + "...";
+    }
+    displayName += " (" + std::to_string(sizeMB).substr(0, 5) + " MB)";
+
+    json heatmapEvent = {
+      {"name", displayName},
+      {"cat", "tensorHeatmap"},
+      {"ph", "X"},
+      {"ts", 1e-3 * start},
+      {"dur", 1e-3 * duration},
+      {"pid", heatmapProcessId},
+      {"tid", heapPos},
+      {"cname", color},
+      {"args", json{
+        {"tensor_name", tensorName},
+        {"size_bytes", size},
+        {"size_mb", sizeMB},
+        {"lifetime_ns", duration},
+        {"position", heapPos}
+      }}
+    };
+    this->serializedMemoryTrace.push_back(std::move(heatmapEvent));
+  }
+  
+  // Add additional metadata to describe the view
+  json heatmapInfoEvent = {
+    {"name", "Tensor Lifetime Heatmap"},
+    {"cat", "tensorHeatmap"},
+    {"ph", "i"},  // Instant event
+    {"ts", 0},  // Start of trace
+    {"pid", heatmapProcessId},
+    {"s", "p"},  // Process scoped
+    {"args", json{
+      {"description", "Tensors arranged by lifetime duration (longest at bottom)"},
+      {"total_tensors", tensorLifetimes.size()},
+      {"displayed_tensors", count}
+    }}
+  };
+  this->serializedMemoryTrace.push_back(std::move(heatmapInfoEvent));
 }
 
 uint64_t LocalMemUsageTracker::getPeakMemUsage() const {

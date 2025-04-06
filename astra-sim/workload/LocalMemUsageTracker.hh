@@ -34,6 +34,7 @@ class LocalMemUsageTracker {
   void buildMemoryTrace();
   void dumpMemoryTrace(const std::string& filename);
   void buildMemoryTimeline();
+  void buildTensorLifetimeHeatmap();
   std::tuple<float, std::string> getPeakMemUsageFormatted() const;
   uint64_t getPeakMemUsage() const;
   
