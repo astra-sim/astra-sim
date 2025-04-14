@@ -568,11 +568,9 @@ void Workload::report() {
         this->local_mem_usage_tracker->dumpMemoryTrace(
             this->sys->local_mem_trace_filename);
         auto [peak_mem_usage, unit] = this->local_mem_usage_tracker->getPeakMemUsageFormatted();
-        if (sys->trace_enabled) {
-            auto logger = LoggerFactory::get_logger("workload");
-            logger->info("sys[{}] peak memory usage: {:.2f} {}",
-                          sys->id, peak_mem_usage, unit);
-        }
+        auto logger = LoggerFactory::get_logger("workload");
+        logger->info("sys[{}] peak memory usage: {:.2f} {}",
+                        sys->id, peak_mem_usage, unit);
         this->local_mem_usage_tracker.reset();
     }
 }
