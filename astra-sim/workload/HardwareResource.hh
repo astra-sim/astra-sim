@@ -17,14 +17,15 @@ namespace AstraSim {
 
 class HardwareResource {
   public:
-    HardwareResource(uint32_t num_npus);
+    HardwareResource(uint32_t num_npus, int sys_id = -1);
     ~HardwareResource() {
         auto logger = LoggerFactory::get_logger("HardwareResource");
         if (this->num_in_flight_cpu_ops != 0 ||
             this->num_in_flight_gpu_comm_ops != 0 ||
             this->num_in_flight_gpu_comp_ops != 0) {
             logger->critical(
-                "!!!Hardware Resource sys.id={} has unreleased nodes!!!");
+                "!!!Hardware Resource sys.id={} has unreleased nodes!!!",
+                this->sys_id);
         }
         for (auto node_id : cpu_ops_node) {
             logger->critical("CPU node id: {}", node_id);
@@ -45,6 +46,8 @@ class HardwareResource {
     std::unordered_set<uint64_t> cpu_ops_node;
     std::unordered_set<uint64_t> gpu_ops_node;
     std::unordered_set<uint64_t> gpu_comms_node;
+
+    const int sys_id;
 
     const uint32_t num_npus;
     uint32_t num_in_flight_cpu_ops;

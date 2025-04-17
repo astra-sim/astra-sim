@@ -45,8 +45,9 @@ Workload::Workload(Sys* sys, string et_filename, string comm_group_filename) {
     }
     this->et_feeder = new ETFeeder(workload_filename);
     // TODO: parametrize the number of available hardware resources
-    this->hw_resource = new HardwareResource(1);
-    this->local_mem_usage_tracker = std::make_unique<LocalMemUsageTracker>(sys->id);
+    this->hw_resource = new HardwareResource(1, sys->id);
+    this->local_mem_usage_tracker =
+        std::make_unique<LocalMemUsageTracker>(sys->id);
     this->sys = sys;
     initialize_comm_group(comm_group_filename);
     this->stats = new Statistics(this);
@@ -155,7 +156,11 @@ void Workload::issue_dep_free_nodes() {
     auto& dependancy_resolver = this->et_feeder->getDependancyResolver();
     auto dependancy_free_nodes =
         dependancy_resolver.get_dependancy_free_nodes();
+    std::set<uint64_t> dependancy_free_nodes_set;
     for (const auto node_id : dependancy_free_nodes) {
+        dependancy_free_nodes_set.insert(node_id);
+    }
+    for (const auto node_id : dependancy_free_nodes_set) {
         std::shared_ptr<ETFeederNode> node = et_feeder->lookupNode(node_id);
         if (hw_resource->is_available(node)) {
             issue(node);
@@ -174,9 +179,11 @@ void Workload::issue(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
 
     this->et_feeder->getDependancyResolver().take_node(node->id());
     this->hw_resource->occupy(node);
-    //stats->record_end will be called in Workload::call
+    // stats->record_end will be called in Workload::call
     stats->record_start(node, Sys::boostedTick());
-    if (this->sys->track_local_mem) this->local_mem_usage_tracker->recordStart(node, Sys::boostedTick());
+    if (this->sys->track_local_mem) {
+        this->local_mem_usage_tracker->recordStart(node, Sys::boostedTick());
+    }
     if (sys->replay_only) {
         issue_replay(node);
     } else {
@@ -254,12 +261,11 @@ void Workload::issue_comp(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
             "Roofline model is not enabled for non-replay comp");
     }
 
-    if(node->is_cpu_op()) {
+    if (node->is_cpu_op()) {
         throw std::runtime_error("Roofline is only available for GPU nodes");
         return;
     }
 
-    
     WorkloadLayerHandlerData* wlhd = new WorkloadLayerHandlerData;
     wlhd->node_id = node->id();
 
@@ -267,8 +273,7 @@ void Workload::issue_comp(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
     double tensor_size = static_cast<double>(node->tensor_size<uint64_t>());
 
     // if tensor_size is 0 during roofline mode, this is an invalid node
-    if(tensor_size == 0)
-    {
+    if (tensor_size == 0) {
         skip_invalid(node);
         return;
     }
@@ -291,15 +296,12 @@ void Workload::issue_comp(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
         (perf / operational_intensity) / sys->local_mem_bw;
     op_stat.is_memory_bound = perf < sys->peak_perf;
     LoggerFactory::get_logger("workload")
-        ->debug(
-            "operation_intensity={}, perf={}, elapsed_time={} compute_utilization={} memory_utilization={} tensor_size={} num_ops={}",
-            operational_intensity,
-            perf,
-            elapsed_time,
-            op_stat.compute_utilization.value(),
-            op_stat.memory_utilization.value(),
-            tensor_size,
-            num_ops);
+        ->debug("operation_intensity={}, perf={}, elapsed_time={} "
+                "compute_utilization={} memory_utilization={} tensor_size={} "
+                "num_ops={}",
+                operational_intensity, perf, elapsed_time,
+                op_stat.compute_utilization.value(),
+                op_stat.memory_utilization.value(), tensor_size, num_ops);
 }
 
 void Workload::issue_comm(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
@@ -452,7 +454,9 @@ void Workload::skip_invalid(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
                   static_cast<uint64_t>(node->type()));
     hw_resource->release(node);
     stats->record_end(node, Sys::boostedTick());
-    if (this->sys->track_local_mem) this->local_mem_usage_tracker->recordEnd(node, Sys::boostedTick());
+    if (this->sys->track_local_mem) {
+        this->local_mem_usage_tracker->recordEnd(node, Sys::boostedTick());
+    }
 }
 
 void Workload::call(EventType event, CallData* data) {
@@ -479,16 +483,19 @@ void Workload::call(EventType event, CallData* data) {
 
         hw_resource->release(node);
         stats->record_end(node, Sys::boostedTick());
-        
+
         // Calculate network bandwidth
         auto& op_stat = stats->get_operator_statistics(node_id);
         Tick execution_time = int_data->execution_time;
         if (execution_time > 0 && op_stat.comm_size.has_value()) {
-            double bandwidth = static_cast<double>(op_stat.comm_size.value()) / execution_time;
+            double bandwidth =
+                static_cast<double>(op_stat.comm_size.value()) / execution_time;
             op_stat.network_bandwidth = bandwidth;
         }
-        
-        if (this->sys->track_local_mem) this->local_mem_usage_tracker->recordEnd(node, Sys::boostedTick());
+
+        if (this->sys->track_local_mem) {
+            this->local_mem_usage_tracker->recordEnd(node, Sys::boostedTick());
+        }
 
         this->et_feeder->getDependancyResolver().finish_node(node_id);
 
@@ -517,19 +524,26 @@ void Workload::call(EventType event, CallData* data) {
 
             hw_resource->release(node);
             stats->record_end(node, Sys::boostedTick());
-            
+
             // Calculate network bandwidth for point-to-point communications
-            if (event == EventType::PacketSent || event == EventType::PacketReceived) {
+            if (event == EventType::PacketSent ||
+                event == EventType::PacketReceived) {
                 auto& op_stat = stats->get_operator_statistics(wlhd->node_id);
-                Tick execution_time = stats->get_operator_statistics(wlhd->node_id).end_time - 
-                                     stats->get_operator_statistics(wlhd->node_id).start_time;
+                Tick execution_time =
+                    stats->get_operator_statistics(wlhd->node_id).end_time -
+                    stats->get_operator_statistics(wlhd->node_id).start_time;
                 if (execution_time > 0 && op_stat.comm_size.has_value()) {
-                    double bandwidth = static_cast<double>(op_stat.comm_size.value()) / execution_time;
+                    double bandwidth =
+                        static_cast<double>(op_stat.comm_size.value()) /
+                        execution_time;
                     op_stat.network_bandwidth = bandwidth;
                 }
             }
-            
-            if (this->sys->track_local_mem) this->local_mem_usage_tracker->recordEnd(node, Sys::boostedTick());
+
+            if (this->sys->track_local_mem) {
+                this->local_mem_usage_tracker->recordEnd(node,
+                                                         Sys::boostedTick());
+            }
 
             this->et_feeder->getDependancyResolver().finish_node(wlhd->node_id);
 
@@ -567,10 +581,11 @@ void Workload::report() {
         this->local_mem_usage_tracker->buildMemoryTimeline();
         this->local_mem_usage_tracker->dumpMemoryTrace(
             this->sys->local_mem_trace_filename);
-        auto [peak_mem_usage, unit] = this->local_mem_usage_tracker->getPeakMemUsageFormatted();
+        auto [peak_mem_usage, unit] =
+            this->local_mem_usage_tracker->getPeakMemUsageFormatted();
         auto logger = LoggerFactory::get_logger("workload");
-        logger->info("sys[{}] peak memory usage: {:.2f} {}",
-                        sys->id, peak_mem_usage, unit);
+        logger->info("sys[{}] peak memory usage: {:.2f} {}", sys->id,
+                     peak_mem_usage, unit);
         this->local_mem_usage_tracker.reset();
     }
 }
