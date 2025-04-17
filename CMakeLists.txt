@@ -25,26 +25,7 @@ add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/extern/helper/fmt")
 option(SPDLOG_FMT_EXTERNAL ON) # override default option for spdlog.
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/extern/helper/spdlog")
 
-# Find Protobuf
-# TODO: We want to use the advanced semantics 'protobuf CONFIG REQUIRED'.
-# However, this requires protobuf to be compiled from source,
-# which is enabled only in Docker containers. (Our documentation makes users install protobuc from apt-get)
-# Therefore, enable 'protobuf CONFIG REQUIRED' only when we are building in Docker.
-# TODO: Find a better way to detect if protobuf has been compiled by source, OR
-# find a way to enable 'protobuf CONFIG REQUIRED' regardless of how protubuf was installed.
-if(DEFINED ENV{PROTOBUF_FROM_SOURCE} AND "$ENV{PROTOBUF_FROM_SOURCE}" STREQUAL "True")
-    set(Protobuf_INCLUDE_DIR "/nethome/hxu398/.conda/envs/astrasim/include")
-    set(Protobuf_LIBRARIES "/nethome/hxu398/.conda/envs/astrasim/lib/libprotobuf.so")
-    set(Protobuf_PROTOC_EXECUTABLE "/nethome/hxu398/.conda/envs/astrasim/bin/protoc")
-    find_package(protobuf CONFIG REQUIRED)
-else()
-    set(Protobuf_INCLUDE_DIR "/nethome/hxu398/.conda/envs/astrasim/include")
-    set(Protobuf_LIBRARIES "/nethome/hxu398/.conda/envs/astrasim/lib/libprotobuf.so")
-    set(Protobuf_PROTOC_EXECUTABLE "/nethome/hxu398/.conda/envs/astrasim/bin/protoc")
-    find_package(Protobuf REQUIRED)
-endif()
-
-find_package(absl REQUIRED)  # or however your environment supplies Abseil
+find_package(Protobuf REQUIRED)
 
 # Files to compile
 file(GLOB srcs
@@ -66,11 +47,6 @@ add_library(AstraSim STATIC ${srcs})
 # Link libraries
 target_link_libraries(AstraSim PUBLIC fmt::fmt)
 target_link_libraries(AstraSim PUBLIC spdlog::spdlog)
-target_link_libraries(AstraSim
-  PUBLIC
-    absl::log
-    absl::check
-)
 
 # Same as above.
 if(DEFINED ENV{PROTOBUF_FROM_SOURCE} AND "$ENV{PROTOBUF_FROM_SOURCE}" STREQUAL "True")
@@ -78,6 +54,11 @@ if(DEFINED ENV{PROTOBUF_FROM_SOURCE} AND "$ENV{PROTOBUF_FROM_SOURCE}" STREQUAL "
 else()
     target_link_libraries(AstraSim PUBLIC ${Protobuf_LIBRARIES})
 endif()
+
+target_link_libraries(AstraSim PUBLIC /usr/local/lib/libabsl_log_internal_check_op.so.2401.0.0)
+target_link_libraries(AstraSim PUBLIC /usr/local/lib/libabsl_log_internal_message.so.2401.0.0)
+target_link_libraries(AstraSim PUBLIC /usr/local/lib/libabsl_log_internal_nullguard.so.2401.0.0)
+
 
 # Include Directories
 target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
