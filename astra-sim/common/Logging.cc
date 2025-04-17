@@ -1,4 +1,5 @@
 #include "astra-sim/common/Logging.hh"
+#include <filesystem>
 
 namespace AstraSim {
 
@@ -26,11 +27,12 @@ std::shared_ptr<spdlog::logger> LoggerFactory::get_logger(
     return logger;
 }
 
-void LoggerFactory::init(const std::string& log_config_path) {
+void LoggerFactory::init(const std::string& log_config_path,
+                         const std::string& log_path) {
     if (log_config_path != "empty") {
         spdlog_setup::from_file(log_config_path);
     }
-    init_default_components();
+    init_default_components(log_path);
 }
 
 void LoggerFactory::shutdown(void) {
@@ -39,7 +41,13 @@ void LoggerFactory::shutdown(void) {
     spdlog::shutdown();
 }
 
-void LoggerFactory::init_default_components() {
+void LoggerFactory::init_default_components(const std::string& log_path) {
+    std::filesystem::path folderPath(log_path);
+
+    if (!std::filesystem::exists(folderPath)) {
+        std::filesystem::create_directory(folderPath);
+    }
+
     auto sink_color_console =
         std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
     sink_color_console->set_level(spdlog::level::info);
@@ -47,13 +55,13 @@ void LoggerFactory::init_default_components() {
 
     auto sink_rotate_out =
         std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
-            "log/log.log", 1024 * 1024 * 10, 10);
+            log_path + "/log.log", 1024 * 1024 * 10, 10);
     sink_rotate_out->set_level(spdlog::level::debug);
     default_sinks.insert(sink_rotate_out);
 
     auto sink_rotate_err =
         std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
-            "log/err.log", 1024 * 1024 * 10, 10);
+            log_path + "/err.log", 1024 * 1024 * 10, 10);
     sink_rotate_err->set_level(spdlog::level::err);
     default_sinks.insert(sink_rotate_err);
 

@@ -61,11 +61,6 @@ add_library(AstraSim STATIC ${srcs})
 # Link libraries
 target_link_libraries(AstraSim PUBLIC fmt::fmt)
 target_link_libraries(AstraSim PUBLIC spdlog::spdlog)
-target_link_libraries(AstraSim
-  PUBLIC
-    absl::log
-    absl::check
-)
 
 # Same as above.
 if(DEFINED ENV{PROTOBUF_FROM_SOURCE} AND "$ENV{PROTOBUF_FROM_SOURCE}" STREQUAL "True")
@@ -73,6 +68,11 @@ if(DEFINED ENV{PROTOBUF_FROM_SOURCE} AND "$ENV{PROTOBUF_FROM_SOURCE}" STREQUAL "
 else()
     target_link_libraries(AstraSim PUBLIC ${Protobuf_LIBRARIES})
 endif()
+
+target_link_libraries(AstraSim PUBLIC /usr/local/lib/libabsl_log_internal_check_op.so.2401.0.0)
+target_link_libraries(AstraSim PUBLIC /usr/local/lib/libabsl_log_internal_message.so.2401.0.0)
+target_link_libraries(AstraSim PUBLIC /usr/local/lib/libabsl_log_internal_nullguard.so.2401.0.0)
+
 
 # Include Directories
 target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

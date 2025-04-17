@@ -46,7 +46,7 @@ Workload::Workload(Sys* sys, string et_filename, string comm_group_filename) {
     this->et_feeder = new ETFeeder(workload_filename);
     this->comm_groups.clear();
     // TODO: parametrize the number of available hardware resources
-    this->hw_resource = new HardwareResource(1);
+    this->hw_resource = new HardwareResource(1, sys->id);
     this->local_mem_usage_tracker =
         std::make_unique<LocalMemUsageTracker>(sys->id);
     this->sys = sys;
@@ -136,7 +136,11 @@ void Workload::issue_dep_free_nodes() {
     auto& dependancy_resolver = this->et_feeder->getDependancyResolver();
     auto dependancy_free_nodes =
         dependancy_resolver.get_dependancy_free_nodes();
+    std::set<uint64_t> dependancy_free_nodes_set;
     for (const auto node_id : dependancy_free_nodes) {
+        dependancy_free_nodes_set.insert(node_id);
+    }
+    for (const auto node_id : dependancy_free_nodes_set) {
         std::shared_ptr<ETFeederNode> node = et_feeder->lookupNode(node_id);
         if (hw_resource->is_available(node)) {
             issue(node);
