@@ -52,3 +52,7 @@ void CmdLineParser::parse(int argc, char* argv[]) noexcept {
         exit(-1);
     }
 }
+
+cxxopts::Options& CmdLineParser::get_options() {
+    return options;
+}

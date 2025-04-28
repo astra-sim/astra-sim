@@ -1,0 +1,22 @@
+Nodes 8
+Tiers 3
+Podsize 4
+
+Tier 0
+Downlink_speed_Gbps 200
+Radix_Down 2
+Radix_Up 2
+Downlink_Latency_ns 1000
+
+Tier 1
+Downlink_speed_Gbps 200
+Radix_Down 2
+Radix_Up 4
+Downlink_Latency_ns 1000
+Bundle 1
+
+Tier 2
+Downlink_speed_Gbps 100
+Radix_Down 4
+Downlink_Latency_ns 1000
+Bundle 2
