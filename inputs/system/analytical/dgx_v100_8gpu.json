@@ -1,0 +1,13 @@
+  {
+  "scheduling-policy": "LIFO",
+  "endpoint-delay": 1,
+  "active-chunks-per-dimension": 1,
+  "preferred-dataset-splits": 1,
+  "all-reduce-implementation": ["ring", "ring", "ring"],
+  "all-gather-implementation": ["ring", "ring", "ring"],
+  "reduce-scatter-implementation": ["ring", "ring", "ring"],
+  "all-to-all-implementation": ["ring", "ring", "ring"],
+  "collective-optimization": "localBWAware",
+  "local-mem-bw": 50,
+  "boost-mode": 0
+}

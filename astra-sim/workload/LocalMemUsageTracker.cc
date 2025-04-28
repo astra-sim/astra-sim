@@ -64,6 +64,11 @@ void LocalMemUsageTracker::recordReads(
   for (const auto& iter : IOinfos) {
     TensorId tensorName = std::get<0>(iter);
     uint64_t tensorSize = std::get<1>(iter);
+    
+    // Ignore tensors with size 0
+    if (tensorSize == 0) {
+      continue;
+    }
 
     MemActivity readActivity;
     readActivity.start = start;
@@ -117,6 +122,11 @@ void LocalMemUsageTracker::recordWrites(
   for (const auto& iter : IOinfos) {
     TensorId tensorName = std::get<0>(iter);
     uint64_t tensorSize = std::get<1>(iter);
+    
+    // Ignore tensors with size 0
+    if (tensorSize == 0) {
+      continue;
+    }
 
     MemActivity writeActivity;
     writeActivity.start = start;
@@ -378,9 +388,8 @@ void LocalMemUsageTracker::buildTensorLifetimeHeatmap() {
   };
   this->serializedMemoryTrace.push_back(std::move(threadNameEvent));
   
-  // Determine max heap depth - limit to reasonable value to prevent overwhelming the UI
-  int maxHeapDepth = std::min(100, static_cast<int>(tensorLifetimes.size()));
-  int count = std::min(maxHeapDepth, static_cast<int>(tensorLifetimes.size()));
+  // Use all tensors instead of limiting to 100
+  int count = static_cast<int>(tensorLifetimes.size());
   uint64_t minLifetime = std::numeric_limits<uint64_t>::max();
   uint64_t maxLifetime = 0;
   for (int i = 0; i < count; i++) {

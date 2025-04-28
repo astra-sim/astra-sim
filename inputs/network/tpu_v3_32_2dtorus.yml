@@ -1,0 +1,17 @@
+# Analytical Network Input File
+
+# (bi-directional) Ring Topology with 64 NPUs
+# Each link BW is 50 GB/s (per each direction)
+# And each link latency is 500 ns.
+
+# Ring Topology
+topology: [ Ring, Ring ]  # Ring, Switch, FullyConnected
+
+# 64 NPUs
+npus_count: [4, 8 ]  # number of NPUs
+
+# Bandwidth per each link (per direction)
+bandwidth: [80.0, 80.0]  # GB/s
+
+# Latency per each link
+latency: [ 1000.0, 1000.0 ]  # ns
