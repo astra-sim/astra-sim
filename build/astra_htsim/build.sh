@@ -8,17 +8,6 @@ PROJECT_DIR="${SCRIPT_DIR:?}/../.."
 BUILD_DIR="${SCRIPT_DIR:?}"/build
 CHAKRA_ET_DIR="${SCRIPT_DIR:?}"/../../extern/graph_frontend/chakra/schema/protobuf
 
-# Absolute paths to useful directories
-ASTRA_SIM_DIR="${SCRIPT_DIR:?}"/../../astra-sim
-NS3_DIR="${SCRIPT_DIR:?}"/../../extern/network_backend/ns-3
-# Inputs - change as necessary.
-WORKLOAD="${SCRIPT_DIR:?}"/../../examples/network_analytical/workload/AllReduce_1MB
-SYSTEM="${SCRIPT_DIR:?}"/../../examples/network_analytical/system.json
-MEMORY="${SCRIPT_DIR:?}"/../../examples/network_analytical/remote_memory.json
-NETWORK="${SCRIPT_DIR:?}"/../../examples/network_analytical/network.yml
-
-TOPO="${SCRIPT_DIR:?}"/../../examples/htsim/8nodes.topo
-
 # set functions
 function compile_chakra_et() {
   # compile et_def.proto if one doesn't exist
@@ -76,16 +65,6 @@ function compile_astrasim_htsim_as_debug() {
   cmake --build . --config=Debug -j "${NUM_THREADS:?}"
 }
 
-function run() {
-  cd "${BUILD_DIR:?}" || exit
-  gdb --args ${PROJECT_DIR:?}/build/astra_htsim/build/bin/AstraSim_HTSim \
-    --workload-configuration="${WORKLOAD}" \
-    --system-configuration="${SYSTEM}" \
-    --remote-memory-configuration="${MEMORY}" \
-    --network-configuration="${NETWORK}" \
-    --htsim_opts -topo ${TOPO}
-}
-
 function cleanup() {
   rm -rf "${BUILD_DIR:?}"
   rm -f "${CHAKRA_ET_DIR}/et_def.pb.cc"
@@ -96,7 +75,6 @@ function cleanup() {
 # set default option values
 build_as_debug=false
 should_clean=false
-should_run=false
 
 # Process command-line options
 while getopts "ldr" OPT; do
@@ -106,9 +84,6 @@ while getopts "ldr" OPT; do
     ;;
   d)
     build_as_debug=true
-    ;;
-  r)
-    should_run=true
     ;;
   *)
     exit 1
@@ -130,9 +105,5 @@ else
     compile_astrasim_htsim_as_debug
   else
     compile_astrasim_htsim
-  fi
-
-  if [[ ${should_run:?} == true ]]; then
-    run
   fi
 fi
