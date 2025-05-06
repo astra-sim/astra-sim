@@ -107,8 +107,7 @@ int HTSimNetworkApi::sim_recv(void* const buffer,
                               void* const fun_arg) {
     // query chunk id
     const auto dst = sim_comm_get_rank();
-    auto recv_event = MsgEvent(src, dst, Dir::Receive,
-                                                               message_size, fun_arg, msg_handler);
+    auto recv_event = MsgEvent(src, dst, Dir::Receive, message_size, fun_arg, msg_handler);
     MsgEventKey recv_event_key =
         std::make_pair(tag, std::make_pair(recv_event.src_id, recv_event.dst_id));
     if (HTSimSession::msg_standby.find(recv_event_key) !=
