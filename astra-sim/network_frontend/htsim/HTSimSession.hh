@@ -13,8 +13,8 @@
 namespace HTSim {
 
 enum class HTSimProto {
-    Tcp,
-    None
+    None,
+    Tcp
 };
 
 std::stringstream& operator>> (std::stringstream& is, HTSimProto& proto);
