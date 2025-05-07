@@ -51,6 +51,11 @@ class CmdLineParser {
         }
     }
 
+    /**
+     * Get internal opts object for adding backend-specfic options.
+     */
+     cxxopts::Options& get_options();
+
   private:
     /// cxxopts options
     cxxopts::Options options;
