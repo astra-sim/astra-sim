@@ -9,8 +9,6 @@ LICENSE file in the root directory of this source tree.
 #include <stdlib.h>
 #include <unistd.h>
 
-#include "astra-sim/system/MemBus.hh"
-#include "astra-sim/system/MyPacket.hh"
 #include "astra-sim/system/astraccl/Algorithm.hh"
 #include "extern/graph_frontend/chakra/src/feeder/et_feeder.h"
 
@@ -29,25 +27,24 @@ class HardwareResourceChakra {
 };
 
 /*
- * ChakraImpl contains the logic to parse and execute a Chakra ET representation
- * of a collective implementation. (instead of the typical way of implementing
- * collectives within the system layer and executing the code.)
- *
- * This Chakra trace consists of only COMM_SEND, COMM_RECV, COMP nodes to
- * describe the messages that make up a Collective. (note: no verifier!) This
- * allows us to easily define different implementations of the same algorithm,
- * or, even define our own custom algorithms using tools such as MSCCLang. To
- * use this implementation, write the "ABSOLUTE" path to the Chakra trace file
+ * CustomAlgorithm class allows users to simulate their own custom algorithms. 
+ * This class implements the Algorithm interface. The current implementation parses 
+ * a Chakra ET representation of the custom algorithm. 
+ * 
+ * The Chakra ET representation is a file that contains the nodes of the algorithm.
+ * The nodes are either COMM_SEND, COMM_RECV, or COMP.
+ * 
+ * To use this implementation, write the "ABSOLUTE" path to the Chakra trace file
  * in the system layer input (instead of traditional `Ring`, etc.), under
- * `{all-reduce|all-to-all|all-gather}-implementation-chakra`.
+ * `{all-reduce|all-to-all|all-gather}-implementation-custom`.
  *
  * For a detailed description on using a Chakra ET based representation, refer
- * to the documentation.
+ * to the documentation in the public wiki.  
  * TODO: Add a verifier to verify correct communication behavior.
  */
-class ChakraImpl : public Algorithm {
+class CustomAlgorithm : public Algorithm {
   public:
-    ChakraImpl(std::string et_filename, int id);
+    CustomAlgorithm(std::string et_filename, int id);
 
     // Runs the collective algorithm. This function is only called once to start
     // the algorithm.
