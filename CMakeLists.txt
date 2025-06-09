@@ -42,8 +42,11 @@ endif()
 file(GLOB srcs
     "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/*.cc"
     "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/workload/*.cc"
-    "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/collective/*.cc"
-    "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/topology/*.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/astraccl/*.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/astraccl/native_collectives/*.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/astraccl/native_collectives/logical_topology/*.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/astraccl/native_collectives/collective_algorithm/*.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/astraccl/custom_collectives/*.cc"
     "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/memory/*.cc"
     "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/scheduling/*.cc"
     "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/common/*.cc"
