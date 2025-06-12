@@ -25,4 +25,7 @@ pip3 install protobuf==5.29.0
 cd ${PROJ_DIR}/extern/graph_frontend/chakra
 pip3 install .
 
+# Temporary workaround to resolve protobuf mismatch. Refer to the PR for more details.
+pip3 install protobuf==6.31.0
+
 ### ======================================================
