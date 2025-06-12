@@ -15,7 +15,7 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/DataSet.hh"
 #include "astra-sim/system/StreamStat.hh"
 #include "astra-sim/system/Sys.hh"
-#include "astra-sim/system/topology/LogicalTopology.hh"
+#include "astra-sim/system/astraccl/native_collectives/logical_topology/LogicalTopology.hh"
 
 namespace AstraSim {
 

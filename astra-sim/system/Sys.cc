@@ -22,14 +22,14 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/SimSendCaller.hh"
 #include "astra-sim/system/StreamBaseline.hh"
 #include "astra-sim/system/WorkloadLayerHandlerData.hh"
-#include "astra-sim/system/collective/AllToAll.hh"
-#include "astra-sim/system/collective/ChakraImpl.hh"
-#include "astra-sim/system/collective/DoubleBinaryTreeAllReduce.hh"
-#include "astra-sim/system/collective/HalvingDoubling.hh"
-#include "astra-sim/system/collective/Ring.hh"
+#include "astra-sim/system/astraccl/custom_collectives/ChakraImpl.hh"
+#include "astra-sim/system/astraccl/native_collectives/collective_algorithm/AllToAll.hh"
+#include "astra-sim/system/astraccl/native_collectives/collective_algorithm/DoubleBinaryTreeAllReduce.hh"
+#include "astra-sim/system/astraccl/native_collectives/collective_algorithm/HalvingDoubling.hh"
+#include "astra-sim/system/astraccl/native_collectives/collective_algorithm/Ring.hh"
 #include "astra-sim/system/scheduling/OfflineGreedy.hh"
-#include "astra-sim/system/topology/BasicLogicalTopology.hh"
-#include "astra-sim/system/topology/GeneralComplexTopology.hh"
+#include "astra-sim/system/astraccl/native_collectives/logical_topology/BasicLogicalTopology.hh"
+#include "astra-sim/system/astraccl/native_collectives/logical_topology/GeneralComplexTopology.hh"
 #include <json/json.hpp>
 
 using namespace std;
