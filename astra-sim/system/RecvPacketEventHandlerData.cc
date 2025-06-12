@@ -13,7 +13,7 @@ RecvPacketEventHandlerData::RecvPacketEventHandlerData() {
     this->workload = nullptr;
     this->wlhd = nullptr;
     this->owner = nullptr;
-    this->chakra = nullptr;
+    this->custom_algorithm = nullptr;
 }
 
 RecvPacketEventHandlerData::RecvPacketEventHandlerData(
@@ -22,7 +22,7 @@ RecvPacketEventHandlerData::RecvPacketEventHandlerData(
     this->workload = nullptr;
     this->wlhd = nullptr;
     this->owner = owner;
-    this->chakra = nullptr;
+    this->custom_algorithm = nullptr;
     this->vnet = vnet;
     this->stream_id = stream_id;
     this->message_end = true;

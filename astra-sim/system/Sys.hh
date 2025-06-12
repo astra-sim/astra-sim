@@ -16,7 +16,7 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/MemBus.hh"
 #include "astra-sim/system/Roofline.hh"
 #include "astra-sim/system/UsageTracker.hh"
-#include "astra-sim/system/topology/RingTopology.hh"
+#include "astra-sim/system/astraccl/native_collectives/logical_topology/RingTopology.hh"
 #include "astra-sim/workload/Workload.hh"
 
 namespace AstraSim {
@@ -81,7 +81,7 @@ class Sys : public Callable {
     bool initialize_sys(std::string name);
     CollectiveImpl* generate_collective_impl_from_input(
         std::string collective_impl_str);
-    CollectiveImpl* generate_collective_impl_from_chakra(
+    CollectiveImpl* generate_custom_collective_impl(
         std::string collective_impl_str);
     //---------------------------------------------------------------------------
 

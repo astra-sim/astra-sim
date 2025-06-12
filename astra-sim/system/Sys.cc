@@ -22,14 +22,14 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/SimSendCaller.hh"
 #include "astra-sim/system/StreamBaseline.hh"
 #include "astra-sim/system/WorkloadLayerHandlerData.hh"
-#include "astra-sim/system/collective/AllToAll.hh"
-#include "astra-sim/system/collective/ChakraImpl.hh"
-#include "astra-sim/system/collective/DoubleBinaryTreeAllReduce.hh"
-#include "astra-sim/system/collective/HalvingDoubling.hh"
-#include "astra-sim/system/collective/Ring.hh"
+#include "astra-sim/system/astraccl/custom_collectives/CollectiveParser.hh"
+#include "astra-sim/system/astraccl/native_collectives/collective_algorithm/AllToAll.hh"
+#include "astra-sim/system/astraccl/native_collectives/collective_algorithm/DoubleBinaryTreeAllReduce.hh"
+#include "astra-sim/system/astraccl/native_collectives/collective_algorithm/HalvingDoubling.hh"
+#include "astra-sim/system/astraccl/native_collectives/collective_algorithm/Ring.hh"
 #include "astra-sim/system/scheduling/OfflineGreedy.hh"
-#include "astra-sim/system/topology/BasicLogicalTopology.hh"
-#include "astra-sim/system/topology/GeneralComplexTopology.hh"
+#include "astra-sim/system/astraccl/native_collectives/logical_topology/BasicLogicalTopology.hh"
+#include "astra-sim/system/astraccl/native_collectives/logical_topology/GeneralComplexTopology.hh"
 #include <json/json.hpp>
 
 using namespace std;
@@ -380,9 +380,9 @@ bool Sys::initialize_sys(string name) {
             all_to_all_implementation_per_dimension.push_back(ci);
         }
     }
-    if (j.contains("all-to-all-implementation-chakra")) {
+    if (j.contains("all-to-all-implementation-custom")) {
         vector<string> chakra_filepath_str_vec =
-            j["all-to-all-implementation-chakra"];
+            j["all-to-all-implementation-custom"];
         all_to_all_implementation_per_dimension.clear();
         if (chakra_filepath_str_vec.size() != 1) {
             throw logic_error(
@@ -390,12 +390,12 @@ bool Sys::initialize_sys(string name) {
                 "that 1 ET file covers all dimensions");
         }
         CollectiveImpl* ci =
-            generate_collective_impl_from_chakra(chakra_filepath_str_vec[0]);
+            generate_custom_collective_impl(chakra_filepath_str_vec[0]);
         all_to_all_implementation_per_dimension.push_back(ci);
     }
-    if (j.contains("all-gather-implementation-chakra")) {
+    if (j.contains("all-gather-implementation-custom")) {
         vector<string> chakra_filepath_str_vec =
-            j["all-gather-implementation-chakra"];
+            j["all-gather-implementation-custom"];
         all_gather_implementation_per_dimension.clear();
         if (chakra_filepath_str_vec.size() != 1) {
             throw logic_error(
@@ -403,12 +403,12 @@ bool Sys::initialize_sys(string name) {
                 "that 1 ET file covers all dimensions");
         }
         CollectiveImpl* ci =
-            generate_collective_impl_from_chakra(chakra_filepath_str_vec[0]);
+            generate_custom_collective_impl(chakra_filepath_str_vec[0]);
         all_gather_implementation_per_dimension.push_back(ci);
     }
-    if (j.contains("all-reduce-implementation-chakra")) {
+    if (j.contains("all-reduce-implementation-custom")) {
         vector<string> chakra_filepath_str_vec =
-            j["all-reduce-implementation-chakra"];
+            j["all-reduce-implementation-custom"];
         all_reduce_implementation_per_dimension.clear();
         if (chakra_filepath_str_vec.size() != 1) {
             throw logic_error(
@@ -416,7 +416,7 @@ bool Sys::initialize_sys(string name) {
                 "that 1 ET file covers all dimensions");
         }
         CollectiveImpl* ci =
-            generate_collective_impl_from_chakra(chakra_filepath_str_vec[0]);
+            generate_custom_collective_impl(chakra_filepath_str_vec[0]);
         all_reduce_implementation_per_dimension.push_back(ci);
     }
     if (j.contains("collective-optimization")) {
@@ -532,7 +532,7 @@ CollectiveImpl* Sys::generate_collective_impl_from_input(
     }
 }
 
-CollectiveImpl* Sys::generate_collective_impl_from_chakra(
+CollectiveImpl* Sys::generate_custom_collective_impl(
     string chakra_filepath) {
     string filename = chakra_filepath + "." + to_string(id) + ".et";
     return new ChakraCollectiveImpl(CollectiveImplType::ChakraImpl, filename);
@@ -654,8 +654,8 @@ void Sys::handleEvent(void* arg) {
         if (rcehd->owner) {
             rcehd->owner->consume(rcehd);
         }
-        if (rcehd->chakra) {
-            rcehd->chakra->call(event, rcehd->wlhd);
+        if (rcehd->custom_algorithm) {
+            rcehd->custom_algorithm->call(event, rcehd->wlhd);
         }
         delete rcehd;
     } else if (event == EventType::PacketSent) {
@@ -1073,7 +1073,7 @@ CollectivePhase Sys::generate_collective_phase(
         return vn;
     } else if (collective_impl->type == CollectiveImplType::ChakraImpl) {
         string filename = ((ChakraCollectiveImpl*)collective_impl)->filename;
-        CollectivePhase vn(this, queue_id, new ChakraImpl(filename, id));
+        CollectivePhase vn(this, queue_id, new CustomAlgorithm(filename, id));
         return vn;
     } else {
         LoggerFactory::get_logger("system")->critical(

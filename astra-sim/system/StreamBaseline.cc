@@ -5,7 +5,7 @@ LICENSE file in the root directory of this source tree.
 
 #include "astra-sim/system/StreamBaseline.hh"
 
-#include "astra-sim/system/collective/Algorithm.hh"
+#include "astra-sim/system/astraccl/Algorithm.hh"
 
 using namespace AstraSim;
 
