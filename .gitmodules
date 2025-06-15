@@ -16,3 +16,6 @@
 [submodule "extern/network_backend/ns-3"]
 	path = extern/network_backend/ns-3
 	url = https://github.com/astra-sim/astra-network-ns3.git
+[submodule "extern/network_backend/csg-htsim"]
+	path = extern/network_backend/csg-htsim
+	url = https://github.com/Broadcom/csg-htsim.git

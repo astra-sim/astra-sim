@@ -8,7 +8,7 @@ LICENSE file in the root directory of this source tree.
 
 #include <chrono>
 
-#include "astra-sim/system/AstraNetworkAPI.hh"
+#include "astra-sim/common/AstraNetworkAPI.hh"
 #include "astra-sim/system/AstraRemoteMemoryAPI.hh"
 #include "astra-sim/system/Callable.hh"
 #include "astra-sim/system/CollectivePhase.hh"

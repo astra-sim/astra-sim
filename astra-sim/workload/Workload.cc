@@ -371,13 +371,12 @@ void Workload::call(EventType event, CallData* data) {
         et_feeder->freeChildrenNodes(node_id);
 
         issue_dep_free_nodes();
-
-        et_feeder->removeNode(node_id);
-
-        // The Dataset class provides statistics that should be used later to
-        // dump more statistics in the workload layer
+      
+        // The Dataset class provides statistics that should be used later to dump
+        // more statistics in the workload layer
         delete collective_comm_wrapper_map[coll_comm_id];
         collective_comm_wrapper_map.erase(coll_comm_id);
+        et_feeder->removeNode(node_id);
 
     } else {
         if (data == nullptr) {
@@ -411,6 +410,7 @@ void Workload::call(EventType event, CallData* data) {
         (hw_resource->num_in_flight_gpu_comp_ops == 0) &&
         (hw_resource->num_in_flight_gpu_comm_ops == 0)) {
         report();
+        sys->comm_NI->sim_notify_finished();
         is_finished = true;
     }
 }

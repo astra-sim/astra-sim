@@ -56,8 +56,8 @@ ENV absl_DIR="/opt/abseil-cpp-${ABSL_VER}/install"
 
 
 ### ============= Protobuf Installation ==================
-## Download Protobuf 28.3 (=v5.28.3, latest version as of 10/31/2024)
-ARG PROTOBUF_VER=28.3
+## Download Protobuf 29.0 (=v5.29.0, latest stable version as of Feb/01/2025)
+ARG PROTOBUF_VER=29.0
 
 # Download source
 WORKDIR /opt
