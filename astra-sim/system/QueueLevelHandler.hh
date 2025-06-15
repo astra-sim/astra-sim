@@ -9,7 +9,7 @@ LICENSE file in the root directory of this source tree.
 #include <vector>
 
 #include "astra-sim/common/AstraNetworkAPI.hh"
-#include "astra-sim/system/topology/RingTopology.hh"
+#include "astra-sim/system/astraccl/native_collectives/logical_topology/RingTopology.hh"
 
 namespace AstraSim {
 
