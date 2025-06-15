@@ -290,23 +290,71 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
             fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
 
         } else if (node->comm_type() == ChakraCollectiveCommType::BROADCAST) {
-            // broadcast colelctive has not been implemented in ASTRA-SIM yet.
-            // So, we just use its real system mesurements
+            LoggerFactory::get_logger("workload")
+                ->info("Broadcast collective has not been implemented in ASTRA-sim yet.");
+            DataSet* fp = 
+                sys->generate_broadcast(node->comm_size(), involved_dim, comm_group, node->comm_priority());
+            if (fp == nullptr) {
+                LoggerFactory::get_logger("workload")
+                    ->warn("Broadcast implementation not provided through CollectiveAPI. We simply use the runtime encoded in the chakra node.");
             uint64_t runtime = 1ul;
             if (node->runtime() != 0ul) {
                 // chakra runtimes are in microseconds and we should convert it
                 // into nanoseconds
                 runtime = node->runtime() * 1000;
+                    LoggerFactory::get_logger("workload")->warn("We use a runtime of {} ns", runtime);        
+                } else {
+                    LoggerFactory::get_logger("workload")
+                        ->warn("The runtime is not specified in this chakra node. Using 1ns as the runtime.");
+                    LoggerFactory::get_logger("workload")
+                        ->warn("Are you REALLY sure you know what you're doing?");
+                }
+                fp = new DataSet(1);
+                fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
+                collective_comm_node_id_map[fp->my_id] = node->id();
+                collective_comm_wrapper_map[fp->my_id] = fp;
+                sys->register_event(fp, EventType::General, nullptr, runtime);
+                fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
+            } else {
+                LoggerFactory::get_logger("workload")
+                    ->info("Use the Broadcast implementation provided through collectiveAPI.");
+                collective_comm_node_id_map[fp->my_id] = node->id();
+                collective_comm_wrapper_map[fp->my_id] = fp;
+                fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
             }
-            DataSet* fp = new DataSet(1);
+        } else if (node->comm_type() == ChakraCollectiveCommType::REDUCE) {
+            LoggerFactory::get_logger("workload")
+                ->info("Reduce collective has not been implemented in ASTRA-sim yet.");
+            DataSet* fp = 
+                sys->generate_reduce(node->comm_size(), involved_dim, comm_group, node->comm_priority());
+            if (fp == nullptr) {
+                LoggerFactory::get_logger("workload")
+                    ->warn("Reduce implementation not provided through CollectiveAPI. We simply use the runtime encoded in the chakra node.");
+                uint64_t runtime = 1ul;
+                if (node->runtime() != 0ul) {
+                    // chakra runtimes are in microseconds and we should convert it
+                    // into nanoseconds
+                    runtime = node->runtime() * 1000;
+                    LoggerFactory::get_logger("workload")->warn("We use a runtime of {} ns", runtime);        
+                } else {
+                    LoggerFactory::get_logger("workload")
+                        ->warn("The runtime is not specified in this chakra node. Using 1ns as the runtime.");
+                    LoggerFactory::get_logger("workload")
+                        ->warn("Are you REALLY sure you know what you're doing?");
+                }
+                fp = new DataSet(1);
             fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
             collective_comm_node_id_map[fp->my_id] = node->id();
             collective_comm_wrapper_map[fp->my_id] = fp;
-            sys->register_event(fp, EventType::General, nullptr,
-                                // chakra runtimes are in microseconds and we
-                                // should convert it into nanoseconds
-                                runtime);
+                sys->register_event(fp, EventType::General, nullptr, runtime);
+                fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
+            } else {
+                LoggerFactory::get_logger("workload")
+                    ->info("Use the Reduce implementation provided through collectiveAPI.");
+                collective_comm_node_id_map[fp->my_id] = node->id();
+                collective_comm_wrapper_map[fp->my_id] = fp;
             fp->set_notifier(this, EventType::CollectiveCommunicationFinished);
+            }
         }
     } else if (node->type() == ChakraNodeType::COMM_SEND_NODE) {
         sim_request snd_req;

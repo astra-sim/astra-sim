@@ -244,6 +244,10 @@ Sys::Sys(int id,
         id, physical_dims, all_gather_implementation_per_dimension);
     logical_topologies["AllToAll"] = new GeneralComplexTopology(
         id, physical_dims, all_to_all_implementation_per_dimension);
+    logical_topologies["Broadcast"] = new GeneralComplexTopology(
+        id, physical_dims, broadcast_implementation_per_dimension);
+    logical_topologies["Reduce"] = new GeneralComplexTopology(
+        id, physical_dims, broadcast_implementation_per_dimension);
 
     memBus = new MemBus("NPU", "MA", this, inp_L, inp_o, inp_g, inp_G,
                         model_shared_bus, communication_delay, true);
@@ -418,6 +422,32 @@ bool Sys::initialize_sys(string name) {
         CollectiveImpl* ci =
             generate_collective_impl_from_chakra(chakra_filepath_str_vec[0]);
         all_reduce_implementation_per_dimension.push_back(ci);
+    }
+    if (j.contains("broadcast-implementation-chakra")) {
+        vector<string> chakra_filepath_str_vec =
+            j["broadcast-implementation-chakra"];
+        broadcast_implementation_per_dimension.clear();
+        if (chakra_filepath_str_vec.size() != 1) {
+            throw logic_error(
+                "There should be 1 Chakra ET only. In multi-dim collectives, "
+                "that 1 ET file covers all dimensions");
+        }
+        CollectiveImpl* ci =
+            generate_collective_impl_from_chakra(chakra_filepath_str_vec[0]);
+        broadcast_implementation_per_dimension.push_back(ci);
+    }
+    if (j.contains("reduce-implementation-chakra")) {
+        vector<string> chakra_filepath_str_vec =
+            j["reduce-implementation-chakra"];
+        reduce_implementation_per_dimension.clear();
+        if (chakra_filepath_str_vec.size() != 1) {
+            throw logic_error(
+                "There should be 1 Chakra ET only. In multi-dim collectives, "
+                "that 1 ET file covers all dimensions");
+        }
+        CollectiveImpl* ci =
+            generate_collective_impl_from_chakra(chakra_filepath_str_vec[0]);
+        reduce_implementation_per_dimension.push_back(ci);
     }
     if (j.contains("collective-optimization")) {
         string inp_collective_optimization = j["collective-optimization"];
@@ -769,6 +799,42 @@ DataSet* Sys::generate_reduce_scatter(uint64_t size,
             size, plan->topology, plan->implementation_per_dimension,
             plan->dimensions_involved, ComType::Reduce_Scatter,
             explicit_priority, communicator_group);
+    }
+}
+
+DataSet* Sys::generate_broadcast(uint64_t size,
+                                      vector<bool> involved_dimensions,
+                                      CommunicatorGroup* communicator_group,
+                                      int explicit_priority) {
+    if (broadcast_implementation_per_dimension.size() == 0) {
+        return nullptr;
+    }
+    if (communicator_group == nullptr) {
+        return generate_collective(size, logical_topologies["Broadcast"],
+                                   broadcast_implementation_per_dimension,
+                                   involved_dimensions, ComType::Broadcast,
+                                   explicit_priority, communicator_group);
+    } else {
+        LoggerFactory::get_logger("system")->error(
+            "Communicatorgroup should not be matched with Broadcast");
+    }
+}
+
+DataSet* Sys::generate_reduce(uint64_t size,
+                                      vector<bool> involved_dimensions,
+                                      CommunicatorGroup* communicator_group,
+                                      int explicit_priority) {
+    if (reduce_implementation_per_dimension.size() == 0) {
+        return nullptr;
+    }
+    if (communicator_group == nullptr) {
+        return generate_collective(size, logical_topologies["Reduce"],
+                                   reduce_implementation_per_dimension,
+                                   involved_dimensions, ComType::Reduce,
+                                   explicit_priority, communicator_group);
+    } else {
+        LoggerFactory::get_logger("system")->error(
+            "Communicatorgroup should not be matched with Reduce");
     }
 }
 
