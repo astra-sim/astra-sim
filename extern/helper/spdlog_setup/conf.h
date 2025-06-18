@@ -244,7 +244,7 @@ inline void save_logger_to_file(
 
         if (!config) {
             throw setup_error(
-                format("Unable to parse file at '{}' for saving", toml_path));
+                fmt::format("Unable to parse file at '{}' for saving", toml_path));
         }
 
         auto &config_ref = *config;
@@ -315,7 +315,7 @@ inline auto delete_logger_in_file(
         const auto config = cpptoml::parse_file(toml_path);
 
         if (!config) {
-            throw setup_error(format(
+            throw setup_error(fmt::format(
                 "Unable to parse file at '{}' for deleting logger '{}'",
                 toml_path,
                 logger_name));
@@ -325,7 +325,7 @@ inline auto delete_logger_in_file(
         const auto curr_loggers = config_ref.get_table_array(LOGGER_TABLE);
 
         if (!curr_loggers) {
-            throw setup_error(format(
+            throw setup_error(fmt::format(
                 "Unable to find any logger table array for file at '{}'",
                 toml_path));
         }
