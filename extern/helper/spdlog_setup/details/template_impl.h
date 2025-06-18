@@ -83,7 +83,7 @@ inline auto render(
                 break;
             default:
                 if (!is_valid_var_char(c)) {
-                    throw setup_error(format(
+                    throw setup_error(fmt::format(
                         "Found invalid char '{}' in variable interpolation",
                         c));
                 }
@@ -104,7 +104,7 @@ inline auto render(
             default:
                 if (!is_valid_var_char(c)) {
                     throw setup_error(
-                        format("Found invalid char '{}' in variable name", c));
+                        fmt::format("Found invalid char '{}' in variable name", c));
                 }
                 var_buffer << c;
                 break;
@@ -120,7 +120,7 @@ inline auto render(
                 state = render_state::var_ending;
                 break;
             default:
-                throw setup_error(format(
+                throw setup_error(fmt::format(
                     "Found invalid char '{}' after variable name '{}'",
                     c,
                     var_buffer.str()));
@@ -141,7 +141,7 @@ inline auto render(
             }
             default:
                 throw setup_error(
-                    format("Found invalid char '{}' when expecting '}}'", c));
+                    fmt::format("Found invalid char '{}' when expecting '}}'", c));
             }
             break;
 
