@@ -19,7 +19,7 @@ typedef ChakraProtoMsg::NodeType ChakraNodeType;
 
 CustomAlgorithm::CustomAlgorithm(std::string et_filename, int id)
     : Algorithm() {
-    this->et_feeder = new Chakra::ETFeeder(et_filename);
+    this->et_feeder = new Chakra::FeederV3::ETFeeder(et_filename);
     this->id = id;
 }
 
