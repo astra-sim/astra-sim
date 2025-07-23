@@ -9,7 +9,7 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/RecvPacketEventHandlerData.hh"
 #include "astra-sim/system/SendPacketEventHandlerData.hh"
 #include "astra-sim/system/astraccl/custom_collectives/CollectiveParser.hh"
-#include "extern/graph_frontend/chakra/src/feeder/et_feeder.h"
+#include "extern/graph_frontend/chakra/src/feeder_v3/et_feeder.h"
 
 using namespace std;
 using namespace AstraSim;
@@ -17,7 +17,8 @@ using namespace Chakra;
 
 typedef ChakraProtoMsg::NodeType ChakraNodeType;
 
-CustomAlgorithm::CustomAlgorithm(std::string et_filename, int id) : Algorithm() {
+CustomAlgorithm::CustomAlgorithm(std::string et_filename, int id)
+    : Algorithm() {
     this->et_feeder = new Chakra::ETFeeder(et_filename);
     this->id = id;
 }
