@@ -33,10 +33,18 @@ add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/extern/helper/spdlog")
 # TODO: Find a better way to detect if protobuf has been compiled by source, OR
 # find a way to enable 'protobuf CONFIG REQUIRED' regardless of how protubuf was installed.
 if(DEFINED ENV{PROTOBUF_FROM_SOURCE} AND "$ENV{PROTOBUF_FROM_SOURCE}" STREQUAL "True")
+    set(Protobuf_INCLUDE_DIR "/nethome/hxu398/.conda/envs/astrasim/include")
+    set(Protobuf_LIBRARIES "/nethome/hxu398/.conda/envs/astrasim/lib/libprotobuf.so")
+    set(Protobuf_PROTOC_EXECUTABLE "/nethome/hxu398/.conda/envs/astrasim/bin/protoc")
     find_package(protobuf CONFIG REQUIRED)
 else()
+    set(Protobuf_INCLUDE_DIR "/nethome/hxu398/.conda/envs/astrasim/include")
+    set(Protobuf_LIBRARIES "/nethome/hxu398/.conda/envs/astrasim/lib/libprotobuf.so")
+    set(Protobuf_PROTOC_EXECUTABLE "/nethome/hxu398/.conda/envs/astrasim/bin/protoc")
     find_package(Protobuf REQUIRED)
 endif()
+
+find_package(absl REQUIRED)  # or however your environment supplies Abseil
 
 # Files to compile
 file(GLOB srcs
@@ -61,6 +69,11 @@ add_library(AstraSim STATIC ${srcs})
 # Link libraries
 target_link_libraries(AstraSim PUBLIC fmt::fmt)
 target_link_libraries(AstraSim PUBLIC spdlog::spdlog)
+target_link_libraries(AstraSim
+  PUBLIC
+    absl::log
+    absl::check
+)
 
 # Same as above.
 if(DEFINED ENV{PROTOBUF_FROM_SOURCE} AND "$ENV{PROTOBUF_FROM_SOURCE}" STREQUAL "True")
@@ -75,6 +88,7 @@ target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/gr
 target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/schema/protobuf)
 target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/src/third_party/utils)
 target_include_directories(AstraSim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/extern/helper/)
+target_include_directories(AstraSim PUBLIC ${Protobuf_INCLUDE_DIR})
 
 # Same as above.
 if(DEFINED ENV{PROTOBUF_FROM_SOURCE} AND "$ENV{PROTOBUF_FROM_SOURCE}" STREQUAL "True")
