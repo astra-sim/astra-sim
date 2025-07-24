@@ -3,8 +3,8 @@ This source code is licensed under the MIT license found in the
 LICENSE file in the root directory of this source tree.
 *******************************************************************************/
 
-#ifndef __CHAKRAIMPL__HH
-#define __CHAKRAIMPL__HH
+#ifndef __CUSTOMALGORITHM__HH
+#define __CUSTOMALGORITHM__HH
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -14,32 +14,20 @@ LICENSE file in the root directory of this source tree.
 
 namespace AstraSim {
 
-class HardwareResourceChakra {
-  public:
-    HardwareResourceChakra();
-    void occupy(const std::shared_ptr<Chakra::ETFeederNode> node);
-    void release(const std::shared_ptr<Chakra::ETFeederNode> node);
-    bool is_available(const std::shared_ptr<Chakra::ETFeederNode> node) const;
-
-    uint32_t num_in_flight_cpu_ops;
-    uint32_t num_in_flight_gpu_comp_ops;
-    uint32_t num_in_flight_gpu_comm_ops;
-};
-
 /*
- * CustomAlgorithm class allows users to simulate their own custom algorithms. 
- * This class implements the Algorithm interface. The current implementation parses 
- * a Chakra ET representation of the custom algorithm. 
- * 
+ * CustomAlgorithm class allows users to simulate their own custom algorithms.
+ * This class implements the Algorithm interface. The current implementation parses
+ * a Chakra ET representation of the custom algorithm.
+ *
  * The Chakra ET representation is a file that contains the nodes of the algorithm.
  * The nodes are either COMM_SEND, COMM_RECV, or COMP.
- * 
+ *
  * To use this implementation, write the "ABSOLUTE" path to the Chakra trace file
  * in the system layer input (instead of traditional `Ring`, etc.), under
  * `{all-reduce|all-to-all|all-gather}-implementation-custom`.
  *
  * For a detailed description on using a Chakra ET based representation, refer
- * to the documentation in the public wiki.  
+ * to the documentation in the public wiki.
  * TODO: Add a verifier to verify correct communication behavior.
  */
 class CustomAlgorithm : public Algorithm {
@@ -63,14 +51,12 @@ class CustomAlgorithm : public Algorithm {
 
     // Rank Id
     int id;
-    // ET Feeder for the Chakra ET for this specific rank.
+    // ET Feeder for the Chakra ET for this specific communication & rank.
+    // This is separate from the ET Feeder in the Workload layer, which is used
+    // to traverse the whole workload Chakra ET.
     Chakra::ETFeeder* et_feeder;
-    // Tracks availability of hardware resources (e.g. prevent two send ET nodes
-    // at same time).
-    // TODO: merge with impl in Workload layer.
-    HardwareResourceChakra* hw_resource;
 };
 
 }  // namespace AstraSim
 
-#endif /* __CHAKRAIMPL__HH */
+#endif /* __CUSTOMALGORITHM__HH */

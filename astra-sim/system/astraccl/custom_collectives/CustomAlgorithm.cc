@@ -8,7 +8,7 @@ LICENSE file in the root directory of this source tree.
 
 #include "astra-sim/system/RecvPacketEventHandlerData.hh"
 #include "astra-sim/system/SendPacketEventHandlerData.hh"
-#include "astra-sim/system/astraccl/custom_collectives/CollectiveParser.hh"
+#include "astra-sim/system/astraccl/custom_collectives/CustomAlgorithm.hh"
 #include "extern/graph_frontend/chakra/src/feeder/et_feeder.h"
 
 using namespace std;
@@ -81,7 +81,7 @@ void CustomAlgorithm::issue_dep_free_nodes() {
 // nodes.
 void CustomAlgorithm::call(EventType event, CallData* data) {
     if (data == nullptr) {
-        throw runtime_error("ChakraImpl::Call does not have node id encoded "
+        throw runtime_error("CustomAlgorithm::call does not have node id encoded "
                             "(CallData* data is null).");
     }
 

@@ -22,7 +22,7 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/SimSendCaller.hh"
 #include "astra-sim/system/StreamBaseline.hh"
 #include "astra-sim/system/WorkloadLayerHandlerData.hh"
-#include "astra-sim/system/astraccl/custom_collectives/CollectiveParser.hh"
+#include "astra-sim/system/astraccl/custom_collectives/CustomAlgorithm.hh"
 #include "astra-sim/system/astraccl/native_collectives/collective_algorithm/AllToAll.hh"
 #include "astra-sim/system/astraccl/native_collectives/collective_algorithm/DoubleBinaryTreeAllReduce.hh"
 #include "astra-sim/system/astraccl/native_collectives/collective_algorithm/HalvingDoubling.hh"
