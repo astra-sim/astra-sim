@@ -8,7 +8,7 @@ LICENSE file in the root directory of this source tree.
 
 #include "astra-sim/system/BaseStream.hh"
 #include "astra-sim/system/BasicEventHandlerData.hh"
-#include "astra-sim/system/astraccl/custom_collectives/CollectiveParser.hh"
+#include "astra-sim/system/astraccl/custom_collectives/CustomAlgorithm.hh"
 
 namespace AstraSim {
 
