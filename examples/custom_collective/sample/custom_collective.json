@@ -3,7 +3,7 @@
   "endpoint-delay": 10,
   "active-chunks-per-dimension": 1,
   "preferred-dataset-splits": 1,
-  "all-reduce-implementation-custom": ["examples/custom_collective/allreduce_ring_8ranks"],
+  "all-reduce-implementation-custom": ["/home/jyoo332/astra-sim/examples/custom_collective/allreduce_ring_8ranks"],
   "collective-optimization": "localBWAware",
   "local-mem-bw": 50,
   "boost-mode": 0
