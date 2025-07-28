@@ -44,18 +44,20 @@ Workload::Workload(Sys* sys, string et_filename, string comm_group_filename) {
         exit(EXIT_FAILURE);
     }
     this->et_feeder = new ETFeeder(workload_filename);
-    this->comm_group = nullptr;
+    this->comm_groups.clear();
     // TODO: parametrize the number of available hardware resources
     this->hw_resource = new HardwareResource(1);
     this->sys = sys;
-    initialize_comm_group(comm_group_filename);
+    initialize_comm_groups(comm_group_filename);
     this->is_finished = false;
 }
 
 Workload::~Workload() {
-    if (this->comm_group != nullptr) {
-        delete this->comm_group;
+    for (auto comm_group : comm_groups) {
+        delete comm_group.second;
     }
+    comm_groups.clear();
+
     if (this->et_feeder != nullptr) {
         delete this->et_feeder;
     }
@@ -64,10 +66,10 @@ Workload::~Workload() {
     }
 }
 
-void Workload::initialize_comm_group(string comm_group_filename) {
+void Workload::initialize_comm_groups(string comm_group_filename) {
     // communicator group input file is not given
     if (comm_group_filename.find("empty") != std::string::npos) {
-        comm_group = nullptr;
+        comm_groups.clear();
         return;
     }
 
@@ -77,23 +79,15 @@ void Workload::initialize_comm_group(string comm_group_filename) {
     inFile >> j;
 
     for (json::iterator it = j.begin(); it != j.end(); ++it) {
-        bool in_comm_group = false;
+        std::string comm_group_name = it.key();
+        int comm_group_id = std::stoi(comm_group_name);
 
+        std::vector<int> involved_NPUs;
         for (auto id : it.value()) {
-            if (id == sys->id) {
-                in_comm_group = true;
-            }
-        }
-
-        if (in_comm_group) {
-            std::vector<int> involved_NPUs;
-            for (auto id : it.value()) {
                 involved_NPUs.push_back(id);
             }
-            comm_group = new CommunicatorGroup(1, involved_NPUs, sys);
-            // Note: All NPUs should create comm group with identical ids if
-            // they want to communicate with each other
-        }
+        
+        comm_groups[comm_group_id] = new CommunicatorGroup(comm_group_id, involved_NPUs, sys);
     }
 }
 
@@ -253,6 +247,8 @@ void Workload::issue_comm(shared_ptr<Chakra::ETFeederNode> node) {
 	for(int i = 0; i < 4; i++)
             involved_dim.push_back(true);
     }
+
+    CommunicatorGroup* comm_group = extract_comm_group(node);
 
     if (!node->is_cpu_op() &&
         (node->type() == ChakraNodeType::COMM_COLL_NODE)) {
@@ -424,4 +420,20 @@ void Workload::report() {
     LoggerFactory::get_logger("workload")
         ->info("sys[{}] finished, {} cycles, exposed communication {} cycles.",
                sys->id, curr_tick, curr_tick - hw_resource->tics_gpu_ops);
+}
+
+CommunicatorGroup* Workload::extract_comm_group(std::shared_ptr<Chakra::ETFeederNode> node) {
+    std::string comm_group_name = node->pg_name();
+    if (comm_group_name == "") {
+        // No communicator group is specified for this communication ET node.
+        return nullptr;
+    }
+
+    int comm_group_id = std::stoi(comm_group_name);
+    if (comm_groups.find(comm_group_id) == comm_groups.end()) {
+        LoggerFactory::get_logger("workload")
+            ->critical("For rank {} ET node {}, communicator group {} not found", sys->id, node->id(), comm_group_id);
+        exit(EXIT_FAILURE);
+    }
+    return comm_groups[comm_group_id];
 }

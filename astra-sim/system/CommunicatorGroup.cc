@@ -19,8 +19,6 @@ CommunicatorGroup::CommunicatorGroup(int id,
     this->involved_NPUs = involved_NPUs;
     this->generator = generator;
     std::sort(involved_NPUs.begin(), involved_NPUs.end());
-    assert(std::find(involved_NPUs.begin(), involved_NPUs.end(),
-                     generator->id) != involved_NPUs.end());
 }
 
 CommunicatorGroup::~CommunicatorGroup() {

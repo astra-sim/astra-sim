@@ -28,7 +28,9 @@ class Workload : public Callable {
     ~Workload();
 
     // communicator groups
-    void initialize_comm_group(std::string comm_group_filename);
+    // Parse the user provided 'comm_group_filename' and extract the list of communicator groups.
+    // Refer to the wiki for the format.
+    void initialize_comm_groups(std::string comm_group_filename);
 
     // event-based simulation
     void issue_dep_free_nodes();
@@ -45,12 +47,17 @@ class Workload : public Callable {
     void report();
 
     Chakra::ETFeeder* et_feeder;
-    CommunicatorGroup* comm_group;
+    std::unordered_map<int, CommunicatorGroup*> comm_groups;
     HardwareResource* hw_resource;
     Sys* sys;
     std::unordered_map<int, uint64_t> collective_comm_node_id_map;
     std::unordered_map<int, DataSet*> collective_comm_wrapper_map;
     bool is_finished;
+
+    private:
+    // From the ET node, find out the corresponding communicator group, and return the pointer.
+    // If no communicator group is specified for this ET node, return nullptr.
+    CommunicatorGroup* extract_comm_group(std::shared_ptr<Chakra::ETFeederNode> node);
 };
 
 }  // namespace AstraSim
