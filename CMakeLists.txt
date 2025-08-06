@@ -26,9 +26,15 @@ option(SPDLOG_FMT_EXTERNAL ON) # override default option for spdlog.
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/extern/helper/spdlog")
 
 # Find Protobuf
-find_package(Protobuf REQUIRED)
+find_package(Protobuf CONFIG REQUIRED)
+if (NOT TARGET protobuf::libprotobuf)
+    find_package(protobuf REQUIRED)
+endif()
 
-find_package(absl REQUIRED)  # or however your environment supplies Abseil
+find_package(absl CONFIG REQUIRED)
+if (NOT TARGET absl::log)
+    find_package(absl REQUIRED)
+endif()
 
 # Files to compile
 file(GLOB srcs
@@ -55,16 +61,20 @@ target_link_libraries(AstraSim PUBLIC fmt::fmt)
 target_link_libraries(AstraSim PUBLIC spdlog::spdlog)
 
 # Same as above.
-if(DEFINED ENV{PROTOBUF_FROM_SOURCE} AND "$ENV{PROTOBUF_FROM_SOURCE}" STREQUAL "True")
+if (TARGET protobuf::libprotobuf)
     target_link_libraries(AstraSim PUBLIC protobuf::libprotobuf)
 else()
     target_link_libraries(AstraSim PUBLIC ${Protobuf_LIBRARIES})
+    target_include_directories(AstraSim PUBLIC ${Protobuf_INCLUDE_DIR})
 endif()
 
-target_link_libraries(AstraSim PUBLIC /usr/local/lib/libabsl_log_internal_check_op.so.2401.0.0)
-target_link_libraries(AstraSim PUBLIC /usr/local/lib/libabsl_log_internal_message.so.2401.0.0)
-target_link_libraries(AstraSim PUBLIC /usr/local/lib/libabsl_log_internal_nullguard.so.2401.0.0)
-
+if (TARGET absl::log)
+    target_link_libraries(AstraSim PUBLIC absl::log)
+else()
+    target_link_libraries(AstraSim PUBLIC /usr/local/lib/libabsl_log_internal_check_op.so.2401.0.0)
+    target_link_libraries(AstraSim PUBLIC /usr/local/lib/libabsl_log_internal_message.so.2401.0.0)
+    target_link_libraries(AstraSim PUBLIC /usr/local/lib/libabsl_log_internal_nullguard.so.2401.0.0)
+endif()
 
 # Include Directories
 target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -72,12 +82,6 @@ target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/gr
 target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/schema/protobuf)
 target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/src/third_party/utils)
 target_include_directories(AstraSim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/extern/helper/)
-target_include_directories(AstraSim PUBLIC ${Protobuf_INCLUDE_DIR})
-
-# Same as above.
-if(DEFINED ENV{PROTOBUF_FROM_SOURCE} AND "$ENV{PROTOBUF_FROM_SOURCE}" STREQUAL "True")
-    target_include_directories(AstraSim PUBLIC ${Protobuf_INCLUDE_DIRS})
-endif()
 
 # Properties
 set_target_properties(AstraSim PROPERTIES COMPILE_WARNING_AS_ERROR OFF)
