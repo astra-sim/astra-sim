@@ -10,8 +10,8 @@ set -e
 
 # find the absolute path to this script
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
-PROJECT_DIR="${SCRIPT_DIR:?}/../.."
-EXAMPLE_DIR="${PROJECT_DIR:?}/examples/network_analytical"
+PROJECT_DIR="${SCRIPT_DIR:?}/../../.."
+EXAMPLE_DIR="${PROJECT_DIR:?}/examples/network_analytical/Ring"
 
 # paths
 ASTRA_SIM="${PROJECT_DIR:?}/build/astra_analytical/build/bin/AstraSim_Analytical_Congestion_Aware"
