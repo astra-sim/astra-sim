@@ -1,0 +1,258 @@
+<algo name="allreduce_ring_1channelsperring" proto="LL128" nchannels="1" nchunksperloop="8" ngpus="8" coll="allreduce" inplace="1">
+  <gpu id="0" i_chunks="8" o_chunks="0" s_chunks="0">
+    <tb id="0" send="1" recv="7" chan="0">
+      <step s="0" type="s" srcbuf="i" srcoff="0" dstbuf="i" dstoff="0" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="1" type="rrc" srcbuf="i" srcoff="7" dstbuf="i" dstoff="7" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="2" type="s" srcbuf="i" srcoff="7" dstbuf="i" dstoff="7" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="3" type="rrc" srcbuf="i" srcoff="6" dstbuf="i" dstoff="6" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="4" type="s" srcbuf="i" srcoff="6" dstbuf="i" dstoff="6" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="5" type="rrc" srcbuf="i" srcoff="5" dstbuf="i" dstoff="5" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="6" type="s" srcbuf="i" srcoff="5" dstbuf="i" dstoff="5" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="7" type="rrc" srcbuf="i" srcoff="4" dstbuf="i" dstoff="4" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="8" type="s" srcbuf="i" srcoff="4" dstbuf="i" dstoff="4" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="9" type="rrc" srcbuf="i" srcoff="3" dstbuf="i" dstoff="3" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="10" type="s" srcbuf="i" srcoff="3" dstbuf="i" dstoff="3" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="11" type="rrc" srcbuf="i" srcoff="2" dstbuf="i" dstoff="2" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="12" type="s" srcbuf="i" srcoff="2" dstbuf="i" dstoff="2" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="13" type="rrc" srcbuf="i" srcoff="1" dstbuf="i" dstoff="1" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="14" type="s" srcbuf="i" srcoff="1" dstbuf="i" dstoff="1" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="15" type="r" srcbuf="i" srcoff="0" dstbuf="i" dstoff="0" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="16" type="s" srcbuf="i" srcoff="0" dstbuf="i" dstoff="0" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="17" type="r" srcbuf="i" srcoff="7" dstbuf="i" dstoff="7" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="18" type="s" srcbuf="i" srcoff="7" dstbuf="i" dstoff="7" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="19" type="r" srcbuf="i" srcoff="6" dstbuf="i" dstoff="6" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="20" type="s" srcbuf="i" srcoff="6" dstbuf="i" dstoff="6" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="21" type="r" srcbuf="i" srcoff="5" dstbuf="i" dstoff="5" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="22" type="s" srcbuf="i" srcoff="5" dstbuf="i" dstoff="5" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="23" type="r" srcbuf="i" srcoff="4" dstbuf="i" dstoff="4" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="24" type="s" srcbuf="i" srcoff="4" dstbuf="i" dstoff="4" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="25" type="r" srcbuf="i" srcoff="3" dstbuf="i" dstoff="3" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="26" type="s" srcbuf="i" srcoff="3" dstbuf="i" dstoff="3" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="27" type="r" srcbuf="i" srcoff="2" dstbuf="i" dstoff="2" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+    </tb>
+  </gpu>
+  <gpu id="1" i_chunks="8" o_chunks="0" s_chunks="0">
+    <tb id="0" send="2" recv="0" chan="0">
+      <step s="0" type="s" srcbuf="i" srcoff="1" dstbuf="i" dstoff="1" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="1" type="rrc" srcbuf="i" srcoff="0" dstbuf="i" dstoff="0" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="2" type="s" srcbuf="i" srcoff="0" dstbuf="i" dstoff="0" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="3" type="rrc" srcbuf="i" srcoff="7" dstbuf="i" dstoff="7" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="4" type="s" srcbuf="i" srcoff="7" dstbuf="i" dstoff="7" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="5" type="rrc" srcbuf="i" srcoff="6" dstbuf="i" dstoff="6" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="6" type="s" srcbuf="i" srcoff="6" dstbuf="i" dstoff="6" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="7" type="rrc" srcbuf="i" srcoff="5" dstbuf="i" dstoff="5" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="8" type="s" srcbuf="i" srcoff="5" dstbuf="i" dstoff="5" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="9" type="rrc" srcbuf="i" srcoff="4" dstbuf="i" dstoff="4" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="10" type="s" srcbuf="i" srcoff="4" dstbuf="i" dstoff="4" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="11" type="rrc" srcbuf="i" srcoff="3" dstbuf="i" dstoff="3" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="12" type="s" srcbuf="i" srcoff="3" dstbuf="i" dstoff="3" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="13" type="rrc" srcbuf="i" srcoff="2" dstbuf="i" dstoff="2" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="14" type="s" srcbuf="i" srcoff="2" dstbuf="i" dstoff="2" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="15" type="r" srcbuf="i" srcoff="1" dstbuf="i" dstoff="1" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="16" type="s" srcbuf="i" srcoff="1" dstbuf="i" dstoff="1" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="17" type="r" srcbuf="i" srcoff="0" dstbuf="i" dstoff="0" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="18" type="s" srcbuf="i" srcoff="0" dstbuf="i" dstoff="0" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="19" type="r" srcbuf="i" srcoff="7" dstbuf="i" dstoff="7" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="20" type="s" srcbuf="i" srcoff="7" dstbuf="i" dstoff="7" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="21" type="r" srcbuf="i" srcoff="6" dstbuf="i" dstoff="6" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="22" type="s" srcbuf="i" srcoff="6" dstbuf="i" dstoff="6" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="23" type="r" srcbuf="i" srcoff="5" dstbuf="i" dstoff="5" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="24" type="s" srcbuf="i" srcoff="5" dstbuf="i" dstoff="5" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="25" type="r" srcbuf="i" srcoff="4" dstbuf="i" dstoff="4" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="26" type="s" srcbuf="i" srcoff="4" dstbuf="i" dstoff="4" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="27" type="r" srcbuf="i" srcoff="3" dstbuf="i" dstoff="3" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+    </tb>
+  </gpu>
+  <gpu id="2" i_chunks="8" o_chunks="0" s_chunks="0">
+    <tb id="0" send="3" recv="1" chan="0">
+      <step s="0" type="s" srcbuf="i" srcoff="2" dstbuf="i" dstoff="2" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="1" type="rrc" srcbuf="i" srcoff="1" dstbuf="i" dstoff="1" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="2" type="s" srcbuf="i" srcoff="1" dstbuf="i" dstoff="1" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="3" type="rrc" srcbuf="i" srcoff="0" dstbuf="i" dstoff="0" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="4" type="s" srcbuf="i" srcoff="0" dstbuf="i" dstoff="0" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="5" type="rrc" srcbuf="i" srcoff="7" dstbuf="i" dstoff="7" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="6" type="s" srcbuf="i" srcoff="7" dstbuf="i" dstoff="7" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="7" type="rrc" srcbuf="i" srcoff="6" dstbuf="i" dstoff="6" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="8" type="s" srcbuf="i" srcoff="6" dstbuf="i" dstoff="6" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="9" type="rrc" srcbuf="i" srcoff="5" dstbuf="i" dstoff="5" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="10" type="s" srcbuf="i" srcoff="5" dstbuf="i" dstoff="5" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="11" type="rrc" srcbuf="i" srcoff="4" dstbuf="i" dstoff="4" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="12" type="s" srcbuf="i" srcoff="4" dstbuf="i" dstoff="4" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="13" type="rrc" srcbuf="i" srcoff="3" dstbuf="i" dstoff="3" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="14" type="s" srcbuf="i" srcoff="3" dstbuf="i" dstoff="3" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="15" type="r" srcbuf="i" srcoff="2" dstbuf="i" dstoff="2" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="16" type="s" srcbuf="i" srcoff="2" dstbuf="i" dstoff="2" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="17" type="r" srcbuf="i" srcoff="1" dstbuf="i" dstoff="1" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="18" type="s" srcbuf="i" srcoff="1" dstbuf="i" dstoff="1" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="19" type="r" srcbuf="i" srcoff="0" dstbuf="i" dstoff="0" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="20" type="s" srcbuf="i" srcoff="0" dstbuf="i" dstoff="0" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="21" type="r" srcbuf="i" srcoff="7" dstbuf="i" dstoff="7" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="22" type="s" srcbuf="i" srcoff="7" dstbuf="i" dstoff="7" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="23" type="r" srcbuf="i" srcoff="6" dstbuf="i" dstoff="6" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="24" type="s" srcbuf="i" srcoff="6" dstbuf="i" dstoff="6" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="25" type="r" srcbuf="i" srcoff="5" dstbuf="i" dstoff="5" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="26" type="s" srcbuf="i" srcoff="5" dstbuf="i" dstoff="5" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="27" type="r" srcbuf="i" srcoff="4" dstbuf="i" dstoff="4" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+    </tb>
+  </gpu>
+  <gpu id="3" i_chunks="8" o_chunks="0" s_chunks="0">
+    <tb id="0" send="4" recv="2" chan="0">
+      <step s="0" type="s" srcbuf="i" srcoff="3" dstbuf="i" dstoff="3" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="1" type="rrc" srcbuf="i" srcoff="2" dstbuf="i" dstoff="2" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="2" type="s" srcbuf="i" srcoff="2" dstbuf="i" dstoff="2" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="3" type="rrc" srcbuf="i" srcoff="1" dstbuf="i" dstoff="1" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="4" type="s" srcbuf="i" srcoff="1" dstbuf="i" dstoff="1" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="5" type="rrc" srcbuf="i" srcoff="0" dstbuf="i" dstoff="0" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="6" type="s" srcbuf="i" srcoff="0" dstbuf="i" dstoff="0" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="7" type="rrc" srcbuf="i" srcoff="7" dstbuf="i" dstoff="7" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="8" type="s" srcbuf="i" srcoff="7" dstbuf="i" dstoff="7" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="9" type="rrc" srcbuf="i" srcoff="6" dstbuf="i" dstoff="6" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="10" type="s" srcbuf="i" srcoff="6" dstbuf="i" dstoff="6" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="11" type="rrc" srcbuf="i" srcoff="5" dstbuf="i" dstoff="5" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="12" type="s" srcbuf="i" srcoff="5" dstbuf="i" dstoff="5" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="13" type="rrc" srcbuf="i" srcoff="4" dstbuf="i" dstoff="4" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="14" type="s" srcbuf="i" srcoff="4" dstbuf="i" dstoff="4" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="15" type="r" srcbuf="i" srcoff="3" dstbuf="i" dstoff="3" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="16" type="s" srcbuf="i" srcoff="3" dstbuf="i" dstoff="3" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="17" type="r" srcbuf="i" srcoff="2" dstbuf="i" dstoff="2" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="18" type="s" srcbuf="i" srcoff="2" dstbuf="i" dstoff="2" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="19" type="r" srcbuf="i" srcoff="1" dstbuf="i" dstoff="1" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="20" type="s" srcbuf="i" srcoff="1" dstbuf="i" dstoff="1" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="21" type="r" srcbuf="i" srcoff="0" dstbuf="i" dstoff="0" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="22" type="s" srcbuf="i" srcoff="0" dstbuf="i" dstoff="0" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="23" type="r" srcbuf="i" srcoff="7" dstbuf="i" dstoff="7" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="24" type="s" srcbuf="i" srcoff="7" dstbuf="i" dstoff="7" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="25" type="r" srcbuf="i" srcoff="6" dstbuf="i" dstoff="6" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="26" type="s" srcbuf="i" srcoff="6" dstbuf="i" dstoff="6" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="27" type="r" srcbuf="i" srcoff="5" dstbuf="i" dstoff="5" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+    </tb>
+  </gpu>
+  <gpu id="4" i_chunks="8" o_chunks="0" s_chunks="0">
+    <tb id="0" send="5" recv="3" chan="0">
+      <step s="0" type="s" srcbuf="i" srcoff="4" dstbuf="i" dstoff="4" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="1" type="rrc" srcbuf="i" srcoff="3" dstbuf="i" dstoff="3" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="2" type="s" srcbuf="i" srcoff="3" dstbuf="i" dstoff="3" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="3" type="rrc" srcbuf="i" srcoff="2" dstbuf="i" dstoff="2" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="4" type="s" srcbuf="i" srcoff="2" dstbuf="i" dstoff="2" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="5" type="rrc" srcbuf="i" srcoff="1" dstbuf="i" dstoff="1" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="6" type="s" srcbuf="i" srcoff="1" dstbuf="i" dstoff="1" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="7" type="rrc" srcbuf="i" srcoff="0" dstbuf="i" dstoff="0" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="8" type="s" srcbuf="i" srcoff="0" dstbuf="i" dstoff="0" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="9" type="rrc" srcbuf="i" srcoff="7" dstbuf="i" dstoff="7" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="10" type="s" srcbuf="i" srcoff="7" dstbuf="i" dstoff="7" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="11" type="rrc" srcbuf="i" srcoff="6" dstbuf="i" dstoff="6" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="12" type="s" srcbuf="i" srcoff="6" dstbuf="i" dstoff="6" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="13" type="rrc" srcbuf="i" srcoff="5" dstbuf="i" dstoff="5" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="14" type="s" srcbuf="i" srcoff="5" dstbuf="i" dstoff="5" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="15" type="r" srcbuf="i" srcoff="4" dstbuf="i" dstoff="4" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="16" type="s" srcbuf="i" srcoff="4" dstbuf="i" dstoff="4" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="17" type="r" srcbuf="i" srcoff="3" dstbuf="i" dstoff="3" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="18" type="s" srcbuf="i" srcoff="3" dstbuf="i" dstoff="3" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="19" type="r" srcbuf="i" srcoff="2" dstbuf="i" dstoff="2" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="20" type="s" srcbuf="i" srcoff="2" dstbuf="i" dstoff="2" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="21" type="r" srcbuf="i" srcoff="1" dstbuf="i" dstoff="1" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="22" type="s" srcbuf="i" srcoff="1" dstbuf="i" dstoff="1" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="23" type="r" srcbuf="i" srcoff="0" dstbuf="i" dstoff="0" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="24" type="s" srcbuf="i" srcoff="0" dstbuf="i" dstoff="0" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="25" type="r" srcbuf="i" srcoff="7" dstbuf="i" dstoff="7" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="26" type="s" srcbuf="i" srcoff="7" dstbuf="i" dstoff="7" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="27" type="r" srcbuf="i" srcoff="6" dstbuf="i" dstoff="6" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+    </tb>
+  </gpu>
+  <gpu id="5" i_chunks="8" o_chunks="0" s_chunks="0">
+    <tb id="0" send="6" recv="4" chan="0">
+      <step s="0" type="s" srcbuf="i" srcoff="5" dstbuf="i" dstoff="5" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="1" type="rrc" srcbuf="i" srcoff="4" dstbuf="i" dstoff="4" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="2" type="s" srcbuf="i" srcoff="4" dstbuf="i" dstoff="4" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="3" type="rrc" srcbuf="i" srcoff="3" dstbuf="i" dstoff="3" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="4" type="s" srcbuf="i" srcoff="3" dstbuf="i" dstoff="3" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="5" type="rrc" srcbuf="i" srcoff="2" dstbuf="i" dstoff="2" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="6" type="s" srcbuf="i" srcoff="2" dstbuf="i" dstoff="2" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="7" type="rrc" srcbuf="i" srcoff="1" dstbuf="i" dstoff="1" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="8" type="s" srcbuf="i" srcoff="1" dstbuf="i" dstoff="1" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="9" type="rrc" srcbuf="i" srcoff="0" dstbuf="i" dstoff="0" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="10" type="s" srcbuf="i" srcoff="0" dstbuf="i" dstoff="0" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="11" type="rrc" srcbuf="i" srcoff="7" dstbuf="i" dstoff="7" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="12" type="s" srcbuf="i" srcoff="7" dstbuf="i" dstoff="7" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="13" type="rrc" srcbuf="i" srcoff="6" dstbuf="i" dstoff="6" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="14" type="s" srcbuf="i" srcoff="6" dstbuf="i" dstoff="6" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="15" type="r" srcbuf="i" srcoff="5" dstbuf="i" dstoff="5" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="16" type="s" srcbuf="i" srcoff="5" dstbuf="i" dstoff="5" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="17" type="r" srcbuf="i" srcoff="4" dstbuf="i" dstoff="4" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="18" type="s" srcbuf="i" srcoff="4" dstbuf="i" dstoff="4" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="19" type="r" srcbuf="i" srcoff="3" dstbuf="i" dstoff="3" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="20" type="s" srcbuf="i" srcoff="3" dstbuf="i" dstoff="3" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="21" type="r" srcbuf="i" srcoff="2" dstbuf="i" dstoff="2" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="22" type="s" srcbuf="i" srcoff="2" dstbuf="i" dstoff="2" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="23" type="r" srcbuf="i" srcoff="1" dstbuf="i" dstoff="1" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="24" type="s" srcbuf="i" srcoff="1" dstbuf="i" dstoff="1" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="25" type="r" srcbuf="i" srcoff="0" dstbuf="i" dstoff="0" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="26" type="s" srcbuf="i" srcoff="0" dstbuf="i" dstoff="0" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="27" type="r" srcbuf="i" srcoff="7" dstbuf="i" dstoff="7" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+    </tb>
+  </gpu>
+  <gpu id="6" i_chunks="8" o_chunks="0" s_chunks="0">
+    <tb id="0" send="7" recv="5" chan="0">
+      <step s="0" type="s" srcbuf="i" srcoff="6" dstbuf="i" dstoff="6" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="1" type="rrc" srcbuf="i" srcoff="5" dstbuf="i" dstoff="5" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="2" type="s" srcbuf="i" srcoff="5" dstbuf="i" dstoff="5" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="3" type="rrc" srcbuf="i" srcoff="4" dstbuf="i" dstoff="4" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="4" type="s" srcbuf="i" srcoff="4" dstbuf="i" dstoff="4" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="5" type="rrc" srcbuf="i" srcoff="3" dstbuf="i" dstoff="3" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="6" type="s" srcbuf="i" srcoff="3" dstbuf="i" dstoff="3" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="7" type="rrc" srcbuf="i" srcoff="2" dstbuf="i" dstoff="2" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="8" type="s" srcbuf="i" srcoff="2" dstbuf="i" dstoff="2" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="9" type="rrc" srcbuf="i" srcoff="1" dstbuf="i" dstoff="1" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="10" type="s" srcbuf="i" srcoff="1" dstbuf="i" dstoff="1" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="11" type="rrc" srcbuf="i" srcoff="0" dstbuf="i" dstoff="0" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="12" type="s" srcbuf="i" srcoff="0" dstbuf="i" dstoff="0" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="13" type="rrc" srcbuf="i" srcoff="7" dstbuf="i" dstoff="7" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="14" type="s" srcbuf="i" srcoff="7" dstbuf="i" dstoff="7" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="15" type="r" srcbuf="i" srcoff="6" dstbuf="i" dstoff="6" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="16" type="s" srcbuf="i" srcoff="6" dstbuf="i" dstoff="6" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="17" type="r" srcbuf="i" srcoff="5" dstbuf="i" dstoff="5" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="18" type="s" srcbuf="i" srcoff="5" dstbuf="i" dstoff="5" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="19" type="r" srcbuf="i" srcoff="4" dstbuf="i" dstoff="4" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="20" type="s" srcbuf="i" srcoff="4" dstbuf="i" dstoff="4" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="21" type="r" srcbuf="i" srcoff="3" dstbuf="i" dstoff="3" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="22" type="s" srcbuf="i" srcoff="3" dstbuf="i" dstoff="3" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="23" type="r" srcbuf="i" srcoff="2" dstbuf="i" dstoff="2" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="24" type="s" srcbuf="i" srcoff="2" dstbuf="i" dstoff="2" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="25" type="r" srcbuf="i" srcoff="1" dstbuf="i" dstoff="1" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="26" type="s" srcbuf="i" srcoff="1" dstbuf="i" dstoff="1" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="27" type="r" srcbuf="i" srcoff="0" dstbuf="i" dstoff="0" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+    </tb>
+  </gpu>
+  <gpu id="7" i_chunks="8" o_chunks="0" s_chunks="0">
+    <tb id="0" send="0" recv="6" chan="0">
+      <step s="0" type="s" srcbuf="i" srcoff="7" dstbuf="i" dstoff="7" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="1" type="rrc" srcbuf="i" srcoff="6" dstbuf="i" dstoff="6" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="2" type="s" srcbuf="i" srcoff="6" dstbuf="i" dstoff="6" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="3" type="rrc" srcbuf="i" srcoff="5" dstbuf="i" dstoff="5" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="4" type="s" srcbuf="i" srcoff="5" dstbuf="i" dstoff="5" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="5" type="rrc" srcbuf="i" srcoff="4" dstbuf="i" dstoff="4" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="6" type="s" srcbuf="i" srcoff="4" dstbuf="i" dstoff="4" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="7" type="rrc" srcbuf="i" srcoff="3" dstbuf="i" dstoff="3" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="8" type="s" srcbuf="i" srcoff="3" dstbuf="i" dstoff="3" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="9" type="rrc" srcbuf="i" srcoff="2" dstbuf="i" dstoff="2" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="10" type="s" srcbuf="i" srcoff="2" dstbuf="i" dstoff="2" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="11" type="rrc" srcbuf="i" srcoff="1" dstbuf="i" dstoff="1" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="12" type="s" srcbuf="i" srcoff="1" dstbuf="i" dstoff="1" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="13" type="rrc" srcbuf="i" srcoff="0" dstbuf="i" dstoff="0" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="14" type="s" srcbuf="i" srcoff="0" dstbuf="i" dstoff="0" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="15" type="r" srcbuf="i" srcoff="7" dstbuf="i" dstoff="7" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="16" type="s" srcbuf="i" srcoff="7" dstbuf="i" dstoff="7" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="17" type="r" srcbuf="i" srcoff="6" dstbuf="i" dstoff="6" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="18" type="s" srcbuf="i" srcoff="6" dstbuf="i" dstoff="6" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="19" type="r" srcbuf="i" srcoff="5" dstbuf="i" dstoff="5" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="20" type="s" srcbuf="i" srcoff="5" dstbuf="i" dstoff="5" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="21" type="r" srcbuf="i" srcoff="4" dstbuf="i" dstoff="4" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="22" type="s" srcbuf="i" srcoff="4" dstbuf="i" dstoff="4" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="23" type="r" srcbuf="i" srcoff="3" dstbuf="i" dstoff="3" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="24" type="s" srcbuf="i" srcoff="3" dstbuf="i" dstoff="3" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="25" type="r" srcbuf="i" srcoff="2" dstbuf="i" dstoff="2" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="26" type="s" srcbuf="i" srcoff="2" dstbuf="i" dstoff="2" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+      <step s="27" type="r" srcbuf="i" srcoff="1" dstbuf="i" dstoff="1" cnt="1" depid="-1" deps="-1" hasdep="0"/>
+    </tb>
+  </gpu>
+</algo>
