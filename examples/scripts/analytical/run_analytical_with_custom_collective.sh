@@ -11,15 +11,15 @@ set -x
 
 # find the absolute path to this script
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
-PROJECT_DIR="${SCRIPT_DIR:?}/../.."
-EXAMPLE_DIR="${PROJECT_DIR:?}/examples/custom_collective"
+PROJECT_DIR="${SCRIPT_DIR:?}/../../.."
+EXAMPLE_DIR="${PROJECT_DIR:?}/examples"
 
 # paths
 ASTRA_SIM="${PROJECT_DIR:?}/build/astra_analytical/build/bin/AstraSim_Analytical_Congestion_Aware"
-WORKLOAD="${EXAMPLE_DIR:?}/../network_analytical/workload/AllReduce_1MB"
-SYSTEM="${EXAMPLE_DIR:?}/custom_collective.json"
-NETWORK="${EXAMPLE_DIR:?}/../network_analytical/network.yml"
-REMOTE_MEMORY="${EXAMPLE_DIR:?}/../network_analytical/remote_memory.json"
+WORKLOAD="${EXAMPLE_DIR:?}/workload/all_reduce/8npus_1MB/all_reduce"
+SYSTEM="${EXAMPLE_DIR:?}/system/custom_collective.json"
+NETWORK="${EXAMPLE_DIR:?}/network/analytical/Ring_8npus.yml"
+REMOTE_MEMORY="${EXAMPLE_DIR:?}/remote_memory/analytical/no_memory_expansion.json"
 
 # start
 echo "[ASTRA-sim] Compiling ASTRA-sim with the Analytical Network Backend..."
