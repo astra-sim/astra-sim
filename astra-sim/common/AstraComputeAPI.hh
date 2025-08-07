@@ -11,8 +11,8 @@ LICENSE file in the root directory of this source tree.
 #include <iostream>
 #include <string>
 #include <unordered_map>
-#include "astra-sim/system/Common.hh"
-#include "astra-sim/system/AstraNetworkAPI.hh"
+#include "astra-sim/common/Common.hh"
+#include "astra-sim/common/AstraNetworkAPI.hh"
 
 namespace AstraSim {
 class Sys;
