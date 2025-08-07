@@ -1,6 +1,5 @@
 #!/bin/bash
 set -e
-set -x
 
 ## ******************************************************************************
 ## This source code is licensed under the MIT license found in the
@@ -11,14 +10,14 @@ set -x
 
 # find the absolute path to this script
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
-PROJECT_DIR="${SCRIPT_DIR:?}/../../.."
+PROJECT_DIR="${SCRIPT_DIR:?}/../../../.."
 EXAMPLE_DIR="${PROJECT_DIR:?}/examples"
 
 # paths
 ASTRA_SIM="${PROJECT_DIR:?}/build/astra_analytical/build/bin/AstraSim_Analytical_Congestion_Aware"
-WORKLOAD="${EXAMPLE_DIR:?}/workload/all_reduce/8npus_1MB/all_reduce"
-SYSTEM="${EXAMPLE_DIR:?}/system/custom_collective.json"
-NETWORK="${EXAMPLE_DIR:?}/network/analytical/Ring_8npus.yml"
+WORKLOAD="${EXAMPLE_DIR:?}/workload/microbenchmarks/all_gather/16npus_1MB/all_gather"
+SYSTEM="${EXAMPLE_DIR:?}/system/native_collectives/Ring_4chunks.json"
+NETWORK="${EXAMPLE_DIR:?}/network/analytical/Ring_16npus.yml"
 REMOTE_MEMORY="${EXAMPLE_DIR:?}/remote_memory/analytical/no_memory_expansion.json"
 
 # start
@@ -28,8 +27,10 @@ echo ""
 # Compile
 "${PROJECT_DIR:?}"/build/astra_analytical/build.sh
 
+echo ""
 echo "[ASTRA-sim] Compilation finished."
 echo "[ASTRA-sim] Running ASTRA-sim Example with Analytical Network Backend..."
+echo ""
 
 # run ASTRA-sim
 "${ASTRA_SIM:?}" \
@@ -39,4 +40,5 @@ echo "[ASTRA-sim] Running ASTRA-sim Example with Analytical Network Backend..."
     --network-configuration="${NETWORK:?}"
 
 # finalize
+echo ""
 echo "[ASTRA-sim] Finished the execution."
