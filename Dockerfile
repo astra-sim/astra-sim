@@ -29,6 +29,9 @@ RUN python3 -m venv /opt/venv/astra-sim
 ENV PATH="/opt/venv/astra-sim/bin:$PATH"
 RUN pip3 install --upgrade pip
 
+## Add astra-sim to PYTHONPATH
+ENV PYTHONPATH="/app/astra-sim"
+
 # STG dependencies
 RUN pip3 install numpy sympy graphviz pandas
 ### ======================================================
