@@ -63,7 +63,7 @@ enum class CollectiveImplType {
     DoubleBinaryTree,
     HalvingDoubling,
     OneHalvingDoubling,
-    ChakraImpl,
+    CustomCollectiveImpl,
 };
 
 enum class CollectiveBarrier { Blocking = 0, Non_Blocking };
@@ -138,6 +138,7 @@ class CloneInterface {
 /*
  * CollectiveImpl holds the user's description on how a collective algorithm is
  * implemented, provided in the System layer input.
+ * TODO: Move to astraccl/
  */
 class CollectiveImpl : public CloneInterface {
   public:
@@ -171,16 +172,16 @@ class DirectCollectiveImpl : public CollectiveImpl {
 };
 
 /*
- * ChakraCollectiveImpl contains information about a collective implementation
+ * CustomCollectiveImpl contains information about a collective implementation
  * represented using the Chakra ET format. It containes the filename of the
  * Chakra ET which holds the implementation, provided in the System layer input.
  */
-class ChakraCollectiveImpl : public CollectiveImpl {
+class CustomCollectiveImpl : public CollectiveImpl {
   public:
     CloneInterface* clone() const {
-        return new ChakraCollectiveImpl(*this);
+        return new CustomCollectiveImpl(*this);
     };
-    ChakraCollectiveImpl(CollectiveImplType type, std::string filename)
+    CustomCollectiveImpl(CollectiveImplType type, std::string filename)
         : CollectiveImpl(type) {
         this->filename = filename;
     }
