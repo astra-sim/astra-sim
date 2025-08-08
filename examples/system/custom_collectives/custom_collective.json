@@ -1,10 +1,6 @@
 {
   "scheduling-policy": "FIFO",
-  "endpoint-delay": 10,
-  "active-chunks-per-dimension": 1,
   "preferred-dataset-splits": 1,
   "all-reduce-implementation-custom": ["../../../../examples/system/custom_collectives/custom_ring_allreduce_8npus_1MB/custom_allreduce"],
-  "collective-optimization": "localBWAware",
-  "local-mem-bw": 50,
-  "boost-mode": 0
+  "local-mem-bw": 50
 }
