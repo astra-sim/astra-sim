@@ -535,7 +535,7 @@ CollectiveImpl* Sys::generate_collective_impl_from_input(
 CollectiveImpl* Sys::generate_custom_collective_impl(
     string chakra_filepath) {
     string filename = chakra_filepath + "." + to_string(id) + ".et";
-    return new ChakraCollectiveImpl(CollectiveImplType::ChakraImpl, filename);
+    return new CustomCollectiveImpl(CollectiveImplType::CustomCollectiveImpl, filename);
 }
 
 Tick Sys::boostedTick() {
@@ -1071,8 +1071,8 @@ CollectivePhase Sys::generate_collective_phase(
                                                (RingTopology*)topology,
                                                data_size));
         return vn;
-    } else if (collective_impl->type == CollectiveImplType::ChakraImpl) {
-        string filename = ((ChakraCollectiveImpl*)collective_impl)->filename;
+    } else if (collective_impl->type == CollectiveImplType::CustomCollectiveImpl) {
+        string filename = ((CustomCollectiveImpl*)collective_impl)->filename;
         CollectivePhase vn(this, queue_id, new CustomAlgorithm(filename, id));
         return vn;
     } else {
