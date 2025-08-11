@@ -47,8 +47,11 @@ Workload::Workload(Sys* sys, string et_filename, string comm_group_filename) {
     this->comm_groups.clear();
     // TODO: parametrize the number of available hardware resources
     this->hw_resource = new HardwareResource(1);
+    this->local_mem_usage_tracker =
+        std::make_unique<LocalMemUsageTracker>(sys->id);
     this->sys = sys;
     initialize_comm_groups(comm_group_filename);
+    this->stats = new Statistics(this);
     this->is_finished = false;
 }
 
@@ -63,6 +66,9 @@ Workload::~Workload() {
     }
     if (this->hw_resource != nullptr) {
         delete this->hw_resource;
+    }
+    if (this->stats != nullptr) {
+        delete this->stats;
     }
 }
 
@@ -149,7 +155,11 @@ void Workload::issue(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
 
     this->et_feeder->getDependancyResolver().take_node(node->id());
     this->hw_resource->occupy(node);
-
+    // stats->record_end will be called in Workload::call
+    stats->record_start(node, Sys::boostedTick());
+    if (this->sys->track_local_mem) {
+        this->local_mem_usage_tracker->recordStart(node, Sys::boostedTick());
+    }
     if (sys->replay_only) {
         issue_replay(node);
     } else {
@@ -226,11 +236,23 @@ void Workload::issue_comp(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
         throw std::runtime_error(
             "Roofline model is not enabled for non-replay comp");
     }
+
+    if (node->is_cpu_op()) {
+        throw std::runtime_error("Roofline is only available for GPU nodes");
+        return;
+    }
+
     WorkloadLayerHandlerData* wlhd = new WorkloadLayerHandlerData;
     wlhd->node_id = node->id();
 
     double num_ops = static_cast<double>(node->num_ops<uint64_t>());
     double tensor_size = static_cast<double>(node->tensor_size<uint64_t>());
+
+    // if tensor_size is 0 during roofline mode, this is an invalid node
+    if (tensor_size == 0) {
+        skip_invalid(node);
+        return;
+    }
 
     double operational_intensity = num_ops / tensor_size;
     double perf = sys->roofline->get_perf(operational_intensity);
@@ -242,6 +264,20 @@ void Workload::issue_comp(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
         hw_resource->tics_gpu_ops += runtime;
     }
     sys->register_event(this, EventType::General, wlhd, runtime);
+
+    auto& op_stat = this->stats->get_operator_statistics(node->id());
+    op_stat.operation_intensity = operational_intensity;
+    op_stat.compute_utilization = perf / sys->peak_perf;
+    op_stat.memory_utilization =
+        (perf / operational_intensity) / sys->local_mem_bw;
+    op_stat.is_memory_bound = perf < sys->peak_perf;
+    LoggerFactory::get_logger("workload")
+        ->debug("operation_intensity={}, perf={}, elapsed_time={} "
+                "compute_utilization={} memory_utilization={} tensor_size={} "
+                "num_ops={}",
+                operational_intensity, perf, elapsed_time,
+                op_stat.compute_utilization.value(),
+                op_stat.memory_utilization.value(), tensor_size, num_ops);
 }
 
 void Workload::issue_comm(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
@@ -402,6 +438,10 @@ void Workload::skip_invalid(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
                   sys->id, Sys::boostedTick(), node->id(), node->name(),
                   static_cast<uint64_t>(node->type()));
     hw_resource->release(node);
+    stats->record_end(node, Sys::boostedTick());
+    if (this->sys->track_local_mem) {
+        this->local_mem_usage_tracker->recordEnd(node, Sys::boostedTick());
+    }
 }
 
 void Workload::call(EventType event, CallData* data) {
@@ -427,6 +467,10 @@ void Workload::call(EventType event, CallData* data) {
         }
 
         hw_resource->release(node);
+        stats->record_end(node, Sys::boostedTick());
+        if (this->sys->track_local_mem) {
+            this->local_mem_usage_tracker->recordEnd(node, Sys::boostedTick());
+        }
 
         this->et_feeder->getDependancyResolver().finish_node(node_id);
 
@@ -454,6 +498,11 @@ void Workload::call(EventType event, CallData* data) {
             }
 
             hw_resource->release(node);
+            stats->record_end(node, Sys::boostedTick());
+            if (this->sys->track_local_mem) {
+                this->local_mem_usage_tracker->recordEnd(node,
+                                                         Sys::boostedTick());
+            }
 
             this->et_feeder->getDependancyResolver().finish_node(wlhd->node_id);
 
@@ -484,6 +533,22 @@ void Workload::report() {
     LoggerFactory::get_logger("workload")
         ->info("sys[{}] finished, {} cycles, exposed communication {} cycles.",
                sys->id, curr_tick, curr_tick - hw_resource->tics_gpu_ops);
+    stats->post_processing();
+    stats->report();
+    if (this->sys->track_local_mem) {
+        this->local_mem_usage_tracker->buildMemoryTrace();
+        this->local_mem_usage_tracker->buildMemoryTimeline();
+        this->local_mem_usage_tracker->dumpMemoryTrace(
+            this->sys->local_mem_trace_filename);
+        auto [peak_mem_usage, unit] =
+            this->local_mem_usage_tracker->getPeakMemUsageFormatted();
+        if (sys->trace_enabled) {
+            auto logger = LoggerFactory::get_logger("workload");
+            logger->info("sys[{}] peak memory usage: {:.2f} {}", sys->id,
+                         peak_mem_usage, unit);
+        }
+        this->local_mem_usage_tracker.reset();
+    }
 }
 
 CommunicatorGroup* Workload::extract_comm_group(

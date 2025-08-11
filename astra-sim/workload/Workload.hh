@@ -13,6 +13,8 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/Callable.hh"
 #include "astra-sim/system/CommunicatorGroup.hh"
 #include "astra-sim/workload/HardwareResource.hh"
+#include "astra-sim/workload/Statistics.hh"
+#include "astra-sim/workload/LocalMemUsageTracker.hh"
 #include "extern/graph_frontend/chakra/src/feeder_v3/et_feeder.h"
 
 namespace AstraSim {
@@ -56,6 +58,8 @@ class Workload : public Callable {
     std::unordered_map<int, CommunicatorGroup*> comm_groups;
     HardwareResource* hw_resource;
     Sys* sys;
+    Statistics* stats;
+    std::unique_ptr<LocalMemUsageTracker> local_mem_usage_tracker;
     std::unordered_map<int, uint64_t> collective_comm_node_id_map;
     std::unordered_map<int, DataSet*> collective_comm_wrapper_map;
     bool is_finished;
