@@ -9,7 +9,7 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/RecvPacketEventHandlerData.hh"
 #include "astra-sim/system/SendPacketEventHandlerData.hh"
 #include "astra-sim/system/astraccl/custom_collectives/CustomAlgorithm.hh"
-#include "extern/graph_frontend/chakra/src/feeder/et_feeder.h"
+#include "extern/graph_frontend/chakra/src/feeder_v3/et_feeder.h"
 
 using namespace std;
 using namespace AstraSim;
@@ -24,10 +24,11 @@ CustomAlgorithm::CustomAlgorithm(std::string et_filename, int id)
 }
 
 void CustomAlgorithm::issue(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
+    this->et_feeder->getDependancyResolver().take_node(node->id());
     ChakraNodeType type = node->type();
     if (type == ChakraNodeType::COMM_SEND_NODE) {
         sim_request snd_req;
-        snd_req.srcRank = node->comm_src();
+        snd_req.srcRank = node->comm_src(this->stream->owner->id);
         snd_req.dstRank = node->comm_dst();
         snd_req.reqType = UINT8;
         SendPacketEventHandlerData* sehd = new SendPacketEventHandlerData;
@@ -70,11 +71,14 @@ void CustomAlgorithm::issue(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
 }
 
 void CustomAlgorithm::issue_dep_free_nodes() {
-    shared_ptr<Chakra::FeederV3::ETFeederNode> node =
-        et_feeder->getNextIssuableNode();
-    while (node != nullptr) {
-        issue(node);
-        node = et_feeder->getNextIssuableNode();
+    auto& dependancy_resolver = et_feeder->getDependancyResolver();
+    const auto free_nodes = dependancy_resolver.get_dependancy_free_nodes();
+    for (const auto& node_id : free_nodes) {
+        shared_ptr<Chakra::FeederV3::ETFeederNode> node =
+            et_feeder->lookupNode(node_id);
+        if (node != nullptr) {
+            issue(node);
+        }
     }
 }
 
@@ -83,16 +87,16 @@ void CustomAlgorithm::issue_dep_free_nodes() {
 // nodes.
 void CustomAlgorithm::call(EventType event, CallData* data) {
     if (data == nullptr) {
-        throw runtime_error("CustomAlgorithm::call does not have node id encoded "
-                            "(CallData* data is null).");
+        throw runtime_error(
+            "CustomAlgorithm::call does not have node id encoded "
+            "(CallData* data is null).");
     }
 
     WorkloadLayerHandlerData* wlhd = (WorkloadLayerHandlerData*)data;
     shared_ptr<Chakra::FeederV3::ETFeederNode> node =
         et_feeder->lookupNode(wlhd->node_id);
-    et_feeder->freeChildrenNodes(wlhd->node_id);
+    et_feeder->getDependancyResolver().finish_node(wlhd->node_id);
     issue_dep_free_nodes();
-    et_feeder->removeNode(wlhd->node_id);
     delete wlhd;
 
     if (!et_feeder->hasNodesToIssue()) {

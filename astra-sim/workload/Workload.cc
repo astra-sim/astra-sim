@@ -92,9 +92,6 @@ void Workload::initialize_comm_groups(string comm_group_filename) {
     }
 }
 
-void Workload::initialize_comm_group(
-    std::shared_ptr<Chakra::FeederV3::ETFeederNode> node) {}
-
 void Workload::issue_dep_free_nodes() {
     auto& dependancy_resolver = this->et_feeder->getDependancyResolver();
     auto dependancy_free_nodes =
@@ -118,10 +115,6 @@ void Workload::issue(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
 
     this->et_feeder->getDependancyResolver().take_node(node->id());
     this->hw_resource->occupy(node);
-
-    if (node->id() == 1488) {
-        logger->debug("debug");
-    }
 
     if (sys->replay_only) {
         issue_replay(node);
@@ -225,19 +218,33 @@ void Workload::issue_coll_comm(
     shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
     const bool has_involve_dims = node->has_attr("involve_dims");
     std::vector<bool> involved_dims;
-    CommunicatorGroup* comm_group;
-    if (has_involve_dims) {
-        const auto involved_dims_proto = node->get_attr_msg("involve_dims");
-        if (involved_dims_proto.value_case() != ChakraAttr::kBoolList) {
-            throw std::runtime_error("involve_dims should be a list of bools");
+    if (node->has_attr("involved_dim")) {
+        const ChakraProtoMsg::AttributeProto& attr =
+            node->get_attr_msg("involved_dim");
+
+        // Ensure the attribute is of type bool_list before accessing
+        if (attr.has_bool_list()) {
+            const ChakraProtoMsg::BoolList& bool_list = attr.bool_list();
+
+            // Traverse bool_list and add values to involved_dim
+            for (int i = 0; i < bool_list.values_size(); ++i) {
+                involved_dims.push_back(bool_list.values(i));
+            }
+        } else {
+            cerr << "Expected bool_list in involved_dim but found another type."
+                 << endl;
+            exit(EXIT_FAILURE);
         }
-        for (const auto& val : involved_dims_proto.bool_list().values()) {
-            involved_dims.push_back(val);
-        }
-        comm_group = nullptr;  // ignore comm_group
     } else {
-        const auto& pg_name = node->pg_name<std::string>(std::string(""));
-        comm_group = this->comm_group.at(pg_name);
+        // involved_dims does not exist in ETFeeder.
+        // Assume involved_dims = [1,1,1,1,1] which we could simulate
+        // 5-Dimension. Could use Process Group to build involved_dims later.
+        // Once process group is implemented, you should get
+        // that with node->pg_name()
+
+        for (int i = 0; i < 4; i++) {
+            involved_dims.push_back(true);
+        }
     }
 
     CommunicatorGroup* comm_group = extract_comm_group(node);
@@ -433,7 +440,7 @@ void Workload::report() {
 
 CommunicatorGroup* Workload::extract_comm_group(
     std::shared_ptr<Chakra::ETFeederNode> node) {
-    std::string comm_group_name = node->pg_name();
+    std::string comm_group_name = node->pg_name<std::string>("");
     if (comm_group_name == "") {
         // No communicator group is specified for this communication ET node.
         return nullptr;
