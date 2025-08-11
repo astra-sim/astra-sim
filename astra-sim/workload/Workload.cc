@@ -121,10 +121,11 @@ void Workload::issue_pytorch_pg_metadata(
                 }
             }
 
+            int32_t pgNameInt = std::stoi(pgName);
             // To ensure pgName > 0
-            CommunicatorGroup* cg = new CommunicatorGroup(std::stoi(pgName) + 1,
-                                                          involved_NPUs, sys);
-            this->comm_group[pgName] = cg;
+            CommunicatorGroup* cg =
+                new CommunicatorGroup(pgNameInt + 1, involved_NPUs, sys);
+            this->comm_groups[pgNameInt] = cg;
         }
     } catch (const std::exception& e) {
         std::cerr << "Error parsing or processing JSON: " << e.what()
