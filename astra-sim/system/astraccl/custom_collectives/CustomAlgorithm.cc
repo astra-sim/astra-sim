@@ -6,6 +6,7 @@ LICENSE file in the root directory of this source tree.
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "astra-sim/common/Logging.hh"
 #include "astra-sim/system/RecvPacketEventHandlerData.hh"
 #include "astra-sim/system/SendPacketEventHandlerData.hh"
 #include "astra-sim/system/astraccl/custom_collectives/CustomAlgorithm.hh"
@@ -17,9 +18,19 @@ using namespace Chakra;
 
 typedef ChakraProtoMsg::NodeType ChakraNodeType;
 
-CustomAlgorithm::CustomAlgorithm(std::string et_filename, int id)
-    : Algorithm() {
-    this->et_feeder = new Chakra::FeederV3::ETFeeder(et_filename);
+CustomAlgorithm::CustomAlgorithm(std::string et_filename, int id) : Algorithm() {
+    try {
+        this->et_feeder = new Chakra::FeederV3::ETFeeder(et_filename);
+    } catch (const std::runtime_error& e) {
+        // TODO(jinsun): Solve.
+        auto logger = AstraSim::LoggerFactory::get_logger("system::astraccl::custom_collectives");
+        logger->error("Error: Cannot access et file for collective algorithm: \n'" + et_filename + "'.\n"
+                     "Please adjust the system JSON file, and keep in mind the path to the et file is relative to the working directory.\n"
+                     "- If you don't know what the system JSON file is, very likely it's 'examples/system/custom_collectives/custom_collective.json'.\n"
+                     "- For ns-3 backend, note the working directory is 'extern/network_backend/ns-3/build/scratch'.\n"
+                     "We will find a way to avoid this issue in the future.");
+        std::exit(1);
+    }
     this->id = id;
 }
 

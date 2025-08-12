@@ -548,7 +548,7 @@ CollectiveImpl* Sys::generate_collective_impl_from_input(
 CollectiveImpl* Sys::generate_custom_collective_impl(
     string chakra_filepath) {
     string filename = chakra_filepath + "." + to_string(id) + ".et";
-    return new ChakraCollectiveImpl(CollectiveImplType::ChakraImpl, filename);
+    return new CustomCollectiveImpl(CollectiveImplType::CustomCollectiveImpl, filename);
 }
 
 Tick Sys::boostedTick() {
@@ -793,6 +793,10 @@ DataSet* Sys::generate_collective(
     ComType collective_type,
     int explicit_priority,
     CommunicatorGroup* communicator_group) {
+    // TODO(jinsun): For custom collective, we do not need the chunk_size here (since the chunk size is already determined)
+    // Therefore, we also do not need the 'preferred-dataset-splits' value from the system JSON input. 
+    // However, this variable is intertwined deeply in this function so that we cannot remove it for now.
+    // Therefore, we have to keep that value in the JSON input. TODO: Refactor and remove. 
     uint64_t chunk_size = determine_chunk_size(size, collective_type);
     uint64_t recommended_chunk_size = chunk_size;
     int streams = ceil(((double)size) / chunk_size);
@@ -1084,8 +1088,8 @@ CollectivePhase Sys::generate_collective_phase(
                                                (RingTopology*)topology,
                                                data_size));
         return vn;
-    } else if (collective_impl->type == CollectiveImplType::ChakraImpl) {
-        string filename = ((ChakraCollectiveImpl*)collective_impl)->filename;
+    } else if (collective_impl->type == CollectiveImplType::CustomCollectiveImpl) {
+        string filename = ((CustomCollectiveImpl*)collective_impl)->filename;
         CollectivePhase vn(this, queue_id, new CustomAlgorithm(filename, id));
         return vn;
     } else {
