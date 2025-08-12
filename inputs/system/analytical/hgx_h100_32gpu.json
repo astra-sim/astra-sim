@@ -1,0 +1,17 @@
+  {
+  "scheduling-policy": "LIFO",
+  "endpoint-delay": 1,
+  "active-chunks-per-dimension": 2,
+  "preferred-dataset-splits": 4,
+  "all-reduce-implementation": ["ring", "ring"],
+  "all-gather-implementation": ["ring", "ring"],
+  "reduce-scatter-implementation": ["ring", "ring"],
+  "all-to-all-implementation": ["ring", "ring"],
+  "collective-optimization": "localBWAware",
+  "local-mem-bw": 3350,
+  "boost-mode": 0,
+  "track-local-mem": 1,
+  "roofline-enabled": 1,
+  "peak-perf": 700,
+  "local-mem-trace-filename" : "mem_trace/local_memory_trace"
+}

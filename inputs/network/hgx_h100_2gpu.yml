@@ -1,0 +1,16 @@
+# Analytical Network Input File
+
+# Ring Topology
+topology: [ Switch ]  # Ring, Switch, FullyConnected
+
+# 2 NPUs
+npus_count: [ 2 ]  # number of NPUs
+
+# Bandwidth per each link (per direction)
+# max observed busbw = 370.67
+bandwidth: [ 741.34 ]  # 
+
+# Latency per each link
+# calculated link_latency = x
+# because this operates as switch the ASTRA anayltical doubles it. so we needto halve it here
+latency: [ 936.25 ]  # ns (1/2)*link_latency

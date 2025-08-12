@@ -3,12 +3,21 @@
 #include "extern/remote_memory_backend/analytical/AnalyticalRemoteMemory.hh"
 #include <json/json.hpp>
 
+// monkey patch, the spdlog include <syslog.h> and define these macros, and
+// break the ns3 log enum keys
+#define NS3_LOG_COMPAT_UNDEF_SYSLOG
+#include "astra-sim/network_frontend/ns3/ns3_log_monkey_patch.h"
+
 #include "entry.h"
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
 #include "ns3/csma-module.h"
 #include "ns3/internet-module.h"
 #include "ns3/network-module.h"
+
+#undef NS3_LOG_COMPAT_UNDEF_SYSLOG
+#include "astra-sim/network_frontend/ns3/ns3_log_monkey_patch.h"
+
 #include <execinfo.h>
 #include <fstream>
 #include <iostream>
@@ -18,54 +27,54 @@
 #include <thread>
 #include <unistd.h>
 #include <vector>
-#include "astra-sim/common/Logging.hh"
 
 using namespace std;
 using namespace ns3;
 using json = nlohmann::json;
-
 
 /**
  * @class NS3BackendCompletionTracker
  * @brief Tracks the completion status of ranks in the NS3 backend.
  *
  * This is a hacky approach to track which ranks have completed their workload.
- * The purpose of this class is to end the ns3 simulation once all ranks have completed. 
- * The hacky approach is necessary because each ASTRASimNetwork instance only corresponds to one rank.
- * That is, someone needs to keep track of the completion status of all of the ranks.
- * Because there is no exit point once the ns3 simulator has started, 
- * we cannot implement such tracker in the main function.
+ * The purpose of this class is to end the ns3 simulation once all ranks have
+ * completed. The hacky approach is necessary because each ASTRASimNetwork
+ * instance only corresponds to one rank. That is, someone needs to keep track
+ * of the completion status of all of the ranks. Because there is no exit point
+ * once the ns3 simulator has started, we cannot implement such tracker in the
+ * main function.
  */
 class NS3BackendCompletionTracker {
-    public: 
-        NS3BackendCompletionTracker(int num_ranks) {
-            num_unfinished_ranks_ = num_ranks;
-            completion_tracker_ = vector<int>(num_ranks, 0);
-        }
+  public:
+    NS3BackendCompletionTracker(int num_ranks) {
+        num_unfinished_ranks_ = num_ranks;
+        completion_tracker_ = vector<int>(num_ranks, 0);
+    }
 
-        void mark_rank_as_finished(int rank) {
-            if (completion_tracker_[rank] == 0) {
-                completion_tracker_[rank] = 1;
-                num_unfinished_ranks_--;
-            }
-            if (num_unfinished_ranks_ == 0) {
-                AstraSim::LoggerFactory::get_logger("network")
-                    ->debug("All ranks have finished. Exiting simulation.");
-                //cout << "All ranks have finished. Exiting simulation.\n";
-                Simulator::Stop();
-                Simulator::Destroy();
-                exit(0);
-            }
+    void mark_rank_as_finished(int rank) {
+        if (completion_tracker_[rank] == 0) {
+            completion_tracker_[rank] = 1;
+            num_unfinished_ranks_--;
         }
+        if (num_unfinished_ranks_ == 0) {
+            AstraSim::LoggerFactory::get_logger("network")->debug(
+                "All ranks have finished. Exiting simulation.");
+            // cout << "All ranks have finished. Exiting simulation.\n";
+            Simulator::Stop();
+            Simulator::Destroy();
+            exit(0);
+        }
+    }
 
-    private:
-        int num_unfinished_ranks_;
-        vector<int> completion_tracker_;
+  private:
+    int num_unfinished_ranks_;
+    vector<int> completion_tracker_;
 };
 
 class ASTRASimNetwork : public AstraSim::AstraNetworkAPI {
   public:
-    ASTRASimNetwork(int rank, NS3BackendCompletionTracker *completion_tracker) : AstraNetworkAPI(rank) {
+    ASTRASimNetwork(int rank, NS3BackendCompletionTracker* completion_tracker)
+        : AstraNetworkAPI(rank) {
         completion_tracker_ = completion_tracker;
     }
 
@@ -181,7 +190,7 @@ class ASTRASimNetwork : public AstraSim::AstraNetworkAPI {
         return 0;
     }
 
-    private:
+  private:
     NS3BackendCompletionTracker* completion_tracker_;
 };
 
@@ -249,8 +258,7 @@ void parse_args(int argc, char* argv[]) {
     cmd.AddValue("logical-topology-configuration",
                  "Logical topology configuration file",
                  logical_topology_configuration);
-    cmd.AddValue("logging-configuration",
-                 "Logging configuration file", 
+    cmd.AddValue("logging-configuration", "Logging configuration file",
                  logging_configuration);
 
     cmd.AddValue("num-queues-per-dim", "Number of queues per each dimension",
@@ -264,8 +272,8 @@ void parse_args(int argc, char* argv[]) {
 }
 
 int main(int argc, char* argv[]) {
-    LogComponentEnable("OnOffApplication", LOG_LEVEL_INFO);
-    LogComponentEnable("PacketSink", LOG_LEVEL_INFO);
+    LogComponentEnable("OnOffApplication", LOG_INFO);
+    LogComponentEnable("PacketSink", LOG_INFO);
 
     cout << "ASTRA-sim + NS3" << endl;
 
@@ -279,7 +287,8 @@ int main(int argc, char* argv[]) {
     vector<AstraSim::Sys*> systems(num_npus, nullptr);
     Analytical::AnalyticalRemoteMemory* mem =
         new Analytical::AnalyticalRemoteMemory(memory_configuration);
-    NS3BackendCompletionTracker* completion_tracker = new NS3BackendCompletionTracker(num_npus);
+    NS3BackendCompletionTracker* completion_tracker =
+        new NS3BackendCompletionTracker(num_npus);
 
     for (int npu_id = 0; npu_id < num_npus; npu_id++) {
         networks[npu_id] = new ASTRASimNetwork(npu_id, completion_tracker);

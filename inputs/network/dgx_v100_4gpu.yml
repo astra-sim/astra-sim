@@ -1,0 +1,27 @@
+# Analytical Network Input File
+
+# # Ring Topology
+# topology: [ Ring, Ring]
+
+# # 8 NPUs
+# npus_count: [ 2, 2]  # number of NPUs
+
+# # Bandwidth per each link (per direction)
+# # max observed busbw = tbd
+# bandwidth: [ 3.125, 6.25 ]  #
+
+# # Latency per each link
+# latency: [ 3.39, 6.78 ]
+
+# Ring Topology
+topology: [ Ring]
+
+# 8 NPUs
+npus_count: [ 4]  # number of NPUs
+
+# Bandwidth per each link (per direction)
+# max observed busbw = tbd
+bandwidth: [ 3.125]  #
+
+# Latency per each link
+latency: [ 3.39]
