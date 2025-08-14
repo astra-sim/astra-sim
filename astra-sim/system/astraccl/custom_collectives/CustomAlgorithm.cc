@@ -106,13 +106,15 @@ void CustomAlgorithm::call(EventType event, CallData* data) {
     WorkloadLayerHandlerData* wlhd = (WorkloadLayerHandlerData*)data;
     shared_ptr<Chakra::FeederV3::ETFeederNode> node =
         et_feeder->lookupNode(wlhd->node_id);
-    et_feeder->getDependancyResolver().finish_node(wlhd->node_id);
+    auto& dep_resolver = et_feeder->getDependancyResolver();
+    dep_resolver.finish_node(wlhd->node_id);
     issue_dep_free_nodes();
     delete wlhd;
 
-    if (!et_feeder->hasNodesToIssue()) {
-        // There are no more nodes to execute, so we finish the collective
-        // algorithm.
+    if (dep_resolver.get_ongoing_nodes().empty() &&
+        dep_resolver.get_dependancy_free_nodes().empty()) {
+        // There are no more nodes to execute, and no node is executing, so we
+        // finish the collective algorithm.
         exit();
     }
 }

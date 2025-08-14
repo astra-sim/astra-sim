@@ -166,8 +166,10 @@ void Statistics::report(std::shared_ptr<spdlog::logger> logger) const {
             break;
         }
     }
-    logger->info("sys[{}], Total compute-communication overlap: {}", sys_id,
-                 this->comp_comm_overlap);
+    if (this->comp_comm_overlap > 0) {
+        logger->info("sys[{}], Total compute-communication overlap: {}", sys_id,
+                     this->comp_comm_overlap);
+    }
 
     // Report network bandwidth for communication operations
     // logger->info("sys[{}], Network bandwidth details:", sys_id);
