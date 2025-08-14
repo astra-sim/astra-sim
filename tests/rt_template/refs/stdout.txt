@@ -3,10 +3,43 @@ ring of node 0, id: 0 dimension: local total nodes in ring: 8 index in ring: 0 o
 ring of node 0, id: 0 dimension: local total nodes in ring: 8 index in ring: 0 offset: 1 total nodes in ring: 8
 ring of node 0, id: 0 dimension: local total nodes in ring: 8 index in ring: 0 offset: 1 total nodes in ring: 8
 sys[0] finished, 117780 cycles, exposed communication 117780 cycles.
+sys[0]. Post statistics processing start.
+sys[0]. Post statistics processing end.
+sys[0], Wall time: 117780
+sys[0], Comm time: 117780
 sys[1] finished, 117780 cycles, exposed communication 117780 cycles.
+sys[1]. Post statistics processing start.
+sys[1]. Post statistics processing end.
+sys[1], Wall time: 117780
+sys[1], Comm time: 117780
 sys[2] finished, 117780 cycles, exposed communication 117780 cycles.
+sys[2]. Post statistics processing start.
+sys[2]. Post statistics processing end.
+sys[2], Wall time: 117780
+sys[2], Comm time: 117780
 sys[3] finished, 117780 cycles, exposed communication 117780 cycles.
+sys[3]. Post statistics processing start.
+sys[3]. Post statistics processing end.
+sys[3], Wall time: 117780
+sys[3], Comm time: 117780
 sys[4] finished, 117780 cycles, exposed communication 117780 cycles.
+sys[4]. Post statistics processing start.
+sys[4]. Post statistics processing end.
+sys[4], Wall time: 117780
+sys[4], Comm time: 117780
 sys[5] finished, 117780 cycles, exposed communication 117780 cycles.
+sys[5]. Post statistics processing start.
+sys[5]. Post statistics processing end.
+sys[5], Wall time: 117780
+sys[5], Comm time: 117780
 sys[6] finished, 117780 cycles, exposed communication 117780 cycles.
+sys[6]. Post statistics processing start.
+sys[6]. Post statistics processing end.
+sys[6], Wall time: 117780
+sys[6], Comm time: 117780
 sys[7] finished, 117780 cycles, exposed communication 117780 cycles.
+sys[7]. Post statistics processing start.
+sys[7]. Post statistics processing end.
+sys[7], Wall time: 117780
+sys[7], Comm time: 117780
+Exiting
