@@ -27,7 +27,7 @@ file(GLOB srcs_htsim
         ${CMAKE_CURRENT_SOURCE_DIR}/*.cc
 )
 
-set (HTSIM_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../extern/network_backend/csg-htsim/sim)
+set (HTSIM_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../extern/network_backend/uet-htsim/htsim/sim)
 
 set(srcs_htsim_extern   ${HTSIM_DIR}/datacenter/connection_matrix.cpp
                         ${HTSIM_DIR}/datacenter/fat_tree_switch.cpp
@@ -45,11 +45,7 @@ target_sources(AstraSim_HTSim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/HTSimMain.cc)
 # Link libraries
 target_link_libraries(AstraSim_HTSim LINK_PRIVATE AstraSim)
 target_link_libraries(AstraSim_HTSim LINK_PRIVATE Analytical_Congestion_Unaware)
-
-# Add HTSim library
-add_custom_target(htsim COMMAND make WORKING_DIRECTORY ${HTSIM_DIR})
-target_link_libraries(AstraSim_HTSim LINK_PRIVATE ${HTSIM_DIR}/libhtsim.a)
-add_dependencies(AstraSim_HTSim htsim)
+target_link_libraries(AstraSim_HTSim LINK_PRIVATE htsim)
 
 # Include directories
 target_include_directories(AstraSim_HTSim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
@@ -57,8 +53,8 @@ target_include_directories(AstraSim_HTSim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/pr
 target_include_directories(AstraSim_HTSim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../analytical/include/)
 target_include_directories(AstraSim_HTSim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../extern/)
 target_include_directories(AstraSim_HTSim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../extern/helper)
-target_include_directories(AstraSim_HTSim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../extern/network_backend/csg-htsim/sim/)
-target_include_directories(AstraSim_HTSim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../extern/network_backend/csg-htsim/sim/datacenter/)
+target_include_directories(AstraSim_HTSim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../extern/network_backend/uet-htsim/htsim/sim/)
+target_include_directories(AstraSim_HTSim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../extern/network_backend/uet-htsim/htsim/sim/datacenter/)
 
 # Properties
 set_target_properties(AstraSim_HTSim PROPERTIES COMPILE_WARNING_AS_ERROR OFF)
