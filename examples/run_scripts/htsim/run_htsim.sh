@@ -18,9 +18,10 @@ NETWORK="${EXAMPLE_DIR:?}/network/analytical/Ring_8npus.yml"
 TOPO="${EXAMPLE_DIR:?}"/network/htsim/8nodes.topo
 
 cd "${BUILD_DIR:?}" || exit
-gdb --args ${PROJECT_DIR:?}/build/astra_htsim/build/bin/AstraSim_HTSim \
+${PROJECT_DIR:?}/build/astra_htsim/build/bin/AstraSim_HTSim \
   --workload-configuration="${WORKLOAD}" \
   --system-configuration="${SYSTEM}" \
   --remote-memory-configuration="${REMOTE_MEMORY}" \
   --network-configuration="${NETWORK}" \
-  --htsim_opts -topo ${TOPO}
+  --htsim-proto="uet" \
+  --htsim_opts -topo ${TOPO} -conn_reuse
