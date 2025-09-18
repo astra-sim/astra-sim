@@ -181,13 +181,18 @@ class CustomCollectiveImpl : public CollectiveImpl {
     CloneInterface* clone() const {
         return new CustomCollectiveImpl(*this);
     };
-    CustomCollectiveImpl(CollectiveImplType type, std::string filename)
+    // TODO: Comments. general_et_filename: specific filename for this rank, to apply to all collectives unless overridden by the pernode config.
+    // pernode_config_filename: the yaml file
+    CustomCollectiveImpl(CollectiveImplType type, std::string general_et_filename, std::string pernode_config_filename = "")
         : CollectiveImpl(type) {
-        this->filename = filename;
+        this->general_et_filename = general_et_filename;
+        this->pernode_config_filename = pernode_config_filename;
     }
 
     /* The filename of the corresponding Chakra ET file */
-    std::string filename;
+    std::string general_et_filename;
+    /* The filename of the per-node configuration file */
+    std::string pernode_config_filename;
 };
 }  // namespace AstraSim
 

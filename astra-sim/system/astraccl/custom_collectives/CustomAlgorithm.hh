@@ -34,7 +34,7 @@ namespace AstraSim {
  */
 class CustomAlgorithm : public Algorithm {
   public:
-    CustomAlgorithm(std::string et_filename, int id);
+    CustomAlgorithm(std::string et_filename, std::string pernode_config_filename, int id);
 
     // Runs the collective algorithm. This function is only called once to start
     // the algorithm.
