@@ -1,6 +1,8 @@
 {
   "scheduling-policy": "FIFO",
   "preferred-dataset-splits": 1,
-  "all-reduce-implementation-custom": ["examples/system/custom_collectives/custom_ring_allreduce_8npus_1MB/custom_allreduce"],
-  "local-mem-bw": 50
+  "all-reduce-implementation-custom": ["examples/system/custom_collectives/custom_ring_allreduce_symbolic_8npus/allreduce_ring_8"],
+  "all-reduce-implementation-per-node-custom": ["examples/system/custom_collectives/custom_collective_pernode_config.yml"],
+  "local-mem-bw": 50,
+  "trace-enabled": true
 }

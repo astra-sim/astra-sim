@@ -81,8 +81,10 @@ class Sys : public Callable {
     bool initialize_sys(std::string name);
     CollectiveImpl* generate_collective_impl_from_input(
         std::string collective_impl_str);
+    // TODO: parameter documentation. Better name.
     CollectiveImpl* generate_custom_collective_impl(
-        std::string collective_impl_str);
+        std::string collective_impl_str,
+        std::string pernode_config_filename = "");
     //---------------------------------------------------------------------------
 
     // Helper Functions

@@ -6,6 +6,7 @@ LICENSE file in the root directory of this source tree.
 #include <stdlib.h>
 #include <unistd.h>
 
+#include <yaml-cpp/yaml.h>
 #include "astra-sim/common/Logging.hh"
 #include "astra-sim/system/RecvPacketEventHandlerData.hh"
 #include "astra-sim/system/SendPacketEventHandlerData.hh"
@@ -18,8 +19,26 @@ using namespace Chakra;
 
 typedef ChakraProtoMsg::NodeType ChakraNodeType;
 
-CustomAlgorithm::CustomAlgorithm(std::string et_filename, int id) : Algorithm() {
+CustomAlgorithm::CustomAlgorithm(std::string general_et_filename, std::string pernode_config_filename, int rank, int workload_node_id) : Algorithm() {
+    auto logger = AstraSim::LoggerFactory::get_logger("system::astraccl::custom_collectives");
+    std::string et_filename = general_et_filename;
     try {
+        if (!pernode_config_filename.empty()) {
+            try {
+                // TODO: Check that the file exists, is a valid file, etc.
+                // If there is a per-node collective specified, use that to overwrite the general custom collective
+                YAML::Node config = YAML::LoadFile(pernode_config_filename);
+                if (config[std::to_string(workload_node_id)]) {
+                    std::string filepath = config[std::to_string(workload_node_id)].as<std::string>();
+                    et_filename = filepath + std::to_string(rank) + ".et";
+                    logger->debug("Override common et_filename with {}", et_filename);
+                }
+            } catch (const std::exception& e) {
+                logger->error("Error: Cannot access or parse pernode_config_filename YAML file: \n'" + pernode_config_filename + "'.\n"
+                             "Exception: " + std::string(e.what()));
+                std::exit(1);
+            }
+        }
         this->et_feeder = new Chakra::FeederV3::ETFeeder(et_filename);
     } catch (const std::runtime_error& e) {
         // TODO(jinsun): Solve.
@@ -34,6 +53,7 @@ CustomAlgorithm::CustomAlgorithm(std::string et_filename, int id) : Algorithm() 
     this->id = id;
 }
 
+// TODO: rename function from issue->issue_step
 void CustomAlgorithm::issue(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
     this->et_feeder->getDependancyResolver().take_node(node->id());
     ChakraNodeType type = node->type();
@@ -78,6 +98,8 @@ void CustomAlgorithm::issue(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
             runtime = node->runtime() * 1000;
         }
         stream->owner->register_event(this, EventType::General, wlhd, runtime);
+    } else {
+        throw std::runtime_error("CustomAlgorithm::issue: Unsupported node type " + std::to_string(static_cast<int>(type)));
     }
 }
 

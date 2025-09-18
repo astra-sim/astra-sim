@@ -407,16 +407,26 @@ bool Sys::initialize_sys(string name) {
         all_gather_implementation_per_dimension.push_back(ci);
     }
     if (j.contains("all-reduce-implementation-custom")) {
+        all_reduce_implementation_per_dimension.clear();
         vector<string> chakra_filepath_str_vec =
             j["all-reduce-implementation-custom"];
-        all_reduce_implementation_per_dimension.clear();
         if (chakra_filepath_str_vec.size() != 1) {
             throw logic_error(
                 "There should be 1 Chakra ET only. In multi-dim collectives, "
                 "that 1 ET file covers all dimensions");
         }
+        string custom_pernode_filepath_str = "";
+        if (j.contains("all-reduce-implementation-per-node-custom")) {
+            vector<string> chakra_filepath_custom_str_vec =
+                j["all-reduce-implementation-per-node-custom"];
+            if (chakra_filepath_custom_str_vec.size() != 1) {
+                throw logic_error(
+                    "There should be 1 yaml file only. In multi-dim collectives, "
+                    "that 1 yaml file covers all dimensions");
+            }
+        }
         CollectiveImpl* ci =
-            generate_custom_collective_impl(chakra_filepath_str_vec[0]);
+            generate_custom_collective_impl(chakra_filepath_str_vec[0], custom_pernode_filepath_str);
         all_reduce_implementation_per_dimension.push_back(ci);
     }
     if (j.contains("collective-optimization")) {
@@ -546,9 +556,10 @@ CollectiveImpl* Sys::generate_collective_impl_from_input(
 }
 
 CollectiveImpl* Sys::generate_custom_collective_impl(
-    string chakra_filepath) {
+    string chakra_filepath,
+    string pernode_config_filename) {
     string filename = chakra_filepath + "." + to_string(id) + ".et";
-    return new CustomCollectiveImpl(CollectiveImplType::CustomCollectiveImpl, filename);
+    return new CustomCollectiveImpl(CollectiveImplType::CustomCollectiveImpl, filename, pernode_config_filename);
 }
 
 Tick Sys::boostedTick() {
@@ -794,9 +805,9 @@ DataSet* Sys::generate_collective(
     int explicit_priority,
     CommunicatorGroup* communicator_group) {
     // TODO(jinsun): For custom collective, we do not need the chunk_size here (since the chunk size is already determined)
-    // Therefore, we also do not need the 'preferred-dataset-splits' value from the system JSON input. 
+    // Therefore, we also do not need the 'preferred-dataset-splits' value from the system JSON input.
     // However, this variable is intertwined deeply in this function so that we cannot remove it for now.
-    // Therefore, we have to keep that value in the JSON input. TODO: Refactor and remove. 
+    // Therefore, we have to keep that value in the JSON input. TODO: Refactor and remove.
     uint64_t chunk_size = determine_chunk_size(size, collective_type);
     uint64_t recommended_chunk_size = chunk_size;
     int streams = ceil(((double)size) / chunk_size);
@@ -1089,8 +1100,9 @@ CollectivePhase Sys::generate_collective_phase(
                                                data_size));
         return vn;
     } else if (collective_impl->type == CollectiveImplType::CustomCollectiveImpl) {
-        string filename = ((CustomCollectiveImpl*)collective_impl)->filename;
-        CollectivePhase vn(this, queue_id, new CustomAlgorithm(filename, id));
+        string general_et_filename = ((CustomCollectiveImpl*)collective_impl)->general_et_filename;
+        string pernode_config_filename = ((CustomCollectiveImpl*)collective_impl)->pernode_config_filename;
+        CollectivePhase vn(this, queue_id, new CustomAlgorithm(general_et_filename, pernode_config_filename, id));
         return vn;
     } else {
         LoggerFactory::get_logger("system")->critical(

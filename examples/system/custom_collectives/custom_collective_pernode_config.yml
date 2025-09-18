@@ -1,0 +1,5 @@
+# Mapping from 'chakra node id of original workload' to 'custom collective etfile prefix'
+# Relative path to astra-sim
+# 0: Just use the general as defined in custom_collective.json
+1: "examples/system/custom_collectives/allreduce_8npus/allreduce_tacos_8"
+2: "examples/system/custom_collectives/allreduce_8npus/allreduce_tree_8"
