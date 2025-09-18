@@ -35,7 +35,7 @@ namespace AstraSim {
  */
 class CustomAlgorithm : public Algorithm {
   public:
-    CustomAlgorithm(std::string et_filename, int id, int pos_in_comm, CommunicatorGroup* comm_group);
+    CustomAlgorithm(std::string et_filename, int id, uint64_t data_size, int pos_in_comm, CommunicatorGroup* comm_group);
 
     // Runs the collective algorithm. This function is only called once to start
     // the algorithm.
@@ -63,6 +63,9 @@ class CustomAlgorithm : public Algorithm {
     // to traverse the whole workload Chakra ET.
     Chakra::ETFeeder* et_feeder;
     CommunicatorGroup* comm_group;
+    // Size of the collective as defined in the workload's COLL_COMM_NODE Chakra node.
+    // TODO: Validate for AllGather & ReduceScatter
+    uint64_t data_size;
 };
 
 }  // namespace AstraSim
