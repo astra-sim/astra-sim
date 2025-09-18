@@ -18,7 +18,7 @@ using namespace Chakra;
 
 typedef ChakraProtoMsg::NodeType ChakraNodeType;
 
-CustomAlgorithm::CustomAlgorithm(std::string et_filename, int id) : Algorithm() {
+CustomAlgorithm::CustomAlgorithm(std::string et_filename, int id, uint64_t data_size) : Algorithm() {
     try {
         this->et_feeder = new Chakra::FeederV3::ETFeeder(et_filename);
     } catch (const std::runtime_error& e) {
@@ -32,12 +32,37 @@ CustomAlgorithm::CustomAlgorithm(std::string et_filename, int id) : Algorithm() 
         std::exit(1);
     }
     this->id = id;
+this->data_size = data_size;
+}
+
+int get_msg_chunk_cnt(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
+    const Chakra::FeederV3::ChakraAttr* attr;
+    if (node->get_attr_msg("msg_chunk_cnt", &attr)) {
+        return attr->int32_val();
+    } else {
+        throw std::runtime_error("CustomAlgorithm: Node " + to_string(node->id()) +
+                                 " does not have 'msg_chunk_cnt' attribute.");
+    }
+}
+
+int get_total_chunk_cnt(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
+    const Chakra::FeederV3::ChakraAttr* attr;
+    if (node->get_attr_msg("total_chunk_cnt", &attr)) {
+        return attr->int32_val();
+    } else {
+        throw std::runtime_error("CustomAlgorithm: Node " + to_string(node->id()) +
+                                 " does not have 'total_chunk_cnt' attribute.");
+    }
 }
 
 void CustomAlgorithm::issue(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
     this->et_feeder->getDependancyResolver().take_node(node->id());
     ChakraNodeType type = node->type();
     if (type == ChakraNodeType::COMM_SEND_NODE) {
+int msg_chunk_cnt = get_msg_chunk_cnt(node);
+        int total_chunk_cnt = get_total_chunk_cnt(node);
+        // TODO: Value checkers (overflow/underflow, not present, etc)
+        // TODO: Handle case where data_size % total_chunk_cnt != 0
         sim_request snd_req;
         snd_req.srcRank = node->comm_src(this->stream->owner->id);
         snd_req.dstRank = node->comm_dst();
@@ -47,23 +72,29 @@ void CustomAlgorithm::issue(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
         sehd->wlhd = new WorkloadLayerHandlerData;
         sehd->wlhd->node_id = node->id();
         sehd->event = EventType::PacketSent;
+uint64_t comm_size = data_size * msg_chunk_cnt / total_chunk_cnt;
         stream->owner->front_end_sim_send(
             0, Sys::dummy_data,
             // Note that we're using the comm size as hardcoded in the Impl
             // Chakra et, ed through the comm. api, and ignore the comm.size fed
             // in the workload chakra et. TODO: fix.
-            node->comm_size(), UINT8, node->comm_dst(), node->comm_tag(),
+            comm_size, UINT8, node->comm_dst(), node->comm_tag(),
             &snd_req, Sys::FrontEndSendRecvType::NATIVE, &Sys::handleEvent,
             sehd);
     } else if (type == ChakraNodeType::COMM_RECV_NODE) {
+int msg_chunk_cnt = get_msg_chunk_cnt(node);
+        int total_chunk_cnt = get_total_chunk_cnt(node);
+        // TODO: Value checkers (overflow/underflow, not present, etc)
+        // TODO: Handle case where data_size % total_chunk_cnt != 0
         sim_request rcv_req;
         RecvPacketEventHandlerData* rcehd = new RecvPacketEventHandlerData;
         rcehd->wlhd = new WorkloadLayerHandlerData;
         rcehd->wlhd->node_id = node->id();
         rcehd->custom_algorithm = this;
         rcehd->event = EventType::PacketReceived;
+uint64_t comm_size = data_size * msg_chunk_cnt / total_chunk_cnt;
         stream->owner->front_end_sim_recv(
-            0, Sys::dummy_data, node->comm_size(), UINT8, node->comm_src(),
+            0, Sys::dummy_data, comm_size, UINT8, node->comm_src(),
             node->comm_tag(), &rcv_req, Sys::FrontEndSendRecvType::NATIVE,
             &Sys::handleEvent, rcehd);
     } else if (type == ChakraNodeType::COMP_NODE) {
@@ -72,9 +103,12 @@ void CustomAlgorithm::issue(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
         WorkloadLayerHandlerData* wlhd = new WorkloadLayerHandlerData;
         wlhd->node_id = node->id();
         uint64_t runtime = 1ul;
+// TODO: Take the bandwidth from system/input.json and calculate the runtime
+        // Following PacketBundle::call
         if (node->runtime() != 0ul) {
             // chakra runtimes are in microseconds and we should convert it into
             // nanoseconds.
+// Following Workload::issue_replay
             runtime = node->runtime() * 1000;
         }
         stream->owner->register_event(this, EventType::General, wlhd, runtime);

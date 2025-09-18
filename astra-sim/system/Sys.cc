@@ -794,9 +794,9 @@ DataSet* Sys::generate_collective(
     int explicit_priority,
     CommunicatorGroup* communicator_group) {
     // TODO(jinsun): For custom collective, we do not need the chunk_size here (since the chunk size is already determined)
-    // Therefore, we also do not need the 'preferred-dataset-splits' value from the system JSON input. 
+    // Therefore, we also do not need the 'preferred-dataset-splits' value from the system JSON input.
     // However, this variable is intertwined deeply in this function so that we cannot remove it for now.
-    // Therefore, we have to keep that value in the JSON input. TODO: Refactor and remove. 
+    // Therefore, we have to keep that value in the JSON input. TODO: Refactor and remove.
     uint64_t chunk_size = determine_chunk_size(size, collective_type);
     uint64_t recommended_chunk_size = chunk_size;
     int streams = ceil(((double)size) / chunk_size);
@@ -1090,7 +1090,7 @@ CollectivePhase Sys::generate_collective_phase(
         return vn;
     } else if (collective_impl->type == CollectiveImplType::CustomCollectiveImpl) {
         string filename = ((CustomCollectiveImpl*)collective_impl)->filename;
-        CollectivePhase vn(this, queue_id, new CustomAlgorithm(filename, id));
+        CollectivePhase vn(this, queue_id, new CustomAlgorithm(filename, id, data_size));
         return vn;
     } else {
         LoggerFactory::get_logger("system")->critical(
