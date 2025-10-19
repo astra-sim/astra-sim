@@ -257,9 +257,6 @@ Sys::Sys(int id,
         offline_greedy = new OfflineGreedy(this);
     }
 
-    this->break_dimension_done = false;
-    this->dimension_to_break = 0;
-
     this->initialized = true;
 }
 
@@ -1101,122 +1098,6 @@ CollectivePhase Sys::generate_collective_phase(
             "Error: No known collective implementation for collective phase");
         exit(1);
     }
-}
-
-int Sys::break_dimension(int model_parallel_npu_group) {
-    if (break_dimension_done) {
-        return dimension_to_break;
-    }
-
-    dimension_to_break = 0;
-    if (model_parallel_npu_group == 1) {
-        break_dimension_done = true;
-        return -1;
-    }
-    int all_npus = 1;
-    for (; dimension_to_break < physical_dims.size(); dimension_to_break++) {
-        if (all_npus * physical_dims[dimension_to_break] <
-            model_parallel_npu_group) {
-            all_npus *= physical_dims[dimension_to_break];
-        } else if (all_npus * physical_dims[dimension_to_break] >
-                   model_parallel_npu_group) {
-            for (auto lt : logical_topologies) {
-                delete lt.second;
-            }
-            logical_topologies.clear();
-
-            delete scheduler_unit;
-            delete vLevels;
-            std::vector<int>::iterator levelIterator = queues_per_dim.begin();
-            std::advance(levelIterator, dimension_to_break);
-            queues_per_dim.insert(levelIterator,
-                                  queues_per_dim[dimension_to_break]);
-            scheduler_unit =
-                new SchedulerUnit(this, queues_per_dim, max_running,
-                                  active_first_phase, concurrent_streams);
-            vLevels =
-                new QueueLevels(queues_per_dim, 0, comm_NI->get_backend_type());
-
-            int first_subdim = model_parallel_npu_group / all_npus;
-            int second_subdim =
-                physical_dims[dimension_to_break] / first_subdim;
-            std::vector<int> logical_dims;
-
-            for (uint64_t dim = 0; dim < physical_dims.size(); dim++) {
-                if (dim != static_cast<uint64_t>(dimension_to_break)) {
-                    logical_dims.push_back(physical_dims[dim]);
-                } else {
-                    logical_dims.push_back(first_subdim);
-                    logical_dims.push_back(second_subdim);
-                }
-            }
-
-            std::vector<CollectiveImpl*>::iterator it =
-                all_reduce_implementation_per_dimension.begin();
-            if (all_reduce_implementation_per_dimension.size() >
-                dimension_to_break) {
-                std::advance(it, dimension_to_break);
-            } else {
-                std::advance(it,
-                             all_reduce_implementation_per_dimension.size());
-            }
-            CollectiveImpl* replicate = (CollectiveImpl*)(*it)->clone();
-            all_reduce_implementation_per_dimension.insert(it, replicate);
-
-            it = reduce_scatter_implementation_per_dimension.begin();
-            if (reduce_scatter_implementation_per_dimension.size() >
-                dimension_to_break) {
-                std::advance(it, dimension_to_break);
-            } else {
-                std::advance(
-                    it, reduce_scatter_implementation_per_dimension.size());
-            }
-            replicate = (CollectiveImpl*)(*it)->clone();
-            reduce_scatter_implementation_per_dimension.insert(it, replicate);
-
-            it = all_gather_implementation_per_dimension.begin();
-            if (all_gather_implementation_per_dimension.size() >
-                dimension_to_break) {
-                std::advance(it, dimension_to_break);
-            } else {
-                std::advance(it,
-                             all_gather_implementation_per_dimension.size());
-            }
-            replicate = (CollectiveImpl*)(*it)->clone();
-            all_gather_implementation_per_dimension.insert(it, replicate);
-
-            it = all_to_all_implementation_per_dimension.begin();
-            if (all_to_all_implementation_per_dimension.size() >
-                dimension_to_break) {
-                std::advance(it, dimension_to_break);
-            } else {
-                std::advance(it,
-                             all_to_all_implementation_per_dimension.size());
-            }
-            replicate = (CollectiveImpl*)(*it)->clone();
-            all_to_all_implementation_per_dimension.insert(it, replicate);
-            logical_topologies["AllReduce"] = new GeneralComplexTopology(
-                id, logical_dims, all_reduce_implementation_per_dimension);
-            logical_topologies["ReduceScatter"] = new GeneralComplexTopology(
-                id, logical_dims, reduce_scatter_implementation_per_dimension);
-            logical_topologies["AllGather"] = new GeneralComplexTopology(
-                id, logical_dims, all_gather_implementation_per_dimension);
-            logical_topologies["AllToAll"] = new GeneralComplexTopology(
-                id, logical_dims, all_to_all_implementation_per_dimension);
-            this->logical_broken_dims = logical_dims;
-            this->dim_to_break = dimension_to_break;
-
-            break_dimension_done = true;
-            return dimension_to_break;
-        } else if (all_npus * physical_dims[dimension_to_break] ==
-                   model_parallel_npu_group) {
-            break_dimension_done = true;
-            return dimension_to_break;
-        }
-    }
-
-    break_dimension_done = true;
-    return -1;
 }
 
 uint64_t Sys::determine_chunk_size(uint64_t& size, ComType type) {

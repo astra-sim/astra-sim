@@ -161,7 +161,6 @@ class Sys : public Callable {
                                               RingTopology::Direction direction,
                                               InjectionPolicy injection_policy,
                                               CollectiveImpl* collective_impl);
-    int break_dimension(int model_parallel_npu_group);
     //---------------------------------------------------------------------------
 
     // Middle-level Network Primitives
@@ -330,8 +329,6 @@ class Sys : public Callable {
     std::vector<CollectiveImpl*> all_to_all_implementation_per_dimension;
     CollectiveOptimization collectiveOptimization;
     Tick last_scheduled_collective;
-    bool break_dimension_done;
-    int dimension_to_break;
 
     // statistics
     bool trace_enabled;

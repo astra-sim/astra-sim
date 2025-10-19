@@ -129,25 +129,16 @@ enum class EventType {
     MemStoreFinished
 };
 
-class CloneInterface {
-  public:
-    virtual CloneInterface* clone() const = 0;
-    virtual ~CloneInterface() = default;
-};
-
 /*
  * CollectiveImpl holds the user's description on how a collective algorithm is
  * implemented, provided in the System layer input.
  * TODO: Move to astraccl/
  */
-class CollectiveImpl : public CloneInterface {
+class CollectiveImpl {
   public:
     CollectiveImpl(CollectiveImplType type) {
         this->type = type;
     };
-    virtual CloneInterface* clone() const {
-        return new CollectiveImpl(*this);
-    }
 
     CollectiveImplType type;
 };
@@ -160,9 +151,6 @@ class CollectiveImpl : public CloneInterface {
  */
 class DirectCollectiveImpl : public CollectiveImpl {
   public:
-    CloneInterface* clone() const {
-        return new DirectCollectiveImpl(*this);
-    };
     DirectCollectiveImpl(CollectiveImplType type, int direct_collective_window)
         : CollectiveImpl(type) {
         this->direct_collective_window = direct_collective_window;
@@ -178,9 +166,6 @@ class DirectCollectiveImpl : public CollectiveImpl {
  */
 class CustomCollectiveImpl : public CollectiveImpl {
   public:
-    CloneInterface* clone() const {
-        return new CustomCollectiveImpl(*this);
-    };
     CustomCollectiveImpl(CollectiveImplType type, std::string filename)
         : CollectiveImpl(type) {
         this->filename = filename;
