@@ -16,7 +16,7 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/MemBus.hh"
 #include "astra-sim/system/Roofline.hh"
 #include "astra-sim/system/UsageTracker.hh"
-#include "astra-sim/system/astraccl/CollectiveImpl.hh"
+#include "astra-sim/system/astraccl/CollectiveImplLookup.hh"
 #include "astra-sim/system/astraccl/native_collectives/logical_topology/RingTopology.hh"
 #include "astra-sim/workload/Workload.hh"
 
@@ -80,10 +80,6 @@ class Sys : public Callable {
     // Intialization
     // ------------------------------------------------------------
     bool initialize_sys(std::string name);
-    CollectiveImpl* generate_collective_impl_from_input(
-        std::string collective_impl_str);
-    CollectiveImpl* generate_custom_collective_impl(
-        std::string collective_impl_str);
     //---------------------------------------------------------------------------
 
     // Helper Functions
@@ -321,13 +317,10 @@ class Sys : public Callable {
     std::vector<int> queues_per_dim;
 
     // collective communication
+    CollectiveImplLookup* collective_impl_lookup;
     int num_streams;
     static uint8_t* dummy_data;
     std::map<std::string, LogicalTopology*> logical_topologies;
-    std::vector<CollectiveImpl*> all_reduce_implementation_per_dimension;
-    std::vector<CollectiveImpl*> reduce_scatter_implementation_per_dimension;
-    std::vector<CollectiveImpl*> all_gather_implementation_per_dimension;
-    std::vector<CollectiveImpl*> all_to_all_implementation_per_dimension;
     CollectiveOptimization collectiveOptimization;
     Tick last_scheduled_collective;
 
