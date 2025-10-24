@@ -165,6 +165,14 @@ void Workload::issue(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
     if (this->sys->track_local_mem) {
         this->local_mem_usage_tracker->recordStart(node, Sys::boostedTick());
     }
+
+    // hotfix: comm init group is not metadata node
+    if (node->name() == "## process_group:init ##") {
+        issue_pytorch_pg_metadata(node);
+        this->skip_invalid(node);  // for proper dependancy resolving
+        return;
+    }
+
     if (sys->replay_only) {
         issue_replay(node);
     } else {
