@@ -13,6 +13,7 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/MyPacket.hh"
 #include "astra-sim/system/astraccl/Algorithm.hh"
 #include "extern/graph_frontend/chakra/src/feeder_v3/et_feeder.h"
+#include "astra-sim/system/CommunicatorGroup.hh"
 
 namespace AstraSim {
 
@@ -34,12 +35,16 @@ namespace AstraSim {
  */
 class CustomAlgorithm : public Algorithm {
   public:
-    CustomAlgorithm(std::string et_filename, int id);
+    CustomAlgorithm(std::string et_filename, int id, int pos_in_comm, CommunicatorGroup* comm_group);
 
     // Runs the collective algorithm. This function is only called once to start
     // the algorithm.
     virtual void run(EventType event, CallData* data);
     void call(EventType event, CallData* data);
+    // When running a e.g. 4 rank algorithm on a comm group of ranks 1, 3, 5, 7,
+    // The et file for the algorithm will have ranks 0~3.
+    // This function converts 0,1,2,3 to 1,3,5,7, respectively.
+    int convert_algo_rank_to_real_rank(int algo_rank);
 
   private:
     /*
@@ -57,6 +62,7 @@ class CustomAlgorithm : public Algorithm {
     // This is separate from the ET Feeder in the Workload layer, which is used
     // to traverse the whole workload Chakra ET.
     Chakra::ETFeeder* et_feeder;
+    CommunicatorGroup* comm_group;
 };
 
 }  // namespace AstraSim

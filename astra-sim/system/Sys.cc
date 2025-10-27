@@ -692,15 +692,21 @@ DataSet* Sys::generate_collective(
     if (implementation_per_dimension[0]->type == CollectiveImplType::CustomCollectiveImpl) {
         // For custom collective, we create a single stream covering the entire data size,
         // and ignore all the logic below.
+        int pos_in_comm = id;
+        if (communicator_group != nullptr) {
+            pos_in_comm = communicator_group->get_position_in_group();
+        }
         CollectivePhase phase = generate_collective_phase(
             collective_type,
             nullptr,
             size,
+            // We use the variable queue_id to encode the position of this rank in the communication.
+            pos_in_comm,
             // Below three are default values.
-            0,
             RingTopology::Direction::Clockwise,
             InjectionPolicy::Normal,
-            implementation_per_dimension[0]);
+            implementation_per_dimension[0],
+            communicator_group);
         list<CollectivePhase> vect;
         vect.push_back(phase);
         int stream_id = num_streams++;
@@ -958,7 +964,8 @@ CollectivePhase Sys::generate_collective_phase(
     int queue_id,
     RingTopology::Direction direction,
     InjectionPolicy injection_policy,
-    CollectiveImpl* collective_impl) {
+    CollectiveImpl* collective_impl,
+    CommunicatorGroup* comm_group) {
     if (collective_impl->type == CollectiveImplType::Ring ||
         collective_impl->type == CollectiveImplType::OneRing) {
         CollectivePhase vn(this, queue_id,
@@ -990,7 +997,7 @@ CollectivePhase Sys::generate_collective_phase(
         return vn;
     } else if (collective_impl->type == CollectiveImplType::CustomCollectiveImpl) {
         string filename = ((CustomCollectiveImpl*)collective_impl)->filename;
-        CollectivePhase vn(this, queue_id, new CustomAlgorithm(filename, id));
+        CollectivePhase vn(this, 0, new CustomAlgorithm(filename, id, queue_id, comm_group));
         return vn;
     } else {
         LoggerFactory::get_logger("system")->critical(

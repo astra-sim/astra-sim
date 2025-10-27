@@ -18,9 +18,11 @@ using namespace Chakra;
 
 typedef ChakraProtoMsg::NodeType ChakraNodeType;
 
-CustomAlgorithm::CustomAlgorithm(std::string et_filename, int id) : Algorithm() {
+CustomAlgorithm::CustomAlgorithm(std::string et_filename, int id, int pos_in_comm, CommunicatorGroup* comm_group) : Algorithm() {
     try {
+        et_filename = et_filename + "." + to_string(pos_in_comm) + ".et";
         this->et_feeder = new Chakra::FeederV3::ETFeeder(et_filename);
+        this->comm_group = comm_group;
     } catch (const std::runtime_error& e) {
         // TODO(jinsun): Solve.
         auto logger = AstraSim::LoggerFactory::get_logger("system::astraccl::custom_collectives");
@@ -34,13 +36,24 @@ CustomAlgorithm::CustomAlgorithm(std::string et_filename, int id) : Algorithm() 
     this->id = id;
 }
 
+int CustomAlgorithm::convert_algo_rank_to_real_rank(int algo_rank) {
+    // In this custom algorithm implementation, we assume the algo ranks are
+    // same as real ranks. This may change in the future.
+    if (comm_group == nullptr) {
+        return algo_rank;
+    }
+    int real_rank = comm_group->involved_NPUs[algo_rank];
+    return real_rank;
+}
+
 void CustomAlgorithm::issue(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
     this->et_feeder->getDependancyResolver().take_node(node->id());
     ChakraNodeType type = node->type();
     if (type == ChakraNodeType::COMM_SEND_NODE) {
         sim_request snd_req;
+        int dst_rank = convert_algo_rank_to_real_rank(node->comm_dst());
         snd_req.srcRank = node->comm_src(this->stream->owner->id);
-        snd_req.dstRank = node->comm_dst();
+        snd_req.dstRank = dst_rank;
         snd_req.reqType = UINT8;
         SendPacketEventHandlerData* sehd = new SendPacketEventHandlerData;
         sehd->callable = this;
@@ -52,18 +65,19 @@ void CustomAlgorithm::issue(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
             // Note that we're using the comm size as hardcoded in the Impl
             // Chakra et, ed through the comm. api, and ignore the comm.size fed
             // in the workload chakra et. TODO: fix.
-            node->comm_size(), UINT8, node->comm_dst(), node->comm_tag(),
+            node->comm_size(), UINT8, dst_rank, node->comm_tag(),
             &snd_req, Sys::FrontEndSendRecvType::NATIVE, &Sys::handleEvent,
             sehd);
     } else if (type == ChakraNodeType::COMM_RECV_NODE) {
         sim_request rcv_req;
+        int src_rank = convert_algo_rank_to_real_rank(node->comm_src());
         RecvPacketEventHandlerData* rcehd = new RecvPacketEventHandlerData;
         rcehd->wlhd = new WorkloadLayerHandlerData;
         rcehd->wlhd->node_id = node->id();
         rcehd->custom_algorithm = this;
         rcehd->event = EventType::PacketReceived;
         stream->owner->front_end_sim_recv(
-            0, Sys::dummy_data, node->comm_size(), UINT8, node->comm_src(),
+            0, Sys::dummy_data, node->comm_size(), UINT8, src_rank,
             node->comm_tag(), &rcv_req, Sys::FrontEndSendRecvType::NATIVE,
             &Sys::handleEvent, rcehd);
     } else if (type == ChakraNodeType::COMP_NODE) {
