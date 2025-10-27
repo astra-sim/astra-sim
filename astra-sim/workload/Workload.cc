@@ -589,7 +589,12 @@ void Workload::report() {
 CommunicatorGroup* Workload::extract_comm_group(
     std::shared_ptr<Chakra::ETFeederNode> node) {
     std::string comm_group_name = node->pg_name<std::string>("");
-    if (comm_group_name == "") {
+    // [default communication group]
+    // We assume that an empty comm group, or comm group '0' both correspond
+    // to the default communicator group that includes all ranks.
+    // If, in the future, we want to support a user-defined comm group '0',
+    // revisit this logic.
+    if (comm_group_name == "" || comm_group_name == "0") {
         // No communicator group is specified for this communication ET node.
         return nullptr;
     }

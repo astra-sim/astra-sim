@@ -29,6 +29,8 @@ CommunicatorGroup::~CommunicatorGroup() {
 }
 
 void CommunicatorGroup::set_id(int id) {
+    // id 0 is reserved for the default comm group, which is all ranks.
+    // CTRL+F "default communication group"
     assert(id > 0);
     this->id = id;
     this->num_streams = id * 1000000;
