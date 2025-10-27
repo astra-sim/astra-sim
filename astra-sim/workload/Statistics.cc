@@ -63,6 +63,7 @@ Statistics::OperatorStatistics::OperatorType Statistics::OperatorStatistics::
     case ChakraNodeType::COMM_RECV_NODE:
         stat_node_type = Statistics::OperatorStatistics::OperatorType::COMM;
         break;
+    case ChakraNodeType::METADATA_NODE:
     case ChakraNodeType::INVALID_NODE:
         stat_node_type = Statistics::OperatorStatistics::OperatorType::INVALID;
         break;
