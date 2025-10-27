@@ -9,9 +9,10 @@
   "all-to-all-implementation": ["ring", "ring"],
   "collective-optimization": "localBWAware",
   "local-mem-bw": 3350,
+  "trace-enabled": 1,
   "boost-mode": 0,
-  "track-local-mem": 1,
-  "roofline-enabled": 1,
+  "track-local-mem": 0,
+  "roofline-enabled": 0,
   "peak-perf": 700,
   "local-mem-trace-filename" : "mem_trace/local_memory_trace"
 }
