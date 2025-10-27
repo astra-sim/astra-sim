@@ -12,13 +12,23 @@ LICENSE file in the root directory of this source tree.
 
 using namespace AstraSim;
 
-CommunicatorGroup::CommunicatorGroup(int id,
+CommunicatorGroup::CommunicatorGroup(int comm_group_id,
                                      std::vector<int> involved_NPUs,
                                      Sys* generator) {
-    set_id(id);
+    set_id(comm_group_id);
     this->involved_NPUs = involved_NPUs;
     this->generator = generator;
     std::sort(involved_NPUs.begin(), involved_NPUs.end());
+
+    // -1 means the rank is not in the comm group.
+    int position = -1;
+    for (int i = 0; i < involved_NPUs.size(); ++i) {
+        if (involved_NPUs[i] == generator->id) {
+            position = i;
+            break;
+        }
+    }
+    pos_in_group = position;
 }
 
 CommunicatorGroup::~CommunicatorGroup() {
@@ -76,4 +86,8 @@ CollectivePlan* CommunicatorGroup::get_collective_plan(ComType comm_type, uint64
     }
     assert(false);
     return nullptr;
+}
+
+int CommunicatorGroup::get_position_in_group() {
+    return pos_in_group;
 }
