@@ -13,8 +13,8 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/Callable.hh"
 #include "astra-sim/system/CommunicatorGroup.hh"
 #include "astra-sim/workload/HardwareResource.hh"
-#include "astra-sim/workload/Statistics.hh"
 #include "astra-sim/workload/LocalMemUsageTracker.hh"
+#include "astra-sim/workload/Statistics.hh"
 #include "extern/graph_frontend/chakra/src/feeder_v3/et_feeder.h"
 
 namespace AstraSim {
@@ -45,6 +45,8 @@ class Workload : public Callable {
     void issue_comp(std::shared_ptr<Chakra::FeederV3::ETFeederNode> node);
     void issue_comm(std::shared_ptr<Chakra::FeederV3::ETFeederNode> node);
     void issue_coll_comm(std::shared_ptr<Chakra::FeederV3::ETFeederNode> node);
+    void dispatch_coll_comm(
+        std::shared_ptr<Chakra::FeederV3::ETFeederNode> node);
     void issue_send_comm(std::shared_ptr<Chakra::FeederV3::ETFeederNode> node);
     void issue_recv_comm(std::shared_ptr<Chakra::FeederV3::ETFeederNode> node);
     void skip_invalid(std::shared_ptr<Chakra::FeederV3::ETFeederNode> node);

@@ -143,7 +143,10 @@ void Workload::issue_dep_free_nodes() {
     }
     for (const auto node_id : dependancy_free_nodes_set) {
         std::shared_ptr<ETFeederNode> node = et_feeder->lookupNode(node_id);
-        if (hw_resource->is_available(node)) {
+        // hotfix: if node type is COMM_COLL, it will be first synchronized then
+        // dispatched.
+        if (hw_resource->is_available(node) ||
+            node->type() == ChakraNodeType::COMM_COLL_NODE) {
             issue(node);
         }
     }
@@ -159,7 +162,11 @@ void Workload::issue(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
     }
 
     this->et_feeder->getDependancyResolver().take_node(node->id());
-    this->hw_resource->occupy(node);
+    // hotfix: if node type is COMM_COLL, it will be first synchronized then
+    // dispatched, so dont occupy now.
+    if (node->type() != ChakraNodeType::COMM_COLL_NODE) {
+        this->hw_resource->occupy(node);
+    }
     // stats->record_end will be called in Workload::call
     stats->record_start(node, Sys::boostedTick());
     if (this->sys->track_local_mem) {
@@ -284,13 +291,14 @@ void Workload::issue_comp(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
     op_stat.memory_utilization =
         (perf / operational_intensity) / sys->local_mem_bw;
     op_stat.is_memory_bound = perf < sys->peak_perf;
-    LoggerFactory::get_logger("workload")
-        ->debug("operation_intensity={}, perf={}, elapsed_time={} "
-                "compute_utilization={} memory_utilization={} tensor_size={} "
-                "num_ops={}",
-                operational_intensity, perf, elapsed_time,
-                op_stat.compute_utilization.value(),
-                op_stat.memory_utilization.value(), tensor_size, num_ops);
+    if (sys->trace_enabled)
+        LoggerFactory::get_logger("workload")
+            ->debug("operation_intensity={}, perf={}, elapsed_time={} "
+                    "compute_utilization={} memory_utilization={} tensor_size={} "
+                    "num_ops={}",
+                    operational_intensity, perf, elapsed_time,
+                    op_stat.compute_utilization.value(),
+                    op_stat.memory_utilization.value(), tensor_size, num_ops);
 }
 
 void Workload::issue_comm(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
@@ -310,7 +318,13 @@ void Workload::issue_comm(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
 }
 
 void Workload::issue_coll_comm(
+    shared_ptr<Chakra::FeederV3::ETFeederNode> node) {}
+
+void Workload::dispatch_coll_comm(
     shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
+    // hotfix: the coll is synchronized and not occupied yet, occupy it here
+    // TODO: move this to issue() which is more general
+    this->hw_resource->occupy(node);
     const bool has_involve_dims = node->has_attr("involve_dims");
     std::vector<bool> involved_dims;
     if (node->has_attr("involved_dim")) {
