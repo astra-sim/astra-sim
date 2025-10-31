@@ -56,6 +56,9 @@ Workload::Workload(Sys* sys, string et_filename, string comm_group_filename) {
 }
 
 Workload::~Workload() {
+    if (!this->is_finished) {
+        report();
+    }
     for (auto comm_group : comm_groups) {
         delete comm_group.second;
     }
@@ -274,6 +277,13 @@ void Workload::issue_comp(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
         return;
     }
 
+    for (auto& data_dep_id : node->get_chakra_node()->data_deps()) {
+        std::shared_ptr<Chakra::FeederV3::ETFeederNode> dep_node =
+            et_feeder->lookupNode(data_dep_id);
+        uint64_t dep_tensor_size = dep_node->tensor_size<uint64_t>(0);
+        tensor_size += static_cast<double>(dep_tensor_size);
+    }
+
     double operational_intensity = num_ops / tensor_size;
     double perf = sys->roofline->get_perf(operational_intensity);
     double elapsed_time = static_cast<double>(node->num_ops()) / perf;  // sec
@@ -291,14 +301,16 @@ void Workload::issue_comp(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
     op_stat.memory_utilization =
         (perf / operational_intensity) / sys->local_mem_bw;
     op_stat.is_memory_bound = perf < sys->peak_perf;
-    if (sys->trace_enabled)
+    if (sys->trace_enabled) {
         LoggerFactory::get_logger("workload")
-            ->debug("operation_intensity={}, perf={}, elapsed_time={} "
-                    "compute_utilization={} memory_utilization={} tensor_size={} "
-                    "num_ops={}",
-                    operational_intensity, perf, elapsed_time,
-                    op_stat.compute_utilization.value(),
-                    op_stat.memory_utilization.value(), tensor_size, num_ops);
+            ->debug(
+                "operation_intensity={}, perf={}, elapsed_time={} "
+                "compute_utilization={} memory_utilization={} tensor_size={} "
+                "num_ops={}",
+                operational_intensity, perf, elapsed_time,
+                op_stat.compute_utilization.value(),
+                op_stat.memory_utilization.value(), tensor_size, num_ops);
+    }
 }
 
 void Workload::issue_comm(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
