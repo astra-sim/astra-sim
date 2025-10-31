@@ -14,13 +14,15 @@ class Workload;
 
 class CollCommSynchronizer {
   public:
-    static CollCommSynchronizer* get_instance(Workload* workload);
+    static std::shared_ptr<CollCommSynchronizer> get_instance(
+        Workload* workload);
 
     void issue_coll_comm(std::shared_ptr<Chakra::FeederV3::ETFeederNode> node,
                          uint64_t rank,
                          CommunicatorGroup* comm_group);
 
     void try_dispatch_coll_comm();
+    ~CollCommSynchronizer();
 
   private:
     class CollCommSyncData {
@@ -33,12 +35,12 @@ class CollCommSynchronizer {
     uint64_t hashCollCommNode(
         std::shared_ptr<Chakra::FeederV3::ETFeederNode> node);
     std::unordered_map<uint64_t, Workload*> workload_map;
-    CollCommSynchronizer() {}
+    CollCommSynchronizer() = default;
 
     std::unordered_map<uint64_t, CollCommSynchronizer::CollCommSyncData>
         pendingCollComms;
 
-    static CollCommSynchronizer* instance;
+    static std::shared_ptr<CollCommSynchronizer> instance;
 };
 }  // namespace AstraSim
 

@@ -11,6 +11,7 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/RecvPacketEventHandlerData.hh"
 #include "astra-sim/system/SendPacketEventHandlerData.hh"
 #include "astra-sim/system/WorkloadLayerHandlerData.hh"
+#include "astra-sim/workload/CollCommSynchronizer.hh"
 #include <json/json.hpp>
 
 #include <iostream>
@@ -53,6 +54,7 @@ Workload::Workload(Sys* sys, string et_filename, string comm_group_filename) {
     initialize_comm_groups(comm_group_filename);
     this->stats = new Statistics(this);
     this->is_finished = false;
+    this->coll_comm_synchronizer = CollCommSynchronizer::get_instance(this);
 }
 
 Workload::~Workload() {
@@ -330,7 +332,10 @@ void Workload::issue_comm(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
 }
 
 void Workload::issue_coll_comm(
-    shared_ptr<Chakra::FeederV3::ETFeederNode> node) {}
+    shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
+    this->coll_comm_synchronizer->issue_coll_comm(node, sys->id,
+                                                  extract_comm_group(node));
+}
 
 void Workload::dispatch_coll_comm(
     shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
@@ -535,6 +540,9 @@ void Workload::call(EventType event, CallData* data) {
         // dump more statistics in the workload layer
         delete collective_comm_wrapper_map[coll_comm_id];
         collective_comm_wrapper_map.erase(coll_comm_id);
+
+        // this coll finished, try dispatch next pending coll
+        this->coll_comm_synchronizer->try_dispatch_coll_comm();
 
     } else {
         if (data == nullptr) {
