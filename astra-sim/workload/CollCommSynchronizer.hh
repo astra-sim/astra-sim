@@ -14,6 +14,7 @@ class Workload;
 
 class CollCommSynchronizer {
   public:
+    constexpr static uint64_t ALLOW_CROSS_SYNC = true;
     static std::shared_ptr<CollCommSynchronizer> get_instance(
         Workload* workload);
 
@@ -37,8 +38,7 @@ class CollCommSynchronizer {
     std::unordered_map<uint64_t, Workload*> workload_map;
     CollCommSynchronizer() = default;
 
-    std::unordered_map<uint64_t, CollCommSynchronizer::CollCommSyncData>
-        pendingCollComms;
+    std::unordered_map<uint64_t, std::list<CollCommSyncData>> pendingCollComms;
 
     static std::shared_ptr<CollCommSynchronizer> instance;
 };
