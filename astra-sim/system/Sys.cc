@@ -712,7 +712,8 @@ vector<CollectiveImpl*> Sys::get_collective_implementation(ComType comm_type) {
 DataSet* Sys::generate_all_reduce(uint64_t size,
                                   vector<bool> involved_dimensions,
                                   CommunicatorGroup* communicator_group,
-                                  int explicit_priority) {
+                                  int explicit_priority,
+                                  uint64_t workload_node_id) {
     if (communicator_group == nullptr) {
         return generate_collective(size, logical_topologies["AllReduce"],
                                    all_reduce_implementation_per_dimension,
@@ -720,7 +721,7 @@ DataSet* Sys::generate_all_reduce(uint64_t size,
                                    explicit_priority, communicator_group);
     } else {
         CollectivePlan* plan =
-            communicator_group->get_collective_plan(ComType::All_Reduce);
+            communicator_group->get_collective_plan(ComType::All_Reduce, workload_node_id);
         return generate_collective(
             size, plan->topology, plan->implementation_per_dimension,
             plan->dimensions_involved, ComType::All_Reduce, explicit_priority,
@@ -731,7 +732,8 @@ DataSet* Sys::generate_all_reduce(uint64_t size,
 DataSet* Sys::generate_all_to_all(uint64_t size,
                                   vector<bool> involved_dimensions,
                                   CommunicatorGroup* communicator_group,
-                                  int explicit_priority) {
+                                  int explicit_priority,
+                                  uint64_t workload_node_id) {
     if (communicator_group == nullptr) {
         return generate_collective(size, logical_topologies["AllToAll"],
                                    all_to_all_implementation_per_dimension,
@@ -739,7 +741,7 @@ DataSet* Sys::generate_all_to_all(uint64_t size,
                                    explicit_priority, communicator_group);
     } else {
         CollectivePlan* plan =
-            communicator_group->get_collective_plan(ComType::All_to_All);
+            communicator_group->get_collective_plan(ComType::All_to_All, workload_node_id);
         return generate_collective(
             size, plan->topology, plan->implementation_per_dimension,
             plan->dimensions_involved, ComType::All_to_All, explicit_priority,
@@ -750,7 +752,8 @@ DataSet* Sys::generate_all_to_all(uint64_t size,
 DataSet* Sys::generate_all_gather(uint64_t size,
                                   vector<bool> involved_dimensions,
                                   CommunicatorGroup* communicator_group,
-                                  int explicit_priority) {
+                                  int explicit_priority,
+                                  uint64_t workload_node_id) {
     if (communicator_group == nullptr) {
         return generate_collective(size, logical_topologies["AllGather"],
                                    all_gather_implementation_per_dimension,
@@ -758,7 +761,7 @@ DataSet* Sys::generate_all_gather(uint64_t size,
                                    explicit_priority, communicator_group);
     } else {
         CollectivePlan* plan =
-            communicator_group->get_collective_plan(ComType::All_Gather);
+            communicator_group->get_collective_plan(ComType::All_Gather, workload_node_id);
         return generate_collective(
             size, plan->topology, plan->implementation_per_dimension,
             plan->dimensions_involved, ComType::All_Gather, explicit_priority,
@@ -769,7 +772,8 @@ DataSet* Sys::generate_all_gather(uint64_t size,
 DataSet* Sys::generate_reduce_scatter(uint64_t size,
                                       vector<bool> involved_dimensions,
                                       CommunicatorGroup* communicator_group,
-                                      int explicit_priority) {
+                                      int explicit_priority,
+                                      uint64_t workload_node_id) {
     if (communicator_group == nullptr) {
         return generate_collective(size, logical_topologies["ReduceScatter"],
                                    reduce_scatter_implementation_per_dimension,
@@ -777,7 +781,7 @@ DataSet* Sys::generate_reduce_scatter(uint64_t size,
                                    explicit_priority, communicator_group);
     } else {
         CollectivePlan* plan =
-            communicator_group->get_collective_plan(ComType::Reduce_Scatter);
+            communicator_group->get_collective_plan(ComType::Reduce_Scatter, workload_node_id);
         return generate_collective(
             size, plan->topology, plan->implementation_per_dimension,
             plan->dimensions_involved, ComType::Reduce_Scatter,

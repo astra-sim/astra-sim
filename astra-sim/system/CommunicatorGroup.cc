@@ -34,7 +34,7 @@ void CommunicatorGroup::set_id(int id) {
     this->num_streams = id * 1000000;
 }
 
-CollectivePlan* CommunicatorGroup::get_collective_plan(ComType comm_type) {
+CollectivePlan* CommunicatorGroup::get_collective_plan(ComType comm_type, uint64_t workload_node_id) {
     if (comm_plans.find(comm_type) != comm_plans.end()) {
         return comm_plans[comm_type];
     }
