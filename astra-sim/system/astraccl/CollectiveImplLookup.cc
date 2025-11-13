@@ -53,7 +53,7 @@ namespace AstraSim {
     CollectiveImpl* generate_custom_collective_impl(
         string chakra_filepath,
         int rank) {
-        string filename = chakra_filepath + "." + to_string(rank) + ".et";
+        string filename = chakra_filepath;
         return new CustomCollectiveImpl(CollectiveImplType::CustomCollectiveImpl, filename);
     }
 

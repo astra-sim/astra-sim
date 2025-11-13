@@ -157,7 +157,8 @@ class Sys : public Callable {
                                               int queue_id,
                                               RingTopology::Direction direction,
                                               InjectionPolicy injection_policy,
-                                              CollectiveImpl* collective_impl);
+                                              CollectiveImpl* collective_impl,
+                                              CommunicatorGroup* comm_group = nullptr);
     //---------------------------------------------------------------------------
 
     // Middle-level Network Primitives
