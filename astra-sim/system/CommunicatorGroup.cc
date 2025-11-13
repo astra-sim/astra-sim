@@ -43,7 +43,7 @@ CollectivePlan* CommunicatorGroup::get_collective_plan(ComType comm_type, uint64
         LogicalTopology* logical_topology =
             generator->get_logical_topology(comm_type);
         std::vector<CollectiveImpl*> collective_implementation =
-            generator->get_collective_implementation(comm_type);
+            generator->collective_impl_lookup->get_collective_impl(comm_type, workload_node_id);
         std::vector<bool> dimensions_involved(10, true);
         bool should_be_removed = false;
         comm_plans[comm_type] =
@@ -51,10 +51,20 @@ CollectivePlan* CommunicatorGroup::get_collective_plan(ComType comm_type, uint64
                                dimensions_involved, should_be_removed);
         return comm_plans[comm_type];
     } else {
+        std::vector<CollectiveImpl*> collective_implementation =
+            generator->collective_impl_lookup->get_collective_impl(comm_type, workload_node_id);
+        if (collective_implementation.size() > 1) {
+            // This means that everything fell through and we got a native collective that is multi-dimensional.
+            // (Custom collective always assumes 1 dimension).
+            // The current logic requires that, for a comm group that is smaller than the whole cluster,
+            // we reduce everything to one dimension since the logical dimension no longer matches/matters.
+            // TODO: Revisit whether the choice to override with Ring (instead of e.g. first dimension in list)
+            // was a good choice.
+            collective_implementation = std::vector<CollectiveImpl*>{
+                new CollectiveImpl(CollectiveImplType::Ring)};
+        }
         LogicalTopology* logical_topology = new RingTopology(
             RingTopology::Dimension::Local, generator->id, involved_NPUs);
-        std::vector<CollectiveImpl*> collective_implementation{
-            new CollectiveImpl(CollectiveImplType::Ring)};
         std::vector<bool> dimensions_involved(1, true);
         bool should_be_removed = true;
         comm_plans[comm_type] =

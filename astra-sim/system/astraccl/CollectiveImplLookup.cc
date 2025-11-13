@@ -17,8 +17,6 @@ namespace AstraSim {
 
     CollectiveImplLookup::CollectiveImplLookup(int rank_) : rank(rank_) {}
 
-    // Copied from Sys.cc.
-    // TODO: Remove from Sys.cc in next PR
     CollectiveImpl* generate_collective_impl_from_input(
         string collective_impl_str) {
         if (collective_impl_str == "ring") {
@@ -52,8 +50,6 @@ namespace AstraSim {
         }
     }
 
-    // Copied from Sys.cc.
-    // TODO: Remove from Sys.cc in next PR
     CollectiveImpl* generate_custom_collective_impl(
         string chakra_filepath,
         int rank) {
