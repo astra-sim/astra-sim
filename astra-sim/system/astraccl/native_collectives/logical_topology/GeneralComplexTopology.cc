@@ -9,6 +9,7 @@ LICENSE file in the root directory of this source tree.
 #include <iostream>
 
 #include "astra-sim/common/Logging.hh"
+#include "astra-sim/system/astraccl/CollectiveImpl.hh"
 #include "astra-sim/system/astraccl/native_collectives/logical_topology/DoubleBinaryTreeTopology.hh"
 #include "astra-sim/system/astraccl/native_collectives/logical_topology/RingTopology.hh"
 
