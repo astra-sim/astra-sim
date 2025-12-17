@@ -18,19 +18,31 @@ using namespace Chakra;
 
 typedef ChakraProtoMsg::NodeType ChakraNodeType;
 
-CustomAlgorithm::CustomAlgorithm(std::string et_filename, int id, int pos_in_comm, CommunicatorGroup* comm_group) : Algorithm() {
+CustomAlgorithm::CustomAlgorithm(std::string et_filename,
+                                 int id,
+                                 int pos_in_comm,
+                                 CommunicatorGroup* comm_group)
+    : Algorithm() {
     try {
         et_filename = et_filename + "." + to_string(pos_in_comm) + ".et";
         this->et_feeder = new Chakra::FeederV3::ETFeeder(et_filename);
         this->comm_group = comm_group;
     } catch (const std::runtime_error& e) {
         // TODO(jinsun): Solve.
-        auto logger = AstraSim::LoggerFactory::get_logger("system::astraccl::custom_collectives");
-        logger->error("Error: Cannot access et file for collective algorithm: \n'" + et_filename + "'.\n"
-                     "Please adjust the system JSON file, and keep in mind the path to the et file is relative to the working directory.\n"
-                     "- If you don't know what the system JSON file is, very likely it's 'examples/system/custom_collectives/custom_collective.json'.\n"
-                     "- For ns-3 backend, note the working directory is 'extern/network_backend/ns-3/build/scratch'.\n"
-                     "We will find a way to avoid this issue in the future.");
+        auto logger = AstraSim::LoggerFactory::get_logger(
+            "system::astraccl::custom_collectives");
+        logger->error(
+            "Error: Cannot access et file for collective algorithm: \n'" +
+            et_filename +
+            "'.\n"
+            "Please adjust the system JSON file, and keep in mind the path to "
+            "the et file is relative to the working directory.\n"
+            "- If you don't know what the system JSON file is, very likely "
+            "it's "
+            "'examples/system/custom_collectives/custom_collective.json'.\n"
+            "- For ns-3 backend, note the working directory is "
+            "'extern/network_backend/ns-3/build/scratch'.\n"
+            "We will find a way to avoid this issue in the future.");
         std::exit(1);
     }
     this->id = id;
@@ -65,9 +77,8 @@ void CustomAlgorithm::issue(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
             // Note that we're using the comm size as hardcoded in the Impl
             // Chakra et, ed through the comm. api, and ignore the comm.size fed
             // in the workload chakra et. TODO: fix.
-            node->comm_size(), UINT8, dst_rank, node->comm_tag(),
-            &snd_req, Sys::FrontEndSendRecvType::NATIVE, &Sys::handleEvent,
-            sehd);
+            node->comm_size(), UINT8, dst_rank, node->comm_tag(), &snd_req,
+            Sys::FrontEndSendRecvType::NATIVE, &Sys::handleEvent, sehd);
     } else if (type == ChakraNodeType::COMM_RECV_NODE) {
         sim_request rcv_req;
         int src_rank = convert_algo_rank_to_real_rank(node->comm_src());
