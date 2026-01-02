@@ -1,5 +1,5 @@
 #include "astra-sim/workload/Statistics.hh"
-#include "astra-sim/system/Sys.hh"
+#include "astra-sim/system/basic_system/basic_model/Sys.hh"
 #include "astra-sim/workload/Workload.hh"
 #include <algorithm>
 #include <cassert>

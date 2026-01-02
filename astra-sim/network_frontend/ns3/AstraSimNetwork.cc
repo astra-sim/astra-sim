@@ -1,5 +1,5 @@
 #include "astra-sim/common/AstraNetworkAPI.hh"
-#include "astra-sim/system/Sys.hh"
+#include "astra-sim/system/basic_system/basic_model/Sys.hh"
 #include "extern/remote_memory_backend/analytical/AnalyticalRemoteMemory.hh"
 #include <json/json.hpp>
 

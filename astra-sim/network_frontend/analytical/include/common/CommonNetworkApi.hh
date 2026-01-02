@@ -9,7 +9,7 @@ LICENSE file in the root directory of this source tree.
 #include "common/ChunkIdGenerator.hh"
 #include <astra-network-analytical/common/EventQueue.h>
 #include <astra-sim/common/AstraNetworkAPI.hh>
-#include <astra-sim/system/Common.hh>
+#include <astra-sim/common/Common.hh>
 #include <memory>
 #include <vector>
 

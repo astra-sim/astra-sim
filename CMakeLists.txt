@@ -49,16 +49,20 @@ endif()
 
 # Files to compile
 file(GLOB srcs
-    "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/*.cc"
-    "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/workload/*.cc"
-    "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/astraccl/*.cc"
-    "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/astraccl/native_collectives/*.cc"
-    "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/astraccl/native_collectives/logical_topology/*.cc"
-    "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/astraccl/native_collectives/collective_algorithm/*.cc"
-    "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/astraccl/custom_collectives/*.cc"
-    "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/memory/*.cc"
-    "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/scheduling/*.cc"
     "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/common/*.cc"
+
+    "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/*.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/basic_system/*.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/basic_system/astraccl/*.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/basic_system/astraccl/custom_collectives/*.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/basic_system/astraccl/native_collectives/*.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/basic_system/astraccl/native_collectives/collective_algorithm/*.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/basic_system/astraccl/native_collectives/logical_topology/*.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/basic_system/basic_model/*.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/basic_system/basic_model/scheduling/*.cc"
+
+    "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/workload/*.cc"
+
     "${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/src/third_party/utils/*.cc"
     "${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/schema/protobuf/*.cc"
     "${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/src/feeder_v3/*.cpp"

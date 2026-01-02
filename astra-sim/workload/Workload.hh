@@ -10,8 +10,8 @@ LICENSE file in the root directory of this source tree.
 #include <string>
 #include <unordered_map>
 
-#include "astra-sim/system/Callable.hh"
-#include "astra-sim/system/CommunicatorGroup.hh"
+#include "astra-sim/system/basic_system/basic_model/Callable.hh"
+#include "astra-sim/system/basic_system/basic_model/CommunicatorGroup.hh"
 #include "astra-sim/workload/HardwareResource.hh"
 #include "astra-sim/workload/LocalMemUsageTracker.hh"
 #include "astra-sim/workload/Statistics.hh"

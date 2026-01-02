@@ -6,11 +6,11 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/workload/Workload.hh"
 
 #include "astra-sim/common/Logging.hh"
-#include "astra-sim/system/IntData.hh"
-#include "astra-sim/system/MemEventHandlerData.hh"
-#include "astra-sim/system/RecvPacketEventHandlerData.hh"
-#include "astra-sim/system/SendPacketEventHandlerData.hh"
-#include "astra-sim/system/WorkloadLayerHandlerData.hh"
+#include "astra-sim/system/basic_system/basic_model/IntData.hh"
+#include "astra-sim/system/basic_system/basic_model/MemEventHandlerData.hh"
+#include "astra-sim/system/basic_system/basic_model/RecvPacketEventHandlerData.hh"
+#include "astra-sim/system/basic_system/basic_model/SendPacketEventHandlerData.hh"
+#include "astra-sim/system/basic_system/basic_model/WorkloadLayerHandlerData.hh"
 #include <json/json.hpp>
 
 #include <iostream>
