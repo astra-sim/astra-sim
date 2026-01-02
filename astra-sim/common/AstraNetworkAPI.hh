@@ -14,8 +14,8 @@ class AstraNetworkAPI {
   public:
     enum class BackendType { NotSpecified = 0, Garnet, NS3, Analytical };
 
-    AstraNetworkAPI(int rank) : rank(rank) {};
-    virtual ~AstraNetworkAPI() {};
+    AstraNetworkAPI(int rank) : rank(rank){};
+    virtual ~AstraNetworkAPI(){};
 
     virtual int sim_send(void* buffer,
                          uint64_t count,
@@ -65,11 +65,11 @@ class AstraNetworkAPI {
         return -1;
     };
 
-    // Notifies that the workload for this rank has finished. 
-    // Note that we have one network handler per rank. 
-    // Therefore, when implementing this function, the network handler must 
+    // Notifies that the workload for this rank has finished.
+    // Note that we have one network handler per rank.
+    // Therefore, when implementing this function, the network handler must
     // find a way to concur that all ranks have finished their workloads.
-    virtual void sim_notify_finished(){
+    virtual void sim_notify_finished() {
         return;
     }
 

@@ -10,8 +10,8 @@ LICENSE file in the root directory of this source tree.
 
 namespace AstraSim {
 
-// For legacy reasons we are calling this and everywhere below 'Collective Implementation'
-// but it really is 'Collective Algorithm'.
+// For legacy reasons we are calling this and everywhere below 'Collective
+// Implementation' but it really is 'Collective Algorithm'.
 enum class CollectiveImplType {
     Ring = 0,
     OneRing,
@@ -28,8 +28,8 @@ enum class CollectiveImplType {
 };
 
 /*
- * CollectiveImpl holds the user's description on how a collective operation is implemented.
- * That implementation is held in the system layer input.
+ * CollectiveImpl holds the user's description on how a collective operation is
+ * implemented. That implementation is held in the system layer input.
  */
 class CollectiveImpl {
   public:
@@ -57,9 +57,10 @@ class DirectCollectiveImpl : public CollectiveImpl {
 };
 
 /*
- * CustomCollectiveImpl contains information about non-native, custom collective algorithms.
- * This data structure contains the filename of the Chakra ET which holds the implementation.
- * That filename is provided in the System layer input.
+ * CustomCollectiveImpl contains information about non-native, custom collective
+ * algorithms. This data structure contains the filename of the Chakra ET which
+ * holds the implementation. That filename is provided in the System layer
+ * input.
  */
 class CustomCollectiveImpl : public CollectiveImpl {
   public:
@@ -72,6 +73,6 @@ class CustomCollectiveImpl : public CollectiveImpl {
     std::string filename;
 };
 
-} // namespace AstraSim
+}  // namespace AstraSim
 
 #endif /* __COLLECTIVEIMPL_HH */

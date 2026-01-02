@@ -9,11 +9,11 @@ LICENSE file in the root directory of this source tree.
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "astra-sim/system/CommunicatorGroup.hh"
 #include "astra-sim/system/MemBus.hh"
 #include "astra-sim/system/MyPacket.hh"
 #include "astra-sim/system/astraccl/Algorithm.hh"
 #include "extern/graph_frontend/chakra/src/feeder_v3/et_feeder.h"
-#include "astra-sim/system/CommunicatorGroup.hh"
 
 namespace AstraSim {
 
@@ -35,7 +35,10 @@ namespace AstraSim {
  */
 class CustomAlgorithm : public Algorithm {
   public:
-    CustomAlgorithm(std::string et_filename, int id, int pos_in_comm, CommunicatorGroup* comm_group);
+    CustomAlgorithm(std::string et_filename,
+                    int id,
+                    int pos_in_comm,
+                    CommunicatorGroup* comm_group);
 
     // Runs the collective algorithm. This function is only called once to start
     // the algorithm.

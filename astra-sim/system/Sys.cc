@@ -28,9 +28,9 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/astraccl/native_collectives/collective_algorithm/DoubleBinaryTreeAllReduce.hh"
 #include "astra-sim/system/astraccl/native_collectives/collective_algorithm/HalvingDoubling.hh"
 #include "astra-sim/system/astraccl/native_collectives/collective_algorithm/Ring.hh"
-#include "astra-sim/system/scheduling/OfflineGreedy.hh"
 #include "astra-sim/system/astraccl/native_collectives/logical_topology/BasicLogicalTopology.hh"
 #include "astra-sim/system/astraccl/native_collectives/logical_topology/GeneralComplexTopology.hh"
+#include "astra-sim/system/scheduling/OfflineGreedy.hh"
 #include <json/json.hpp>
 
 using namespace std;
@@ -240,13 +240,21 @@ Sys::Sys(int id,
     this->num_streams = 0;
 
     logical_topologies["AllReduce"] = new GeneralComplexTopology(
-        id, physical_dims, collective_impl_lookup->get_collective_impl(ComType::All_Reduce, 0, BypassRule::BYPASS_ALL_CUSTOM));
+        id, physical_dims,
+        collective_impl_lookup->get_collective_impl(
+            ComType::All_Reduce, 0, BypassRule::BYPASS_ALL_CUSTOM));
     logical_topologies["ReduceScatter"] = new GeneralComplexTopology(
-        id, physical_dims, collective_impl_lookup->get_collective_impl(ComType::Reduce_Scatter, 0, BypassRule::BYPASS_ALL_CUSTOM));
+        id, physical_dims,
+        collective_impl_lookup->get_collective_impl(
+            ComType::Reduce_Scatter, 0, BypassRule::BYPASS_ALL_CUSTOM));
     logical_topologies["AllGather"] = new GeneralComplexTopology(
-        id, physical_dims, collective_impl_lookup->get_collective_impl(ComType::All_Gather, 0, BypassRule::BYPASS_ALL_CUSTOM));
+        id, physical_dims,
+        collective_impl_lookup->get_collective_impl(
+            ComType::All_Gather, 0, BypassRule::BYPASS_ALL_CUSTOM));
     logical_topologies["AllToAll"] = new GeneralComplexTopology(
-        id, physical_dims, collective_impl_lookup->get_collective_impl(ComType::All_to_All, 0, BypassRule::BYPASS_ALL_CUSTOM));
+        id, physical_dims,
+        collective_impl_lookup->get_collective_impl(
+            ComType::All_to_All, 0, BypassRule::BYPASS_ALL_CUSTOM));
 
     memBus = new MemBus("NPU", "MA", this, inp_L, inp_o, inp_g, inp_G,
                         model_shared_bus, communication_delay, true);
@@ -413,9 +421,9 @@ bool Sys::initialize_sys(string name) {
     this->track_local_mem = false;
     if (j.contains("track-local-mem")) {
         if (j["track-local-mem"] != 0) {
-        this->track_local_mem = true;
+            this->track_local_mem = true;
         } else {
-        this->track_local_mem = false;
+            this->track_local_mem = false;
         }
     }
 
@@ -579,14 +587,16 @@ DataSet* Sys::generate_all_reduce(uint64_t size,
                                   uint64_t workload_node_id) {
     if (communicator_group == nullptr) {
         vector<CollectiveImpl*> implementation_per_dimension;
-        implementation_per_dimension = collective_impl_lookup->get_collective_impl(ComType::All_Reduce, workload_node_id);
+        implementation_per_dimension =
+            collective_impl_lookup->get_collective_impl(ComType::All_Reduce,
+                                                        workload_node_id);
         return generate_collective(size, logical_topologies["AllReduce"],
                                    implementation_per_dimension,
                                    involved_dimensions, ComType::All_Reduce,
                                    explicit_priority, communicator_group);
     } else {
-        CollectivePlan* plan =
-            communicator_group->get_collective_plan(ComType::All_Reduce, workload_node_id);
+        CollectivePlan* plan = communicator_group->get_collective_plan(
+            ComType::All_Reduce, workload_node_id);
         return generate_collective(
             size, plan->topology, plan->implementation_per_dimension,
             plan->dimensions_involved, ComType::All_Reduce, explicit_priority,
@@ -601,14 +611,16 @@ DataSet* Sys::generate_all_to_all(uint64_t size,
                                   uint64_t workload_node_id) {
     if (communicator_group == nullptr) {
         vector<CollectiveImpl*> implementation_per_dimension;
-        implementation_per_dimension = collective_impl_lookup->get_collective_impl(ComType::All_to_All, workload_node_id);
+        implementation_per_dimension =
+            collective_impl_lookup->get_collective_impl(ComType::All_to_All,
+                                                        workload_node_id);
         return generate_collective(size, logical_topologies["AllToAll"],
                                    implementation_per_dimension,
                                    involved_dimensions, ComType::All_to_All,
                                    explicit_priority, communicator_group);
     } else {
-        CollectivePlan* plan =
-            communicator_group->get_collective_plan(ComType::All_to_All, workload_node_id);
+        CollectivePlan* plan = communicator_group->get_collective_plan(
+            ComType::All_to_All, workload_node_id);
         return generate_collective(
             size, plan->topology, plan->implementation_per_dimension,
             plan->dimensions_involved, ComType::All_to_All, explicit_priority,
@@ -623,14 +635,16 @@ DataSet* Sys::generate_all_gather(uint64_t size,
                                   uint64_t workload_node_id) {
     if (communicator_group == nullptr) {
         vector<CollectiveImpl*> implementation_per_dimension;
-        implementation_per_dimension = collective_impl_lookup->get_collective_impl(ComType::All_Gather, workload_node_id);
+        implementation_per_dimension =
+            collective_impl_lookup->get_collective_impl(ComType::All_Gather,
+                                                        workload_node_id);
         return generate_collective(size, logical_topologies["AllGather"],
                                    implementation_per_dimension,
                                    involved_dimensions, ComType::All_Gather,
                                    explicit_priority, communicator_group);
     } else {
-        CollectivePlan* plan =
-            communicator_group->get_collective_plan(ComType::All_Gather, workload_node_id);
+        CollectivePlan* plan = communicator_group->get_collective_plan(
+            ComType::All_Gather, workload_node_id);
         return generate_collective(
             size, plan->topology, plan->implementation_per_dimension,
             plan->dimensions_involved, ComType::All_Gather, explicit_priority,
@@ -645,14 +659,16 @@ DataSet* Sys::generate_reduce_scatter(uint64_t size,
                                       uint64_t workload_node_id) {
     if (communicator_group == nullptr) {
         vector<CollectiveImpl*> implementation_per_dimension;
-        implementation_per_dimension = collective_impl_lookup->get_collective_impl(ComType::Reduce_Scatter, workload_node_id);
+        implementation_per_dimension =
+            collective_impl_lookup->get_collective_impl(ComType::Reduce_Scatter,
+                                                        workload_node_id);
         return generate_collective(size, logical_topologies["ReduceScatter"],
                                    implementation_per_dimension,
                                    involved_dimensions, ComType::Reduce_Scatter,
                                    explicit_priority, communicator_group);
     } else {
-        CollectivePlan* plan =
-            communicator_group->get_collective_plan(ComType::Reduce_Scatter, workload_node_id);
+        CollectivePlan* plan = communicator_group->get_collective_plan(
+            ComType::Reduce_Scatter, workload_node_id);
         return generate_collective(
             size, plan->topology, plan->implementation_per_dimension,
             plan->dimensions_involved, ComType::Reduce_Scatter,
@@ -668,10 +684,12 @@ DataSet* Sys::generate_collective(
     ComType collective_type,
     int explicit_priority,
     CommunicatorGroup* communicator_group) {
-    // TODO(jinsun): For custom collective, we do not need the chunk_size here (since the chunk size is already determined)
-    // Therefore, we also do not need the 'preferred-dataset-splits' value from the system JSON input. 
-    // However, this variable is intertwined deeply in this function so that we cannot remove it for now.
-    // Therefore, we have to keep that value in the JSON input. TODO: Refactor and remove. 
+    // TODO(jinsun): For custom collective, we do not need the chunk_size here
+    // (since the chunk size is already determined) Therefore, we also do not
+    // need the 'preferred-dataset-splits' value from the system JSON input.
+    // However, this variable is intertwined deeply in this function so that we
+    // cannot remove it for now. Therefore, we have to keep that value in the
+    // JSON input. TODO: Refactor and remove.
     uint64_t chunk_size = determine_chunk_size(size, collective_type);
     uint64_t recommended_chunk_size = chunk_size;
     int streams = ceil(((double)size) / chunk_size);
@@ -689,24 +707,22 @@ DataSet* Sys::generate_collective(
         }
     }
 
-    if (implementation_per_dimension[0]->type == CollectiveImplType::CustomCollectiveImpl) {
-        // For custom collective, we create a single stream covering the entire data size,
-        // and ignore all the logic below.
+    if (implementation_per_dimension[0]->type ==
+        CollectiveImplType::CustomCollectiveImpl) {
+        // For custom collective, we create a single stream covering the entire
+        // data size, and ignore all the logic below.
         int pos_in_comm = id;
         if (communicator_group != nullptr) {
             pos_in_comm = communicator_group->get_position_in_group();
         }
         CollectivePhase phase = generate_collective_phase(
-            collective_type,
-            nullptr,
-            size,
-            // We use the variable queue_id to encode the position of this rank in the communication.
+            collective_type, nullptr, size,
+            // We use the variable queue_id to encode the position of this rank
+            // in the communication.
             pos_in_comm,
             // Below three are default values.
-            RingTopology::Direction::Clockwise,
-            InjectionPolicy::Normal,
-            implementation_per_dimension[0],
-            communicator_group);
+            RingTopology::Direction::Clockwise, InjectionPolicy::Normal,
+            implementation_per_dimension[0], communicator_group);
         list<CollectivePhase> vect;
         vect.push_back(phase);
         int stream_id = num_streams++;
@@ -995,9 +1011,11 @@ CollectivePhase Sys::generate_collective_phase(
                                                (RingTopology*)topology,
                                                data_size));
         return vn;
-    } else if (collective_impl->type == CollectiveImplType::CustomCollectiveImpl) {
+    } else if (collective_impl->type ==
+               CollectiveImplType::CustomCollectiveImpl) {
         string filename = ((CustomCollectiveImpl*)collective_impl)->filename;
-        CollectivePhase vn(this, 0, new CustomAlgorithm(filename, id, queue_id, comm_group));
+        CollectivePhase vn(
+            this, 0, new CustomAlgorithm(filename, id, queue_id, comm_group));
         return vn;
     } else {
         LoggerFactory::get_logger("system")->critical(

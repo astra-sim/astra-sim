@@ -74,8 +74,8 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData* data) {
     } else if (state == State::Begin &&
                type == BinaryTree::Type::Intermediate) {  // int.1
         // State should be set before sim_recv. The message might have already
-        // arrived on the simulation side, in which case the callback would enter
-        // the same state again.
+        // arrived on the simulation side, in which case the callback would
+        // enter the same state again.
         state = State::WaitingForTwoChildData;
         sim_request rcv_req;
         rcv_req.vnet = this->stream->current_queue_id;
@@ -119,8 +119,8 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData* data) {
     } else if (state == State::SendingDataToParent &&
                type == BinaryTree::Type::Intermediate) {  // int.5
         // State should be set before sim_recv. The message might have already
-        // arrived on the simulation side, in which case the callback would enter
-        // the same state again.
+        // arrived on the simulation side, in which case the callback would
+        // enter the same state again.
         state = State::WaitingDataFromParent;
         // sending
         sim_request snd_req;
@@ -180,8 +180,8 @@ void DoubleBinaryTreeAllReduce::run(EventType event, CallData* data) {
     } else if (state == State::Begin &&
                type == BinaryTree::Type::Root) {  // root.1
         // State should be set before sim_recv. The message might have already
-        // arrived on the simulation side, in which case the callback would enter
-        // the same state again.
+        // arrived on the simulation side, in which case the callback would
+        // enter the same state again.
         state = State::WaitingForOneChildData;
         int only_child_id = left_child >= 0 ? left_child : right_child;
         sim_request rcv_req;

@@ -35,7 +35,8 @@ GeneralComplexTopology::GeneralComplexTopology(
             // the logical topology. (Refer to functions involving
             // 'Sys.cc::generate_collective') Therefore, we fill in the logical
             // topology with a dummy, default value.
-            collective_impl[dim]->type == CollectiveImplType::CustomCollectiveImpl) {
+            collective_impl[dim]->type ==
+                CollectiveImplType::CustomCollectiveImpl) {
             RingTopology* ring = new RingTopology(
                 RingTopology::Dimension::NA, id, dimension_size[dim],
                 (id % (offset * dimension_size[dim])) / offset, offset);

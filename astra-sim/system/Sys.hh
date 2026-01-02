@@ -119,10 +119,12 @@ class Sys : public Callable {
     // --------------------------------------
 
     // [operation specific custom collective]
-    // We want to designate different collective algorithms for different collective operations.
-    // To do that, when determining which collective algorithm to use, the system layer needs to know
-    // which operator (i.e. Chakra node) it is trying to simulate (so that it can look up the algorithm)
-    // Therefore, we provide the id of the Chakra node to use as a lookup key.
+    // We want to designate different collective algorithms for different
+    // collective operations. To do that, when determining which collective
+    // algorithm to use, the system layer needs to know which operator (i.e.
+    // Chakra node) it is trying to simulate (so that it can look up the
+    // algorithm) Therefore, we provide the id of the Chakra node to use as a
+    // lookup key.
     DataSet* generate_all_reduce(uint64_t size,
                                  std::vector<bool> involved_dimensions,
                                  CommunicatorGroup* communicator_group,
@@ -151,14 +153,15 @@ class Sys : public Callable {
         ComType collective_type,
         int explicit_priority,
         CommunicatorGroup* communicator_group);
-    CollectivePhase generate_collective_phase(ComType collective_type,
-                                              BasicLogicalTopology* topology,
-                                              uint64_t data_size,
-                                              int queue_id,
-                                              RingTopology::Direction direction,
-                                              InjectionPolicy injection_policy,
-                                              CollectiveImpl* collective_impl,
-                                              CommunicatorGroup* comm_group = nullptr);
+    CollectivePhase generate_collective_phase(
+        ComType collective_type,
+        BasicLogicalTopology* topology,
+        uint64_t data_size,
+        int queue_id,
+        RingTopology::Direction direction,
+        InjectionPolicy injection_policy,
+        CollectiveImpl* collective_impl,
+        CommunicatorGroup* comm_group = nullptr);
     //---------------------------------------------------------------------------
 
     // Middle-level Network Primitives
