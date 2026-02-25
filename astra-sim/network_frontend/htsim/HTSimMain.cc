@@ -18,8 +18,8 @@ int main(int argc, char* argv[]) {
     // Parse command line arguments
     auto cmd_line_parser = CmdLineParser(argv[0]);
     cmd_line_parser.get_options().add_options()(
-        "htsim-proto", "HTSim Network Protocol [tcp]",
-        cxxopts::value<HTSimProto>()->default_value("tcp"));
+        "htsim-proto", "HTSim Network Protocol [tcp|uet]",
+        cxxopts::value<HTSimProto>()->default_value("uet"));
     cmd_line_parser.parse(argc, argv);
 
     // Get command line arguments

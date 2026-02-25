@@ -1,6 +1,7 @@
 #include "HTSimSession.hh"
 #include "HTSimSessionImpl.hh"
 #include "HTSimProtoTcp.hh"
+#include "HTSimProtoUet.hh"
 
 #include <iostream>
 
@@ -44,7 +45,9 @@ void AstraEventSrc::doNextEvent() {
 std::stringstream& operator>> (std::stringstream& is, HTSimProto& proto) {
     std::string s;
     is >> s;
-    if (s == "tcp") {
+    if (s == "uet") {
+        proto = HTSimProto::Uet;
+    } else if (s == "tcp") {
         proto = HTSimProto::Tcp;
     } else {
         proto = HTSimProto::None;
@@ -219,6 +222,9 @@ HTSimSession& HTSimSession::instance() {
 
 HTSimSession::HTSimSession(const HTSim::tm_info* const tm, int argc, char** argv) {
     switch(tm->proto) {
+        case HTSimProto::Uet:
+            impl = std::make_unique<HTSimProtoUet>(tm, argc, argv);
+            break;
         case HTSimProto::Tcp:
             impl = std::make_unique<HTSimProtoTcp>(tm, argc, argv);
             break;

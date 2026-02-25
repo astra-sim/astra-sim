@@ -29,3 +29,6 @@ set(NETWORK_BACKEND_BUILD_AS_LIBRARY ON)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../extern/network_backend/analytical/ Analytical)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../astra-sim/network_frontend/htsim/ AstraSim_HTSim)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../extern/network_backend/uet-htsim/htsim/sim htsim)
+
+# Enable AstraSim callback hooks in uet-htsim sources (guarded by #ifdef ASTRASIM_HTSIM)
+target_compile_definitions(htsim PRIVATE ASTRASIM_HTSIM)
