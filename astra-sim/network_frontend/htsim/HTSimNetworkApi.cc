@@ -16,7 +16,6 @@ using namespace HTSim;
 
 std::shared_ptr<Topology> HTSimNetworkApi::topology;
 std::shared_ptr<CompletionTracker> HTSimNetworkApi::completion_tracker;
-unsigned HTSimNetworkApi::flow_id;
 
 bool CompletionTracker::all_finished() {
     if (num_unfinished_ranks_ == 0) {
@@ -36,17 +35,6 @@ void CompletionTracker::mark_rank_as_finished(int rank) {
         auto& htsim_session = HTSimSession::instance();
         htsim_session.stop_simulation();
     }
-}
-
-void HTSimNetworkApi::set_topology(std::shared_ptr<Topology> topology_ptr) noexcept {
-    assert(topology_ptr != nullptr);
-
-    // move topology
-    HTSimNetworkApi::topology = std::move(topology_ptr);
-
-    // set topology-related values
-    HTSimNetworkApi::dims_count = HTSimNetworkApi::topology->get_dims_count();
-    HTSimNetworkApi::bandwidth_per_dim = HTSimNetworkApi::topology->get_bandwidth_per_dim();
 }
 
 void HTSimNetworkApi::set_completion_tracker(std::shared_ptr<CompletionTracker> completion_tracker_ptr) noexcept {
@@ -79,11 +67,11 @@ int HTSimNetworkApi::sim_send(void* const buffer,
     const auto src = sim_comm_get_rank();
 
     // save information about event for future
-    flow_id++;
     auto flow_info = FlowInfo(src, dst, count, tag);
+    auto flow_msg_id =  HTSimSession::instance().get_flow_id(flow_info);
 
     // Trigger HTSim to schedule flow
-    HTSimSession::instance().send_flow(flow_info, flow_id, msg_handler,
+    HTSimSession::instance().send_flow(flow_info, flow_msg_id, msg_handler,
                                                      fun_arg);
     // return
     return 0;
@@ -113,7 +101,7 @@ int HTSimNetworkApi::sim_recv(void* const buffer,
     if (HTSimSession::msg_standby.find(recv_event_key) !=
         HTSimSession::msg_standby.end()) {
         // HTSim received the message before sim_recv was called.
-        int received_msg_bytes = HTSimSession::msg_standby[recv_event_key];
+        uint64_t received_msg_bytes = HTSimSession::msg_standby[recv_event_key];
         if (received_msg_bytes == message_size) {
             // Message matches what we expected.
             HTSimSession::msg_standby.erase(recv_event_key);
@@ -140,7 +128,7 @@ int HTSimNetworkApi::sim_recv(void* const buffer,
         } else {
             // We have already been expecting something.
             //Increment the number of bytes we are waiting to receive.
-            int expecting_msg_bytes =
+            uint64_t expecting_msg_bytes =
                 HTSimSession::recv_waiting[recv_event_key].remaining_msg_bytes;
             recv_event.remaining_msg_bytes += expecting_msg_bytes;
             HTSimSession::recv_waiting[recv_event_key] = recv_event;

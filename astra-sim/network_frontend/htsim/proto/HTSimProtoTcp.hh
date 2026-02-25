@@ -28,7 +28,7 @@ class HTSimProtoTcp final : public HTSimSession::HTSimSessionImpl {
                        int flow_id,
                        void (*msg_handler)(void* fun_arg),
                        void* fun_arg);
-        void schedule_htsim_event(HTSim::FlowInfo flow, int flow_id);
+        void schedule_htsim_event(HTSim::FlowInfo flow, int flow_id, std::optional<uint32_t> msgid);
 
     private:
         std::unique_ptr<Clock> c;

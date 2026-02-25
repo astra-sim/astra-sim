@@ -194,7 +194,7 @@ if (topo_cfg->no_of_nodes() != no_of_nodes) {
 
 // Schedule_htsim_event creates a new connection and schedules it in HTSim.
 // Adapted from main connections loop
-void HTSimProtoTcp::schedule_htsim_event(FlowInfo flow, int flow_id) {
+void HTSimProtoTcp::schedule_htsim_event(FlowInfo flow, int flow_id, std::optional<uint32_t> msgid) {
     auto src = flow.src;
     auto dst = flow.dst;
     auto msg_size = flow.size;
