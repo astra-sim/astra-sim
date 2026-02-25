@@ -136,21 +136,22 @@ HTSimProtoTcp::HTSimProtoTcp(const HTSim::tm_info* const tm, int argc, char** ar
 #endif
 
 #ifdef FAT_TREE
-
+unique_ptr<FatTreeTopologyCfg> topo_cfg;
 if (topo_file) {
-
-    FatTreeTopology* top_ = FatTreeTopology::load(topo_file, qlf.get(), eventlist, memFromPkt(8),
-    RANDOM, FAIR_PRIO);
-    top = std::unique_ptr<FatTreeTopology>(top_);
-
-    if (top->no_of_nodes() != no_of_nodes) {
-        std::cerr << "Mismatch between connection matrix (" << no_of_nodes
-        << " nodes) and topology (" << top->no_of_nodes() << " nodes)" << endl;
-        exit(1);
-    }
+    topo_cfg = FatTreeTopologyCfg::load(topo_file, 0, RANDOM, FAIR_PRIO);
 } else {
-        top = std::make_unique<FatTreeTopology>(no_of_nodes, linkspeed, memFromPkt(8), qlf.get(), &eventlist,ff,RANDOM,0);
-    }
+    topo_cfg = make_unique<FatTreeTopologyCfg>(no_of_nodes, linkspeed, 0, RANDOM, FAIR_PRIO);
+}
+    topo_cfg->set_queue_sizes(memFromPkt(8));
+
+FatTreeTopology* top_ = new FatTreeTopology(topo_cfg.get(), qlf.get(), &eventlist, ff);
+top = std::unique_ptr<FatTreeTopology>(top_);
+
+if (topo_cfg->no_of_nodes() != no_of_nodes) {
+    std::cerr << "Mismatch between connection matrix (" << no_of_nodes
+    << " nodes) and topology (" << topo_cfg->no_of_nodes() << " nodes)" << endl;
+    exit(1);
+}
 #endif
 
 #ifdef OV_FAT_TREE
@@ -173,7 +174,8 @@ if (topo_file) {
 #ifdef VL2
     top = std::make_unique<VL2Topology>(logfile.get(),&eventlist,ff);
 #endif
-    no_of_nodes = top->no_of_nodes();
+
+    no_of_nodes = topo_cfg->no_of_nodes();
     std::cout << "actual nodes " << no_of_nodes << std::endl;
 
     net_paths = new vector<const Route*>**[no_of_nodes];
