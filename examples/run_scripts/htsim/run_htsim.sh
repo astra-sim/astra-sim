@@ -23,4 +23,5 @@ ${PROJECT_DIR:?}/build/astra_htsim/build/bin/AstraSim_HTSim \
   --system-configuration="${SYSTEM}" \
   --remote-memory-configuration="${REMOTE_MEMORY}" \
   --network-configuration="${NETWORK}" \
-  --htsim_opts -topo ${TOPO}
+  --htsim-proto="uet" \
+  --htsim_opts -topo ${TOPO} -conn_reuse

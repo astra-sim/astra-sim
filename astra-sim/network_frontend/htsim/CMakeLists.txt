@@ -57,6 +57,9 @@ target_include_directories(AstraSim_HTSim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/..
 target_include_directories(AstraSim_HTSim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../extern/network_backend/uet-htsim/htsim/sim/)
 target_include_directories(AstraSim_HTSim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../../../extern/network_backend/uet-htsim/htsim/sim/datacenter/)
 
+# Enable AstraSim hooks in this frontend (guarded by #ifdef ASTRASIM_HTSIM in uet-htsim)
+target_compile_definitions(AstraSim_HTSim PRIVATE ASTRASIM_HTSIM)
+
 # Properties
 set_target_properties(AstraSim_HTSim PROPERTIES COMPILE_WARNING_AS_ERROR OFF)
 set_target_properties(AstraSim_HTSim
