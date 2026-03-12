@@ -55,7 +55,7 @@ void LoggerFactory::init_default_components(const std::string& log_path) {
 
     auto sink_rotate_out =
         std::make_shared<spdlog::sinks::rotating_file_sink_mt>(
-            log_path + "/log.log", 1024 * 1024 * 10, 10);
+            log_path + "/log.log", 1024 * 1024 * 1024 * 10ul, 10);
     sink_rotate_out->set_level(spdlog::level::debug);
     default_sinks.insert(sink_rotate_out);
 

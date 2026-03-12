@@ -33,7 +33,7 @@ echo "[ASTRA-sim] Running ASTRA-sim Example with Analytical Network Backend..."
 echo ""
 
 # run ASTRA-sim
-"${ASTRA_SIM:?}" \
+valgrind --leak-check=full --track-origins=yes "${ASTRA_SIM:?}" \
     --workload-configuration="${WORKLOAD}" \
     --system-configuration="${SYSTEM:?}" \
     --remote-memory-configuration="${REMOTE_MEMORY:?}" \

@@ -11,6 +11,7 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/RecvPacketEventHandlerData.hh"
 #include "astra-sim/system/SendPacketEventHandlerData.hh"
 #include "astra-sim/system/WorkloadLayerHandlerData.hh"
+#include "astra-sim/workload/CollCommSynchronizer.hh"
 #include <json/json.hpp>
 
 #include <iostream>
@@ -53,9 +54,13 @@ Workload::Workload(Sys* sys, string et_filename, string comm_group_filename) {
     initialize_comm_groups(comm_group_filename);
     this->stats = new Statistics(this);
     this->is_finished = false;
+    this->coll_comm_synchronizer = CollCommSynchronizer::get_instance(this);
 }
 
 Workload::~Workload() {
+    if (!this->is_finished) {
+        report();
+    }
     for (auto comm_group : comm_groups) {
         delete comm_group.second;
     }
@@ -143,7 +148,10 @@ void Workload::issue_dep_free_nodes() {
     }
     for (const auto node_id : dependancy_free_nodes_set) {
         std::shared_ptr<ETFeederNode> node = et_feeder->lookupNode(node_id);
-        if (hw_resource->is_available(node)) {
+        // hotfix: if node type is COMM_COLL, it will be first synchronized then
+        // dispatched.
+        if (hw_resource->is_available(node) ||
+            node->type() == ChakraNodeType::COMM_COLL_NODE) {
             issue(node);
         }
     }
@@ -159,7 +167,11 @@ void Workload::issue(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
     }
 
     this->et_feeder->getDependancyResolver().take_node(node->id());
-    this->hw_resource->occupy(node);
+    // hotfix: if node type is COMM_COLL, it will be first synchronized then
+    // dispatched, so dont occupy now.
+    if (node->type() != ChakraNodeType::COMM_COLL_NODE) {
+        this->hw_resource->occupy(node);
+    }
     // stats->record_end will be called in Workload::call
     stats->record_start(node, Sys::boostedTick());
     if (this->sys->track_local_mem) {
@@ -267,6 +279,13 @@ void Workload::issue_comp(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
         return;
     }
 
+    for (auto& data_dep_id : node->get_chakra_node()->data_deps()) {
+        std::shared_ptr<Chakra::FeederV3::ETFeederNode> dep_node =
+            et_feeder->lookupNode(data_dep_id);
+        uint64_t dep_tensor_size = dep_node->tensor_size<uint64_t>(0);
+        tensor_size += static_cast<double>(dep_tensor_size);
+    }
+
     double operational_intensity = num_ops / tensor_size;
     double perf = sys->roofline->get_perf(operational_intensity);
     double elapsed_time = static_cast<double>(node->num_ops()) / perf;  // sec
@@ -284,13 +303,16 @@ void Workload::issue_comp(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
     op_stat.memory_utilization =
         (perf / operational_intensity) / sys->local_mem_bw;
     op_stat.is_memory_bound = perf < sys->peak_perf;
-    LoggerFactory::get_logger("workload")
-        ->debug("operation_intensity={}, perf={}, elapsed_time={} "
+    if (sys->trace_enabled) {
+        LoggerFactory::get_logger("workload")
+            ->debug(
+                "operation_intensity={}, perf={}, elapsed_time={} "
                 "compute_utilization={} memory_utilization={} tensor_size={} "
                 "num_ops={}",
                 operational_intensity, perf, elapsed_time,
                 op_stat.compute_utilization.value(),
                 op_stat.memory_utilization.value(), tensor_size, num_ops);
+    }
 }
 
 void Workload::issue_comm(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
@@ -311,6 +333,15 @@ void Workload::issue_comm(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
 
 void Workload::issue_coll_comm(
     shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
+    this->coll_comm_synchronizer->issue_coll_comm(node, sys->id,
+                                                  extract_comm_group(node));
+}
+
+void Workload::dispatch_coll_comm(
+    shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
+    // hotfix: the coll is synchronized and not occupied yet, occupy it here
+    // TODO: move this to issue() which is more general
+    this->hw_resource->occupy(node);
     const bool has_involve_dims = node->has_attr("involve_dims");
     std::vector<bool> involved_dims;
     if (node->has_attr("involved_dim")) {
@@ -509,6 +540,9 @@ void Workload::call(EventType event, CallData* data) {
         // dump more statistics in the workload layer
         delete collective_comm_wrapper_map[coll_comm_id];
         collective_comm_wrapper_map.erase(coll_comm_id);
+
+        // this coll finished, try dispatch next pending coll
+        this->coll_comm_synchronizer->try_dispatch_coll_comm();
 
     } else {
         if (data == nullptr) {

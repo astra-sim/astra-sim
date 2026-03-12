@@ -9,7 +9,7 @@
   "all-to-all-implementation": ["ring", "ring"],
   "collective-optimization": "localBWAware",
   "local-mem-bw": 3350,
-  "trace-enabled": 1,
+  "trace-enabled": 0,
   "boost-mode": 0,
   "track-local-mem": 0,
   "roofline-enabled": 0,

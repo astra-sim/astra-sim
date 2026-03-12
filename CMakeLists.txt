@@ -69,6 +69,10 @@ else()
     target_link_libraries(AstraSim PUBLIC ${Protobuf_LIBRARIES})
 endif()
 
+target_link_libraries(AstraSim PRIVATE /usr/local/lib/libabsl_log_internal_check_op.so.2401.0.0)
+target_link_libraries(AstraSim PRIVATE /usr/local/lib/libabsl_log_internal_message.so.2401.0.0)
+target_link_libraries(AstraSim PRIVATE /usr/local/lib/libabsl_log_internal_nullguard.so.2401.0.0)
+
 
 # Include Directories
 target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
