@@ -33,12 +33,6 @@ class CompletionTracker {
  */
 class HTSimNetworkApi final : public CommonNetworkApi {
   public:
-    /**
-     * Set the topology to be used.
-     *
-     * @param topology_ptr pointer to the to
-     */
-    static void set_topology(std::shared_ptr<Topology> topology_ptr) noexcept;
 
      static void set_completion_tracker(std::shared_ptr<CompletionTracker> completion_tracker_ptr) noexcept;
     /**
@@ -78,7 +72,6 @@ class HTSimNetworkApi final : public CommonNetworkApi {
   private:
     /// topology
     static std::shared_ptr<Topology> topology;
-    static unsigned flow_id;
     static std::shared_ptr<CompletionTracker> completion_tracker;
 
   public:
