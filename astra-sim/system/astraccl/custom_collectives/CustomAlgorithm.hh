@@ -35,7 +35,7 @@ namespace AstraSim {
  */
 class CustomAlgorithm : public Algorithm {
   public:
-    CustomAlgorithm(std::string et_filename, int id, int pos_in_comm, CommunicatorGroup* comm_group);
+    CustomAlgorithm(std::string et_filename, int id, uint64_t data_size, int pos_in_comm, CommunicatorGroup* comm_group, Sys* sys);
 
     // Runs the collective algorithm. This function is only called once to start
     // the algorithm.
@@ -55,7 +55,17 @@ class CustomAlgorithm : public Algorithm {
      */
     void issue(std::shared_ptr<Chakra::FeederV3::ETFeederNode> node);
     void issue_dep_free_nodes();
+    
 
+    /* 
+     * Find out the message size of the p2p send/receive operation.
+     * A *collective* is split into multiple *chunks*. 
+     * Each p2p send/receive message may consist of one or more chunks.
+     */
+    uint64_t get_msg_size(std::shared_ptr<Chakra::FeederV3::ETFeederNode> node);
+
+    // Path to the Chakra ET file representing the custom collective algorithm.
+    std::string et_filename;
     // Rank Id
     int id;
     // ET Feeder for the Chakra ET for this specific communication & rank.
@@ -63,6 +73,9 @@ class CustomAlgorithm : public Algorithm {
     // to traverse the whole workload Chakra ET.
     Chakra::ETFeeder* et_feeder;
     CommunicatorGroup* comm_group;
+    // Size of the collective as defined in the workload's COLL_COMM_NODE Chakra node.
+    uint64_t data_size;
+    Sys* sys;
 };
 
 }  // namespace AstraSim
