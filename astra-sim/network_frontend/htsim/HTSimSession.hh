@@ -5,6 +5,7 @@
 #include <map>
 #include <memory>
 #include <optional>
+#include <set>
 #include <sstream>
 #include <string>
 #include <unordered_map>
@@ -148,6 +149,8 @@ class HTSimSession {
         static std::map<HTSim::MsgEventKey, int> msg_standby;
 
         static std::map<int, int> flow_id_to_tag;
+        static std::set<int> send_finish_seen;
+        static std::set<int> recv_finish_seen;
 
         static void notify_receiver_receive_data(int src_id,
                                                  int dst_id,

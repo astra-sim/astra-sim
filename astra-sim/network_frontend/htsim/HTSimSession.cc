@@ -12,6 +12,8 @@ std::map<std::pair<HTSim::MsgEventKey, int>, HTSim::MsgEvent>
 std::map<HTSim::MsgEventKey, HTSim::MsgEvent> HTSimSession::recv_waiting;
 std::map<HTSim::MsgEventKey, int> HTSimSession::msg_standby;
 std::map<int, int> HTSimSession::flow_id_to_tag;
+std::set<int> HTSimSession::send_finish_seen;
+std::set<int> HTSimSession::recv_finish_seen;
 HTSimSession* HTSimSession::session = nullptr;
 HTSimConf HTSimSession::conf;
 
@@ -63,6 +65,8 @@ void HTSimSession::send_flow(FlowInfo flow,
               << " with size " << flow.size << "\n";
     MsgEvent send_event = MsgEvent(flow.src, flow.dst, Dir::Send, flow.size, fun_arg, msg_handler);
     flow_id_to_tag[flow_id] = flow.tag;
+    send_finish_seen.erase(flow_id);
+    recv_finish_seen.erase(flow_id);
     std::pair<MsgEventKey, int> send_event_key = std::make_pair(
         std::make_pair(flow.tag, std::make_pair(send_event.src_id, send_event.dst_id)), flow_id);
     HTSimSession::send_waiting[send_event_key] = send_event;
@@ -162,6 +166,12 @@ void HTSimSession::notify_sender_sending_finished(int src_id,
 // Registered as the callback handler for the source
 // instance created at send_flow.
 void HTSimSession::flow_finish_send(int src_id, int dst_id, int msg_size, int flow_id) {
+    // Suppress duplicate completion notifications for the same logical flow.
+    if (!send_finish_seen.insert(flow_id).second) {
+        std::cerr << "Warning: suppressing duplicate send-finish for flow "
+                  << flow_id << " from " << src_id << " to " << dst_id << "\n";
+        return;
+    }
 
     int tag = flow_id_to_tag[flow_id];
     // Let sender knows that the flow has finished.
@@ -177,6 +187,12 @@ void HTSimSession::flow_finish_send(int src_id, int dst_id, int msg_size, int fl
 // Registered as the callback handler for the sink
 // instance created at send_flow.
 void HTSimSession::flow_finish_recv(int src_id, int dst_id, int msg_size, int flow_id) {
+    // Suppress duplicate completion notifications for the same logical flow.
+    if (!recv_finish_seen.insert(flow_id).second) {
+        std::cerr << "Warning: suppressing duplicate recv-finish for flow "
+                  << flow_id << " from " << src_id << " to " << dst_id << "\n";
+        return;
+    }
 
     if (conf.recv_flow_finish) {
         int tag = flow_id_to_tag[flow_id];
