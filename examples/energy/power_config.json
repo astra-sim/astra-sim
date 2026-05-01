@@ -1,0 +1,8 @@
+{
+    "active_power_W": 250,
+    "idle_power_W": 35,
+    "memory_read_energy_pJ/b": 3,
+    "memory_write_energy_pJ/b": 5,
+    "network_send_energy_pJ/b": 2,
+    "network_recv_energy_pJ/b": 1
+}

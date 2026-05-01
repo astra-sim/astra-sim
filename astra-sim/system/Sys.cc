@@ -200,7 +200,18 @@ Sys::Sys(int id,
 
     this->communication_delay = 10;
     this->local_reduction_delay = 1;
+
     this->frequency = 1; //GHz
+
+    this->mem_read_nums = 0;
+    this->mem_read_size = 0;
+    this->mem_write_nums = 0;
+    this->mem_write_size = 0;
+
+    this->net_send_nums = 0;
+    this->net_send_size = 0;
+    this->net_recv_nums = 0;
+    this->net_recv_size = 0;
 
     collective_impl_lookup = new CollectiveImplLookup(id);
     std::filesystem::path fs(system_configuration);
@@ -340,8 +351,7 @@ Tick Sys::boostedTick() {
         }
     }
     timespec_t tmp = ts->comm_NI->sim_get_time();
-    //Tick tick = tmp.time_val / CLOCK_PERIOD;
-    Tick tick = (tmp.time_val * ts->frequency) / CLOCK_PERIOD;
+    Tick tick = tmp.time_val / CLOCK_PERIOD;
     return tick;
 }
 
@@ -1157,6 +1167,7 @@ int Sys::front_end_sim_send(Tick delay,
         tag = tag % (Sys::FrontEndSendRecvType::COLLECTIVE -
                      Sys::FrontEndSendRecvType::NATIVE) +
               Sys::FrontEndSendRecvType::NATIVE;
+        // ToDo: Add call to MemBus::send_from_MA_to_NPU
     } else if (send_type == Sys::FrontEndSendRecvType::COLLECTIVE) {
         tag = tag % (Sys::FrontEndSendRecvType::RENDEZVOUS -
                      Sys::FrontEndSendRecvType::COLLECTIVE) +
@@ -1164,6 +1175,8 @@ int Sys::front_end_sim_send(Tick delay,
     } else {
         sys_panic("A type of RENDZVOUS should never issued in frontend");
     }
+    this->net_send_nums++;
+    this->net_send_size += count;
     if (rendezvous_enabled) {
         return rendezvous_sim_send(delay, buffer, count, type, dst, tag,
                                    request, msg_handler, fun_arg);
@@ -1187,6 +1200,7 @@ int Sys::front_end_sim_recv(Tick delay,
         tag = tag % (Sys::FrontEndSendRecvType::COLLECTIVE -
                      Sys::FrontEndSendRecvType::NATIVE) +
               Sys::FrontEndSendRecvType::NATIVE;
+        // ToDo: Add call to MemBus::send_from_NPU_to_MA
     } else if (recv_type == Sys::FrontEndSendRecvType::COLLECTIVE) {
         tag = tag % (Sys::FrontEndSendRecvType::RENDEZVOUS -
                      Sys::FrontEndSendRecvType::COLLECTIVE) +
@@ -1194,6 +1208,8 @@ int Sys::front_end_sim_recv(Tick delay,
     } else {
         sys_panic("A type of RENDZVOUS should never issued in frontend");
     }
+    this->net_recv_nums++;
+    this->net_recv_size += count;
     if (rendezvous_enabled) {
         return rendezvous_sim_recv(delay, buffer, count, type, src, tag,
                                    request, msg_handler, fun_arg);
