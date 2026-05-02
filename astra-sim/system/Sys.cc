@@ -7,6 +7,7 @@ LICENSE file in the root directory of this source tree.
 
 #include <cstdlib>
 #include <iostream>
+#include <filesystem>
 
 #include "astra-sim/common/Logging.hh"
 #include "astra-sim/system/BaseStream.hh"
@@ -153,6 +154,7 @@ Sys::Sys(int id,
     }
     this->all_sys[id] = this;
 
+    this->configuration = nullptr;
     this->id = id;
     this->initialized = false;
 
@@ -199,7 +201,21 @@ Sys::Sys(int id,
     this->communication_delay = 10;
     this->local_reduction_delay = 1;
 
+    this->frequency = 1; //GHz
+
+    this->mem_read_nums = 0;
+    this->mem_read_size = 0;
+    this->mem_write_nums = 0;
+    this->mem_write_size = 0;
+
+    this->net_send_nums = 0;
+    this->net_send_size = 0;
+    this->net_recv_nums = 0;
+    this->net_recv_size = 0;
+
     collective_impl_lookup = new CollectiveImplLookup(id);
+    std::filesystem::path fs(system_configuration);
+    configuration = new Configuration(this, fs.extension().string());
 
     if (initialize_sys(system_configuration) == false) {
         sys_panic("Unable to initialize the system layer because the file can "
@@ -310,124 +326,18 @@ Sys::~Sys() {
 }
 
 bool Sys::initialize_sys(string name) {
-    ifstream inFile;
-    inFile.open(name);
-    if (!inFile) {
-        if (id == 0) {
-            LoggerFactory::get_logger("system")->critical(
-                "Unable to open file: {}", name);
-        }
-        exit(1);
-    }
-
-    json j;
-    inFile >> j;
-    if (j.contains("scheduling-policy")) {
-        string inp_scheduling_policy = j["scheduling-policy"];
-        if (inp_scheduling_policy == "LIFO") {
-            this->scheduling_policy = SchedulingPolicy::LIFO;
-        } else if (inp_scheduling_policy == "FIFO") {
-            this->scheduling_policy = SchedulingPolicy::FIFO;
-        } else if (inp_scheduling_policy == "EXPLICIT") {
-            this->scheduling_policy = SchedulingPolicy::EXPLICIT;
-        } else {
-            sys_panic("unknown value for scheduling policy in sys input file");
-        }
-    }
-    if (j.contains("collective-optimization")) {
-        string inp_collective_optimization = j["collective-optimization"];
-        if (inp_collective_optimization == "baseline") {
-            collectiveOptimization = CollectiveOptimization::Baseline;
-        } else if (inp_collective_optimization == "localBWAware") {
-            collectiveOptimization = CollectiveOptimization::LocalBWAware;
-        } else {
-            sys_panic(
-                "unknown value for collective optimization in sys input file");
-        }
-    }
-    if (j.contains("local-reduction-delay")) {
-        local_reduction_delay = j["local-reduction-delay"];
-    }
-    if (j.contains("active-chunks-per-dimension")) {
-        active_chunks_per_dimension = j["active-chunks-per-dimension"];
-    }
-    if (j.contains("L")) {
-        inp_L = j["L"];
-    }
-    if (j.contains("o")) {
-        inp_o = j["o"];
-    }
-    if (j.contains("g")) {
-        inp_g = j["g"];
-    }
-    if (j.contains("G")) {
-        inp_G = j["G"];
-    }
-    if (j.contains("endpoint-delay")) {
-        communication_delay = j["endpoint-delay"];
-        communication_delay = communication_delay * injection_scale;
-    }
-    if (j.contains("model-shared-bus")) {
-        int inp_model_shared_bus = j["model-shared-bus"];
-        if (inp_model_shared_bus == 1) {
-            model_shared_bus = true;
-        } else {
-            model_shared_bus = false;
-        }
+    bool valid;
+    string filetype = configuration->GetConfigType();
+    if(filetype == ".json") {
+        valid = configuration->ExtractJsonConfigParams(name);
+    } else if(filetype == ".yaml") {
+        valid = configuration->ExtractYamlConfigParams(name);
     } else {
-        model_shared_bus = false;
-    }
-    if (j.contains("preferred-dataset-splits")) {
-        preferred_dataset_splits = j["preferred-dataset-splits"];
-    }
-    if (j.contains("peak-perf")) {
-        peak_perf = j["peak-perf"];
-        peak_perf = peak_perf * 1000000000000;  // TFLOPS
-    }
-    if (j.contains("local-mem-bw")) {
-        local_mem_bw = j["local-mem-bw"];
-        local_mem_bw = local_mem_bw * 1000000000;  // GB/sec
-    }
-    if (j.contains("roofline-enabled")) {
-        if (j["roofline-enabled"] != 0) {
-            roofline_enabled = true;
-            roofline = new Roofline(local_mem_bw, peak_perf);
-        }
-    }
-    this->trace_enabled = false;
-    if (j.contains("trace-enabled")) {
-        if (j["trace-enabled"] != 0) {
-            this->trace_enabled = true;
-        } else {
-            this->trace_enabled = false;
-        }
-    }
-    this->replay_only = false;
-    if (j.contains("replay-only")) {
-        if (j["replay-only"] != 0) {
-            this->replay_only = true;
-        } else {
-            this->replay_only = false;
-        }
-    }
-    this->track_local_mem = false;
-    if (j.contains("track-local-mem")) {
-        if (j["track-local-mem"] != 0) {
-        this->track_local_mem = true;
-        } else {
-        this->track_local_mem = false;
-        }
+        sys_panic("The system configuration file should be either json or yaml file");
     }
 
-    this->local_mem_trace_filename = "local_mem_trace";
-    if (j.contains("local-mem-trace-filename")) {
-        this->local_mem_trace_filename = j["local-mem-trace-filename"];
-    }
+    return valid;
 
-    collective_impl_lookup->setup_collective_impl_from_config(j);
-
-    inFile.close();
-    return true;
 }
 
 Tick Sys::boostedTick() {
@@ -1257,6 +1167,7 @@ int Sys::front_end_sim_send(Tick delay,
         tag = tag % (Sys::FrontEndSendRecvType::COLLECTIVE -
                      Sys::FrontEndSendRecvType::NATIVE) +
               Sys::FrontEndSendRecvType::NATIVE;
+        // ToDo: Add call to MemBus::send_from_MA_to_NPU
     } else if (send_type == Sys::FrontEndSendRecvType::COLLECTIVE) {
         tag = tag % (Sys::FrontEndSendRecvType::RENDEZVOUS -
                      Sys::FrontEndSendRecvType::COLLECTIVE) +
@@ -1264,6 +1175,8 @@ int Sys::front_end_sim_send(Tick delay,
     } else {
         sys_panic("A type of RENDZVOUS should never issued in frontend");
     }
+    this->net_send_nums++;
+    this->net_send_size += count;
     if (rendezvous_enabled) {
         return rendezvous_sim_send(delay, buffer, count, type, dst, tag,
                                    request, msg_handler, fun_arg);
@@ -1287,6 +1200,7 @@ int Sys::front_end_sim_recv(Tick delay,
         tag = tag % (Sys::FrontEndSendRecvType::COLLECTIVE -
                      Sys::FrontEndSendRecvType::NATIVE) +
               Sys::FrontEndSendRecvType::NATIVE;
+        // ToDo: Add call to MemBus::send_from_NPU_to_MA
     } else if (recv_type == Sys::FrontEndSendRecvType::COLLECTIVE) {
         tag = tag % (Sys::FrontEndSendRecvType::RENDEZVOUS -
                      Sys::FrontEndSendRecvType::COLLECTIVE) +
@@ -1294,6 +1208,8 @@ int Sys::front_end_sim_recv(Tick delay,
     } else {
         sys_panic("A type of RENDZVOUS should never issued in frontend");
     }
+    this->net_recv_nums++;
+    this->net_recv_size += count;
     if (rendezvous_enabled) {
         return rendezvous_sim_recv(delay, buffer, count, type, src, tag,
                                    request, msg_handler, fun_arg);

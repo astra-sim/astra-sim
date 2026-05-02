@@ -52,6 +52,10 @@ void PacketBundle::send_to_NPU() {
 void PacketBundle::call(EventType event, CallData* data) {
     if (needs_processing == true) {
         needs_processing = false;
+        sys->mem_write_nums++;
+        sys->mem_write_size += size;
+        sys->mem_read_nums += 2;
+        sys->mem_read_size += 2 * size;
         // this->delay[ns], size[bytes] local_mem_bw[bytes/s]
         this->delay = static_cast<uint64_t>(static_cast<double>(size) /
                                             sys->local_mem_bw * 1e9)  // write
