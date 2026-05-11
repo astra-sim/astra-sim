@@ -12,6 +12,8 @@ cmake_minimum_required(VERSION 3.22)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 # Set the build type to Release if not specified
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
@@ -66,7 +68,7 @@ file(GLOB srcs
     "${CMAKE_CURRENT_SOURCE_DIR}/extern/remote_memory_backend/analytical/*.cc")
 
 # Compile AstraSim Library
-add_library(AstraSim STATIC ${srcs})
+add_library(AstraSim ${srcs})
 
 # Link libraries
 target_link_libraries(AstraSim PUBLIC fmt::fmt)
