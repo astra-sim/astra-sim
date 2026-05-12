@@ -112,3 +112,13 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/astra-sim
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         FILES_MATCHING
         PATTERN "*.hh")
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/extern/helper/spdlog/include/spdlog
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        FILES_MATCHING
+        PATTERN "*.h")
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/extern/helper/spdlog_setup
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        FILES_MATCHING
+        PATTERN "*.h")
