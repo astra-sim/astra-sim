@@ -15,7 +15,7 @@
 	url = https://github.com/gabime/spdlog.git
 [submodule "extern/network_backend/ns-3"]
 	path = extern/network_backend/ns-3
-	url = https://github.com/cho445184-eng/astra-sim.git
+	url = https://github.com/cho445184-eng/astra-network-ns3.git
 [submodule "extern/network_backend/csg-htsim"]
 	path = extern/network_backend/csg-htsim
 	url = https://github.com/Broadcom/csg-htsim.git
