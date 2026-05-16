@@ -36,7 +36,7 @@ OUTPUT_DIR=$(realpath "${OUTPUT_DIR}")
 # Paths
 WORKLOAD="${EXAMPLES_DIR:?}"/workload/microbenchmarks/all_reduce/8npus_1MB/all_reduce
 SYSTEM="${EXAMPLES_DIR:?}/system/custom_collectives/custom_collective.json"
-NETWORK_TEMPLATE="${EXAMPLES_DIR:?}"/network/ns3/config/config_clos.txt
+NETWORK_TEMPLATE="${EXAMPLES_DIR:?}"/network/ns3/config/config_clos.json
 LOGICAL_TOPOLOGY="${EXAMPLES_DIR:?}"/network/ns3/sample_8nodes_1D.json
 MEMORY="${EXAMPLES_DIR:?}"/remote_memory/analytical/no_memory_expansion.json
 COMM_GROUP_CONFIGURATION="empty"
@@ -45,7 +45,7 @@ TOPOLOGY_DIR=$(realpath "${EXAMPLES_DIR:?}"/network/ns3/topology)
 INPUT_DIR=$(realpath "${EXAMPLES_DIR:?}"/network/ns3/input)
 
 # Generate resolved network config from template
-NETWORK="${OUTPUT_DIR}/network_cfg.txt"
+NETWORK="${OUTPUT_DIR}/network_cfg.json"
 sed -e "s|{{TOPOLOGY_DIR}}|${TOPOLOGY_DIR}|g" \
     -e "s|{{INPUT_DIR}}|${INPUT_DIR}|g" \
     -e "s|{{OUTPUT_DIR}}|${OUTPUT_DIR}|g" \

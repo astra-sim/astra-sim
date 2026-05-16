@@ -1,0 +1,91 @@
+{
+  "files": {
+    "topology_file": "{{TOPOLOGY_DIR}}/8_nodes_1_switch_topology.txt",
+    "flow_file": "{{INPUT_DIR}}/flow.txt",
+    "trace_file": "{{INPUT_DIR}}/trace.txt",
+    "trace_output_file": "{{OUTPUT_DIR}}/mix.tr",
+    "fct_output_file": "{{OUTPUT_DIR}}/fct.txt",
+    "pfc_output_file": "{{OUTPUT_DIR}}/pfc.txt",
+    "qlen_mon_file": "{{OUTPUT_DIR}}/qlen.txt"
+  },
+  "switch": {
+    "enable_qcn": true,
+    "use_dynamic_pfc_threshold": true,
+    "buffer_size": 32
+  },
+  "packet": {
+    "payload_size": 1000,
+    "l2_chunk_size": 4000,
+    "l2_ack_interval": 1,
+    "l2_back_to_zero": false,
+    "error_rate_per_link": 0.0
+  },
+  "congestion_control": {
+    "cc_mode": 12,
+    "clamp_target_rate": false,
+    "alpha_resume_interval": 1,
+    "rp_timer": 900,
+    "ewma_gain": 0.00390625,
+    "fast_recovery_times": 1,
+    "rate_ai": "50Mb/s",
+    "rate_hai": "100Mb/s",
+    "min_rate": "100Mb/s",
+    "dctcp_rate_ai": "1000Mb/s",
+    "rate_decrease_interval": 4,
+    "has_win": 1,
+    "global_t": 0,
+    "mi_thresh": 0,
+    "var_win": false,
+    "fast_react": true,
+    "u_target": 0.95,
+    "int_multi": 1,
+    "rate_bound": true,
+    "multi_rate": false,
+    "sample_feedback": false,
+    "pint_log_base": 1.05,
+    "pint_prob": 1.0,
+    "nic_total_pause_time": 0,
+    "ack_high_prio": 0
+  },
+  "simulator": {
+    "stop_time": 40000000000000.00
+  },
+  "link": {
+    "link_down_time": 0,
+    "link_down_a": 0,
+    "link_down_b": 0
+  },
+  "trace": {
+    "enable_trace": true
+  },
+  "ecn": {
+    "kmax_map": {
+      "25000000000": 400,
+      "40000000000": 800,
+      "100000000000": 1600,
+      "200000000000": 2400,
+      "400000000000": 3200,
+      "2400000000000": 3200
+    },
+    "kmin_map": {
+      "25000000000": 100,
+      "40000000000": 200,
+      "100000000000": 400,
+      "200000000000": 600,
+      "400000000000": 800,
+      "2400000000000": 800
+    },
+    "pmax_map": {
+      "25000000000": 0.2,
+      "40000000000": 0.2,
+      "100000000000": 0.2,
+      "200000000000": 0.2,
+      "400000000000": 0.2,
+      "2400000000000": 0.2
+    }
+  },
+  "queue_monitor": {
+    "start": 0,
+    "end": 20000
+  }
+}
