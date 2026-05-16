@@ -16,7 +16,11 @@ More examples can also be found in the [ASTRA-sim tutorials](https://astra-sim.g
 
 ### Network
 - `analytical`: Analytical network input files.
-- `ns3`: ns-3 network backend input files.
+- `ns3`: ns-3 network backend input files, organized as:
+    - `config/`: Network configuration templates (use `{{TOPOLOGY_DIR}}`, `{{INPUT_DIR}}`, `{{OUTPUT_DIR}}` placeholders).
+    - `topology/`: Physical topology description files (node/switch/link definitions).
+    - `input/`: Simulation input files (`flow.txt`, `trace.txt`).
+    - `sample_*nodes_*.json`: Logical topology configuration files.
 - `htsim`: HTSim network backend input files.
 
 ### Run Scripts
@@ -24,5 +28,8 @@ Includes scripts to run sample ASTRA-sim simulations. Please run existing `.sh` 
 - `analytical`: Example scripts to run ASTRA-sim with analytical network backends. This directory includes two variations:
     - `congestion_unaware`
     - `congestion_aware`
-- `ns3`: Example scripts to run ASTRA-sim with ns-3 network backend.
+- `ns3`: Example scripts to run ASTRA-sim with ns-3 network backend. Each script supports an optional `-o <output_dir>` flag to specify a custom log output directory. By default, logs are written to `logs/ns3/<run_name>_<timestamp>/`.
 - `htsim`: Example script to run ASTRA-sim with HTsim network backend.
+
+### Logs
+Simulation output logs are written to the top-level `logs/` directory. Each ns-3 simulation run creates a separate subdirectory (with timestamp and PID), enabling concurrent simulations without conflicts. Use the `-o` flag on run scripts to specify a custom output directory.

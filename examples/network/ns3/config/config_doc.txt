@@ -1,0 +1,58 @@
+ENABLE_QCN 1 {0: disable, 1: enable}
+USE_DYNAMIC_PFC_THRESHOLD 1 {0: disable, 1: enable}
+
+PACKET_PAYLOAD_SIZE 1000 {packet size (bytes)}
+
+TOPOLOGY_FILE mix/topology.txt {input file: topoology}
+FLOW_FILE mix/flow.txt {input file: flow to generate}
+TRACE_FILE mix/trace.txt {input file: nodes to monitor packet-level events (enqu, dequ, pfc, etc.), will be dumped to TRACE_OUTPUT_FILE}
+TRACE_OUTPUT_FILE mix/mix.tr {output file: packet-level events (enqu, dequ, pfc, etc.)}
+FCT_OUTPUT_FILE mix/fct.txt {output file: flow completion time of different flows}
+PFC_OUTPUT_FILE mix/pfc.txt {output file: result of PFC}
+
+SIMULATOR_STOP_TIME 4.00 {simulation stop time}
+
+CC_MODE 3 {Specifying different CC. 1: DCQCN, 3: HPCC, 7: TIMELY, 8: DCTCP, 10: HPCC-PINT}
+ALPHA_RESUME_INTERVAL 1 {for DCQCN: the interval of update alpha}
+RATE_DECREASE_INTERVAL 4 {for DCQCN: the interval of rate decrease}
+CLAMP_TARGET_RATE 0 {for DCQCN: whether to reduce target rate upon consecutive rate decrease}
+RP_TIMER 900  {for DCQCN: the interval of rate increase}
+EWMA_GAIN 0.00390625 {for DCQCN and DCTCP: the g of EWMA}
+FAST_RECOVERY_TIMES 1 {for DCQCN: number of times of increase for fast recovery}
+RATE_AI 50Mb/s {Additive increase (not for DCTCP)}
+RATE_HAI 100Mb/s {Hyper additive increase}
+MIN_RATE 100Mb/s {Minimum rate}
+DCTCP_RATE_AI 1000Mb/s {Additive increase for DCTCP}
+
+ERROR_RATE_PER_LINK 0.0000 {Error rate of each link}
+L2_CHUNK_SIZE 4000 {for DCQCN: chunk size}
+L2_ACK_INTERVAL 1 {number of packets between ACK generation, 1 means per packet}
+L2_BACK_TO_ZERO 0 {0: go-back-0, 1: go-back-N}
+
+HAS_WIN 1 {0: no window, 1: has a window}
+GLOBAL_T 1 {0: different server pairs use their own RTT as T, 1: use the max base RTT as the global T}
+VAR_WIN 1 {0: fixed size of window (alwasy maximum), 1: variable window}
+FAST_REACT 1 {0: react once per RTT, 1: react per ACK}
+U_TARGET 0.95 {for HPCC: eta in paper}
+MI_THRESH 0 {for HPCC: maxStage in paper}
+INT_MULTI 1 {for HPCC: multiply the unit of txBytes and qLen in INT header}
+MULTI_RATE 0 {for HPCC: 0: one rate for all hops, 1: one rate per hop}
+SAMPLE_FEEDBACK 0 {for HPCC: 0: get INT per packet, 1: get INT once per RTT or qlen>0}
+PINT_LOG_BASE 1.05 {for HPCC-PINT: the base of the log encoding, equals to (1+epsilon)^2 where epsilon is the error bound. 1.05 corresponds to epsilon=0.025.}
+PINT_PROB 1.0 {for HPCC-PINT: the fraction of packets that carries PINT. 1.0 means 100%.}
+
+RATE_BOUND 1 {0: no rate limitor, 1: use rate limitor}
+
+ACK_HIGH_PRIO 0 {0: ACK has same priority with data packet, 1: prioritize ACK}
+
+LINK_DOWN 0 0 0 {a b c: take down link between b and c at time a. 0 0 0 mean no link down}
+
+ENABLE_TRACE 1 {dump packet-level events or not}
+
+KMAX_MAP 3 25000000000 400 50000000000 800 100000000000 1600 {a map from link bandwidth to ECN threshold kmax}
+KMIN_MAP 3 25000000000 100 50000000000 200 100000000000 400 {a map from link bandwidth to ECN threshold kmin}
+PMAX_MAP 3 25000000000 0.2 50000000000 0.2 100000000000 0.2 {a map from link bandwidth to ECN threshold pmax}
+BUFFER_SIZE 32 {buffer size per switch}
+QLEN_MON_FILE mix/qlen.txt {output file: result of qlen of each port}
+QLEN_MON_START 2000000000 {start time of dumping qlen}
+QLEN_MON_END 2010000000 {end time of dumping qlen}
