@@ -20,9 +20,9 @@ endif()
 # Setup project
 project(AstraSim)
 
-# When ON (default), protobuf and Abseil are built via FetchContent inside the build tree.
+# When ON (default), protobuf and Abseil are built from submodules under extern/helper/.
 # When OFF, use system protobuf from find_package (e.g. apt libprotobuf-dev 3.x).
-option(ASTRA_SIM_USE_BUNDLED_PROTOBUF "Build protobuf/Abseil in-tree via FetchContent" ON)
+option(ASTRA_SIM_USE_BUNDLED_PROTOBUF "Build protobuf/Abseil from extern/helper submodules" ON)
 
 # Add libraries.
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/extern/helper/fmt")
@@ -30,7 +30,6 @@ option(SPDLOG_FMT_EXTERNAL ON) # override default option for spdlog.
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/extern/helper/spdlog")
 
 if(ASTRA_SIM_USE_BUNDLED_PROTOBUF)
-    include(FetchContent)
     include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/AstraBundledProtobuf.cmake)
 else()
     find_package(Protobuf REQUIRED)

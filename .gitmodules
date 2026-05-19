@@ -19,3 +19,9 @@
 [submodule "extern/network_backend/csg-htsim"]
 	path = extern/network_backend/csg-htsim
 	url = https://github.com/Broadcom/csg-htsim.git
+[submodule "extern/helper/abseil-cpp"]
+	path = extern/helper/abseil-cpp
+	url = https://github.com/abseil/abseil-cpp.git
+[submodule "extern/helper/protobuf"]
+	path = extern/helper/protobuf
+	url = https://github.com/protocolbuffers/protobuf.git
