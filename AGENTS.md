@@ -16,11 +16,18 @@ ASTRA-sim is a C++17 distributed AI system simulator. It is not a web service; i
 | Clean ns-3 build | `./build/astra_ns3/build.sh -l` |
 | Run ns-3 example | `./examples/run_scripts/ns3/Ring_allgather_16npus.sh` |
 
+### CMake layout (AstraSim core vs backends)
+
+- **Shared library build**: `cmake/AstraSimLibrary.cmake` builds `AstraSim` (fmt, spdlog, bundled protobuf/Abseil, Chakra `et_def` codegen). Set `ASTRA_SIM_ROOT` to the repo root, then `include(.../cmake/AstraSimLibrary.cmake)`. If `AstraSim` already exists, the include is a no-op.
+- **Backends do not `add_subdirectory` the repo root**: `build/astra_analytical/`, `build/astra_htsim/`, and `extern/network_backend/ns-3/scratch/CMakeLists.txt` all use `AstraSimLibrary.cmake` instead of pulling in the root `CMakeLists.txt` project. Backend-only CMake changes (e.g. analytical network parser) stay in their submodules.
+- **Optional standalone**: Root `CMakeLists.txt` only builds the `AstraSim` static library (`ASTRA_SIM_STANDALONE_BUILD=ON`).
+- **Bundled protobuf (default)**: `extern/helper/abseil-cpp` and `extern/helper/protobuf`; disable with `-DASTRA_SIM_USE_BUNDLED_PROTOBUF=OFF` for system protobuf. Executables may need to link `AstraSimProtobufDeps` when bundled (static link propagation is incomplete).
+
 ### Non-obvious gotchas
 
 - **Protobuf version mismatch**: The Chakra submodule's Python package declares `protobuf==5.*` but its generated code (`et_def_pb2.py`) requires protobuf >= 6.x at runtime. After `pip install extern/graph_frontend/chakra`, run `pip install "protobuf>=6.31.0,<7"` to resolve the mismatch. The incompatibility warning from pip is expected and harmless.
 - **libstdc++-14-dev required**: On Ubuntu 24.04 the default C++ compiler (clang 18) links against GCC 14's libstdc++. You must have `libstdc++-14-dev` installed or the CMake compiler check will fail with `cannot find -lstdc++`.
-- **Git submodules must be initialized**: All source code for external components (chakra, fmt, spdlog, protobuf, abseil-cpp, analytical backends, etc.) lives in git submodules. `git submodule update --init --recursive` is required before any build. For C++ only, at minimum: `git submodule update --init extern/helper/fmt extern/helper/spdlog extern/helper/abseil-cpp extern/helper/protobuf extern/network_backend/analytical extern/graph_frontend/chakra`
+- **Git submodules must be initialized**: All source code for external components (chakra, fmt, spdlog, analytical backends, etc.) lives in git submodules. `git submodule update --init --recursive` is required before any build.
 - **Chakra submodule fetch may fail**: The Chakra submodule points to a fork (`cho445184-eng/chakra.git`) that may not contain the exact pinned commit (force-pushed away). If `git submodule update --init` fails for chakra, manually clone the fork's main branch into `extern/graph_frontend/chakra/`: `rm -rf extern/graph_frontend/chakra && git clone https://github.com/cho445184-eng/chakra.git extern/graph_frontend/chakra`.
 - **Submodule working tree restoration**: After submodule init, some submodules may show all files as "deleted" in git status. Run `git restore --staged . && git restore .` inside each affected submodule directory to restore files.
 - **Build artifacts location**: The analytical backend binaries are at `build/astra_analytical/build/bin/AstraSim_Analytical_Congestion_Aware` and `build/astra_analytical/build/bin/AstraSim_Analytical_Congestion_Unaware`.
