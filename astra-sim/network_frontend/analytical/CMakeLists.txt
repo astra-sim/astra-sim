@@ -37,9 +37,6 @@ if (BUILDTARGET STREQUAL "all" OR BUILDTARGET STREQUAL "congestion_unaware")
     # Link libraries
     target_link_libraries(AstraSim_Analytical_Congestion_Unaware LINK_PRIVATE AstraSim)
     target_link_libraries(AstraSim_Analytical_Congestion_Unaware LINK_PRIVATE Analytical_Congestion_Unaware)
-    if(DEFINED ENV{PROTOBUF_FROM_SOURCE} AND "$ENV{PROTOBUF_FROM_SOURCE}" STREQUAL "True")
-        target_link_libraries(AstraSim_Analytical_Congestion_Unaware LINK_PRIVATE AstraSimProtobufDeps)
-    endif()
 
     # Include directories
     target_include_directories(AstraSim_Analytical_Congestion_Unaware PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include/)
@@ -65,6 +62,9 @@ if (BUILDTARGET STREQUAL "all" OR BUILDTARGET STREQUAL "congestion_aware")
     # Link libraries
     target_link_libraries(AstraSim_Analytical_Congestion_Aware LINK_PRIVATE AstraSim)
     target_link_libraries(AstraSim_Analytical_Congestion_Aware LINK_PRIVATE Analytical_Congestion_Aware)
+    if(ASTRA_SIM_USE_BUNDLED_PROTOBUF)
+        target_link_libraries(AstraSim_Analytical_Congestion_Aware LINK_PRIVATE AstraSimProtobufDeps)
+    endif()
 
     # Include directories
     target_include_directories(AstraSim_Analytical_Congestion_Aware PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include/)

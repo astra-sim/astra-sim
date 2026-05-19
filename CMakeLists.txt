@@ -20,21 +20,18 @@ endif()
 # Setup project
 project(AstraSim)
 
+# When ON (default), protobuf and Abseil are built via FetchContent inside the build tree.
+# When OFF, use system protobuf from find_package (e.g. apt libprotobuf-dev 3.x).
+option(ASTRA_SIM_USE_BUNDLED_PROTOBUF "Build protobuf/Abseil in-tree via FetchContent" ON)
+
 # Add libraries.
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/extern/helper/fmt")
 option(SPDLOG_FMT_EXTERNAL ON) # override default option for spdlog.
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/extern/helper/spdlog")
 
-# Find Protobuf
-# TODO: We want to use the advanced semantics 'protobuf CONFIG REQUIRED'.
-# However, this requires protobuf to be compiled from source,
-# which is enabled only in Docker containers. (Our documentation makes users install protobuc from apt-get)
-# Therefore, enable 'protobuf CONFIG REQUIRED' only when we are building in Docker.
-# TODO: Find a better way to detect if protobuf has been compiled by source, OR
-# find a way to enable 'protobuf CONFIG REQUIRED' regardless of how protubuf was installed.
-set(ASTRA_SIM_PROTOBUF_FROM_SOURCE FALSE)
-if(DEFINED ENV{PROTOBUF_FROM_SOURCE} AND "$ENV{PROTOBUF_FROM_SOURCE}" STREQUAL "True")
-    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/AstraProtobuf.cmake)
+if(ASTRA_SIM_USE_BUNDLED_PROTOBUF)
+    include(FetchContent)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/AstraBundledProtobuf.cmake)
 else()
     find_package(Protobuf REQUIRED)
 endif()
@@ -52,24 +49,33 @@ file(GLOB srcs
     "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/system/scheduling/*.cc"
     "${CMAKE_CURRENT_SOURCE_DIR}/astra-sim/common/*.cc"
     "${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/src/third_party/utils/*.cc"
-    "${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/schema/protobuf/*.cc"
     "${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/src/feeder_v3/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/extern/remote_memory_backend/analytical/*.cc")
 
+if(ASTRA_SIM_USE_BUNDLED_PROTOBUF)
+    list(APPEND srcs "${ASTRA_CHAKRA_PROTO_SRC}")
+else()
+    file(GLOB chakra_proto_srcs
+        "${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/schema/protobuf/*.cc")
+    list(APPEND srcs ${chakra_proto_srcs})
+endif()
+
 # Compile AstraSim Library
 add_library(AstraSim STATIC ${srcs})
+
+if(ASTRA_SIM_USE_BUNDLED_PROTOBUF)
+    add_dependencies(AstraSim astra_chakra_proto_gen)
+endif()
 
 # Link libraries
 target_link_libraries(AstraSim PUBLIC fmt::fmt)
 target_link_libraries(AstraSim PUBLIC spdlog::spdlog)
 
-# Same as above.
-if(ASTRA_SIM_PROTOBUF_FROM_SOURCE)
+if(ASTRA_SIM_USE_BUNDLED_PROTOBUF)
     target_link_libraries(AstraSim PUBLIC AstraSimProtobufDeps)
 else()
     target_link_libraries(AstraSim PUBLIC ${Protobuf_LIBRARIES})
 endif()
-
 
 # Include Directories
 target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -77,11 +83,11 @@ target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/gr
 target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/schema/protobuf)
 target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/src/third_party/utils)
 target_include_directories(AstraSim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/extern/helper/)
-target_include_directories(AstraSim PUBLIC ${Protobuf_INCLUDE_DIR})
 
-# Same as above.
-if(ASTRA_SIM_PROTOBUF_FROM_SOURCE)
-    target_include_directories(AstraSim PUBLIC ${Protobuf_INCLUDE_DIRS})
+if(ASTRA_SIM_USE_BUNDLED_PROTOBUF)
+    target_include_directories(AstraSim PUBLIC "${ASTRA_CHAKRA_PROTO_OUT_DIR}")
+else()
+    target_include_directories(AstraSim PUBLIC ${Protobuf_INCLUDE_DIR})
 endif()
 
 # Properties

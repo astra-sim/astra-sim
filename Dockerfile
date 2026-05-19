@@ -32,38 +32,8 @@ RUN pip3 install --upgrade pip
 ## Add astra-sim to PYTHONPATH
 ENV PYTHONPATH="/app/astra-sim"
 
-# STG dependencies
-RUN pip3 install numpy sympy graphviz pandas
-### ======================================================
-
-
-### ============= Protobuf Installation ==================
-## Download Protobuf 29.0 (=v5.29.0, latest stable version as of Feb/01/2025)
-ARG PROTOBUF_VER=29.0
-
-# Download source
-WORKDIR /opt
-RUN wget https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOBUF_VER}/protobuf-${PROTOBUF_VER}.tar.gz
-RUN tar -xf protobuf-${PROTOBUF_VER}.tar.gz
-RUN rm protobuf-${PROTOBUF_VER}.tar.gz
-
-## Compile Protobuf (bundled Abseil via protobuf_ABSL_PROVIDER=module)
-WORKDIR /opt/protobuf-${PROTOBUF_VER}/build
-RUN cmake .. \
-    -DCMAKE_CXX_STANDARD=14 \
-    -DCMAKE_BUILD_TYPE=Release \
-    -Dprotobuf_BUILD_TESTS=OFF \
-    -Dprotobuf_ABSL_PROVIDER=module \
-    -DCMAKE_INSTALL_PREFIX="/opt/protobuf-${PROTOBUF_VER}/install"
-RUN cmake --build . --target install --config Release --parallel $(nproc)
-ENV PATH="/opt/protobuf-${PROTOBUF_VER}/install/bin:$PATH"
-ENV protobuf_DIR="/opt/protobuf-${PROTOBUF_VER}/install"
-
-# Also, install Python protobuf package
-RUN pip3 install protobuf==5.${PROTOBUF_VER}
-
-# Set the environment variable
-ENV PROTOBUF_FROM_SOURCE=True
+# STG dependencies (Python protobuf for Chakra trace tooling; C++ protobuf is built in-tree)
+RUN pip3 install numpy sympy graphviz pandas "protobuf>=6.31.0,<7"
 ### ======================================================
 
 

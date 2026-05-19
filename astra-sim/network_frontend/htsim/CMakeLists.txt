@@ -45,7 +45,7 @@ target_sources(AstraSim_HTSim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/HTSimMain.cc)
 # Link libraries
 target_link_libraries(AstraSim_HTSim LINK_PRIVATE AstraSim)
 target_link_libraries(AstraSim_HTSim LINK_PRIVATE Analytical_Congestion_Unaware)
-if(DEFINED ENV{PROTOBUF_FROM_SOURCE} AND "$ENV{PROTOBUF_FROM_SOURCE}" STREQUAL "True")
+if(ASTRA_SIM_USE_BUNDLED_PROTOBUF)
     target_link_libraries(AstraSim_HTSim LINK_PRIVATE AstraSimProtobufDeps)
 endif()
 
