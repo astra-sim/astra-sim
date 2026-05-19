@@ -18,6 +18,7 @@ ASTRA-sim is a C++17 distributed AI system simulator. It is not a web service; i
 
 ### Non-obvious gotchas
 
+- **Protobuf-from-source Abseil link errors** (`undefined reference to absl::lts_20240722::str_format_internal`): Occurs when `PROTOBUF_FROM_SOURCE=True` and protobuf 5.x was built with external Abseil (`-Dprotobuf_ABSL_PROVIDER=package`). Fix options: (1) rebuild protobuf with `-Dprotobuf_ABSL_PROVIDER=module` so Abseil is bundled; (2) install Abseil 20240722 and set `absl_DIR` to its CMake config path; (3) use current tree CMake which links `AstraSimProtobufDeps` (protobuf + absl) on executables.
 - **Protobuf version mismatch**: The Chakra submodule's Python package declares `protobuf==5.*` but its generated code (`et_def_pb2.py`) requires protobuf >= 6.x at runtime. After `pip install extern/graph_frontend/chakra`, run `pip install "protobuf>=6.31.0,<7"` to resolve the mismatch. The incompatibility warning from pip is expected and harmless.
 - **libstdc++-14-dev required**: On Ubuntu 24.04 the default C++ compiler (clang 18) links against GCC 14's libstdc++. You must have `libstdc++-14-dev` installed or the CMake compiler check will fail with `cannot find -lstdc++`.
 - **Git submodules must be initialized**: All source code for external components (chakra, fmt, spdlog, analytical backends, etc.) lives in git submodules. `git submodule update --init --recursive` is required before any build.

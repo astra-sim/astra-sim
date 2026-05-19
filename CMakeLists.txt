@@ -32,8 +32,9 @@ add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/extern/helper/spdlog")
 # Therefore, enable 'protobuf CONFIG REQUIRED' only when we are building in Docker.
 # TODO: Find a better way to detect if protobuf has been compiled by source, OR
 # find a way to enable 'protobuf CONFIG REQUIRED' regardless of how protubuf was installed.
+set(ASTRA_SIM_PROTOBUF_FROM_SOURCE FALSE)
 if(DEFINED ENV{PROTOBUF_FROM_SOURCE} AND "$ENV{PROTOBUF_FROM_SOURCE}" STREQUAL "True")
-    find_package(protobuf CONFIG REQUIRED)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/AstraProtobuf.cmake)
 else()
     find_package(Protobuf REQUIRED)
 endif()
@@ -63,8 +64,8 @@ target_link_libraries(AstraSim PUBLIC fmt::fmt)
 target_link_libraries(AstraSim PUBLIC spdlog::spdlog)
 
 # Same as above.
-if(DEFINED ENV{PROTOBUF_FROM_SOURCE} AND "$ENV{PROTOBUF_FROM_SOURCE}" STREQUAL "True")
-    target_link_libraries(AstraSim PUBLIC protobuf::libprotobuf)
+if(ASTRA_SIM_PROTOBUF_FROM_SOURCE)
+    target_link_libraries(AstraSim PUBLIC AstraSimProtobufDeps)
 else()
     target_link_libraries(AstraSim PUBLIC ${Protobuf_LIBRARIES})
 endif()
@@ -79,7 +80,7 @@ target_include_directories(AstraSim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/extern/h
 target_include_directories(AstraSim PUBLIC ${Protobuf_INCLUDE_DIR})
 
 # Same as above.
-if(DEFINED ENV{PROTOBUF_FROM_SOURCE} AND "$ENV{PROTOBUF_FROM_SOURCE}" STREQUAL "True")
+if(ASTRA_SIM_PROTOBUF_FROM_SOURCE)
     target_include_directories(AstraSim PUBLIC ${Protobuf_INCLUDE_DIRS})
 endif()
 
