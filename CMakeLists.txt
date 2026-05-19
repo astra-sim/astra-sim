@@ -79,13 +79,14 @@ endif()
 # Include Directories
 target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/)
-target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/schema/protobuf)
 target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/src/third_party/utils)
 target_include_directories(AstraSim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/extern/helper/)
 
 if(ASTRA_SIM_USE_BUNDLED_PROTOBUF)
-    target_include_directories(AstraSim PUBLIC "${ASTRA_CHAKRA_PROTO_OUT_DIR}")
+    # Generated et_def.pb.h must take precedence over any stale copy under schema/protobuf.
+    target_include_directories(AstraSim BEFORE PUBLIC "${ASTRA_CHAKRA_PROTO_OUT_DIR}")
 else()
+    target_include_directories(AstraSim PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/extern/graph_frontend/chakra/schema/protobuf)
     target_include_directories(AstraSim PUBLIC ${Protobuf_INCLUDE_DIR})
 endif()
 
