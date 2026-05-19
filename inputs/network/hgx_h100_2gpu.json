@@ -1,0 +1,14 @@
+{
+  "topology": [
+    "Switch"
+  ],
+  "npus_count": [
+    2
+  ],
+  "bandwidth": [
+    741.34
+  ],
+  "latency": [
+    936.25
+  ]
+}

@@ -37,27 +37,6 @@ RUN pip3 install numpy sympy graphviz pandas
 ### ======================================================
 
 
-### ====== Abseil Installation: Protobuf Dependency ======
-## Download Abseil 20240722.0 (Latest LTS as of 10/31/2024)
-ARG ABSL_VER=20240722.0
-
-# Download source
-WORKDIR /opt
-RUN wget https://github.com/abseil/abseil-cpp/releases/download/${ABSL_VER}/abseil-cpp-${ABSL_VER}.tar.gz
-RUN tar -xf abseil-cpp-${ABSL_VER}.tar.gz
-RUN rm abseil-cpp-${ABSL_VER}.tar.gz
-
-## Compile Abseil
-WORKDIR /opt/abseil-cpp-${ABSL_VER}/build
-RUN cmake .. \
-    -DCMAKE_CXX_STANDARD=14 \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX="/opt/abseil-cpp-${ABSL_VER}/install"
-RUN cmake --build . --target install --config Release --parallel $(nproc)
-ENV absl_DIR="/opt/abseil-cpp-${ABSL_VER}/install"
-### ======================================================
-
-
 ### ============= Protobuf Installation ==================
 ## Download Protobuf 29.0 (=v5.29.0, latest stable version as of Feb/01/2025)
 ARG PROTOBUF_VER=29.0
@@ -68,13 +47,13 @@ RUN wget https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOB
 RUN tar -xf protobuf-${PROTOBUF_VER}.tar.gz
 RUN rm protobuf-${PROTOBUF_VER}.tar.gz
 
-## Compile Protobuf
+## Compile Protobuf (bundled Abseil via protobuf_ABSL_PROVIDER=module)
 WORKDIR /opt/protobuf-${PROTOBUF_VER}/build
 RUN cmake .. \
     -DCMAKE_CXX_STANDARD=14 \
     -DCMAKE_BUILD_TYPE=Release \
     -Dprotobuf_BUILD_TESTS=OFF \
-    -Dprotobuf_ABSL_PROVIDER=package \
+    -Dprotobuf_ABSL_PROVIDER=module \
     -DCMAKE_INSTALL_PREFIX="/opt/protobuf-${PROTOBUF_VER}/install"
 RUN cmake --build . --target install --config Release --parallel $(nproc)
 ENV PATH="/opt/protobuf-${PROTOBUF_VER}/install/bin:$PATH"

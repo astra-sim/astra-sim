@@ -1,0 +1,22 @@
+{
+  "topology": [
+    "Ring",
+    "Ring",
+    "Ring"
+  ],
+  "npus_count": [
+    2,
+    2,
+    2
+  ],
+  "bandwidth": [
+    "tbd",
+    "tbd",
+    "tbd"
+  ],
+  "latency": [
+    "tbd",
+    "tbd",
+    "tbd"
+  ]
+}

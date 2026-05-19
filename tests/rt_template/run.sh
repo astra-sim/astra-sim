@@ -22,7 +22,7 @@ echo "[$0] Running ASTRA-sim..."
 ${ASTRA_SIM_BIN} \
     --workload-configuration=${SCRIPT_DIR}/inputs/workload/chakra_trace \
     --system-configuration=${SCRIPT_DIR}/inputs/system_cfg.json \
-    --network-configuration=${SCRIPT_DIR}/inputs/network_cfg.yml \
+    --network-configuration=${SCRIPT_DIR}/inputs/network_cfg.json \
     --remote-memory-configuration=${SCRIPT_DIR}/inputs/remote_memory_cfg.json \
 	| tee ${SCRIPT_DIR}/outputs/stdout.txt
 )

@@ -46,7 +46,7 @@ class CollectiveImplLookup {
 
     private:
         // Map from Chakra node id (integer) to a custom algorithm identifier/filepath.
-        // Populated from YAML file. The filename is specified in the system input with the key "per-node-custom-implementation".
+        // Populated from JSON file. The filename is specified in the system input with the key "per-node-custom-implementation".
         std::map<int, CollectiveImpl*> per_node_custom_impl;
 
         // Map from Collective Type to a custom algorithm to be applied

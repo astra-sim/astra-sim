@@ -64,13 +64,10 @@ def generate_2layer_clos(
 
     os.makedirs(output_dir, exist_ok=True)
 
-    network_path = os.path.join(output_dir, f"{name}.yml")
+    network_path = os.path.join(output_dir, f"{name}.json")
     with open(network_path, "w") as f:
-        f.write(f"# 2-Layer CLOS: {npus_per_leaf} NPUs/leaf x {num_leaves} leaves = {total_npus} NPUs\n")
-        f.write(f"topology: [ {', '.join(network_cfg['topology'])} ]\n")
-        f.write(f"npus_count: [ {', '.join(str(n) for n in network_cfg['npus_count'])} ]\n")
-        f.write(f"bandwidth: [ {', '.join(str(b) for b in network_cfg['bandwidth'])} ]  # GB/s\n")
-        f.write(f"latency: [ {', '.join(str(l) for l in network_cfg['latency'])} ]  # ns\n")
+        json.dump(network_cfg, f, indent=2)
+        f.write("\n")
 
     system_path = os.path.join(output_dir, f"{name}_system.json")
     with open(system_path, "w") as f:
@@ -136,7 +133,7 @@ def generate_3layer_clos(
 
     os.makedirs(output_dir, exist_ok=True)
 
-    network_path = os.path.join(output_dir, f"{name}.yml")
+    network_path = os.path.join(output_dir, f"{name}.json")
     with open(network_path, "w") as f:
         f.write(f"# 3-Layer CLOS: {npus_per_tor} NPUs/ToR x {tors_per_pod} ToRs/pod x {num_pods} pods = {total_npus} NPUs\n")
         f.write(f"topology: [ {', '.join(network_cfg['topology'])} ]\n")

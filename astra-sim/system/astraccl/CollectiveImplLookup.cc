@@ -6,7 +6,7 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/astraccl/CollectiveImplLookup.hh"
 
 #include <cstdlib>
-#include <yaml-cpp/yaml.h>
+#include <fstream>
 
 #include "astra-sim/common/Logging.hh"
 
@@ -57,33 +57,35 @@ namespace AstraSim {
         return new CustomCollectiveImpl(CollectiveImplType::CustomCollectiveImpl, filename);
     }
 
-    std::map<int, std::string> parse_per_node_yaml_file(string yaml_filepath) {
-        YAML::Node root;
-        try {
-            root = YAML::LoadFile(yaml_filepath);
-        } catch (const YAML::BadFile& e) {
-            throw std::runtime_error("Failed to open YAML file: " + yaml_filepath);
-        } catch (const YAML::ParserException& e) {
-            throw std::runtime_error(std::string("YAML parse error: ") + e.what());
+    std::map<int, std::string> parse_per_node_mapping_file(string mapping_filepath) {
+        std::ifstream file(mapping_filepath);
+        if (!file.is_open()) {
+            throw std::runtime_error("Failed to open mapping file: " + mapping_filepath);
         }
 
-        if (!root || !root.IsMap()) {
-            throw std::runtime_error("Top-level YAML must be a mapping of int -> string.");
+        json root;
+        try {
+            file >> root;
+        } catch (const json::exception& e) {
+            throw std::runtime_error(std::string("JSON parse error: ") + e.what());
+        }
+
+        if (!root.is_object()) {
+            throw std::runtime_error("Top-level JSON must be an object mapping int -> string.");
         }
 
         std::map<int, std::string> result;
-        for (const auto&kv: root) {
-            if (!kv.first.IsScalar() || !kv.second.IsScalar()) {
-                throw std::runtime_error("YAML mapping keys and values must be scalars.");
+        for (const auto& [key, value] : root.items()) {
+            if (!value.is_string()) {
+                throw std::runtime_error("JSON mapping values must be strings.");
             }
             int node_id;
             try {
-                node_id = kv.first.as<int>();
-            } catch (const YAML::BadConversion& e) {
-                throw std::runtime_error("YAML mapping keys must be integers.");
+                node_id = std::stoi(key);
+            } catch (const std::exception&) {
+                throw std::runtime_error("JSON mapping keys must be integers.");
             }
-            std::string chakra_filepath = kv.second.as<std::string>();
-            result[node_id] = chakra_filepath;
+            result[node_id] = value.get<std::string>();
         }
 
         return result;
@@ -184,7 +186,7 @@ namespace AstraSim {
         if (j.contains("per-node-custom-implementation")) {
             string per_node_custom_impl_filepath = j["per-node-custom-implementation"];
             std::map<int, std::string> per_node_custom_impl_filename =
-                parse_per_node_yaml_file(per_node_custom_impl_filepath);
+                parse_per_node_mapping_file(per_node_custom_impl_filepath);
 
             for (auto const& [node_id, chakra_filepath] : per_node_custom_impl_filename) {
                 CollectiveImpl* ci =

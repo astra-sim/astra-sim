@@ -149,37 +149,37 @@ echo "******** Running 2-Layer CLOS Simulations ********"
 run_simulation "2L-CLOS 64NPU AllReduce" \
     "all_reduce/64npus_${COLL_SIZE}MB/all_reduce" \
     "${OUTPUT_BASE}/2layer/Clos2L_64npus_8x8_system.json" \
-    "${OUTPUT_BASE}/2layer/Clos2L_64npus_8x8.yml"
+    "${OUTPUT_BASE}/2layer/Clos2L_64npus_8x8.json"
 
 # 64 NPUs - AllToAll
 run_simulation "2L-CLOS 64NPU AllToAll" \
     "all_to_all/64npus_${COLL_SIZE}MB/all_to_all" \
     "${OUTPUT_BASE}/2layer/Clos2L_64npus_8x8_system.json" \
-    "${OUTPUT_BASE}/2layer/Clos2L_64npus_8x8.yml"
+    "${OUTPUT_BASE}/2layer/Clos2L_64npus_8x8.json"
 
 # 128 NPUs - AllReduce
 run_simulation "2L-CLOS 128NPU AllReduce" \
     "all_reduce/128npus_${COLL_SIZE}MB/all_reduce" \
     "${OUTPUT_BASE}/2layer/Clos2L_128npus_16x8_system.json" \
-    "${OUTPUT_BASE}/2layer/Clos2L_128npus_16x8.yml"
+    "${OUTPUT_BASE}/2layer/Clos2L_128npus_16x8.json"
 
 # 128 NPUs - AllToAll
 run_simulation "2L-CLOS 128NPU AllToAll" \
     "all_to_all/128npus_${COLL_SIZE}MB/all_to_all" \
     "${OUTPUT_BASE}/2layer/Clos2L_128npus_16x8_system.json" \
-    "${OUTPUT_BASE}/2layer/Clos2L_128npus_16x8.yml"
+    "${OUTPUT_BASE}/2layer/Clos2L_128npus_16x8.json"
 
 # 256 NPUs - AllReduce
 run_simulation "2L-CLOS 256NPU AllReduce" \
     "all_reduce/256npus_${COLL_SIZE}MB/all_reduce" \
     "${OUTPUT_BASE}/2layer/Clos2L_256npus_16x16_system.json" \
-    "${OUTPUT_BASE}/2layer/Clos2L_256npus_16x16.yml"
+    "${OUTPUT_BASE}/2layer/Clos2L_256npus_16x16.json"
 
 # 256 NPUs - AllToAll
 run_simulation "2L-CLOS 256NPU AllToAll" \
     "all_to_all/256npus_${COLL_SIZE}MB/all_to_all" \
     "${OUTPUT_BASE}/2layer/Clos2L_256npus_16x16_system.json" \
-    "${OUTPUT_BASE}/2layer/Clos2L_256npus_16x16.yml"
+    "${OUTPUT_BASE}/2layer/Clos2L_256npus_16x16.json"
 
 # =============================================================================
 # Run 3-Layer CLOS Simulations
@@ -191,37 +191,37 @@ echo "******** Running 3-Layer CLOS Simulations ********"
 run_simulation "3L-CLOS 128NPU AllReduce" \
     "all_reduce/128npus_${COLL_SIZE}MB/all_reduce" \
     "${OUTPUT_BASE}/3layer/Clos3L_128npus_8x4x4_system.json" \
-    "${OUTPUT_BASE}/3layer/Clos3L_128npus_8x4x4.yml"
+    "${OUTPUT_BASE}/3layer/Clos3L_128npus_8x4x4.json"
 
 # 128 NPUs - AllToAll
 run_simulation "3L-CLOS 128NPU AllToAll" \
     "all_to_all/128npus_${COLL_SIZE}MB/all_to_all" \
     "${OUTPUT_BASE}/3layer/Clos3L_128npus_8x4x4_system.json" \
-    "${OUTPUT_BASE}/3layer/Clos3L_128npus_8x4x4.yml"
+    "${OUTPUT_BASE}/3layer/Clos3L_128npus_8x4x4.json"
 
 # 256 NPUs - AllReduce
 run_simulation "3L-CLOS 256NPU AllReduce" \
     "all_reduce/256npus_${COLL_SIZE}MB/all_reduce" \
     "${OUTPUT_BASE}/3layer/Clos3L_256npus_8x4x8_system.json" \
-    "${OUTPUT_BASE}/3layer/Clos3L_256npus_8x4x8.yml"
+    "${OUTPUT_BASE}/3layer/Clos3L_256npus_8x4x8.json"
 
 # 256 NPUs - AllToAll
 run_simulation "3L-CLOS 256NPU AllToAll" \
     "all_to_all/256npus_${COLL_SIZE}MB/all_to_all" \
     "${OUTPUT_BASE}/3layer/Clos3L_256npus_8x4x8_system.json" \
-    "${OUTPUT_BASE}/3layer/Clos3L_256npus_8x4x8.yml"
+    "${OUTPUT_BASE}/3layer/Clos3L_256npus_8x4x8.json"
 
 # 512 NPUs - AllReduce
 run_simulation "3L-CLOS 512NPU AllReduce" \
     "all_reduce/512npus_${COLL_SIZE}MB/all_reduce" \
     "${OUTPUT_BASE}/3layer/Clos3L_512npus_8x8x8_system.json" \
-    "${OUTPUT_BASE}/3layer/Clos3L_512npus_8x8x8.yml"
+    "${OUTPUT_BASE}/3layer/Clos3L_512npus_8x8x8.json"
 
 # 512 NPUs - AllToAll
 run_simulation "3L-CLOS 512NPU AllToAll" \
     "all_to_all/512npus_${COLL_SIZE}MB/all_to_all" \
     "${OUTPUT_BASE}/3layer/Clos3L_512npus_8x8x8_system.json" \
-    "${OUTPUT_BASE}/3layer/Clos3L_512npus_8x8x8.yml"
+    "${OUTPUT_BASE}/3layer/Clos3L_512npus_8x8x8.json"
 
 # =============================================================================
 # Summary
