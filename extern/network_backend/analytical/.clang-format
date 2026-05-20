@@ -1,0 +1,27 @@
+## ******************************************************************************
+## This source code is licensed under the MIT license found in the
+## LICENSE file in the root directory of this source tree.
+## ******************************************************************************
+---
+# ASTRA-sim project uses LLVM style by default (https://llvm.org/docs/CodingStandards.html)
+BasedOnStyle: LLVM
+
+# Indentations and spaces
+IndentWidth: 4
+UseTab: Never
+SpacesBeforeTrailingComments: 2
+
+# Line and column setups
+ColumnLimit: 120
+InsertNewlineAtEOF: true
+PenaltyReturnTypeOnItsOwnLine: 2000000
+PackConstructorInitializers: CurrentLine
+BinPackParameters: false
+
+# Pointer alignment
+PointerAlignment: Left
+
+# Braces
+InsertBraces: true
+AllowShortFunctionsOnASingleLine: Empty
+---

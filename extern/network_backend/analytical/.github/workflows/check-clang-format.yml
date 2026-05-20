@@ -1,0 +1,47 @@
+## ******************************************************************************
+## This source code is licensed under the MIT license found in the
+## LICENSE file in the root directory of this source tree.
+## ******************************************************************************
+
+name: format
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check-code-formatting:
+    name: Code Formatting
+    runs-on: ubuntu-24.04  # comes with clang-format v18
+    steps:
+    - name: Clone repository
+      uses: actions/checkout@v4
+
+    - name: Check format of `common` directory
+      run: |
+        find common -type f \( -name "*.cpp" -o -name "*.h" \) -print0 |
+          xargs -0L1 clang-format -style=file --dry-run -Werror
+
+    - name: Check format of `congestion_aware` directory
+      run: |
+        find congestion_aware -type f \( -name "*.cpp" -o -name "*.h" \) -print0 |
+          xargs -0L1 clang-format -style=file --dry-run -Werror
+
+    - name: Check format of `congestion_unaware` directory
+      run: |
+        find congestion_unaware -type f \( -name "*.cpp" -o -name "*.h" \) -print0 |
+          xargs -0L1 clang-format -style=file --dry-run -Werror
+
+    - name: Check format of `include` directory
+      run: |
+        find include -type f \( -name "*.cpp" -o -name "*.h" \) -print0 |
+          xargs -0L1 clang-format -style=file --dry-run -Werror
+
+    - name: Check format of `test` directory
+      run: |
+        find test -type f \( -name "*.cpp" -o -name "*.h" \) -print0 |
+          xargs -0L1 clang-format -style=file --dry-run -Werror

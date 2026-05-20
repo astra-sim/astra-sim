@@ -1,0 +1,37 @@
+## ******************************************************************************
+## This source code is licensed under the MIT license found in the
+## LICENSE file in the root directory of this source tree.
+## ******************************************************************************
+
+name: build 
+on: [ push, pull_request ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ubuntu-unaware
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone Repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set Up CMake
+        run: |
+          sudo apt -y update
+          sudo apt -y install cmake
+
+      - name: Build Congestion Unaware Test
+        run: |
+          cd test
+          cmake -S . -B build -DBUILDTARGET="congestion_unaware" -DCMAKE_BUILD_TYPE=Debug
+          cmake --build build --config Debug -j $(nproc)
+
+      - name: Run Congestion Unaware Test on Ubuntu
+        run: |
+          cd test/build
+          ctest --output-on-failure

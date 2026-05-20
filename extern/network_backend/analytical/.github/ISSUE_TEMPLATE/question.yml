@@ -1,0 +1,51 @@
+## ******************************************************************************
+## This source code is licensed under the MIT license found in the
+## LICENSE file in the root directory of this source tree.
+## ******************************************************************************
+
+name: Question
+description: General question about the project and codebase
+title: "[Question]: "
+labels: ["question", "untriaged"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please use this form to ask general questions about the project and codebase.
+  - type: textarea
+    id: question
+    attributes:
+      label: Question?
+      description: Please explain your question here.
+      placeholder: Question?
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        If your question is regarding the codebase, if possible, please provide us with the operating system and project version you are currently working on.
+  - type: dropdown
+    id: operatingsystem
+    attributes:
+      label: Operating System
+      description: "From which operating system have you observed this bug?"
+      options:
+        - Linux - Debian-based (e.g., Ubuntu) 
+        - Linux - Other Distributions
+        - macOS
+        - Windows - Subsystem for Linux
+        - Others
+  - type: textarea
+    id: version
+    attributes:
+      label: Project Version
+      description: If possible, let us know the project version or commit ID you are currently working on.
+  - type: textarea
+    id: misc
+    attributes:
+      label: Miscellaneous
+      description: Please provide us with any other relevant information you find necessary.
+  - type: markdown
+    attributes:
+      value: |
+        Thanks again for your time filling in this form.
