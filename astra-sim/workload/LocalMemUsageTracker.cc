@@ -247,7 +247,7 @@ void LocalMemUsageTracker::buildMemoryTrace() {
 
 void LocalMemUsageTracker::dumpMemoryTrace(const std::string& filename) {
   std::string local_mem_trace_filename =
-      fmt::format(filename + ".{}.json", this->sysId);
+      fmt::format("{}.{}.json", filename, this->sysId);
   std::ofstream file(local_mem_trace_filename);
   if (!file.is_open()) {
     AstraSim::LoggerFactory::get_logger("workload::LocalMemUsageTracker")
