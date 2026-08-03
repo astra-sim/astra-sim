@@ -13,6 +13,7 @@
 #include "ns3/qbb-helper.h"
 #include <fstream>
 #include <iostream>
+#include <queue>
 #include <ns3/rdma-client-helper.h>
 #include <ns3/rdma-client.h>
 #include <ns3/rdma-driver.h>
@@ -105,15 +106,16 @@ map<pair<MsgEventKey, int>, MsgEvent> sim_send_waiting_hash;
 // While ns3 cannot send packets before System layer calls sim_send, it
 // is possible for ns3 to simulate Incoming messages before System layer calls
 // sim_recv to 'reap' the messages. Therefore, we maintain two maps:
-//   - sim_recv_waiting_hash holds messages where sim_recv has been called but ns3 has
-//   not yet simulated the message arriving,
-//   - received_msg_standby_hash holds messages which ns3 has simulated the arrival, but sim_recv
-//   has not yet been called.
+//   - sim_recv_waiting_hash holds messages where sim_recv has been called but
+//   ns3 has not yet simulated the message arriving,
+//   - received_msg_standby_hash holds messages which ns3 has simulated the
+//   arrival, but sim_recv has not yet been called.
 
-//   - key: A MsgEventKey isntance.
-//   - value: A MsgEvent instance that indicates that Sys layer is waiting for a
-//   receive event to finish
-map<MsgEventKey, MsgEvent> sim_recv_waiting_hash;
+//   - key: A MsgEventKey instance.
+//   - value: A queue of MsgEvent instances that the Sys layer is waiting for.
+//   Multiple receive events may share the same key, so each callback must be
+//   retained until its corresponding bytes arrive.
+map<MsgEventKey, queue<MsgEvent>> sim_recv_waiting_hash;
 
 //   - key: A MsgEventKey isntance.
 //   - value: The number of bytes that ns3 has simulated completed, but the
@@ -155,51 +157,51 @@ void send_flow(int src_id, int dst, int maxPacketCount,
 // waiting for this message, register that this message has arrived,
 // so that the system layer can later call the callback handler when sim_recv
 // is called.
-void notify_receiver_receive_data(int src_id, int dst_id, int message_size,
+void notify_receiver_receive_data(int src_id,
+                                  int dst_id,
+                                  int message_size,
                                   int tag) {
 
-  MsgEventKey recv_expect_event_key = make_pair(tag, make_pair(src_id, dst_id));
+    MsgEventKey recv_expect_event_key =
+        make_pair(tag, make_pair(src_id, dst_id));
 
-  if (sim_recv_waiting_hash.find(recv_expect_event_key) != sim_recv_waiting_hash.end()) {
-    // The Sys object is waiting for packets to arrive.
-    MsgEvent recv_expect_event = sim_recv_waiting_hash[recv_expect_event_key];
-    if (message_size == recv_expect_event.remaining_msg_bytes) {
-      // We received exactly the amount of data what Sys object was expecting.
-      sim_recv_waiting_hash.erase(recv_expect_event_key);
-      recv_expect_event.callHandler();
-    } else if (message_size > recv_expect_event.remaining_msg_bytes) {
-      // We received more packets than the Sys object is expecting.
-      // Place task in received_msg_standby_hash and wait for Sys object to issue more sim_recv
-      // calls. Call callback handler for the amount Sys object was waiting for.
-      received_msg_standby_hash[recv_expect_event_key] =
-          message_size - recv_expect_event.remaining_msg_bytes;
-      sim_recv_waiting_hash.erase(recv_expect_event_key);
-      recv_expect_event.callHandler();
-    } else {
-      // There are still packets to arrive.
-      // Reduce the number of packets we are waiting for. Do not call callback
-      // handler.
-      recv_expect_event.remaining_msg_bytes -= message_size;
-      sim_recv_waiting_hash[recv_expect_event_key] = recv_expect_event;
-    }
-  } else {
-    // The Sys object is not yet waiting for packets to arrive.
-    if (received_msg_standby_hash.find(recv_expect_event_key) == received_msg_standby_hash.end()) {
-      // Place task in received_msg_standby_hash and wait for Sys object to issue more sim_recv
-      // calls.
-      received_msg_standby_hash[recv_expect_event_key] = message_size;
-    } else {
-      // Sys object is still waiting. Add number of bytes we are waiting for.
-      received_msg_standby_hash[recv_expect_event_key] += message_size;
-    }
-  }
+    int remaining_bytes = message_size;
+    auto waiting_it = sim_recv_waiting_hash.find(recv_expect_event_key);
+    if (waiting_it != sim_recv_waiting_hash.end()) {
+        // Consume the received bytes against pending receive events in FIFO
+        // order.
+        queue<MsgEvent>& waiting_events = waiting_it->second;
+        while (!waiting_events.empty()) {
+            MsgEvent& recv_expect_event = waiting_events.front();
+            if (remaining_bytes < recv_expect_event.remaining_msg_bytes) {
+                recv_expect_event.remaining_msg_bytes -= remaining_bytes;
+                remaining_bytes = 0;
+                break;
+            } else {
+                remaining_bytes -= recv_expect_event.remaining_msg_bytes;
+                MsgEvent completed_event = recv_expect_event;
+                waiting_events.pop();
+                completed_event.callHandler();
+            }
+        }
 
-  // Add to the number of total bytes received.
-  if (node_to_bytes_sent_map.find(make_pair(dst_id, 1)) == node_to_bytes_sent_map.end()) {
-    node_to_bytes_sent_map[make_pair(dst_id, 1)] = message_size;
-  } else {
-    node_to_bytes_sent_map[make_pair(dst_id, 1)] += message_size;
-  }
+        if (waiting_events.empty()) {
+            sim_recv_waiting_hash.erase(waiting_it);
+        }
+    }
+
+    if (remaining_bytes > 0) {
+        // The Sys object is not yet waiting for all of the received bytes.
+        received_msg_standby_hash[recv_expect_event_key] += remaining_bytes;
+    }
+
+    // Add to the number of total bytes received.
+    if (node_to_bytes_sent_map.find(make_pair(dst_id, 1)) ==
+        node_to_bytes_sent_map.end()) {
+        node_to_bytes_sent_map[make_pair(dst_id, 1)] = message_size;
+    } else {
+        node_to_bytes_sent_map[make_pair(dst_id, 1)] += message_size;
+    }
 }
 
 void notify_sender_sending_finished(int src_id, int dst_id, int message_size,
