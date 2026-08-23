@@ -9,4 +9,7 @@ echo "[$0] Running all regression tests..."
 echo "[$0] Running rt_template..."
 ${SCRIPT_DIR}/rt_template/run.sh || (echo "Failed." ; exit 1)
 
+echo "[$0] Running rt_ns3_recv_queue..."
+${SCRIPT_DIR}/rt_ns3_recv_queue/run.sh || (echo "Failed." ; exit 1)
+
 echo "[$0] Finished all regression tests."

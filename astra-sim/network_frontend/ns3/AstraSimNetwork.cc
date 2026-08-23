@@ -170,22 +170,11 @@ class ASTRASimNetwork : public AstraSim::AstraNetworkAPI {
                 // Reduce the number of bytes we are waiting to receive.
                 received_msg_standby_hash.erase(recv_event_key);
                 recv_event.remaining_msg_bytes -= received_msg_bytes;
-                sim_recv_waiting_hash[recv_event_key] = recv_event;
+                sim_recv_waiting_hash[recv_event_key].push(recv_event);
             }
         } else {
             // 2) ns3 has not yet received anything.
-            if (sim_recv_waiting_hash.find(recv_event_key) ==
-                sim_recv_waiting_hash.end()) {
-                // 2-1) We have not been expecting anything.
-                sim_recv_waiting_hash[recv_event_key] = recv_event;
-            } else {
-                // 2-2) We have already been expecting something.
-                // Increment the number of bytes we are waiting to receive.
-                int expecting_msg_bytes =
-                    sim_recv_waiting_hash[recv_event_key].remaining_msg_bytes;
-                recv_event.remaining_msg_bytes += expecting_msg_bytes;
-                sim_recv_waiting_hash[recv_event_key] = recv_event;
-            }
+            sim_recv_waiting_hash[recv_event_key].push(recv_event);
         }
         return 0;
     }

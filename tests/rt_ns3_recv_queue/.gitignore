@@ -1,0 +1,4 @@
+/log/
+/outputs/*
+!/outputs/.gitkeep
+/inputs/workload/__pycache__/
