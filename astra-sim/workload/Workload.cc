@@ -219,6 +219,8 @@ void Workload::issue_replay(shared_ptr<Chakra::FeederV3::ETFeederNode> node) {
         // nanoseconds
         runtime = node->runtime() * 1000;
     }
+    // scale runtime according to system frequency, ensure at least 1 tic
+    runtime = static_cast<uint64_t>(max(1.0, round(runtime / sys->frequency)));
     if (node->is_cpu_op()) {
         hw_resource->tics_cpu_ops += runtime;
     } else {
@@ -568,8 +570,18 @@ void Workload::fire() {
 void Workload::report() {
     Tick curr_tick = Sys::boostedTick();
     LoggerFactory::get_logger("workload")
-        ->info("sys[{}] finished, {} cycles, exposed communication {} cycles.",
-               sys->id, curr_tick, curr_tick - hw_resource->tics_gpu_ops);
+        ->info("sys[{}] finished"
+            "\ncompute: total {} ns, active {} ns, idle {} ns"
+            "\nmemory: read {} bytes / {} nums, write {} bytes / {} nums"
+            "\nnetwork: send {} bytes / {} nums, recv {} bytes / {} nums",
+               sys->id, 
+               curr_tick, hw_resource->tics_gpu_ops, curr_tick - hw_resource->tics_gpu_ops,
+               sys->mem_read_size, sys->mem_read_nums, sys->mem_write_size, sys->mem_write_nums,
+               sys->net_send_size, sys->net_send_nums, sys->net_recv_size, sys->net_recv_nums);
+    LoggerFactory::get_perf_logger()->info("{},{},{},{},{},{},{},{},{},{},{}", 
+        sys->id, hw_resource->tics_gpu_ops, curr_tick - hw_resource->tics_gpu_ops,
+        sys->mem_read_size, sys->mem_read_nums, sys->mem_write_size, sys->mem_write_nums,
+        sys->net_send_size, sys->net_send_nums, sys->net_recv_size, sys->net_recv_nums);
     stats->post_processing();
     stats->report();
     if (this->sys->track_local_mem) {
