@@ -15,7 +15,7 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/workload/HardwareResource.hh"
 #include "astra-sim/workload/Statistics.hh"
 #include "astra-sim/workload/LocalMemUsageTracker.hh"
-#include "extern/graph_frontend/chakra/src/feeder_v3/et_feeder.h"
+#include "astra-sim/workload/feeder_v3/et_feeder.h"
 
 namespace AstraSim {
 

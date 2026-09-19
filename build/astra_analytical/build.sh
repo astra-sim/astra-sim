@@ -8,15 +8,16 @@ CHAKRA_ET_DIR="${SCRIPT_DIR:?}"/../../extern/graph_frontend/chakra/schema/protob
 
 # set functions
 function compile_chakra_et() {
-  # compile et_def.proto if one doesn't exist
-  if [[ ! -f "${CHAKRA_ET_DIR:?}"/et_def.pb.h || ! -f "${CHAKRA_ET_DIR:?}"/et_def.pb.cc ]]; then
-    protoc et_def.proto \
+  # compile Chakra protobuf schemas if generated files don't exist
+  if [[ ! -f "${CHAKRA_ET_DIR:?}"/et_def.pb.h || ! -f "${CHAKRA_ET_DIR:?}"/et_def.pb.cc || \
+    ! -f "${CHAKRA_ET_DIR:?}"/storage.pb.h || ! -f "${CHAKRA_ET_DIR:?}"/storage.pb.cc ]]; then
+    protoc et_def.proto storage.proto \
       --proto_path="${CHAKRA_ET_DIR:?}" \
       --cpp_out="${CHAKRA_ET_DIR:?}"
   fi
 
-  if [[ ! -f "${CHAKRA_ET_DIR:?}"/et_def_pb2.py ]]; then
-    protoc et_def.proto \
+  if [[ ! -f "${CHAKRA_ET_DIR:?}"/et_def_pb2.py || ! -f "${CHAKRA_ET_DIR:?}"/storage_pb2.py ]]; then
+    protoc et_def.proto storage.proto \
       --proto_path="${CHAKRA_ET_DIR:?}" \
       --python_out="${CHAKRA_ET_DIR:?}"
   fi
@@ -54,6 +55,9 @@ function cleanup() {
   rm -f "${CHAKRA_ET_DIR}/et_def.pb.cc"
   rm -f "${CHAKRA_ET_DIR}/et_def.pb.h"
   rm -f "${CHAKRA_ET_DIR}/et_def_pb2.py"
+  rm -f "${CHAKRA_ET_DIR}/storage.pb.cc"
+  rm -f "${CHAKRA_ET_DIR}/storage.pb.h"
+  rm -f "${CHAKRA_ET_DIR}/storage_pb2.py"
 }
 
 function create_symlink_astrasim() {

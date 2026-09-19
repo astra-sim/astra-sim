@@ -10,7 +10,7 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/RecvPacketEventHandlerData.hh"
 #include "astra-sim/system/SendPacketEventHandlerData.hh"
 #include "astra-sim/system/astraccl/custom_collectives/CustomAlgorithm.hh"
-#include "extern/graph_frontend/chakra/src/feeder_v3/et_feeder.h"
+#include "astra-sim/workload/feeder_v3/et_feeder.h"
 
 using namespace std;
 using namespace AstraSim;

@@ -12,7 +12,7 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/system/MemBus.hh"
 #include "astra-sim/system/MyPacket.hh"
 #include "astra-sim/system/astraccl/Algorithm.hh"
-#include "extern/graph_frontend/chakra/src/feeder_v3/et_feeder.h"
+#include "astra-sim/workload/feeder_v3/et_feeder.h"
 #include "astra-sim/system/CommunicatorGroup.hh"
 
 namespace AstraSim {

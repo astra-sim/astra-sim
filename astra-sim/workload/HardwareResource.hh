@@ -11,7 +11,7 @@ LICENSE file in the root directory of this source tree.
 #include "astra-sim/common/Logging.hh"
 #include <cstdint>
 
-#include "extern/graph_frontend/chakra/src/feeder_v3/et_feeder.h"
+#include "astra-sim/workload/feeder_v3/et_feeder.h"
 
 namespace AstraSim {
 

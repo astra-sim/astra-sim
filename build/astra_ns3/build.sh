@@ -8,13 +8,13 @@ NS3_DIR="${SCRIPT_DIR:?}"/../../extern/network_backend/ns-3
 
 # Functions
 function setup {
-    protoc et_def.proto\
+    protoc et_def.proto storage.proto\
         --proto_path ${SCRIPT_DIR}/../../extern/graph_frontend/chakra/schema/protobuf/\
         --cpp_out ${SCRIPT_DIR}/../../extern/graph_frontend/chakra/schema/protobuf/
 }
 function compile {
     cd "${NS3_DIR}"
-    ./ns3 configure --enable-mpi
+    ./ns3 configure
     ./ns3 build AstraSimNetwork -j $(nproc)
     cd "${SCRIPT_DIR:?}"
 }
@@ -28,7 +28,7 @@ function cleanup_result {
 }
 function debug {
     cd "${NS3_DIR}"
-    ./ns3 configure --enable-mpi --build-profile debug
+    ./ns3 configure --build-profile debug
     ./ns3 build AstraSimNetwork -j 12 -v
     cd "${NS3_DIR}/build/scratch"
 }
