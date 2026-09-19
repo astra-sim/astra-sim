@@ -18,8 +18,8 @@ int main(int argc, char* argv[]) {
     // Parse command line arguments
     auto cmd_line_parser = CmdLineParser(argv[0]);
     cmd_line_parser.get_options().add_options()(
-        "htsim-proto", "HTSim Network Protocol [tcp]",
-        cxxopts::value<HTSimProto>()->default_value("tcp"));
+        "htsim-proto", "HTSim Network Protocol [tcp|uet]",
+        cxxopts::value<HTSimProto>()->default_value("uet"));
     cmd_line_parser.parse(argc, argv);
 
     // Get command line arguments
@@ -49,7 +49,6 @@ int main(int argc, char* argv[]) {
     const auto dims_count = topology->get_dims_count();
 
     // Set up Network API
-    HTSimNetworkApi::set_topology(topology);
     auto completion_tracker = std::make_shared<CompletionTracker>(npus_count);
     HTSimNetworkApi::set_completion_tracker(completion_tracker);
 
@@ -90,13 +89,19 @@ int main(int argc, char* argv[]) {
     // Report HTSim opts
     for (int i = 0; i < htsim_argc; i++) {
         std::cout << htsim_argv[i] << " ";
+
+        // Sniff out if htsim has -conn_reuse option
+        if (!strcmp(htsim_argv[i], "-conn_reuse")) {
+            HTSimNetworkApi::htsim_info.conn_reuse = true;
+        }
     }
     std::cout << std::endl;
 
     // Initialize HTSim session
     HTSimNetworkApi::htsim_info.nodes = npus_count;
+    HTSimNetworkApi::htsim_info.proto = proto;
     // Choose protocol
-    auto& ht = HTSimSession::init(&HTSimNetworkApi::htsim_info, htsim_argc, htsim_argv, proto);
+    auto& ht = HTSimSession::init(&HTSimNetworkApi::htsim_info, htsim_argc, htsim_argv);
 
     // Initiate simulation
     for (int i = 0; i < npus_count; i++) {
@@ -108,12 +113,17 @@ int main(int argc, char* argv[]) {
 
     // check if terminated properly
     if (!completion_tracker.get()->all_finished()) {
-        std::cout << "Warning: Simulation timed out." << std::endl;
+        std::cout << "Warning: Simulation timed out at " << ht.get_time_ns() << std::endl;
     }
 
     // terminate simulation
     AstraSim::LoggerFactory::shutdown();
 
     ht.finish();
+
+    for (auto& system : systems) {
+        delete system;
+    }
+
     return 0;
 }
