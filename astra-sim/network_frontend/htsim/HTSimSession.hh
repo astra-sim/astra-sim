@@ -14,7 +14,8 @@ namespace HTSim {
 
 enum class HTSimProto {
     None,
-    Tcp
+    Tcp,
+    Uet
 };
 
 std::stringstream& operator>> (std::stringstream& is, HTSimProto& proto);
@@ -25,13 +26,16 @@ typedef uint64_t simtime_picosec;
 
 enum class Dir { Send, Receive };
 
+// FlowMsgId is a pair of flow_id and msg_id.
+typedef std::pair<unsigned, unsigned> FlowMsgId;
+
 // Temporary struct to pass trace info
 class FlowInfo {
     public:
     FlowInfo(int _src, int _dst, uint64_t _size, int _tag)
      : src(_src), dst(_dst), size(_size), tag(_tag) {}
     int src, dst;
-    int size;
+    uint64_t size;
     // Tag for all flows belonging to a collective
     int tag;
 };
@@ -40,6 +44,7 @@ struct HTSimConf {
     // When this option is true, a flow will be marked as finished for the receiver
     // as soon as the last packet is received instead of waiting for sender to get ack.
     bool recv_flow_finish;
+    bool conn_reuse;
 };
 
 class MsgEvent {
@@ -51,13 +56,13 @@ public:
     // Initialized with the original size of the message, and
     // incremented/decremented depending on how many bytes were sent/received.
     // Eventually, this value will reach 0 when the event has completed.
-    int remaining_msg_bytes;
+    uint64_t remaining_msg_bytes;
     void* fun_arg;
     void (*msg_handler)(void* fun_arg);
     MsgEvent(int _src_id,
              int _dst_id,
              Dir _type,
-             int _remaining_msg_bytes,
+             uint64_t _remaining_msg_bytes,
              void* _fun_arg,
              void (*_msg_handler)(void* fun_arg))
         : src_id(_src_id),
@@ -95,6 +100,8 @@ struct tm_info {
     // We don't need connections/triggers information,
     // they're generated on the fly.
     // Can add link failures or astra-sim specific config here.
+    HTSimProto proto = HTSimProto::None;
+    bool conn_reuse = false;
 };
 
 typedef void (*EventHandler)(void*);
@@ -102,17 +109,25 @@ typedef void (*EventHandler)(void*);
 class HTSimSession {
     public:
         static HTSimSession& instance();
-        static HTSimSession& init(const HTSim::tm_info* const tm, int argc, char** argv, HTSimProto proto = HTSimProto::None);
+        static HTSimSession& init(const HTSim::tm_info* const tm, int argc, char** argv);
         void run(const HTSim::tm_info* const tm);
         void finish();
         void stop_simulation();
         void send_flow(HTSim::FlowInfo flow,
-                       int flow_id,
+                       HTSim::FlowMsgId id,
                        EventHandler msg_handler,
                        void* fun_arg);
         double get_time_ns();
         double get_time_us();
+
         void schedule_astra_event(long double delta, EventHandler msg_handler, void* fun_arg);
+
+        // Keep track of the flow id and message id for each flow.
+        // When connection reuse is disabled, the flow id is incremented for each new flow
+        //  and message_id is unused.
+        // When connection reuse is enabled, the flow id is designated per source-destination pair
+        //  and per tag. Message id is incremented within each flow.
+        FlowMsgId get_flow_id(FlowInfo flow);
 
         // Used to count how many bytes were sent/received by this node.
         // Refer to sim_finish().
@@ -120,7 +135,7 @@ class HTSimSession {
         //   value is for send or receive
         //   - value: Number of bytes this node has sent (if send/receive is 0) and
         //   received (if send/receive is 1)
-        static std::map<std::pair<int, HTSim::Dir>, int> node_bytes_sent;
+        static std::map<std::pair<int, HTSim::Dir>, uint64_t> node_bytes_sent;
 
         // SentHash stores a MsgEvent for sim_send events and its callback handler.
         //   - key: A pair of <MsgEventKey, port_id>.
@@ -130,7 +145,7 @@ class HTSimSession {
         //          this map, similar to recv_waiting and msg_standby.
         //   - value: A MsgEvent instance that indicates that Sys layer is waiting for a
         //   send event to finish
-        static std::map<std::pair<HTSim::MsgEventKey, int>, HTSim::MsgEvent> send_waiting;
+        static std::map<std::pair<HTSim::MsgEventKey, FlowMsgId>, HTSim::MsgEvent> send_waiting;
 
         //   - recv_waiting holds messages where sim_recv has been called but HTSim has
         //   not yet simulated the message arriving,
@@ -145,29 +160,30 @@ class HTSimSession {
         //   - key: A MsgEventKey instance.
         //   - value: The number of bytes that HTSim has simulated completed, but the
         //   System layer has not yet called sim_recv
-        static std::map<HTSim::MsgEventKey, int> msg_standby;
+        static std::map<HTSim::MsgEventKey, uint64_t> msg_standby;
 
-        static std::map<int, int> flow_id_to_tag;
+        static std::map<FlowMsgId, int> id_to_tag;
 
         static void notify_receiver_receive_data(int src_id,
                                                  int dst_id,
-                                                 int message_size,
-                                                 int tag,
-                                                 int flow_id);
+                                                 uint64_t message_size,
+                                                 int tag);
         static void notify_sender_sending_finished(int src_id,
                                                    int dst_id,
-                                                   int message_size,
+                                                   uint64_t message_size,
                                                    int tag,
-                                                   int flow_id);
-        static void flow_finish_send(int src_id, int dst_id, int msg_size, int tag);
-        static void flow_finish_recv(int src_id, int dst_id, int msg_size, int tag);
-        static HTSimConf conf;
+                                                   FlowMsgId id);
+        static void flow_finish_send(int src_id, int dst_id, uint64_t msg_size, unsigned flow_id, unsigned msg_id);
+        static void flow_finish_recv(int src_id, int dst_id, uint64_t msg_size, unsigned flow_id, unsigned msg_id);
+        static HTSim::HTSimConf conf;
+        static HTSim::tm_info* tm_info;
+        static unsigned flow_id_tracker;
         HTSimSession(const HTSimSession&) = delete;    // disable Copy Constructor
         void operator=(const HTSimSession&) = delete;  // disable Assign Constructor
         class HTSimSessionImpl;
     private:
         // Singleton pattern
-        HTSimSession(const tm_info* const tm, int argc, char** argv, HTSimProto proto);
+        HTSimSession(const HTSim::tm_info* const tm, int argc, char** argv);
         ~HTSimSession();
         static HTSimSession* session;
         // PImpl pattern
