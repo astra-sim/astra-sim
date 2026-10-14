@@ -99,12 +99,15 @@ void Statistics::extract_comp_comm_overlap() {
         case OperatorStatistics::OperatorType::COMM:
             has_comm = true;
             break;
-        default:
-            // Other types (REMOTE_MEM, CPU, REPLAY, ...) are not part of
-            // compute-communication overlap. Do not throw: report() would
-            // abort before sim_notify_finished(), and backends that wait for
-            // every rank to finish (ns-3) would never stop.
+        case OperatorStatistics::OperatorType::REMOTE_MEM:
+            // Remote memory time is not part of compute-communication
+            // overlap. Do not throw: report() would abort before
+            // sim_notify_finished(), and backends that wait for every rank
+            // to finish (ns-3) would never stop.
             break;
+        default:
+            throw std::runtime_error(
+                "Only GPU and COMM types are supported for overlap extraction");
         }
     }
     if (!has_comp || !has_comm) {
