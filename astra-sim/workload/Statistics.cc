@@ -99,6 +99,12 @@ void Statistics::extract_comp_comm_overlap() {
         case OperatorStatistics::OperatorType::COMM:
             has_comm = true;
             break;
+        case OperatorStatistics::OperatorType::REMOTE_MEM:
+            // Remote memory time is not part of compute-communication
+            // overlap. Do not throw: report() would abort before
+            // sim_notify_finished(), and backends that wait for every rank
+            // to finish (ns-3) would never stop.
+            break;
         default:
             throw std::runtime_error(
                 "Only GPU and COMM types are supported for overlap extraction");
@@ -108,11 +114,11 @@ void Statistics::extract_comp_comm_overlap() {
         this->comp_comm_overlap = 0;
         return;
     }
-    Tick overlap = 0;
-    overlap = this->type_time.at(OperatorStatistics::OperatorType::GPU) +
-              this->type_time.at(OperatorStatistics::OperatorType::COMM) -
-              this->wall_time;
-    this->comp_comm_overlap = overlap;
+    // wall_time also covers other types, so GPU + COMM can be smaller than
+    // it; clamp instead of letting the unsigned subtraction wrap around.
+    const Tick busy = this->type_time.at(OperatorStatistics::OperatorType::GPU) +
+                      this->type_time.at(OperatorStatistics::OperatorType::COMM);
+    this->comp_comm_overlap = busy > this->wall_time ? busy - this->wall_time : 0;
 }
 
 Tick Statistics::_calculateTotalRuntimeFromIntervals(
