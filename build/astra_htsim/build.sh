@@ -37,20 +37,6 @@ function setup() {
   fi
 }
 
-function patch_htsim() {
-  patch -p1 -d "${SCRIPT_DIR:?}"/../../extern/network_backend/csg-htsim \
-    --forward --reject-file=- -i "${SCRIPT_DIR:?}"/htsim_astrasim.patch && true
-  ret=$?
-  if [[ $ret -eq 0 ]]; then
-    echo "HTSim patch applied successfully"
-  elif [[ $ret -eq 1 ]]; then
-    echo "HTSim patch skipped"
-  else
-    echo "HTSim patch failed"
-    exit 1
-  fi
-}
-
 function compile_astrasim_htsim() {
   # compile AstraSim
   cd "${BUILD_DIR:?}" || exit
@@ -98,7 +84,6 @@ else
   # setup ASTRA-sim build
   setup
   compile_chakra_et
-  patch_htsim
 
   # compile ASTRA-sim
   if [[ ${build_as_debug:?} == true ]]; then
