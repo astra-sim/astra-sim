@@ -1,30 +1,29 @@
-/******************************************************************************
-This source code is licensed under the MIT license found in the
-LICENSE file in the root directory of this source tree.
-*******************************************************************************/
+// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2026 Advanced Micro Devices, Inc.
 
-#include "congestion_unaware/CongestionUnawareNetworkApi.hh"
 #include <cassert>
+#include <congestion_unaware/CongestionUnawareNetworkApi.hh>
+
+// for prints
+#include <iomanip>
+#include <iostream>
 
 using namespace AstraSim;
 using namespace AstraSimAnalyticalCongestionUnaware;
 using namespace NetworkAnalytical;
-using namespace NetworkAnalyticalCongestionUnaware;
-
-std::shared_ptr<Topology> CongestionUnawareNetworkApi::topology;
+// using namespace NetworkAnalyticalCongestionUnaware;
 
 void CongestionUnawareNetworkApi::set_topology(
     std::shared_ptr<Topology> topology_ptr) noexcept {
     assert(topology_ptr != nullptr);
 
     // move topology
-    CongestionUnawareNetworkApi::topology = std::move(topology_ptr);
+    CommonNetworkApi::topology = std::move(topology_ptr);
 
     // set topology-related values
-    CongestionUnawareNetworkApi::dims_count =
-        CongestionUnawareNetworkApi::topology->get_dims_count();
-    CongestionUnawareNetworkApi::bandwidth_per_dim =
-        CongestionUnawareNetworkApi::topology->get_bandwidth_per_dim();
+    CommonNetworkApi::dims_count = CommonNetworkApi::topology->get_dims_count();
+    CommonNetworkApi::bandwidth_per_dim =
+        CommonNetworkApi::topology->get_bandwidth_per_dim();
 }
 
 CongestionUnawareNetworkApi::CongestionUnawareNetworkApi(
@@ -33,49 +32,108 @@ CongestionUnawareNetworkApi::CongestionUnawareNetworkApi(
     assert(rank >= 0);
 }
 
-int CongestionUnawareNetworkApi::sim_send(void* const buffer,
-                                          const uint64_t count,
-                                          const int type,
-                                          const int dst,
-                                          const int tag,
-                                          sim_request* const request,
-                                          void (*msg_handler)(void*),
-                                          void* const fun_arg) {
-    // query chunk id
-    const auto src = sim_comm_get_rank();
-    const auto chunk_id =
-        CongestionUnawareNetworkApi::chunk_id_generator.create_send_chunk_id(
-            tag, src, dst, count);
+Topology* CongestionUnawareNetworkApi::get_unaware_topology() noexcept {
+    auto unaware_topology =
+        dynamic_cast<Topology*>(CommonNetworkApi::topology.get());
+    assert(unaware_topology);
+    return unaware_topology;
+}
 
-    // search tracker
-    const auto entry =
-        callback_tracker.search_entry(tag, src, dst, count, chunk_id);
-    if (entry.has_value()) {
-        // recv operation already issued.
-        // add send event handler to the tracker
-        entry.value()->register_send_callback(msg_handler, fun_arg);
+ResourceID CongestionUnawareNetworkApi::try_to_create_and_schedule_chunk(
+    const RequestID net_req_id,
+    const uint64_t count,
+    const int net_src,
+    const int net_dst) {
+
+    DPRINTF("[try_to_create_and_schedule_chunk] Trying send request ID %u of "
+            "size %u\n",
+            net_req_id, count);
+
+    ResourceID constraining_resource = -1;
+
+    auto unaware_topology = get_unaware_topology();
+
+    // if uncredited then always proceed
+    // AND/OR short circuit on self sends (net_src==net_dst)
+    if (!unaware_topology->is_ticketed_topology() || net_src == net_dst) {
+        auto _delta =
+            create_and_schedule_chunk(net_req_id, count, net_src, net_dst);
+        // return success (-1)
+    }
+    // ticket management handled by topology
+    else if (unaware_topology->is_send_allowed(net_src, net_dst)) {
+        // for unaware, this should be list of length 1 right?
+        std::vector<ResourceID> resources_used =
+            unaware_topology->claimTickets(net_src, net_dst);
+
+        // net_src, net_dst to send to process_chunk_arrival to determine how to
+        // handle
+        auto _delta =
+            create_and_schedule_chunk(net_req_id, count, net_src, net_dst);
+
+        // track resource usage
+        resource_tracker[net_req_id] = resources_used;
+
+        DPRINTF(
+            "[try_to_create_and_schedule_chunk] Scheduled over resources%s\n",
+            "");
+        for (auto _r : resources_used) {
+            DPRINTF("[try_to_create_and_schedule_chunk] %d,", _r);
+        }
+        DPRINTF("%s\n", "");
+
+        // return successfully transmitted AND tracked resource usage. return
+        // success (-1)
     } else {
-        // recv operation not issued yet
-        // create new entry and insert send callback
-        auto* const new_entry =
-            callback_tracker.create_new_entry(tag, src, dst, count, chunk_id);
-        new_entry->register_send_callback(msg_handler, fun_arg);
+        // IMPORTANT: this needs to be done outside this function
+        // as caller will know whether sys or FE will schedule retry
+        // let topology decide most critical resource
+        constraining_resource =
+            unaware_topology->query_constraining_resource(net_src, net_dst);
+        assert(constraining_resource >=
+               -1);  // -1 is success and >= 0 is valid. Otherwise topology
+                     // returned bad resource
     }
 
-    // create chunk
-    auto chunk_arrival_arg = std::tuple(tag, src, dst, count, chunk_id);
-    auto arg = std::make_unique<decltype(chunk_arrival_arg)>(chunk_arrival_arg);
-    const auto arg_ptr = static_cast<void*>(arg.release());
+    return constraining_resource;
+}
+
+timespec_t CongestionUnawareNetworkApi::create_and_schedule_chunk(
+    const RequestID net_req_id,
+    const uint64_t count,
+    const int net_src,
+    const int net_dst) {
+
+    auto unaware_topology = get_unaware_topology();
+
+    // create chunk arrival arg
+    // create new (uint64_t) RequestID and cast as void ptr. Must delete in
+    // process_chunk_arrival
+    void* arg_ptr = new RequestID(net_req_id);
+
+    if (net_src == net_dst) {
+        // short circuit on self sends (net_src==net_dst) and schedule immediate
+        DPRINTF("[create_and_schedule_chunk] Short circuit self send for "
+                "request ID %u of size %u\n",
+                net_req_id, count);
+        // chunk arrival
+        const auto immediate_delta = timespec_t({PS, 0});
+        sim_schedule(immediate_delta, CommonNetworkApi::process_chunk_arrival,
+                     arg_ptr);
+        return immediate_delta;
+    }
 
     // compute send communication delay (in AstraSim format)
-    const auto send_delay_ns = topology->send(src, dst, count);
-    const auto send_delay = static_cast<double>(send_delay_ns);
-    const auto delta = timespec_t({NS, send_delay});
+    const auto delay_ps = unaware_topology->send(net_src, net_dst, count);
+    const auto delay = static_cast<Tick>(delay_ps);
+    const auto delta = timespec_t({PS, delay});
+
+    DPRINTF("[create_and_schedule_chunk] Scheduled/sent request ID %u of size "
+            "%u w/ delay %u\n",
+            net_req_id, count, delay);
 
     // register chunk arrival event after send communication delay
-    sim_schedule(delta, CongestionUnawareNetworkApi::process_chunk_arrival,
-                 arg_ptr);
+    sim_schedule(delta, CommonNetworkApi::process_chunk_arrival, arg_ptr);
 
-    // return
-    return 0;
+    return delta;
 }

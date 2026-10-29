@@ -1,7 +1,5 @@
-/******************************************************************************
-This source code is licensed under the MIT license found in the
-LICENSE file in the root directory of this source tree.
-*******************************************************************************/
+// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2026 Advanced Micro Devices, Inc.
 
 #pragma once
 
@@ -52,9 +50,10 @@ class CmdLineParser {
     }
 
     /**
-     * Get internal opts object for adding backend-specfic options.
+     * Get the internal cxxopts options object, for adding
+     * backend-specific options.
      */
-     cxxopts::Options& get_options();
+    cxxopts::Options& get_options();
 
   private:
     /// cxxopts options

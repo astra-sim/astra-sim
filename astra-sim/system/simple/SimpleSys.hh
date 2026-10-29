@@ -1,0 +1,184 @@
+// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2026 Advanced Micro Devices, Inc.
+
+#pragma once
+
+#include <astra-sim/system/common/Sys.hh>
+#include <astra-sim/system/simple/CollectivePhase.hh>
+#include <astra-sim/system/simple/UsageTracker.hh>
+#include <astra-sim/system/simple/astraccl/native_collectives/logical_topology/RingTopology.hh>
+
+namespace AstraSim {
+
+class BaseStream;
+class StreamBaseline;
+class MemBus;
+class QueueLevels;
+class LogicalTopology;
+class BasicLogicalTopology;
+class OfflineGreedy;
+
+/**
+ * The Simple (analytical) native-collective system model: schedules
+ * BaseStreams over a set of virtual-network queues and generates
+ * collectives directly, without an external MSCCL plan.
+ */
+class SimpleSys : public Sys {
+  public:
+    // SchedulerUnit
+    // ------------------------------------------------------------
+    class SchedulerUnit {
+      public:
+        SchedulerUnit(SimpleSys* sys,
+                      std::vector<int> queues,
+                      int max_running_streams,
+                      int ready_list_threshold,
+                      int queue_threshold);
+        void notify_stream_added(int vnet);
+        void notify_stream_added_into_ready_list();
+        void notify_stream_removed(int vnet, Tick running_time);
+
+        SimpleSys* sys;
+        int max_running_streams;
+        int ready_list_threshold;
+        int queue_threshold;
+        std::map<int, int> running_streams;
+        std::map<int, std::list<BaseStream*>::iterator> stream_pointer;
+        std::vector<Tick> latency_per_dimension;
+        std::vector<double> total_chunks_per_dimension;
+        std::vector<uint64_t> total_active_chunks_per_dimension;
+        std::map<int, int> queue_id_to_dimension;
+        std::vector<UsageTracker> usage;
+    };
+    //---------------------------------------------------------------------------
+
+    SimpleSys(int id,
+              std::string workload_configuration,
+              std::string comm_group_configuration,
+              std::string system_configuration,
+              AstraRemoteMemoryAPI* remote_mem,
+              AstraNetworkAPI* comm_NI,
+              std::vector<int> physical_dims,
+              std::vector<int> queues_per_dim,
+              double injection_scale,
+              double comm_scale,
+              bool rendezvous_enabled,
+              uint64_t comm_size = 0,
+              std::string custom_comm_plan_map_filename = "");
+    ~SimpleSys() override;
+    //---------------------------------------------------------------------------
+
+    // Communicator Group Support
+    // -----------------------------------------------
+    LogicalTopology* get_logical_topology(ComType comm_type);
+    std::vector<CollectiveImpl*> get_collective_implementation(
+        ComType comm_type);
+    //---------------------------------------------------------------------------
+
+    // Called externally from the native collective algorithms
+    // (astraccl/native_collectives) once a stream's current phase completes.
+    void proceed_to_next_vnet_baseline(StreamBaseline* stream);
+    //---------------------------------------------------------------------------
+
+    // memory bus
+    MemBus* memBus;
+    float inp_L;
+    float inp_o;
+    float inp_g;
+    float inp_G;
+    bool model_shared_bus;
+    double injection_scale;
+    int communication_delay;
+    int local_reduction_delay;
+
+    // scheduler
+    SchedulerUnit* scheduler_unit;
+    QueueLevels* vLevels;
+    OfflineGreedy* offline_greedy;
+    IntraDimensionScheduling intra_dimension_scheduling;
+    InterDimensionScheduling inter_dimension_scheduling;
+    int round_robin_inter_dimension_scheduler;
+    int active_chunks_per_dimension;
+    int priority_counter;
+    int preferred_dataset_splits;
+    int concurrent_streams;
+    int active_first_phase;
+    int max_running;
+
+    // for supporting LIFO
+    std::list<BaseStream*> ready_list;
+    SchedulingPolicy scheduling_policy;
+    int first_phase_streams;
+    int total_running_streams;
+    std::map<int, std::list<BaseStream*>> active_Streams;
+
+    int dim_to_break;
+    std::vector<int> logical_broken_dims;
+    std::vector<int> physical_dims;
+    int total_nodes;
+
+    // collective communication
+    int num_streams;
+    std::map<std::string, LogicalTopology*> logical_topologies;
+    std::vector<CollectiveImpl*> all_reduce_implementation_per_dimension;
+    std::vector<CollectiveImpl*> reduce_scatter_implementation_per_dimension;
+    std::vector<CollectiveImpl*> all_gather_implementation_per_dimension;
+    std::vector<CollectiveImpl*> all_to_all_implementation_per_dimension;
+    CollectiveOptimization collectiveOptimization;
+    Tick last_scheduled_collective;
+
+  protected:
+    DataSet* issueCollective(WrapperNode& node,
+                             const std::vector<bool>& involved_dim,
+                             CommunicatorGroup* comm_group) override;
+    bool claimEvent(EventType event, BasicEventHandlerData* ehd) override;
+
+  private:
+    // Opens system_configuration a second time and parses this class's own
+    // key slice; see Sys::initializeSys for why this cannot be a virtual
+    // call from the base constructor.
+    void parseSimpleConfig(const std::string& filename);
+
+    CollectiveImpl* generate_collective_impl_from_input(
+        std::string collective_impl_str);
+
+    DataSet* generate_all_reduce(uint64_t size,
+                                 std::vector<bool> involved_dimensions,
+                                 CommunicatorGroup* communicator_group,
+                                 int explicit_priority);
+    DataSet* generate_all_to_all(uint64_t size,
+                                 std::vector<bool> involved_dimensions,
+                                 CommunicatorGroup* communicator_group,
+                                 int explicit_priority);
+    DataSet* generate_all_gather(uint64_t size,
+                                 std::vector<bool> involved_dimensions,
+                                 CommunicatorGroup* communicator_group,
+                                 int explicit_priority);
+    DataSet* generate_reduce_scatter(uint64_t size,
+                                     std::vector<bool> involved_dimensions,
+                                     CommunicatorGroup* communicator_group,
+                                     int explicit_priority);
+    DataSet* generate_collective(
+        uint64_t size,
+        LogicalTopology* topology,
+        std::vector<CollectiveImpl*> implementation_per_dimension,
+        std::vector<bool> dimensions_involved,
+        ComType collective_type,
+        int explicit_priority,
+        CommunicatorGroup* communicator_group);
+    CollectivePhase generate_collective_phase(ComType collective_type,
+                                              BasicLogicalTopology* topology,
+                                              uint64_t data_size,
+                                              int queue_id,
+                                              RingTopology::Direction direction,
+                                              InjectionPolicy injection_policy,
+                                              CollectiveImpl* collective_impl);
+
+    uint64_t determine_chunk_size(uint64_t& size, ComType type);
+    int get_priority(int explicit_priority);
+    void insert_into_ready_list(BaseStream* stream);
+    void insert_stream(std::list<BaseStream*>* queue, BaseStream* baseStream);
+    void schedule(int num);
+};
+
+}  // namespace AstraSim

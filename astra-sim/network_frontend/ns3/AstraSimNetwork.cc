@@ -1,23 +1,27 @@
-#include "astra-sim/common/AstraNetworkAPI.hh"
-#include "astra-sim/system/Sys.hh"
-#include "extern/remote_memory_backend/analytical/AnalyticalRemoteMemory.hh"
+#include <astra-memory-analytical/AnalyticalRemoteMemory.hh>
+#include <astra-sim/common/AstraNetworkAPI.hh>
+#include <astra-sim/system/common/Sys.hh>
+#include <astra-sim/system/simple/SimpleSys.hh>
 #include <json/json.hpp>
 
 // monkey patch, the spdlog include <syslog.h> and define these macros, and
 // break the ns3 log enum keys
 #define NS3_LOG_COMPAT_UNDEF_SYSLOG
-#include "astra-sim/network_frontend/ns3/ns3_log_monkey_patch.h"
+#include <astra-sim/network_frontend/ns3/ns3_log_monkey_patch.h>
 
-#include "entry.h"
+// clang-format off
+#include <astra-sim/network_frontend/ns3/entry.h>
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
 #include "ns3/csma-module.h"
 #include "ns3/internet-module.h"
 #include "ns3/network-module.h"
+// clang-format on
 
 #undef NS3_LOG_COMPAT_UNDEF_SYSLOG
-#include "astra-sim/network_frontend/ns3/ns3_log_monkey_patch.h"
+#include <astra-sim/network_frontend/ns3/ns3_log_monkey_patch.h>
 
+#include <cassert>
 #include <execinfo.h>
 #include <fstream>
 #include <iostream>
@@ -119,14 +123,28 @@ class ASTRASimNetwork : public AstraSim::AstraNetworkAPI {
         return;
     }
 
-    virtual int sim_send(void* buffer,
-                         uint64_t message_size,
-                         int type,
-                         int dst_id,
-                         int tag,
-                         AstraSim::sim_request* request,
-                         void (*msg_handler)(void* fun_arg),
-                         void* fun_arg) {
+    virtual int sim_cmd(CommandType cmd_type,
+                        const AstraSim::sim_request& request,
+                        void (*msg_handler)(void* fun_arg),
+                        void* fun_arg) {
+        if (cmd_type == CommandType::Send) {
+            return sim_send_impl(request.reqSizeNBytes, request.dstRank,
+                                 request.tag, msg_handler, fun_arg);
+        } else if (cmd_type == CommandType::Recv) {
+            return sim_recv_impl(request.reqSizeNBytes, request.srcRank,
+                                 request.tag, msg_handler, fun_arg);
+        }
+        // ns-3 only ever modeled plain send/recv.
+        assert(false);
+        return -1;
+    }
+
+  private:
+    int sim_send_impl(uint64_t message_size,
+                      int dst_id,
+                      int tag,
+                      void (*msg_handler)(void* fun_arg),
+                      void* fun_arg) {
         int src_id = rank;
 
         // Trigger ns3 to schedule RDMA QP event.
@@ -134,14 +152,11 @@ class ASTRASimNetwork : public AstraSim::AstraNetworkAPI {
         return 0;
     }
 
-    virtual int sim_recv(void* buffer,
-                         uint64_t message_size,
-                         int type,
-                         int src_id,
-                         int tag,
-                         AstraSim::sim_request* request,
-                         void (*msg_handler)(void* fun_arg),
-                         void* fun_arg) {
+    int sim_recv_impl(uint64_t message_size,
+                      int src_id,
+                      int tag,
+                      void (*msg_handler)(void* fun_arg),
+                      void* fun_arg) {
         int dst_id = rank;
         MsgEvent recv_event =
             MsgEvent(src_id, dst_id, 1, message_size, fun_arg, msg_handler);
@@ -179,7 +194,6 @@ class ASTRASimNetwork : public AstraSim::AstraNetworkAPI {
         return 0;
     }
 
-  private:
     NS3BackendCompletionTracker* completion_tracker_;
 };
 
@@ -281,7 +295,7 @@ int main(int argc, char* argv[]) {
 
     for (int npu_id = 0; npu_id < num_npus; npu_id++) {
         networks[npu_id] = new ASTRASimNetwork(npu_id, completion_tracker);
-        systems[npu_id] = new AstraSim::Sys(
+        systems[npu_id] = new AstraSim::SimpleSys(
             npu_id, workload_configuration, comm_group_configuration,
             system_configuration, mem, networks[npu_id], logical_dims,
             queues_per_dim, injection_scale, comm_scale, rendezvous_protocol);

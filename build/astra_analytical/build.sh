@@ -1,26 +1,13 @@
 #!/bin/bash
+# SPDX-License-Identifier: MIT
+# SPDX-FileCopyrightText: 2026 Advanced Micro Devices, Inc.
+
 set -e
 
 # set paths
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
-BUILD_DIR="${SCRIPT_DIR:?}"/build
-CHAKRA_ET_DIR="${SCRIPT_DIR:?}"/../../extern/graph_frontend/chakra/schema/protobuf
-
-# set functions
-function compile_chakra_et() {
-  # compile et_def.proto if one doesn't exist
-  if [[ ! -f "${CHAKRA_ET_DIR:?}"/et_def.pb.h || ! -f "${CHAKRA_ET_DIR:?}"/et_def.pb.cc ]]; then
-    protoc et_def.proto \
-      --proto_path="${CHAKRA_ET_DIR:?}" \
-      --cpp_out="${CHAKRA_ET_DIR:?}"
-  fi
-
-  if [[ ! -f "${CHAKRA_ET_DIR:?}"/et_def_pb2.py ]]; then
-    protoc et_def.proto \
-      --proto_path="${CHAKRA_ET_DIR:?}" \
-      --python_out="${CHAKRA_ET_DIR:?}"
-  fi
-}
+BUILD_DIR="${SCRIPT_DIR:?}"/build/
+# PROTOBUF_PREFIX_PATH (protobuf package root) is expected in the environment.
 
 function setup() {
   # make build directory if one doesn't exist
@@ -38,22 +25,19 @@ function setup() {
 function compile_astrasim_analytical() {
   # compile AstraSim
   cd "${BUILD_DIR:?}" || exit
-  cmake .. -DBUILDTARGET="$1"
+  cmake .. -DCMAKE_PREFIX_PATH="${PROTOBUF_PREFIX_PATH}" -DBUILDTARGET="$1"
   cmake --build . -j "${NUM_THREADS:?}"
 }
 
 function compile_astrasim_analytical_as_debug() {
   # compile AstraSim
   cd "${BUILD_DIR:?}" || exit
-  cmake .. -DBUILDTARGET="$1" -DCMAKE_BUILD_TYPE=Debug
+  cmake .. -DCMAKE_PREFIX_PATH="${PROTOBUF_PREFIX_PATH}" -DBUILDTARGET="$1" -DCMAKE_BUILD_TYPE=Debug
   cmake --build . --config=Debug -j "${NUM_THREADS:?}"
 }
 
 function cleanup() {
   rm -rf "${BUILD_DIR:?}"
-  rm -f "${CHAKRA_ET_DIR}/et_def.pb.cc"
-  rm -f "${CHAKRA_ET_DIR}/et_def.pb.h"
-  rm -f "${CHAKRA_ET_DIR}/et_def_pb2.py"
 }
 
 function create_symlink_astrasim() {
@@ -133,7 +117,6 @@ if [[ ${should_clean:?} == true ]]; then
 else
   # setup ASTRA-sim build
   setup
-  compile_chakra_et
 
   # compile ASTRA-sim
   if [[ ${build_as_debug:?} == true ]]; then

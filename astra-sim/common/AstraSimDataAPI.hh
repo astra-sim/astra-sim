@@ -1,11 +1,9 @@
-/******************************************************************************
-This source code is licensed under the MIT license found in the
-LICENSE file in the root directory of this source tree.
-*******************************************************************************/
+// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2026 Advanced Micro Devices, Inc.
 
-#ifndef __ASTRA_SIM_DATA_API_HH__
-#define __ASTRA_SIM_DATA_API_HH__
+#pragma once
 
+#include <cstdint>
 #include <list>
 #include <string>
 #include <vector>
@@ -41,5 +39,3 @@ class AstraSimDataAPI {
 };
 
 }  // namespace AstraSim
-
-#endif /* __ASTRA_SIM_DATA_API_HH__ */

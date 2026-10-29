@@ -1,0 +1,37 @@
+version = 1
+
+# Files authored or changed by AMD.
+[[annotations]]
+path = [
+    ".clang-format",
+    ".gitignore",
+    ".gitmodules",
+    "README.md",
+    "astra-sim/network_frontend/htsim/**",
+    "astra-sim/network_frontend/ns3/AstraSimNetwork.cc",
+    "astra-sim/network_frontend/ns3/entry.h",
+    "extern/graph_frontend/.gitignore",
+    "runs/run_simple/*.yml",
+    "runs/run_verify/README.md",
+    "runs/run_verify/validate_test_job_cfgs.yml",
+]
+SPDX-License-Identifier = "MIT"
+SPDX-FileCopyrightText = "2026 Advanced Micro Devices, Inc."
+
+# Upstream files that AMD has not changed.
+[[annotations]]
+path = [
+    ".github/PULL_REQUEST_TEMPLATE.md",
+    "Dockerfile",
+    "astra-sim/network_frontend/ns3/README.md",
+    "astra-sim/network_frontend/ns3/ns3_log_monkey_patch.h",
+    "build/astra_garnet/build.sh",
+    "build/astra_htsim/**",
+    "build/astra_ns3/**",
+    "docs/images/astrasim_overview_codesign.png",
+]
+SPDX-License-Identifier = "MIT"
+SPDX-FileCopyrightText = [
+    "2023 Georgia Institute of Technology",
+    "2023 Facebook Inc",
+]

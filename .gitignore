@@ -14,6 +14,7 @@ build/astra_analytical/build/
 build/astra_analytical/result/
 build/astra_garnet/build/
 build/astra_garnet/result/
+build/astra_standalone/build/
 build/astra_htsim/build/
 
 # Generated Chakra ET files
@@ -27,5 +28,16 @@ build/astra_htsim/build/
 # logs
 **/*.log
 
-# runs
-runs
+# Example results file
+examples/results/
+!examples/results/README.md
+outputs/
+
+# Runs/tests
+runs/*
+!runs/comm_size.py
+!runs/run_simple/
+!runs/run_simple/**
+runs/run_simple/outputs/
+!runs/run_verify/
+!runs/run_verify/**

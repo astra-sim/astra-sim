@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# SPDX-FileCopyrightText: 2026 Advanced Micro Devices, Inc.
+
 # CMake Requirement
 cmake_minimum_required(VERSION 3.15)
 
@@ -19,10 +22,6 @@ project(AstraSim_HTSim)
 set(BUILDTARGET "all" CACHE STRING "Compilation target ([all])")
 
 # Include src files to compile
-file(GLOB srcs_common
-        ${CMAKE_CURRENT_SOURCE_DIR}/../analytical/common/*.cc
-)
-
 file(GLOB srcs_htsim
         ${CMAKE_CURRENT_SOURCE_DIR}/*.cc
 )
@@ -39,7 +38,7 @@ file(GLOB srcs_htsim_proto
         ${CMAKE_CURRENT_SOURCE_DIR}/proto/*.cc
 )
 
-add_executable(AstraSim_HTSim ${srcs_htsim} ${srcs_common} ${srcs_htsim_extern} ${srcs_htsim_proto})
+add_executable(AstraSim_HTSim ${srcs_htsim} ${srcs_htsim_extern} ${srcs_htsim_proto})
 target_sources(AstraSim_HTSim PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/HTSimMain.cc)
 
 # Link libraries

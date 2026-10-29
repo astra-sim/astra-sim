@@ -1,0 +1,11 @@
+# Selected list of JSON plans to run - null means all plans will be run
+# e.g., allgather_allpairs
+sel_json_plans: null
+
+jobs:
+  - name: validate_test 
+    parameters:
+      memory-mode:
+        - trace
+      collective-size:
+        - 256kb 

@@ -1,38 +1,43 @@
-/******************************************************************************
-This source code is licensed under the MIT license found in the
-LICENSE file in the root directory of this source tree.
-*******************************************************************************/
+// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2026 Advanced Micro Devices, Inc.
 
-#ifndef __COMMON_HH__
-#define __COMMON_HH__
+#pragma once
 
 #include <cstdint>
-#include <string>
 
 namespace AstraSim {
 
-typedef unsigned long long Tick;
+typedef uint64_t Tick;
 
-constexpr uint64_t CLOCK_PERIOD = 1;           // 1ns
-constexpr uint64_t FREQ = 1000 * 1000 * 1000;  // 1GHz
+constexpr uint64_t CLOCK_PERIOD = 1;  // 1ps
+constexpr uint64_t FREQ = 1000 * 1000 * 1000;
 
-enum time_type_e { SE = 0, MS, US, NS, FS };
+enum time_type_e { SE = 0, MS, US, NS, PS, FS };
 
 enum req_type_e { UINT8 = 0, BFLOAT16, FP32 };
 
 struct timespec_t {
     time_type_e time_res;
-    long double time_val;
+    Tick time_val;
+    timespec_t() {}
+    timespec_t(time_type_e t, Tick v) : time_res(t), time_val(v) {}
 };
 
 struct sim_request {
-    uint32_t srcRank;
-    uint32_t dstRank;
-    uint32_t tag;
-    req_type_e reqType;
-    uint64_t reqCount;
-    uint32_t vnet;
-    uint32_t layerNum;
+    uint64_t astraReqId = 0;     // unique request ID within AstraSim
+    uint32_t reqCuId = 0;        // ID of requesting CU in a requesting GPU
+    uint64_t reqSizeNBytes = 0;  // request size in bytes
+    uint32_t node = 0;           // target node ID
+    uint64_t vaddr = 0;          // target virtual address
+    /** miscs (for backward compatibility) */
+    int32_t buf = 0;          // target buffer type
+    uint64_t bufByteOff = 0;  // target buffer byte offset
+    uint32_t srcRank = 0;
+    uint32_t dstRank = 0;
+    uint32_t tag = 0;
+    req_type_e reqType = req_type_e::UINT8;
+    uint32_t vnet = 0;
+    uint32_t layerNum = 0;
 };
 
 class MetaData {
@@ -50,6 +55,20 @@ enum class ComType {
 };
 
 enum class CollectiveOptimization { Baseline = 0, LocalBWAware };
+
+enum class CollectiveImplType {
+    Ring = 0,
+    OneRing,
+    Direct,
+    OneDirect,
+    AllToAll,
+    DoubleBinaryTreeLocalAllToAll,
+    LocalRingNodeA2AGlobalDBT,
+    HierarchicalRing,
+    DoubleBinaryTree,
+    HalvingDoubling,
+    OneHalvingDoubling,
+};
 
 enum class CollectiveBarrier { Blocking = 0, Non_Blocking };
 
@@ -75,7 +94,8 @@ enum class InjectionPolicy {
     Aggressive,
     SemiAggressive,
     ExtraAggressive,
-    Normal
+    Normal,
+    LDSTBased
 };
 
 enum class PacketRouting { Hardware = 0, Software };
@@ -98,6 +118,8 @@ enum class EventType {
     RendezvousRecv,
     PacketReceived,
     PacketSent,
+    PacketCmdAcked,
+    PacketTxAck,
     Rec_Finished,
     Send_Finished,
     Processing_Finished,
@@ -110,10 +132,53 @@ enum class EventType {
     CommProcessingFinished,
     CollectiveCommunicationFinished,
     CompFinished,
+    IssueWFReq,
+    DispatchInflightWFReq,
+    LocalReqDispatch,
     MemLoadFinished,
-    MemStoreFinished
+    MemStoreFinished,
+    CompletionReceived,
+    Workload_NodeFinished,      // Event to inform workload that a node finished
+    GPUModel_IssueNodes,        // Event to issue a node to a WG
+    GPUModel_SemaphoreTimeout,  // Event to check for semaphore timeout
+    GPUModel_ReExecOps,         // Event to execute each pending operation again
+    CU_DispatchWFReqs,          // Event to dispatch ready WGs to free WFs
+    CU_IssueWFReq,              // Event to issue a single WF req to network
+    CU_WakeupWFReq,             // Event to either unblock or complete a WF req
+    CU_UnstallWorkgroup,        // Event to unstall a workgroup
+    CE_ExecWFReq,               // Event to execute a compute engine WF req
+    UndefinedEvent              // Represents an event which shouldn't be called
+};
+
+class CloneInterface {
+  public:
+    virtual CloneInterface* clone() const = 0;
+    virtual ~CloneInterface() = default;
+};
+
+class CollectiveImpl : public CloneInterface {
+  public:
+    CollectiveImpl(CollectiveImplType type) {
+        this->type = type;
+    };
+    virtual CloneInterface* clone() const {
+        return new CollectiveImpl(*this);
+    }
+
+    CollectiveImplType type;
+};
+
+class DirectCollectiveImpl : public CollectiveImpl {
+  public:
+    CloneInterface* clone() const {
+        return new DirectCollectiveImpl(*this);
+    };
+    DirectCollectiveImpl(CollectiveImplType type, int direct_collective_window)
+        : CollectiveImpl(type) {
+        this->direct_collective_window = direct_collective_window;
+    }
+
+    int direct_collective_window;
 };
 
 }  // namespace AstraSim
-
-#endif /* __COMMON_HH__ */

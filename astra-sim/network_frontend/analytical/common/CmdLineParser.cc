@@ -1,9 +1,7 @@
-/******************************************************************************
-This source code is licensed under the MIT license found in the
-LICENSE file in the root directory of this source tree.
-*******************************************************************************/
+// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2026 Advanced Micro Devices, Inc.
 
-#include "common/CmdLineParser.hh"
+#include <common/CmdLineParser.hh>
 
 using namespace AstraSimAnalytical;
 
@@ -27,10 +25,6 @@ void CmdLineParser::define_options() noexcept {
                                        cxxopts::value<std::string>())(
         "network-configuration", "Network configuration file",
         cxxopts::value<std::string>())(
-        "logging-configuration", "Logging configuration file",
-        cxxopts::value<std::string>()->default_value("empty"))(
-        "logging-folder", "Logging folder",
-        cxxopts::value<std::string>()->default_value("log"))(
         "num-queues-per-dim", "Number of queues per each dimension",
         cxxopts::value<int>()->default_value("1"))(
         "compute-scale", "Compute scale",
@@ -40,7 +34,23 @@ void CmdLineParser::define_options() noexcept {
         "injection-scale", "Injection scale",
         cxxopts::value<double>()->default_value("1"))(
         "rendezvous-protocol", "Whether to enable rendezvous protocol",
-        cxxopts::value<bool>()->default_value("false"));
+        cxxopts::value<bool>()->default_value("false"))(
+        "comm-size",
+        "Per-GPU input buffer size in bytes for a single custom collective "
+        "(MSCCL++ plan) workload",
+        cxxopts::value<uint64_t>()->default_value("0"))(
+        "custom-comm-plan-map",
+        "YAML file mapping Chakra node IDs to custom collective (MSCCL++) "
+        "plan files",
+        cxxopts::value<std::string>()->default_value(""))(
+        "stat-file", "Simulation statistics file",
+        cxxopts::value<std::string>())(
+        "detailed-network-stats",
+        "Simulation statistics on link usage and buffer occupancy",
+        cxxopts::value<bool>()->default_value("false"))(
+        "periodic-stats-period",
+        "If using detailed stats the period for periodic stats",
+        cxxopts::value<int>()->default_value("10000"));
 }
 
 void CmdLineParser::parse(int argc, char* argv[]) noexcept {
