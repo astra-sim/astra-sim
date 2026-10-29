@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2014, 2015, 2016, 2017 Jarryd Beck
+
 /*
 
 Copyright (c) 2014, 2015, 2016, 2017 Jarryd Beck
@@ -26,6 +29,7 @@ THE SOFTWARE.
 #define CXXOPTS_HPP_INCLUDED
 
 #include <cctype>
+#include <cstdint>
 #include <cstring>
 #include <exception>
 #include <iostream>

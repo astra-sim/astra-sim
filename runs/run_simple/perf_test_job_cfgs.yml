@@ -1,0 +1,29 @@
+# Selected list of JSON plans to run - null means all plans will be run
+# e.g., allgather_allpairs
+sel_json_plans: null
+
+# Batch job descriptions
+jobs:
+  - name: perf_test
+    parameters:
+      target-simple-model:
+        - congestion_unaware
+        - congestion_aware
+      collective-size:
+#        - 16KB
+        - 8MB
+      use-mwait: true
+  # - name: topology_test
+  #   parameters:
+  #     target-simple-model:
+  #       - congestion_unaware
+  #       - congestion_aware
+  #     collective-size:
+  #       - 1MB
+  #     topology-type:
+  #       - FullyConnected
+  #       - Ring
+  #       - Switch
+  #     link-bandwidth:  # GiB/s
+  #       - 1.0
+  #       - 50.0
