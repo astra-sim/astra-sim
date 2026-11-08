@@ -63,10 +63,6 @@ void PacketBundle::call(EventType event, CallData* data) {
                                 this->delay);
         return;
     }
-    Tick current = Sys::boostedTick();
-    for (auto& packet : locked_packets) {
-        packet->ready_time = current;
-    }
     stream->call(EventType::General, data);
     delete this;
 }
