@@ -676,6 +676,11 @@ DataSet* Sys::generate_collective(
     uint64_t recommended_chunk_size = chunk_size;
     int streams = ceil(((double)size) / chunk_size);
     uint64_t remain_size;
+    // A custom collective always runs as exactly one stream (see below), so the DataSet must
+    // not wait for the streams implied by preferred-dataset-splits.
+    if (implementation_per_dimension[0]->type == CollectiveImplType::CustomCollectiveImpl) {
+        streams = 1;
+    }
     DataSet* dataset = new DataSet(streams);
     int pri = get_priority(explicit_priority);
     int count = 0;
