@@ -129,6 +129,10 @@ void CustomAlgorithm::call(EventType event, CallData* data) {
         dep_resolver.get_dependancy_free_nodes().empty()) {
         // There are no more nodes to execute, and no node is executing, so we
         // finish the collective algorithm.
+        // Release the feeder and its open ET file: workloads with many custom collectives
+        // otherwise run out of file descriptors.
+        delete this->et_feeder;
+        this->et_feeder = nullptr;
         exit();
     }
 }
