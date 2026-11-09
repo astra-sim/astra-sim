@@ -63,9 +63,7 @@ int CongestionAwareNetworkApi::sim_send(void* const buffer,
     }
 
     // create chunk
-    auto chunk_arrival_arg = std::tuple(tag, src, dst, count, chunk_id);
-    auto arg = std::make_unique<decltype(chunk_arrival_arg)>(chunk_arrival_arg);
-    const auto arg_ptr = static_cast<void*>(arg.release());
+    const auto arg_ptr = make_chunk_arrival_arg(tag, src, dst, count, chunk_id);
     const auto route = topology->route(src, dst);
     auto chunk = std::make_unique<Chunk>(
         count, route, CongestionAwareNetworkApi::process_chunk_arrival,

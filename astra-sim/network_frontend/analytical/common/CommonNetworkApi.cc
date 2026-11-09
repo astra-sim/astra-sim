@@ -5,6 +5,8 @@ LICENSE file in the root directory of this source tree.
 
 #include "common/CommonNetworkApi.hh"
 #include <cassert>
+#include <memory>
+#include <tuple>
 
 using namespace AstraSim;
 using namespace AstraSimAnalytical;
@@ -31,12 +33,22 @@ CallbackTracker& CommonNetworkApi::get_callback_tracker() noexcept {
     return callback_tracker;
 }
 
+void* CommonNetworkApi::make_chunk_arrival_arg(const int tag,
+                                               const int src,
+                                               const int dest,
+                                               const uint64_t count,
+                                               const int chunk_id) {
+    return std::make_unique<ChunkArrivalArg>(tag, src, dest, count, chunk_id)
+        .release();
+}
+
 void CommonNetworkApi::process_chunk_arrival(void* args) noexcept {
     assert(args != nullptr);
 
+    const auto data = std::unique_ptr<ChunkArrivalArg>(
+        static_cast<ChunkArrivalArg*>(args));
+
     // parse chunk data
-    auto* const data =
-        static_cast<std::tuple<int, int, int, uint64_t, int>*>(args);
     const auto [tag, src, dest, count, chunk_id] = *data;
 
     // search tracker

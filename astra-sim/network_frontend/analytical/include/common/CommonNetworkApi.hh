@@ -10,7 +10,9 @@ LICENSE file in the root directory of this source tree.
 #include <astra-network-analytical/common/EventQueue.h>
 #include <astra-sim/common/AstraNetworkAPI.hh>
 #include <astra-sim/system/Common.hh>
+#include <cstdint>
 #include <memory>
+#include <tuple>
 #include <vector>
 
 using namespace AstraSim;
@@ -39,6 +41,30 @@ class CommonNetworkApi : public AstraNetworkAPI {
      * @return reference to the callback tracker
      */
     static CallbackTracker& get_callback_tracker() noexcept;
+
+    /**
+     * Record of one chunk in flight: tag, src, dest, count, chunk_id.
+     */
+    using ChunkArrivalArg = std::tuple<int, int, int, uint64_t, int>;
+
+    /**
+     * Allocate the record of a chunk that is about to be sent and give up
+     * ownership of it as the opaque pointer that sim_schedule() and Chunk carry.
+     * Every pointer returned here must reach exactly one
+     * process_chunk_arrival() call, which takes ownership back and frees it.
+     *
+     * @param tag tag of the transmission
+     * @param src source rank
+     * @param dest destination rank
+     * @param count size of the chunk
+     * @param chunk_id id of the chunk
+     * @return opaque argument for the chunk-arrival event
+     */
+    [[nodiscard]] static void* make_chunk_arrival_arg(int tag,
+                                                      int src,
+                                                      int dest,
+                                                      uint64_t count,
+                                                      int chunk_id);
 
     /**
      * Callback to be invoked when a chunk arrives its destination.
