@@ -88,6 +88,32 @@ ENV PROTOBUF_FROM_SOURCE=True
 ### ======================================================
 
 
+### ================= Chakra Python Tools ================
+# Match the Chakra revision recorded by this ASTRA-sim checkout and the
+# PARAM revision in utils/install_chakra.sh.
+ARG CHAKRA_REV=0e3cd40c569f0a4cacb6d961bb56be53407abd2f
+ARG PARAM_REV=7b19f586dd8b267333114992833a0d7e0d601630
+
+# Chakra builds Python bindings in an isolated pip environment. Constrain
+# its generator as well as the runtime to avoid newer, incompatible gencode.
+# grpcio-tools 1.68.0 generates bindings compatible with protobuf 5.29.0.
+RUN printf '%s\n' "protobuf==5.${PROTOBUF_VER}" 'grpcio-tools==1.68.0' \
+        > /tmp/chakra-constraints.txt \
+    && python3 -m pip install \
+        --constraint /tmp/chakra-constraints.txt \
+        --build-constraint /tmp/chakra-constraints.txt \
+        "git+https://github.com/mlcommons/chakra.git@${CHAKRA_REV}" \
+        "git+https://github.com/facebookresearch/param.git@${PARAM_REV}#subdirectory=et_replay" \
+    && rm /tmp/chakra-constraints.txt \
+    && python3 -m pip check \
+    && chakra_converter --help \
+    && chakra_jsonizer --help \
+    && chakra_visualizer --help \
+    && chakra_trace_link --help \
+    && chakra_timeline_visualizer --help
+### ======================================================
+
+
 ### ================== Finalize ==========================
 ## Move to the application directory
 WORKDIR /app/astra-sim
